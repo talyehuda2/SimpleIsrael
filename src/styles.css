@@ -1,0 +1,186 @@
+* { box-sizing: border-box; }
+
+:root {
+  --leader: #be185d;
+  --united: #7c3aed;
+  --judah: #2563eb;
+  --israel: #16a34a;
+  --prophet: #d97706;
+  --book: #0d9488;
+  --event: #dc2626;
+  --bg: #f8f7f4;
+  --ink: #1f2937;
+  --line: #e2e0da;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Segoe UI', 'Arial Hebrew', 'Noto Sans Hebrew', sans-serif;
+}
+
+#root, .app { height: 100vh; display: flex; flex-direction: column; }
+
+/* ----- כותרת ובקרים ----- */
+header {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px;
+  padding: 10px 18px 6px;
+  background: #fff; border-bottom: 1px solid var(--line);
+}
+h1 { margin: 0; font-size: 22px; }
+.subtitle { font-size: 12.5px; color: #6b7280; }
+.title-block { display: flex; flex-direction: column; }
+
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
+.presets { display: flex; flex-wrap: wrap; gap: 5px; }
+.presets button, .zoom-btns button {
+  border: 1px solid var(--line); background: #fff; border-radius: 8px;
+  padding: 4px 10px; cursor: pointer; font-family: inherit; font-size: 13px;
+}
+.presets button:hover, .zoom-btns button:hover { background: #eef2ff; border-color: #c7d2fe; }
+.zoom-btns button { font-size: 16px; width: 32px; }
+.toggles { display: flex; gap: 12px; font-size: 13px; }
+.toggles label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
+/* ----- מקרא ----- */
+.legend {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center;
+  padding: 6px 18px; font-size: 12.5px; background: #fff; border-bottom: 1px solid var(--line);
+}
+.lg::before {
+  content: ''; display: inline-block; width: 12px; height: 12px;
+  border-radius: 3px; margin-inline-end: 5px; vertical-align: -1px;
+}
+.lg.leader::before { background: var(--leader); }
+.lg.united::before { background: var(--united); }
+.lg.judah::before { background: var(--judah); }
+.lg.israel::before { background: var(--israel); }
+.lg.prophet::before { background: var(--prophet); }
+.lg.book::before { background: var(--book); }
+.lg.event-lg::before, .lg.dot-lg::before { display: none; }
+.lg.event-lg { color: var(--event); }
+.lg-sep { color: #d1d5db; }
+.lg.dot-lg { display: inline-flex; align-items: center; gap: 4px; }
+
+/* ----- אזור הגלילה והציר ----- */
+.scroll-area { flex: 1; overflow: auto; position: relative; }
+.timeline-canvas { position: relative; min-height: 100%; padding-bottom: 20px; margin-left: auto; }
+
+.gridline {
+  position: absolute; top: 58px; bottom: 0; width: 1px;
+  background: var(--line); pointer-events: none;
+}
+
+.axis { position: sticky; top: 0; height: 58px; background: var(--bg); z-index: 5; border-bottom: 1px solid var(--line); }
+.tick { position: absolute; top: 6px; transform: translateX(-50%); text-align: center; direction: rtl; }
+.tick-heb { font-size: 13px; font-weight: 600; }
+.tick-num { font-size: 10.5px; color: #6b7280; }
+.tick-sec { font-size: 10.5px; color: #9ca3af; }
+
+/* ----- נתיבים ----- */
+.lane { position: relative; margin-top: 8px; padding-top: 20px; min-height: 58px; }
+.lane-label {
+  position: sticky; right: 0; float: right;
+  direction: rtl; font-size: 12px; font-weight: 700; color: #6b7280;
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  padding: 1px 8px; border-radius: 0 0 0 8px; z-index: 4;
+  margin-top: -20px;
+}
+
+.lane-periods { padding-top: 2px; min-height: 30px; margin-top: 2px; }
+.period {
+  position: absolute; top: 0; height: 24px; direction: rtl;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  font-size: 12px; font-weight: 600; color: #4b5563;
+  border-inline: 1px solid #d6d3cd;
+}
+.period.p0 { background: #ece9e2; }
+.period.p1 { background: #e0ddd4; }
+.period span { white-space: nowrap; padding: 0 6px; position: sticky; left: 4px; right: 4px; }
+
+.lane-kings { min-height: 78px; }
+
+/* ----- פסים ----- */
+.bar {
+  position: absolute; height: 26px; border-radius: 6px; cursor: pointer;
+  display: flex; align-items: center; direction: rtl; overflow: hidden;
+  color: #fff; font-size: 12.5px; box-shadow: 0 1px 2px rgb(0 0 0 / .18);
+  transition: filter .1s;
+}
+.bar:hover { filter: brightness(1.12); z-index: 3; }
+.bar.selected { outline: 3px solid #111827; z-index: 3; }
+.bar-label { padding: 0 7px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+
+.bar.leader { background: var(--leader); }
+.bar.united { background: var(--united); }
+.bar.judah { background: var(--judah); }
+.bar.israel { background: var(--israel); }
+.bar.prophet { background: var(--prophet); }
+.bar.book { background: var(--book); }
+
+.dot {
+  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  margin-inline-start: 6px; border: 1.5px solid rgb(255 255 255 / .85);
+}
+.dot.good { background: #4ade80; }
+.dot.bad { background: #f87171; }
+.dot.mixed { background: #facc15; }
+.lg .dot { margin: 0; border-color: #9ca3af; }
+
+/* ----- אירועים ----- */
+.lane-events { min-height: 60px; }
+.event {
+  position: absolute; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center;
+  cursor: pointer; direction: rtl; z-index: 2;
+}
+.event-marker { color: var(--event); font-size: 13px; line-height: 1; }
+.event-label {
+  font-size: 11.5px; white-space: nowrap; color: #7f1d1d;
+  background: rgb(255 255 255 / .75); border-radius: 4px; padding: 0 4px;
+}
+.event:hover .event-label, .event.selected .event-label { background: #fecaca; font-weight: 700; }
+
+/* ----- כרטיס פרטים ----- */
+.detail-card {
+  position: fixed; left: 16px; bottom: 46px; width: 340px; max-height: 60vh;
+  overflow-y: auto; background: #fff; border: 1px solid var(--line);
+  border-radius: 14px; box-shadow: 0 8px 30px rgb(0 0 0 / .18);
+  padding: 16px 18px; z-index: 20; direction: rtl;
+}
+.detail-card h2 { margin: 6px 0 2px; font-size: 20px; }
+.close-btn {
+  position: absolute; left: 10px; top: 10px; border: none; background: none;
+  font-size: 15px; cursor: pointer; color: #9ca3af;
+}
+.close-btn:hover { color: #111827; }
+.kind-chip {
+  display: inline-block; font-size: 11.5px; font-weight: 700; color: #fff;
+  border-radius: 20px; padding: 2px 10px;
+}
+.kind-chip.leader { background: var(--leader); }
+.kind-chip.united { background: var(--united); }
+.kind-chip.judah { background: var(--judah); }
+.kind-chip.israel { background: var(--israel); }
+.kind-chip.prophet { background: var(--prophet); }
+.kind-chip.book { background: var(--book); }
+.kind-chip.event { background: var(--event); }
+.detail-years { font-size: 13px; color: #374151; font-weight: 600; margin-bottom: 6px; }
+.detail-row { font-size: 13px; margin: 3px 0; }
+.judgment-chip {
+  display: inline-block; font-size: 12px; font-weight: 600;
+  border-radius: 20px; padding: 2px 10px; margin: 4px 0;
+}
+.judgment-chip.good { background: #dcfce7; color: #166534; }
+.judgment-chip.bad { background: #fee2e2; color: #991b1b; }
+.judgment-chip.mixed { background: #fef9c3; color: #854d0e; }
+.detail-desc { font-size: 13.5px; line-height: 1.65; margin: 8px 0; }
+.detail-source { font-size: 12.5px; color: #6b7280; border-top: 1px solid var(--line); padding-top: 8px; }
+
+/* ----- תחתית ----- */
+footer {
+  padding: 6px 18px; font-size: 12px; color: #6b7280;
+  background: #fff; border-top: 1px solid var(--line); text-align: center;
+}
