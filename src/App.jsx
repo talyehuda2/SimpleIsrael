@@ -130,15 +130,15 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <div className="title-block">
-          <h1>ציר הזמן של עם ישראל</h1>
-          <span className="subtitle">
-            {isAcademic
-              ? 'מהמלוכה עד חורבן בית שני · לפי הכרונולוגיה המחקרית'
-              : 'מהאבות עד חורבן בית שני · לפי המסורת (סדר עולם)'}
-          </span>
-        </div>
-        <div className="controls">
+        <div className="header-top">
+          <div className="title-block">
+            <h1>ציר הזמן של עם ישראל</h1>
+            <span className="subtitle">
+              {isAcademic
+                ? 'מהמלוכה עד חורבן בית שני · לפי הכרונולוגיה המחקרית'
+                : 'מהאבות עד חורבן בית שני · לפי המסורת (סדר עולם)'}
+            </span>
+          </div>
           <div className="chrono-toggle" role="group" aria-label="בחירת כרונולוגיה">
             <button
               className={!isAcademic ? 'active' : ''}
@@ -149,17 +149,25 @@ export default function App() {
               onClick={() => setChronology('academic')}
             >היסטוריה מחקרית</button>
           </div>
-          <div className="presets">
-            {PRESETS[chronology].map((p) => (
-              <button key={p.name} onClick={() => goTo(p)}>{p.name}</button>
-            ))}
+        </div>
+        <div className="controls">
+          <div className="ctrl-group">
+            <span className="ctrl-label">טווח</span>
+            <div className="presets">
+              {PRESETS[chronology].map((p) => (
+                <button key={p.name} onClick={() => goTo(p)}>{p.name}</button>
+              ))}
+            </div>
           </div>
-          <div className="toggles">
-            {!isAcademic && <label><input type="checkbox" checked={visible.leaders} onChange={() => toggle('leaders')} /> אבות ומנהיגים</label>}
-            <label><input type="checkbox" checked={visible.kings} onChange={() => toggle('kings')} /> מלכים</label>
-            <label><input type="checkbox" checked={visible.prophets} onChange={() => toggle('prophets')} /> נביאים</label>
-            <label><input type="checkbox" checked={visible.books} onChange={() => toggle('books')} /> ספרים</label>
-            <label><input type="checkbox" checked={visible.events} onChange={() => toggle('events')} /> אירועים</label>
+          <div className="ctrl-group">
+            <span className="ctrl-label">שכבות</span>
+            <div className="toggles">
+              {!isAcademic && <label><input type="checkbox" checked={visible.leaders} onChange={() => toggle('leaders')} /> אבות ומנהיגים</label>}
+              <label><input type="checkbox" checked={visible.kings} onChange={() => toggle('kings')} /> מלכים</label>
+              <label><input type="checkbox" checked={visible.prophets} onChange={() => toggle('prophets')} /> נביאים</label>
+              <label><input type="checkbox" checked={visible.books} onChange={() => toggle('books')} /> ספרים</label>
+              <label><input type="checkbox" checked={visible.events} onChange={() => toggle('events')} /> אירועים</label>
+            </div>
           </div>
           <div className="zoom-btns">
             <button onClick={() => zoom(1.4)} title="התקרבות">+</button>
