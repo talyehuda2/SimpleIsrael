@@ -119,7 +119,7 @@ export default function App() {
       if (!e.ctrlKey) return;
       e.preventDefault();
       const rect = el.getBoundingClientRect();
-      zoom(e.deltaY < 0 ? 1.25 : 0.8, e.clientX - rect.left);
+      zoom(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX - rect.left);
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
@@ -144,7 +144,8 @@ export default function App() {
     const onMove = (e) => {
       if (e.touches.length === 2 && pinch.current) {
         e.preventDefault();
-        const scale = dist(e.touches) / pinch.current.startDist;
+        // הגברת רגישות הצביטה — תנועת אצבעות קטנה נותנת שינוי זום גדול יותר
+        const scale = Math.pow(dist(e.touches) / pinch.current.startDist, 1.8);
         const px = Math.min(MAX_PX, Math.max(getMinPx(), pinch.current.startPx * scale));
         scrollToYear(pinch.current.yearAtAnchor, pinch.current.midX, px);
       }
