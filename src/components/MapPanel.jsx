@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import maps from '../data/maps.json';
 
 const KIND_COLOR = {
-  leader: '#9c2b50', united: '#6a3ca0', judah: '#245c93',
+  leader: '#9c2b50', judge: '#8a5a2b', united: '#6a3ca0', judah: '#245c93',
   israel: '#4f7a33', prophet: '#b3781a', book: '#157a70', event: '#b0392c',
 };
 
@@ -134,6 +134,7 @@ export default function MapPanel({ item, onClose }) {
 
           {active && (
             <div className="map-popup" style={{ left: `${(active.x / 500) * 100}%`, top: `${(active.y / 720) * 100}%` }}>
+              <button className="map-popup-close" onClick={() => setActive(null)} aria-label="סגירה">✕</button>
               <div className="map-popup-head" style={{ background: color }}>
                 <span className="map-popup-num">{active.order}</span>{active.name}
               </div>

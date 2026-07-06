@@ -3,6 +3,7 @@ import Timeline from './components/Timeline.jsx';
 import DetailCard from './components/DetailCard.jsx';
 import MapPanel from './components/MapPanel.jsx';
 import leaders from './data/leaders.json';
+import judges from './data/judges.json';
 import kings from './data/kings.json';
 import prophets from './data/prophets.json';
 import books from './data/books.json';
@@ -48,12 +49,12 @@ export default function App() {
   const [chronology, setChronology] = useState('tradition');
   const [menuOpen, setMenuOpen] = useState(false);
   const [mapItem, setMapItem] = useState(null);
-  const [visible, setVisible] = useState({ leaders: true, kings: true, prophets: true, books: true, events: true });
+  const [visible, setVisible] = useState({ leaders: true, judges: true, kings: true, prophets: true, books: true, events: true });
 
   const axis = AXIS[chronology];
   const data = chronology === 'academic'
     ? academicData
-    : { leaders, kings, prophets, books, events, periods };
+    : { leaders, judges, kings, prophets, books, events, periods };
 
   // הזום המינימלי: כל הציר בדיוק ברוחב החלון
   const getMinPx = () => {
@@ -209,6 +210,7 @@ export default function App() {
             <span className="ctrl-label">שכבות</span>
             <div className="toggles">
               {!isAcademic && <label><input type="checkbox" checked={visible.leaders} onChange={() => toggle('leaders')} /> אבות ומנהיגים</label>}
+              {!isAcademic && <label><input type="checkbox" checked={visible.judges} onChange={() => toggle('judges')} /> שופטים</label>}
               <label><input type="checkbox" checked={visible.kings} onChange={() => toggle('kings')} /> מלכים</label>
               <label><input type="checkbox" checked={visible.prophets} onChange={() => toggle('prophets')} /> נביאים</label>
               <label><input type="checkbox" checked={visible.books} onChange={() => toggle('books')} /> ספרים</label>
@@ -224,6 +226,7 @@ export default function App() {
 
       <div className="legend">
         {!isAcademic && <span className="lg leader">אבות ומנהיגים</span>}
+        {!isAcademic && <span className="lg judge">שופטים</span>}
         <span className="lg united">ממלכה מאוחדת</span>
         <span className="lg judah">יהודה</span>
         <span className="lg israel">ישראל</span>
@@ -247,7 +250,7 @@ export default function App() {
         <Timeline
           pxPerYear={pxPerYear}
           startYear={axis.start} endYear={axis.end} mode={chronology}
-          periods={data.periods} leaders={data.leaders} kings={data.kings}
+          periods={data.periods} leaders={data.leaders} judges={data.judges} kings={data.kings}
           prophets={data.prophets} books={data.books} events={data.events}
           visible={visible} selected={selected} onSelect={setSelected}
         />

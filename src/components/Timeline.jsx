@@ -62,7 +62,7 @@ function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight =
 
 export default function Timeline({
   pxPerYear, startYear = START_YEAR, endYear = END_YEAR, mode = 'tradition',
-  periods, leaders, kings, prophets, books, events,
+  periods, leaders, judges, kings, prophets, books, events,
   visible, selected, onSelect,
 }) {
   const totalWidth = (endYear - startYear) * pxPerYear;
@@ -76,6 +76,7 @@ export default function Timeline({
   }, [pxPerYear, startYear, endYear]);
 
   const packedLeaders = useMemo(() => packRows(leaders), [leaders]);
+  const packedJudges = useMemo(() => packRows(judges || []), [judges]);
   const packedProphets = useMemo(() => packRows(prophets), [prophets]);
   const packedBooks = useMemo(() => packRows(books), [books]);
   const packedEvents = useMemo(() => {
@@ -151,6 +152,17 @@ export default function Timeline({
           {packedLeaders.items.map((l) => (
             <Bar key={l.id} item={l} toX={toX} pxPerYear={pxPerYear} kind="leader" mode={mode} row={l.row}
               selected={isSel('leader', l.id)} onSelect={onSelect} />
+          ))}
+        </div>
+      )}
+
+      {/* שופטים */}
+      {visible.judges && judges && judges.length > 0 && (
+        <div className="lane lane-judges" style={{ height: packedJudges.rows * 30 + 32 }}>
+          <div className="lane-label">שופטים</div>
+          {packedJudges.items.map((j) => (
+            <Bar key={j.id} item={j} toX={toX} pxPerYear={pxPerYear} kind="judge" mode={mode} row={j.row}
+              selected={isSel('judge', j.id)} onSelect={onSelect} />
           ))}
         </div>
       )}

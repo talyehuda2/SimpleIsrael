@@ -3,6 +3,7 @@ import maps from '../data/maps.json';
 
 const KIND_LABELS = {
   leader: 'מנהיג',
+  judge: 'שופט',
   united: 'מלך — הממלכה המאוחדת',
   judah: 'מלך יהודה',
   israel: 'מלך ישראל',

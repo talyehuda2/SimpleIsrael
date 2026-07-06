@@ -16,6 +16,7 @@
 
   /* ----- צבעי נתיבים (גווני אבן-חן, קריאים על קלף) ----- */
   --leader: #9c2b50;
+  --judge: #8a5a2b;
   --united: #6a3ca0;
   --judah: #245c93;
   --israel: #4f7a33;
@@ -114,6 +115,7 @@ h1 {
   border-radius: 3px; margin-inline-end: 5px; vertical-align: -1px;
 }
 .lg.leader::before { background: var(--leader); }
+.lg.judge::before { background: var(--judge); }
 .lg.united::before { background: var(--united); }
 .lg.judah::before { background: var(--judah); }
 .lg.israel::before { background: var(--israel); }
@@ -191,6 +193,7 @@ h1 {
 .bar-label { padding: 0 8px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 
 .bar.leader { background: linear-gradient(180deg, var(--leader), #7f2141); }
+.bar.judge { background: linear-gradient(180deg, var(--judge), #67411c); }
 .bar.united { background: linear-gradient(180deg, var(--united), #542f7f); }
 .bar.judah { background: linear-gradient(180deg, var(--judah), #1b476f); }
 .bar.israel { background: linear-gradient(180deg, var(--israel), #3d5f27); }
@@ -247,6 +250,7 @@ h1 {
   border-radius: 20px; padding: 2px 11px;
 }
 .kind-chip.leader { background: var(--leader); }
+.kind-chip.judge { background: var(--judge); }
 .kind-chip.united { background: var(--united); }
 .kind-chip.judah { background: var(--judah); }
 .kind-chip.israel { background: var(--israel); }
@@ -340,8 +344,15 @@ footer {
   border-radius: 10px; box-shadow: 0 6px 20px rgb(30 20 5 / .3); z-index: 3;
   overflow: hidden; direction: rtl; pointer-events: none;
 }
+.map-popup-close {
+  position: absolute; top: 4px; left: 5px; z-index: 2; pointer-events: auto;
+  border: none; background: rgb(255 255 255 / .28); color: #fff;
+  width: 19px; height: 19px; border-radius: 50%; font-size: 11px; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.map-popup-close:hover { background: rgb(255 255 255 / .55); }
 .map-popup-head {
-  color: #fff; font-weight: 700; font-size: 13.5px; padding: 5px 10px;
+  color: #fff; font-weight: 700; font-size: 13.5px; padding: 5px 10px 5px 26px;
   display: flex; align-items: center; gap: 6px;
 }
 .map-popup-num {

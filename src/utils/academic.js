@@ -31,6 +31,7 @@ function remapEvents(arr, map) {
 
 export const academicData = {
   leaders: [], // תקופת האבות והשופטים אינה מתוארכת בהסכמה מחקרית
+  judges: [],
   periods: remapSpans(periods, academic.periods),
   events: remapEvents(events, academic.events),
   prophets: remapSpans(prophets, academic.prophets),
