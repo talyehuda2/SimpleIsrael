@@ -322,21 +322,15 @@ footer {
 }
 .map-region .map-sea { fill: #5f8792; }
 .map-compass { fill: #b28a2b; font-size: 12px; font-weight: 700; text-anchor: middle; }
-.map-hill ellipse { fill: #e6d7ae; stroke: #cdba8b; stroke-width: 0.9; opacity: .5; }
-.map-peak path { fill: #b09a63; stroke: #8a7440; stroke-width: 0.8; }
-.map-peak text {
-  fill: #7c6234; font-size: 8.5px; font-style: italic; text-anchor: middle;
-  direction: rtl; font-family: 'Frank Ruhl Libre', serif;
-}
 
 .journey {
   fill: none; stroke: #b28a2b; stroke-width: 2.5; stroke-dasharray: 5 6;
   stroke-linecap: round; opacity: .7;
 }
 .marker circle { transition: r .1s; filter: drop-shadow(0 1px 2px rgb(0 0 0 / .35)); }
-.marker:hover circle { r: 15; }
-.marker.active circle { stroke: var(--gold); stroke-width: 4; }
-.marker-num { fill: #fff; font-size: 14px; font-weight: 700; pointer-events: none; }
+.marker:hover circle { r: 11; }
+.marker.active circle { stroke: var(--gold); stroke-width: 3; }
+.marker-num { fill: #fff; font-size: 11px; font-weight: 700; pointer-events: none; }
 
 .map-popup {
   position: absolute; transform: translate(-50%, calc(-100% - 16px));
