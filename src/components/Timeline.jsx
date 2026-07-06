@@ -2,13 +2,13 @@ import { useMemo } from 'react';
 import { hebrewYearLetters, toSecular } from '../utils/dates.js';
 
 // ציר הזמן זורם מימין (עבר) לשמאל (הווה), כקריאה בעברית.
-// x = מרחק מהקצה השמאלי = (END_YEAR - שנה) * פיקסלים-לשנה.
+// x = מרחק מהקצה השמאלי = (endYear - שנה) * פיקסלים-לשנה.
 
 export const START_YEAR = 1940;
 export const END_YEAR = 3850;
 
-export function yearToX(year, pxPerYear) {
-  return (END_YEAR - year) * pxPerYear;
+export function yearToX(year, pxPerYear, endYear = END_YEAR) {
+  return (endYear - year) * pxPerYear;
 }
 
 // שיבוץ פריטים חופפים בשורות נפרדות (greedy interval packing)
@@ -35,8 +35,14 @@ function tickStep(pxPerYear) {
   return 100;
 }
 
-function Bar({ item, pxPerYear, kind, selected, onSelect, rowHeight = 30, row = 0 }) {
-  const left = yearToX(item.end, pxPerYear);
+function barTitle(item, mode) {
+  return mode === 'academic'
+    ? `${item.name} · ${toSecular(item.start)}–${toSecular(item.end)}`
+    : `${item.name} · ${item.start}–${item.end}`;
+}
+
+function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight = 30, row = 0 }) {
+  const left = toX(item.end);
   const width = Math.max((item.end - item.start) * pxPerYear, 6);
   const showLabel = width > 34;
   const showDot = width > 24;
@@ -44,7 +50,7 @@ function Bar({ item, pxPerYear, kind, selected, onSelect, rowHeight = 30, row = 
     <div
       className={`bar ${kind} ${selected ? 'selected' : ''}`}
       style={{ left, width, top: row * rowHeight + 22 }}
-      title={`${item.name} · ${item.start}–${item.end}`}
+      title={barTitle(item, mode)}
       onClick={() => onSelect({ ...item, kind })}
     >
       {item.judgment && showDot && <span className={`dot ${item.judgment}`} />}
@@ -54,17 +60,19 @@ function Bar({ item, pxPerYear, kind, selected, onSelect, rowHeight = 30, row = 
 }
 
 export default function Timeline({
-  pxPerYear, periods, leaders, kings, prophets, books, events,
+  pxPerYear, startYear = START_YEAR, endYear = END_YEAR, mode = 'tradition',
+  periods, leaders, kings, prophets, books, events,
   visible, selected, onSelect,
 }) {
-  const totalWidth = (END_YEAR - START_YEAR) * pxPerYear;
+  const totalWidth = (endYear - startYear) * pxPerYear;
+  const toX = (year) => (endYear - year) * pxPerYear;
 
   const ticks = useMemo(() => {
     const step = tickStep(pxPerYear);
     const list = [];
-    for (let y = Math.ceil(START_YEAR / step) * step; y <= END_YEAR; y += step) list.push(y);
+    for (let y = Math.ceil(startYear / step) * step; y <= endYear; y += step) list.push(y);
     return list;
-  }, [pxPerYear]);
+  }, [pxPerYear, startYear, endYear]);
 
   const packedLeaders = useMemo(() => packRows(leaders), [leaders]);
   const packedProphets = useMemo(() => packRows(prophets), [prophets]);
@@ -90,15 +98,15 @@ export default function Timeline({
       {/* קווי רשת + ציר שנים */}
       <div className="axis">
         {ticks.map((y) => (
-          <div key={y} className="tick" style={{ left: yearToX(y, pxPerYear) }}>
-            <div className="tick-heb">{hebrewYearLetters(y)}</div>
-            <div className="tick-num">{y}</div>
+          <div key={y} className="tick" style={{ left: toX(y) }}>
+            {mode !== 'academic' && <div className="tick-heb">{hebrewYearLetters(y)}</div>}
+            {mode !== 'academic' && <div className="tick-num">{y}</div>}
             <div className="tick-sec">{toSecular(y)}</div>
           </div>
         ))}
       </div>
       {ticks.map((y) => (
-        <div key={y} className="gridline" style={{ left: yearToX(y, pxPerYear) }} />
+        <div key={y} className="gridline" style={{ left: toX(y) }} />
       ))}
 
       {/* תקופות */}
@@ -108,8 +116,8 @@ export default function Timeline({
           <div
             key={p.id}
             className={`period p${i % 2}`}
-            style={{ left: yearToX(p.end, pxPerYear), width: (p.end - p.start) * pxPerYear }}
-            title={`${p.name} · ${p.start}–${p.end}`}
+            style={{ left: toX(p.end), width: (p.end - p.start) * pxPerYear }}
+            title={barTitle(p, mode)}
           >
             <span>{p.name}</span>
           </div>
@@ -124,9 +132,9 @@ export default function Timeline({
             <div
               key={ev.id}
               className={`event ${isSel('event', ev.id) ? 'selected' : ''}`}
-              style={{ left: yearToX(ev.year, pxPerYear), top: ev.row * 26 + 22 }}
+              style={{ left: toX(ev.year), top: ev.row * 26 + 22 }}
               onClick={() => onSelect({ ...ev, kind: 'event', start: ev.year, end: ev.year })}
-              title={`${ev.name} · ${ev.year}`}
+              title={mode === 'academic' ? `${ev.name} · ${toSecular(ev.year)}` : `${ev.name} · ${ev.year}`}
             >
               <span className="event-marker">◆</span>
               <span className="event-label">{ev.name}</span>
@@ -136,11 +144,11 @@ export default function Timeline({
       )}
 
       {/* אבות ומנהיגים */}
-      {visible.leaders && (
+      {visible.leaders && leaders.length > 0 && (
         <div className="lane lane-leaders" style={{ height: packedLeaders.rows * 30 + 32 }}>
           <div className="lane-label">אבות ומנהיגים</div>
           {packedLeaders.items.map((l) => (
-            <Bar key={l.id} item={l} pxPerYear={pxPerYear} kind="leader" row={l.row}
+            <Bar key={l.id} item={l} toX={toX} pxPerYear={pxPerYear} kind="leader" mode={mode} row={l.row}
               selected={isSel('leader', l.id)} onSelect={onSelect} />
           ))}
         </div>
@@ -152,18 +160,18 @@ export default function Timeline({
           <div className="lane lane-kings">
             <div className="lane-label">מלכים — הממלכה המאוחדת / יהודה</div>
             {kings.united.map((k) => (
-              <Bar key={k.id} item={k} pxPerYear={pxPerYear} kind="united"
+              <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="united" mode={mode}
                 selected={isSel('united', k.id)} onSelect={onSelect} />
             ))}
             {kings.judah.map((k) => (
-              <Bar key={k.id} item={k} pxPerYear={pxPerYear} kind="judah"
+              <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="judah" mode={mode}
                 selected={isSel('judah', k.id)} onSelect={onSelect} />
             ))}
           </div>
           <div className="lane lane-kings">
             <div className="lane-label">מלכים — ממלכת ישראל</div>
             {kings.israel.map((k) => (
-              <Bar key={k.id} item={k} pxPerYear={pxPerYear} kind="israel"
+              <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="israel" mode={mode}
                 selected={isSel('israel', k.id)} onSelect={onSelect} />
             ))}
           </div>
@@ -175,7 +183,7 @@ export default function Timeline({
         <div className="lane lane-prophets" style={{ height: packedProphets.rows * 30 + 32 }}>
           <div className="lane-label">נביאים</div>
           {packedProphets.items.map((p) => (
-            <Bar key={p.id} item={p} pxPerYear={pxPerYear} kind="prophet" row={p.row}
+            <Bar key={p.id} item={p} toX={toX} pxPerYear={pxPerYear} kind="prophet" mode={mode} row={p.row}
               selected={isSel('prophet', p.id)} onSelect={onSelect} />
           ))}
         </div>
@@ -186,7 +194,7 @@ export default function Timeline({
         <div className="lane lane-books" style={{ height: packedBooks.rows * 30 + 32 }}>
           <div className="lane-label">ספרי התנ"ך (התקופה המתוארת)</div>
           {packedBooks.items.map((b) => (
-            <Bar key={b.id} item={b} pxPerYear={pxPerYear} kind="book" row={b.row}
+            <Bar key={b.id} item={b} toX={toX} pxPerYear={pxPerYear} kind="book" mode={mode} row={b.row}
               selected={isSel('book', b.id)} onSelect={onSelect} />
           ))}
         </div>

@@ -31,11 +31,13 @@ export function toSecular(year) {
   return `${year - 3760} לספירה`;
 }
 
-export function formatYear(year) {
+export function formatYear(year, mode) {
+  if (mode === 'academic') return toSecular(year);
   return `${hebrewYearLetters(year)} (${year}) · ${toSecular(year)}`;
 }
 
-export function formatRange(start, end) {
-  if (start === end) return formatYear(start);
+export function formatRange(start, end, mode) {
+  if (start === end) return formatYear(start, mode);
+  if (mode === 'academic') return `${toSecular(start)} עד ${toSecular(end)}`;
   return `${hebrewYearLetters(start)}–${hebrewYearLetters(end)} (${start}–${end}) · ${toSecular(start)} עד ${toSecular(end)}`;
 }

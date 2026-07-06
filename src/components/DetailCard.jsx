@@ -16,14 +16,14 @@ const JUDGMENT_LABELS = {
   mixed: 'מעורב',
 };
 
-export default function DetailCard({ item, onClose }) {
+export default function DetailCard({ item, mode, onClose }) {
   if (!item) return null;
   return (
     <aside className="detail-card">
       <button className="close-btn" onClick={onClose} aria-label="סגירה">✕</button>
       <div className={`kind-chip ${item.kind}`}>{KIND_LABELS[item.kind]}</div>
       <h2>{item.name}</h2>
-      <div className="detail-years">{formatRange(item.start, item.end)}</div>
+      <div className="detail-years">{formatRange(item.start, item.end, mode)}</div>
       {item.reignText && <div className="detail-row"><b>משך המלוכה:</b> {item.reignText}</div>}
       {item.lifeText && <div className="detail-row"><b>שנות חיים:</b> {item.lifeText}</div>}
       {item.tenureText && <div className="detail-row"><b>הנהגה:</b> {item.tenureText}</div>}
