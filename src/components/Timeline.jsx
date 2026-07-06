@@ -29,10 +29,11 @@ function packRows(items) {
 }
 
 function tickStep(pxPerYear) {
-  if (pxPerYear >= 8) return 10;
-  if (pxPerYear >= 3) return 25;
-  if (pxPerYear >= 1.2) return 50;
-  return 100;
+  // בוחר צעד כך שהמרווח בין תוויות לא יקטן מ-MIN_GAP פיקסלים — מונע חפיפת תאריכים
+  const MIN_GAP = 74;
+  const steps = [10, 25, 50, 100, 200, 250, 500, 1000, 2000];
+  for (const s of steps) if (s * pxPerYear >= MIN_GAP) return s;
+  return 2000;
 }
 
 function barTitle(item, mode) {
