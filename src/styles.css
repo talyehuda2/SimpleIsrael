@@ -57,6 +57,13 @@ header {
   font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: .3px;
   text-transform: none; padding-inline-end: 2px;
 }
+/* כפתור תפריט וכפתורי זום צפים — מוסתרים בדסקטופ, מופיעים במובייל */
+.menu-btn {
+  display: none; border: 1.5px solid var(--navy); background: var(--panel);
+  color: var(--navy); font-family: inherit; font-weight: 700; font-size: 13px;
+  border-radius: 22px; padding: 6px 14px; cursor: pointer;
+}
+.fab-zoom { display: none; }
 h1 {
   margin: 0; font-size: 25px; font-weight: 900; color: var(--navy);
   font-family: 'Frank Ruhl Libre', 'Heebo', serif; letter-spacing: .2px;
@@ -270,17 +277,70 @@ footer {
 
 /* ----- מובייל ----- */
 @media (max-width: 680px) {
-  header { padding: 9px 13px; gap: 8px 12px; }
-  h1 { font-size: 20px; }
-  .subtitle { font-size: 11.5px; }
-  .controls { gap: 7px 10px; }
-  .presets button, .chrono-toggle button { font-size: 12px; padding: 5px 11px; }
-  .legend { padding: 6px 13px; font-size: 11px; gap: 5px 10px; }
-  .toggles { font-size: 12px; }
-  .academic-note { padding: 7px 13px; font-size: 11.5px; }
+  header { padding: 8px 12px; gap: 7px; position: relative; }
+  .header-top { gap: 7px 10px; }
+  h1 { font-size: 18px; }
+  .subtitle { display: none; }               /* הכותרת מספיקה — חוסך גובה */
+  .menu-btn { display: inline-flex; align-items: center; }
+  .chrono-toggle button { font-size: 12px; padding: 5px 10px; }
+
+  /* בקרים מתקפלים למגירה, נפתחת בלחיצה על "אפשרויות" */
+  .controls { display: none; }
+  .controls.open {
+    display: flex; flex-direction: column; align-items: stretch; gap: 11px;
+    max-height: 58vh; overflow-y: auto; margin-top: 3px;
+    border-top: 1px solid var(--line-soft); padding-top: 9px;
+  }
+  .ctrl-group { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .presets button { font-size: 12.5px; padding: 6px 12px; }
+  .toggles { font-size: 12.5px; gap: 8px; }
+  .zoom-btns { display: none; }              /* מוחלף בכפתורים הצפים */
+
+  /* מקרא מוסתר כברירת מחדל, מופיע כשהמגירה פתוחה */
+  .legend { display: none; }
+  .app.menu-open .legend {
+    display: flex; padding: 8px 12px; font-size: 11.5px; gap: 6px 12px;
+  }
+
+  .academic-note { padding: 7px 12px; font-size: 11.5px; }
+
   /* כרטיס פרטים כ"גיליון" בתחתית המסך */
   .detail-card {
-    left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 55vh;
+    left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 52vh;
     border-radius: 14px; border-top-width: 4px;
+  }
+
+  /* כפתורי זום צפים */
+  .fab-zoom {
+    display: flex; flex-direction: column; gap: 9px;
+    position: fixed; bottom: 46px; left: 12px; z-index: 15;
+  }
+  .fab-zoom button {
+    width: 46px; height: 46px; border-radius: 50%; border: none;
+    background: var(--navy); color: #fff; font-size: 23px; line-height: 1;
+    box-shadow: 0 3px 10px rgb(20 40 60 / .35); cursor: pointer;
+  }
+  .fab-zoom button:active { background: var(--navy-2); transform: scale(.94); }
+}
+
+/* ----- מסך נמוך (טלפון לרוחב) — כיווץ מרבי ----- */
+@media (max-height: 520px) and (max-width: 900px) {
+  .subtitle { display: none; }
+  header { padding: 6px 12px; }
+  h1 { font-size: 17px; }
+  .menu-btn { display: inline-flex; align-items: center; }
+  .controls { display: none; }
+  .controls.open { display: flex; flex-direction: column; gap: 9px; max-height: 70vh; overflow-y: auto; }
+  .zoom-btns { display: none; }
+  .legend { display: none; }
+  .app.menu-open .legend { display: flex; }
+  .fab-zoom {
+    display: flex; flex-direction: column; gap: 8px;
+    position: fixed; bottom: 40px; left: 10px; z-index: 15;
+  }
+  .fab-zoom button {
+    width: 42px; height: 42px; border-radius: 50%; border: none;
+    background: var(--navy); color: #fff; font-size: 21px; cursor: pointer;
+    box-shadow: 0 3px 10px rgb(20 40 60 / .35);
   }
 }

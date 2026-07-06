@@ -45,6 +45,7 @@ export default function App() {
   const [pxPerYear, setPxPerYear] = useState(1);
   const [selected, setSelected] = useState(null);
   const [chronology, setChronology] = useState('tradition');
+  const [menuOpen, setMenuOpen] = useState(false);
   const [visible, setVisible] = useState({ leaders: true, kings: true, prophets: true, books: true, events: true });
 
   const axis = AXIS[chronology];
@@ -124,11 +125,48 @@ export default function App() {
     return () => el.removeEventListener('wheel', onWheel);
   });
 
+  // זום בצביטה (pinch) בשתי אצבעות במובייל
+  const pinch = useRef(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const dist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+    const onStart = (e) => {
+      if (e.touches.length === 2) {
+        const rect = el.getBoundingClientRect();
+        const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+        pinch.current = {
+          startDist: dist(e.touches), startPx: pxPerYear, midX,
+          yearAtAnchor: axis.end - (el.scrollLeft + midX) / pxPerYear,
+        };
+      }
+    };
+    const onMove = (e) => {
+      if (e.touches.length === 2 && pinch.current) {
+        e.preventDefault();
+        const scale = dist(e.touches) / pinch.current.startDist;
+        const px = Math.min(MAX_PX, Math.max(getMinPx(), pinch.current.startPx * scale));
+        scrollToYear(pinch.current.yearAtAnchor, pinch.current.midX, px);
+      }
+    };
+    const onEnd = (e) => { if (e.touches.length < 2) pinch.current = null; };
+    el.addEventListener('touchstart', onStart, { passive: false });
+    el.addEventListener('touchmove', onMove, { passive: false });
+    el.addEventListener('touchend', onEnd);
+    el.addEventListener('touchcancel', onEnd);
+    return () => {
+      el.removeEventListener('touchstart', onStart);
+      el.removeEventListener('touchmove', onMove);
+      el.removeEventListener('touchend', onEnd);
+      el.removeEventListener('touchcancel', onEnd);
+    };
+  });
+
   const toggle = (key) => setVisible((v) => ({ ...v, [key]: !v[key] }));
   const isAcademic = chronology === 'academic';
 
   return (
-    <div className="app">
+    <div className={`app${menuOpen ? ' menu-open' : ''}`}>
       <header>
         <div className="header-top">
           <div className="title-block">
@@ -149,13 +187,18 @@ export default function App() {
               onClick={() => setChronology('academic')}
             >היסטוריה מחקרית</button>
           </div>
+          <button
+            className="menu-btn"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((o) => !o)}
+          >{menuOpen ? '✕ סגירה' : '☰ אפשרויות'}</button>
         </div>
-        <div className="controls">
+        <div className={`controls${menuOpen ? ' open' : ''}`}>
           <div className="ctrl-group">
             <span className="ctrl-label">טווח</span>
             <div className="presets">
               {PRESETS[chronology].map((p) => (
-                <button key={p.name} onClick={() => goTo(p)}>{p.name}</button>
+                <button key={p.name} onClick={() => { goTo(p); setMenuOpen(false); }}>{p.name}</button>
               ))}
             </div>
           </div>
@@ -206,6 +249,13 @@ export default function App() {
           visible={visible} selected={selected} onSelect={setSelected}
         />
       </div>
+
+      {!selected && (
+        <div className="fab-zoom">
+          <button onClick={() => zoom(1.4)} aria-label="התקרבות">+</button>
+          <button onClick={() => zoom(0.7)} aria-label="התרחקות">−</button>
+        </div>
+      )}
 
       <DetailCard item={selected} mode={chronology} onClose={() => setSelected(null)} />
 
