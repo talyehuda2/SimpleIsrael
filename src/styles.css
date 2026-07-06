@@ -275,8 +275,94 @@ footer {
   border-top: 1.5px solid var(--gold); text-align: center;
 }
 
+/* ----- כפתור מפה בכרטיס הפרטים ----- */
+.map-btn {
+  display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 2px;
+  background: var(--navy); color: #fff; border: none; border-radius: 20px;
+  padding: 7px 15px; font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background .12s, transform .1s;
+}
+.map-btn:hover { background: var(--navy-2); transform: translateY(-1px); }
+
+/* ----- שכבת המפה ----- */
+.map-overlay {
+  position: fixed; inset: 0; z-index: 40; direction: rtl; display: flex;
+  background: rgb(30 20 5 / .45); backdrop-filter: blur(2px);
+}
+.map-panel {
+  width: min(500px, 92vw); height: 100%; overflow-y: auto; position: relative;
+  background: linear-gradient(180deg, #fbf5e7, var(--bg));
+  border-inline-end: 3px solid var(--gold); box-shadow: 6px 0 30px rgb(30 20 5 / .35);
+  padding: 16px 18px 24px; animation: mapIn .22s ease-out;
+}
+@keyframes mapIn { from { transform: translateX(-26px); opacity: 0; } to { transform: none; opacity: 1; } }
+.map-close {
+  position: absolute; left: 12px; top: 12px; border: none; background: none;
+  font-size: 17px; color: #b0a082; cursor: pointer;
+}
+.map-close:hover { color: var(--ink); }
+.map-title {
+  margin: 2px 0; font-size: 21px; color: var(--navy);
+  font-family: 'Frank Ruhl Libre', serif; font-weight: 700;
+}
+.map-sub { margin: 0 0 10px; font-size: 12.5px; color: var(--muted); }
+
+.map-wrap { position: relative; }
+.map-svg {
+  width: 100%; height: auto; display: block;
+  border-radius: 8px; box-shadow: 0 2px 10px rgb(40 25 0 / .12);
+}
+.map-region text {
+  fill: #9a7d4e; font-size: 13px; font-style: italic; text-anchor: middle;
+  font-family: 'Frank Ruhl Libre', serif; direction: rtl; letter-spacing: .5px;
+}
+.map-region .map-sea { fill: #5f8792; }
+.map-compass { fill: #b28a2b; font-size: 12px; font-weight: 700; text-anchor: middle; }
+
+.journey {
+  fill: none; stroke: #b28a2b; stroke-width: 2.5; stroke-dasharray: 5 6;
+  stroke-linecap: round; opacity: .7;
+}
+.marker circle { transition: r .1s; filter: drop-shadow(0 1px 2px rgb(0 0 0 / .35)); }
+.marker:hover circle { r: 15; }
+.marker.active circle { stroke: var(--gold); stroke-width: 4; }
+.marker-num { fill: #fff; font-size: 14px; font-weight: 700; pointer-events: none; }
+
+.map-popup {
+  position: absolute; transform: translate(-50%, calc(-100% - 16px));
+  width: 212px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; box-shadow: 0 6px 20px rgb(30 20 5 / .3); z-index: 3;
+  overflow: hidden; direction: rtl; pointer-events: none;
+}
+.map-popup-head {
+  color: #fff; font-weight: 700; font-size: 13.5px; padding: 5px 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.map-popup-num {
+  background: rgb(255 255 255 / .3); border-radius: 50%; width: 18px; height: 18px;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 11px;
+}
+.map-popup-label { font-size: 12px; font-weight: 600; color: var(--gold); padding: 6px 10px 0; }
+.map-popup-desc { font-size: 12.5px; line-height: 1.55; margin: 3px 0 0; padding: 0 10px 9px; color: var(--ink); }
+
+.map-legend { list-style: none; margin: 14px 0 0; padding: 0; }
+.map-legend li {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px;
+  cursor: pointer; font-size: 13px; transition: background .1s;
+}
+.map-legend li:hover { background: #efe4ca; }
+.map-legend li.active { background: #e8dcbe; }
+.map-legend-num {
+  flex-shrink: 0; color: #fff; width: 22px; height: 22px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+
 /* ----- מובייל ----- */
 @media (max-width: 680px) {
+  .map-panel { width: 100%; }
+  .map-popup { width: 172px; }
+  .map-popup-desc { font-size: 12px; }
   header { padding: 8px 12px; gap: 7px; position: relative; }
   .header-top { gap: 7px 10px; }
   h1 { font-size: 18px; }

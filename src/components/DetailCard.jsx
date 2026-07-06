@@ -1,4 +1,5 @@
 import { formatRange } from '../utils/dates.js';
+import maps from '../data/maps.json';
 
 const KIND_LABELS = {
   leader: 'מנהיג',
@@ -16,8 +17,9 @@ const JUDGMENT_LABELS = {
   mixed: 'מעורב',
 };
 
-export default function DetailCard({ item, mode, onClose }) {
+export default function DetailCard({ item, mode, onClose, onOpenMap }) {
   if (!item) return null;
+  const hasMap = !!maps[item.id];
   return (
     <aside className="detail-card">
       <button className="close-btn" onClick={onClose} aria-label="סגירה">✕</button>
@@ -32,6 +34,14 @@ export default function DetailCard({ item, mode, onClose }) {
         <div className={`judgment-chip ${item.judgment}`}>{JUDGMENT_LABELS[item.judgment]}</div>
       )}
       <p className="detail-desc">{item.description}</p>
+      {hasMap && (
+        <button className="map-btn" onClick={() => onOpenMap(item)}>
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+            <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+          </svg>
+          מפת המקומות
+        </button>
+      )}
       {item.source && <div className="detail-source"><b>מקור:</b> {item.source}</div>}
     </aside>
   );

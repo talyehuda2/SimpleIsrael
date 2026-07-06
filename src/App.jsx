@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Timeline from './components/Timeline.jsx';
 import DetailCard from './components/DetailCard.jsx';
+import MapPanel from './components/MapPanel.jsx';
 import leaders from './data/leaders.json';
 import kings from './data/kings.json';
 import prophets from './data/prophets.json';
@@ -46,6 +47,7 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [chronology, setChronology] = useState('tradition');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mapItem, setMapItem] = useState(null);
   const [visible, setVisible] = useState({ leaders: true, kings: true, prophets: true, books: true, events: true });
 
   const axis = AXIS[chronology];
@@ -258,7 +260,9 @@ export default function App() {
         </div>
       )}
 
-      <DetailCard item={selected} mode={chronology} onClose={() => setSelected(null)} />
+      <DetailCard item={selected} mode={chronology} onClose={() => setSelected(null)} onOpenMap={setMapItem} />
+
+      <MapPanel item={mapItem} onClose={() => setMapItem(null)} />
 
       <footer>
         הזמן זורם מימין (עבר) לשמאל · Ctrl+גלגלת לזום ·{' '}
