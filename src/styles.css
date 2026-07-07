@@ -16,7 +16,7 @@
 
   /* ----- צבעי נתיבים (גווני אבן-חן, קריאים על קלף) ----- */
   --leader: #9c2b50;
-  --judge: #8a5a2b;
+  --judge: #bd7038;
   --united: #6a3ca0;
   --judah: #245c93;
   --israel: #4f7a33;
@@ -193,7 +193,7 @@ h1 {
 .bar-label { padding: 0 8px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 
 .bar.leader { background: linear-gradient(180deg, var(--leader), #7f2141); }
-.bar.judge { background: linear-gradient(180deg, var(--judge), #67411c); }
+.bar.judge { background: linear-gradient(180deg, var(--judge), #97531f); }
 .bar.united { background: linear-gradient(180deg, var(--united), #542f7f); }
 .bar.judah { background: linear-gradient(180deg, var(--judah), #1b476f); }
 .bar.israel { background: linear-gradient(180deg, var(--israel), #3d5f27); }

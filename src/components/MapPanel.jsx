@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import maps from '../data/maps.json';
 
 const KIND_COLOR = {
-  leader: '#9c2b50', judge: '#8a5a2b', united: '#6a3ca0', judah: '#245c93',
+  leader: '#9c2b50', judge: '#bd7038', united: '#6a3ca0', judah: '#245c93',
   israel: '#4f7a33', prophet: '#b3781a', book: '#157a70', event: '#b0392c',
 };
 
