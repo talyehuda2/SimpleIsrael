@@ -48,6 +48,7 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [chronology, setChronology] = useState('tradition');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [mapItem, setMapItem] = useState(null);
   const [visible, setVisible] = useState({ leaders: true, judges: true, kings: true, prophets: true, books: true, events: true });
 
@@ -174,7 +175,10 @@ export default function App() {
       <header>
         <div className="header-top">
           <div className="title-block">
-            <h1>ציר הזמן של עם ישראל</h1>
+            <div className="title-row">
+              <h1>ציר הזמן של עם ישראל</h1>
+              <button className="about-btn" onClick={() => setAboutOpen(true)} title="אודות" aria-label="אודות">i</button>
+            </div>
             <span className="subtitle">
               {isAcademic
                 ? 'מהמלוכה עד חורבן בית שני · לפי הכרונולוגיה המחקרית'
@@ -273,6 +277,20 @@ export default function App() {
           ? 'התאריכים לפי המחקר ההיסטורי המקובל'
           : 'התאריכים משוערים לפי המסורת; ייתכנו חפיפות בין מלכים (מלוכה משותפת)'}
       </footer>
+
+      {aboutOpen && (
+        <div className="about-overlay" onClick={() => setAboutOpen(false)}>
+          <div className="about-card" onClick={(e) => e.stopPropagation()}>
+            <button className="about-close" onClick={() => setAboutOpen(false)} aria-label="סגירה">✕</button>
+            <h3>אודות הפרויקט</h3>
+            <p>
+              הפרויקט נבנה באהבה בידי חובב תנ״ך, מתוך רצון לתרום לקהילה ולעזור לכולנו
+              לעשות סדר בתולדות עם ישראל. ייתכנו אי-דיוקים בתאריכים, במפות, במיקומים
+              ובפרטים — ואשמח לכל תיקון והערה. לימוד נעים! 📖
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

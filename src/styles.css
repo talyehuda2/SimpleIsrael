@@ -71,6 +71,36 @@ h1 {
 }
 .subtitle { font-size: 13px; color: var(--muted); margin-top: 1px; }
 .title-block { display: flex; flex-direction: column; }
+.title-row { display: flex; align-items: center; gap: 9px; }
+.about-btn {
+  width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--gold);
+  background: transparent; color: var(--gold); cursor: pointer; flex-shrink: 0;
+  font-family: 'Frank Ruhl Libre', Georgia, serif; font-weight: 700; font-size: 14px;
+  font-style: italic; line-height: 1; display: flex; align-items: center; justify-content: center;
+}
+.about-btn:hover { background: var(--gold); color: #fff; }
+
+/* ----- חלון אודות ----- */
+.about-overlay {
+  position: fixed; inset: 0; z-index: 50; direction: rtl;
+  background: rgb(30 20 5 / .45); display: flex; align-items: center;
+  justify-content: center; padding: 20px;
+}
+.about-card {
+  position: relative; background: var(--panel); border: 1px solid var(--line);
+  border-top: 4px solid var(--gold); border-radius: 14px; max-width: 430px;
+  padding: 20px 24px; box-shadow: 0 14px 40px rgb(30 20 5 / .3); animation: cardIn .18s ease-out;
+}
+.about-card h3 {
+  margin: 4px 0 8px; font-size: 20px; color: var(--navy);
+  font-family: 'Frank Ruhl Libre', serif; font-weight: 700;
+}
+.about-card p { margin: 0; font-size: 14.5px; line-height: 1.75; color: var(--ink); }
+.about-close {
+  position: absolute; left: 12px; top: 12px; border: none; background: none;
+  font-size: 16px; cursor: pointer; color: #b0a082;
+}
+.about-close:hover { color: var(--ink); }
 
 .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 9px 16px; }
 .presets { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -191,6 +221,7 @@ h1 {
 }
 .bar.selected { outline: 2.5px solid var(--gold); outline-offset: 1px; z-index: 3; }
 .bar-label { padding: 0 8px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.bar-mapicon { margin-inline-start: 3px; vertical-align: -1.5px; opacity: .92; }
 
 .bar.leader { background: linear-gradient(180deg, var(--leader), #7f2141); }
 .bar.judge { background: linear-gradient(180deg, var(--judge), #97531f); }
