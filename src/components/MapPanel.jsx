@@ -28,11 +28,11 @@ export default function MapPanel({ item, onClose }) {
 
   if (!data) return null;
   const color = KIND_COLOR[item.kind] || '#b28a2b';
-  // dx/dy — היסט תצוגה קטן (יחידות ה-viewBox) להפרדת סמנים צפופים מדי
+  // x/y מפורשים גוברים על ההיטל (עבור יעדים מחוץ למפה: מצרים, חרן); dx/dy — היסט תצוגה קטן
   const pts = data.points.map((p) => ({
     ...p,
-    x: projX(p.lon, p.lat) + (p.dx || 0),
-    y: projY(p.lon, p.lat) + (p.dy || 0),
+    x: p.x != null ? p.x : projX(p.lon, p.lat) + (p.dx || 0),
+    y: p.y != null ? p.y : projY(p.lon, p.lat) + (p.dy || 0),
   }));
   const path = pts.map((p) => `${p.x},${p.y}`).join(' ');
 
