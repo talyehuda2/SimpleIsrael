@@ -221,7 +221,7 @@ h1 {
 }
 .bar.selected { outline: 2.5px solid var(--gold); outline-offset: 1px; z-index: 3; }
 .bar-label { padding: 0 8px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-.bar-mapicon { margin-inline-start: 3px; vertical-align: -1.5px; opacity: .92; }
+.bar-mapicon { margin-inline-start: 7px; vertical-align: -1.5px; opacity: .92; }
 
 .bar.leader { background: linear-gradient(180deg, var(--leader), #7f2141); }
 .bar.judge { background: linear-gradient(180deg, var(--judge), #97531f); }
@@ -312,7 +312,8 @@ footer {
 
 /* ----- כפתור מפה בכרטיס הפרטים ----- */
 .map-btn {
-  display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 2px;
+  display: flex; align-items: center; gap: 6px; width: fit-content;
+  margin: 8px 0 2px; margin-inline-start: auto;
   background: var(--navy); color: #fff; border: none; border-radius: 20px;
   padding: 7px 15px; font-family: inherit; font-size: 13px; font-weight: 600;
   cursor: pointer; transition: background .12s, transform .1s;
