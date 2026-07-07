@@ -58,8 +58,14 @@ export default function MapPanel({ item, onClose }) {
             ))}
           </svg>
 
-          {active && (
-            <div className="map-popup" style={{ left: `${(active.x / IMG_W) * 100}%`, top: `${(active.y / IMG_H) * 100}%` }}>
+          {active && (() => {
+            const xPct = (active.x / IMG_W) * 100;
+            const yPct = (active.y / IMG_H) * 100;
+            // מונע חריגה: היפוך למטה ליד הקצה העליון, ויישור לקצה ליד שמאל/ימין
+            const tx = xPct < 30 ? '-6%' : xPct > 70 ? '-94%' : '-50%';
+            const ty = yPct < 30 ? '18px' : 'calc(-100% - 18px)';
+            return (
+            <div className="map-popup" style={{ left: `${xPct}%`, top: `${yPct}%`, transform: `translate(${tx}, ${ty})` }}>
               <button className="map-popup-close" onClick={() => setActive(null)} aria-label="סגירה">✕</button>
               <div className="map-popup-head" style={{ background: color }}>
                 <span className="map-popup-num">{active.order}</span>{active.name}
@@ -67,7 +73,8 @@ export default function MapPanel({ item, onClose }) {
               <div className="map-popup-label">{active.label}</div>
               <p className="map-popup-desc">{active.desc}</p>
             </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* מקרא נקודות */}
