@@ -1,37 +1,38 @@
 import { useState, useEffect } from 'react';
 import maps from '../data/maps.json';
-import { ISRAEL_PATH } from '../data/israel-outline.js';
 
 const KIND_COLOR = {
   leader: '#9c2b50', judge: '#8a5a2b', united: '#6a3ca0', judah: '#245c93',
   israel: '#4f7a33', prophet: '#b3781a', book: '#157a70', event: '#b0392c',
 };
 
-// חלון התצוגה — מיקוד באזור המרכז-צפון של המפה (חותך את ספיח הנגב הדרומי)
+// חלון התצוגה — מיקוד באזור המרכז-צפון של הארץ
 const VB = { x: 305, y: 45, w: 395, h: 500 };
 
 const LAND = '#ecdcb4';
 const SEA = '#a7c6ce';
 const WATER = '#8bb0bd';
 
-// מפת רקע מינימלית: קו המתאר האמיתי של ארץ ישראל (mapsicon) + ים, ירדן, כנרת, ים המלח
+// קו החוף האמיתי של הים התיכון — נדגם מקו מתאר גיאוגרפי (mapsicon).
+// כל היבשה בצבע אחיד כדי לכלול גם את הר אפרים/יהודה ועבר הירדן.
 function BaseMap() {
   return (
     <g>
-      {/* ים (רקע) */}
-      <rect x={VB.x} y={VB.y} width={VB.w} height={VB.h} fill={SEA} />
-      {/* יבשת עבר הירדן (ממזרח לגבול קו המתאר) */}
-      <rect x={545} y={40} width={165} height={515} fill={LAND} />
-      {/* קו המתאר האמיתי של ארץ ישראל — היבשת */}
-      <g transform="translate(0,1024) scale(0.1,-0.1)">
-        <path d={ISRAEL_PATH} fill={LAND} />
-      </g>
+      {/* יבשה — רקע מלא */}
+      <rect x={VB.x} y={VB.y} width={VB.w} height={VB.h} fill={LAND} />
+
+      {/* הים הגדול (הים התיכון) — לאורך קו החוף האמיתי */}
+      <path d="M305,45 L512,45 L510,120 L505,165 L500,205 L492,245 L483,280 L472,315 L460,345 L449,370 L440,392 L430,415 L418,437 L406,458 L396,478 L386,498 L378,520 L373,545 L305,545 Z"
+        fill={SEA} stroke="#7c9aa0" strokeWidth="1.3" />
+      <path d="M334,150 q10,-6 20,0 t20,0" fill="none" stroke="#8db0b6" strokeWidth="1.1" opacity=".5" />
+      <path d="M326,262 q10,-6 20,0 t20,0" fill="none" stroke="#8db0b6" strokeWidth="1.1" opacity=".5" />
+      <path d="M340,432 q10,-6 20,0 t20,0" fill="none" stroke="#8db0b6" strokeWidth="1.1" opacity=".5" />
 
       {/* אגם החולה */}
       <ellipse cx="612" cy="72" rx="6" ry="9" fill={WATER} stroke="#5f8792" strokeWidth="1" />
-      {/* נהר הירדן */}
+      {/* נהר הירדן — מהחולה דרך הכנרת אל ים המלח */}
       <path d="M612,81 C613,100 609,113 610,123" fill="none" stroke="#5b86a6" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M610,158 C618,248 594,352 585,420" fill="none" stroke="#5b86a6" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M610,158 C618,250 596,352 585,420" fill="none" stroke="#5b86a6" strokeWidth="2.4" strokeLinecap="round" />
       {/* ים כנרת */}
       <ellipse cx="610" cy="140" rx="12" ry="18" fill={WATER} stroke="#5f8792" strokeWidth="1.2" />
       {/* ים המלח */}
@@ -39,17 +40,17 @@ function BaseMap() {
 
       {/* תוויות אזורים */}
       <g className="map-region">
-        <text x="522" y="112">הגליל</text>
-        <text x="498" y="300">השומרון</text>
-        <text x="452" y="464">יהודה</text>
-        <text x="366" y="486">פלשת</text>
+        <text x="520" y="110">הגליל</text>
+        <text x="496" y="300">השומרון</text>
+        <text x="452" y="462">יהודה</text>
+        <text x="420" y="500">פלשת</text>
         <text x="672" y="250">הגלעד</text>
-        <text x="338" y="318" className="map-sea">הים הגדול</text>
+        <text x="338" y="326" className="map-sea">הים הגדול</text>
       </g>
 
       {/* מצפן */}
       <g transform="translate(676,82)">
-        <circle r="15" fill="none" stroke="#b28a2b" strokeWidth="1.1" />
+        <circle r="15" fill="#fbf5e7" stroke="#b28a2b" strokeWidth="1.1" />
         <path d="M0,-13 L3.5,0 L0,13 L-3.5,0 Z" fill="#b28a2b" />
         <text x="0" y="-18" className="map-compass">צ</text>
       </g>
