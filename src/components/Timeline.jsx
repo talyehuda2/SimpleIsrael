@@ -8,6 +8,10 @@ import maps from '../data/maps.json';
 export const START_YEAR = 1940;
 export const END_YEAR = 3850;
 
+// רצועה ריקה קבועה בקצה הימני (העתיק ביותר) של הציר, כדי שהפריטים העתיקים
+// לא ייכנסו מתחת לתווית השכבה הדביקה — נשמר קבוע בכל רמת זום
+export const LABEL_GUTTER_PX = 195;
+
 export function yearToX(year, pxPerYear, endYear = END_YEAR) {
   return (endYear - year) * pxPerYear;
 }
@@ -75,7 +79,7 @@ export default function Timeline({
   periods, leaders, judges, kings, prophets, books, events,
   visible, selected, onSelect,
 }) {
-  const totalWidth = (endYear - startYear) * pxPerYear;
+  const totalWidth = (endYear - startYear) * pxPerYear + LABEL_GUTTER_PX;
   const toX = (year) => (endYear - year) * pxPerYear;
 
   const ticks = useMemo(() => {
