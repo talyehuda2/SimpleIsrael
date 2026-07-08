@@ -202,23 +202,25 @@ export default function App() {
           >{menuOpen ? '✕ סגירה' : '☰ אפשרויות'}</button>
         </div>
         <div className={`controls${menuOpen ? ' open' : ''}`}>
-          <div className="ctrl-group">
-            <span className="ctrl-label">טווח</span>
-            <div className="presets">
-              {PRESETS[chronology].map((p) => (
-                <button key={p.name} onClick={() => { goTo(p); setMenuOpen(false); }}>{p.name}</button>
-              ))}
+          <div className="ctrl-stack">
+            <div className="ctrl-group">
+              <span className="ctrl-label">טווח</span>
+              <div className="presets">
+                {PRESETS[chronology].map((p) => (
+                  <button key={p.name} onClick={() => { goTo(p); setMenuOpen(false); }}>{p.name}</button>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="ctrl-group">
-            <span className="ctrl-label">שכבות</span>
-            <div className="toggles">
-              {!isAcademic && <label><input type="checkbox" checked={visible.leaders} onChange={() => toggle('leaders')} /> אבות ומנהיגים</label>}
-              {!isAcademic && <label><input type="checkbox" checked={visible.judges} onChange={() => toggle('judges')} /> שופטים</label>}
-              <label><input type="checkbox" checked={visible.kings} onChange={() => toggle('kings')} /> מלכים</label>
-              <label><input type="checkbox" checked={visible.prophets} onChange={() => toggle('prophets')} /> נביאים</label>
-              <label><input type="checkbox" checked={visible.books} onChange={() => toggle('books')} /> ספרים</label>
-              <label><input type="checkbox" checked={visible.events} onChange={() => toggle('events')} /> אירועים</label>
+            <div className="ctrl-group">
+              <span className="ctrl-label">שכבות</span>
+              <div className="toggles">
+                {!isAcademic && <label><input type="checkbox" checked={visible.leaders} onChange={() => toggle('leaders')} /> אבות ומנהיגים</label>}
+                {!isAcademic && <label><input type="checkbox" checked={visible.judges} onChange={() => toggle('judges')} /> שופטים</label>}
+                <label><input type="checkbox" checked={visible.kings} onChange={() => toggle('kings')} /> מלכים</label>
+                <label><input type="checkbox" checked={visible.prophets} onChange={() => toggle('prophets')} /> נביאים</label>
+                <label><input type="checkbox" checked={visible.books} onChange={() => toggle('books')} /> ספרים</label>
+                <label><input type="checkbox" checked={visible.events} onChange={() => toggle('events')} /> אירועים</label>
+              </div>
             </div>
           </div>
           <div className="zoom-btns">

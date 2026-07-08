@@ -102,7 +102,8 @@ h1 {
 }
 .about-close:hover { color: var(--ink); }
 
-.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 9px 16px; }
+.controls { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 9px 16px; }
+.ctrl-stack { display: flex; flex-direction: column; gap: 9px; flex: 1; min-width: 0; }
 .presets { display: flex; flex-wrap: wrap; gap: 6px; }
 .presets button, .zoom-btns button {
   border: 1px solid var(--line); background: var(--panel); border-radius: 20px;
@@ -112,7 +113,7 @@ h1 {
 .presets button:hover, .zoom-btns button:hover {
   background: var(--navy); border-color: var(--navy); color: #fff;
 }
-.zoom-btns { display: flex; gap: 6px; }
+.zoom-btns { display: flex; gap: 6px; margin-inline-start: auto; flex-shrink: 0; }
 .zoom-btns button { font-size: 17px; width: 34px; border-radius: 50%; padding: 4px 0; line-height: 1; }
 .toggles { display: flex; flex-wrap: wrap; gap: 8px 12px; font-size: 13px; }
 .toggles label {
