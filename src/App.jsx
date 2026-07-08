@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import Timeline from './components/Timeline.jsx';
+import Timeline, { LABEL_GUTTER_PX } from './components/Timeline.jsx';
 import DetailCard from './components/DetailCard.jsx';
 import MapPanel from './components/MapPanel.jsx';
 import leaders from './data/leaders.json';
@@ -57,10 +57,10 @@ export default function App() {
     ? academicData
     : { leaders, judges, kings, prophets, books, events, periods };
 
-  // הזום המינימלי: כל הציר בדיוק ברוחב החלון
+  // הזום המינימלי: כל הציר (כולל רצועת התוויות בימין) בדיוק ברוחב החלון
   const getMinPx = () => {
     const el = scrollRef.current;
-    return el ? Math.max(MIN_PX, (el.clientWidth - 40) / (axis.end - axis.start)) : MIN_PX;
+    return el ? Math.max(MIN_PX, (el.clientWidth - 40 - LABEL_GUTTER_PX) / (axis.end - axis.start)) : MIN_PX;
   };
 
   // תצוגת פתיחה: כל הציר על המסך; ובשינוי גודל חלון — לא להישאר קטן מהמסך
@@ -71,24 +71,32 @@ export default function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // בהחלפת מצב כרונולוגיה — איפוס לתצוגה מלאה וניקוי הבחירה
+  // בהחלפת מצב כרונולוגיה — איפוס לתצוגה מלאה, פתיחה בצד ימין (העבר), וניקוי הבחירה
   useEffect(() => {
     setSelected(null);
-    const el = scrollRef.current;
-    if (el) el.scrollLeft = 0;
+    scrollRightPending.current = true;
     setPxPerYear(getMinPx());
   }, [chronology]);
 
   // גלילה ממתינה: מוחלת רק אחרי שהקנבס צויר מחדש ברוחב החדש (useLayoutEffect)
   const pendingScroll = useRef(null);
+  // בטעינה/החלפת מצב — לפתוח בקצה הימני (הזמן הקדום ביותר)
+  const scrollRightPending = useRef(true);
 
   useLayoutEffect(() => {
     const el = scrollRef.current;
-    if (!el || !pendingScroll.current) return;
+    if (!el) return;
+    if (scrollRightPending.current) {
+      scrollRightPending.current = false;
+      pendingScroll.current = null;
+      el.scrollLeft = el.scrollWidth; // הקצה הימני = תחילת הציר (העבר)
+      return;
+    }
+    if (!pendingScroll.current) return;
     const { year, offset } = pendingScroll.current;
     pendingScroll.current = null;
     el.scrollLeft = (axis.end - year) * pxPerYear - offset;
-  }, [pxPerYear]);
+  }, [pxPerYear, chronology]);
 
   const scrollToYear = (year, offset, px) => {
     const el = scrollRef.current;

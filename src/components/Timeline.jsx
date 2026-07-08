@@ -8,18 +8,12 @@ import maps from '../data/maps.json';
 export const START_YEAR = 1940;
 export const END_YEAR = 3850;
 
-// רווח קבוע בין תווית השכבה לפריט העתיק ביותר בשורה הראשונה שלה
-const LABEL_MARGIN_PX = 12;
+// רצועה שמורה בקצה הימני (העתיק) של הציר, שבה יושבות תוויות השכבות (עמודה
+// דביקה לימין המסך). הפריטים אינם נכנסים לרצועה זו, כדי שלא יוסתרו מאחורי התוויות.
+export const LABEL_GUTTER_PX = 210;
 
 export function yearToX(year, pxPerYear, endYear = END_YEAR) {
   return (endYear - year) * pxPerYear;
-}
-
-// מיקום ה-x (בפיקסלים) של קצה הפריט העתיק ביותר בשורה 0 — כדי שהתווית תמוקם מיד אחריו, בלי רווח מיותר
-function row0Edge(items, toX, getStart) {
-  const row0 = items.filter((i) => (i.row ?? 0) === 0);
-  if (row0.length === 0) return 0;
-  return Math.max(...row0.map((i) => toX(getStart(i))));
 }
 
 // שיבוץ פריטים חופפים בשורות נפרדות (greedy interval packing)
@@ -85,7 +79,7 @@ export default function Timeline({
   periods, leaders, judges, kings, prophets, books, events,
   visible, selected, onSelect,
 }) {
-  const totalWidth = (endYear - startYear) * pxPerYear;
+  const totalWidth = (endYear - startYear) * pxPerYear + LABEL_GUTTER_PX;
   const toX = (year) => (endYear - year) * pxPerYear;
 
   const ticks = useMemo(() => {
@@ -115,20 +109,6 @@ export default function Timeline({
 
   const isSel = (kind, id) => selected && selected.kind === kind && selected.id === id;
 
-  // מיקום כל תווית שכבה: מיד אחרי (בזרימת הזמן) הפריט העתיק ביותר בשורה הראשונה שלה
-  const labelLeft = {
-    periods: Math.max(0, ...periods.map((p) => toX(p.start))) + LABEL_MARGIN_PX,
-    // אירועים ממורכזים סביב נקודת העוגן (translateX(-50%)) — יש להוסיף מרווח
-    // נוסף עבור מחצית רוחב התווית שמשתרעת ימינה מעבר לעוגן
-    events: row0Edge(packedEvents.items, toX, (ev) => ev.year) + 75 + LABEL_MARGIN_PX,
-    leaders: row0Edge(packedLeaders.items, toX, (i) => i.start) + LABEL_MARGIN_PX,
-    judges: row0Edge(packedJudges.items, toX, (i) => i.start) + LABEL_MARGIN_PX,
-    kingsJudah: Math.max(0, ...[...kings.united, ...kings.judah].map((k) => toX(k.start))) + LABEL_MARGIN_PX,
-    kingsIsrael: Math.max(0, ...kings.israel.map((k) => toX(k.start))) + LABEL_MARGIN_PX,
-    prophets: row0Edge(packedProphets.items, toX, (i) => i.start) + LABEL_MARGIN_PX,
-    books: row0Edge(packedBooks.items, toX, (i) => i.start) + LABEL_MARGIN_PX,
-  };
-
   return (
     <div className="timeline-canvas" style={{ width: totalWidth }}>
       {/* קווי רשת + ציר שנים */}
@@ -147,7 +127,7 @@ export default function Timeline({
 
       {/* תקופות */}
       <div className="lane lane-periods">
-        <div className="lane-label" style={{ left: labelLeft.periods }}>תקופות</div>
+        <div className="lane-label">תקופות</div>
         {periods.map((p, i) => (
           <div
             key={p.id}
@@ -163,7 +143,7 @@ export default function Timeline({
       {/* אירועים */}
       {visible.events && (
         <div className="lane lane-events" style={{ height: packedEvents.rows * 40 + 30 }}>
-          <div className="lane-label" style={{ left: labelLeft.events }}>אירועים</div>
+          <div className="lane-label">אירועים</div>
           {packedEvents.items.map((ev) => (
             <div
               key={ev.id}
@@ -182,7 +162,7 @@ export default function Timeline({
       {/* אבות ומנהיגים */}
       {visible.leaders && leaders.length > 0 && (
         <div className="lane lane-leaders" style={{ height: packedLeaders.rows * 30 + 10 }}>
-          <div className="lane-label" style={{ left: labelLeft.leaders }}>אבות ומנהיגים</div>
+          <div className="lane-label">אבות ומנהיגים</div>
           {packedLeaders.items.map((l) => (
             <Bar key={l.id} item={l} toX={toX} pxPerYear={pxPerYear} kind="leader" mode={mode} row={l.row}
               selected={isSel('leader', l.id)} onSelect={onSelect} />
@@ -193,7 +173,7 @@ export default function Timeline({
       {/* שופטים */}
       {visible.judges && judges && judges.length > 0 && (
         <div className="lane lane-judges" style={{ height: packedJudges.rows * 30 + 10 }}>
-          <div className="lane-label" style={{ left: labelLeft.judges }}>שופטים</div>
+          <div className="lane-label">שופטים</div>
           {packedJudges.items.map((j) => (
             <Bar key={j.id} item={j} toX={toX} pxPerYear={pxPerYear} kind="judge" mode={mode} row={j.row}
               selected={isSel('judge', j.id)} onSelect={onSelect} />
@@ -205,7 +185,7 @@ export default function Timeline({
       {visible.kings && (
         <>
           <div className="lane lane-kings">
-            <div className="lane-label" style={{ left: labelLeft.kingsJudah }}>מלכים — הממלכה המאוחדת / יהודה</div>
+            <div className="lane-label">מלכים — הממלכה המאוחדת / יהודה</div>
             {kings.united.map((k) => (
               <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="united" mode={mode}
                 selected={isSel('united', k.id)} onSelect={onSelect} />
@@ -216,7 +196,7 @@ export default function Timeline({
             ))}
           </div>
           <div className="lane lane-kings">
-            <div className="lane-label" style={{ left: labelLeft.kingsIsrael }}>מלכים — ממלכת ישראל</div>
+            <div className="lane-label">מלכים — ממלכת ישראל</div>
             {kings.israel.map((k) => (
               <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="israel" mode={mode}
                 selected={isSel('israel', k.id)} onSelect={onSelect} />
@@ -228,7 +208,7 @@ export default function Timeline({
       {/* נביאים */}
       {visible.prophets && (
         <div className="lane lane-prophets" style={{ height: packedProphets.rows * 30 + 10 }}>
-          <div className="lane-label" style={{ left: labelLeft.prophets }}>נביאים</div>
+          <div className="lane-label">נביאים</div>
           {packedProphets.items.map((p) => (
             <Bar key={p.id} item={p} toX={toX} pxPerYear={pxPerYear} kind="prophet" mode={mode} row={p.row}
               selected={isSel('prophet', p.id)} onSelect={onSelect} />
@@ -239,7 +219,7 @@ export default function Timeline({
       {/* ספרים */}
       {visible.books && (
         <div className="lane lane-books" style={{ height: packedBooks.rows * 30 + 10 }}>
-          <div className="lane-label" style={{ left: labelLeft.books }}>ספרי התנ"ך (התקופה המתוארת)</div>
+          <div className="lane-label">ספרי התנ"ך (התקופה המתוארת)</div>
           {packedBooks.items.map((b) => (
             <Bar key={b.id} item={b} toX={toX} pxPerYear={pxPerYear} kind="book" mode={mode} row={b.row}
               selected={isSel('book', b.id)} onSelect={onSelect} />
