@@ -76,10 +76,11 @@ function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight =
 
 export default function Timeline({
   pxPerYear, startYear = START_YEAR, endYear = END_YEAR, mode = 'tradition',
+  gutter = LABEL_GUTTER_PX,
   periods, leaders, judges, kings, prophets, books, events,
   visible, selected, onSelect,
 }) {
-  const totalWidth = (endYear - startYear) * pxPerYear + LABEL_GUTTER_PX;
+  const totalWidth = (endYear - startYear) * pxPerYear + gutter;
   const toX = (year) => (endYear - year) * pxPerYear;
 
   const ticks = useMemo(() => {
@@ -219,7 +220,7 @@ export default function Timeline({
       {/* ספרים */}
       {visible.books && (
         <div className="lane lane-books" style={{ height: packedBooks.rows * 30 + 10 }}>
-          <div className="lane-label">ספרי התנ"ך (התקופה המתוארת)</div>
+          <div className="lane-label">ספרי התנ"ך</div>
           {packedBooks.items.map((b) => (
             <Bar key={b.id} item={b} toX={toX} pxPerYear={pxPerYear} kind="book" mode={mode} row={b.row}
               selected={isSel('book', b.id)} onSelect={onSelect} />

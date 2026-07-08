@@ -57,10 +57,13 @@ export default function App() {
     ? academicData
     : { leaders, judges, kings, prophets, books, events, periods };
 
+  // רצועת התוויות צרה יותר במובייל (מסך צר) מאשר בדסקטופ
+  const gutter = (typeof window !== 'undefined' && window.innerWidth <= 680) ? 130 : LABEL_GUTTER_PX;
+
   // הזום המינימלי: כל הציר (כולל רצועת התוויות בימין) בדיוק ברוחב החלון
   const getMinPx = () => {
     const el = scrollRef.current;
-    return el ? Math.max(MIN_PX, (el.clientWidth - 40 - LABEL_GUTTER_PX) / (axis.end - axis.start)) : MIN_PX;
+    return el ? Math.max(MIN_PX, (el.clientWidth - 40 - gutter) / (axis.end - axis.start)) : MIN_PX;
   };
 
   // תצוגת פתיחה: כל הציר על המסך; ובשינוי גודל חלון — לא להישאר קטן מהמסך
@@ -262,7 +265,7 @@ export default function App() {
 
       <div className="scroll-area" ref={scrollRef} dir="ltr">
         <Timeline
-          pxPerYear={pxPerYear}
+          pxPerYear={pxPerYear} gutter={gutter}
           startYear={axis.start} endYear={axis.end} mode={chronology}
           periods={data.periods} leaders={data.leaders} judges={data.judges} kings={data.kings}
           prophets={data.prophets} books={data.books} events={data.events}

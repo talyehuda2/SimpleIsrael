@@ -315,7 +315,7 @@ footer {
 /* ----- כפתור מפה בכרטיס הפרטים ----- */
 .map-btn {
   display: flex; align-items: center; gap: 6px; width: fit-content;
-  margin: 8px 0 2px; margin-inline-start: auto;
+  margin: 8px 0 14px; margin-inline-start: auto;
   background: var(--navy); color: #fff; border: none; border-radius: 20px;
   padding: 7px 15px; font-family: inherit; font-size: 13px; font-weight: 600;
   cursor: pointer; transition: background .12s, transform .1s;
@@ -452,6 +452,12 @@ footer {
     box-shadow: 0 3px 10px rgb(20 40 60 / .35); cursor: pointer;
   }
   .fab-zoom button:active { background: var(--navy-2); transform: scale(.94); }
+
+  /* עמודת תוויות צרה יותר, תואמת לרצועה השמורה הצרה יותר במובייל */
+  .lane-label {
+    width: 118px; font-size: 10.5px; line-height: 1.25;
+    white-space: normal; padding: 3px 8px;
+  }
 }
 
 /* ----- מסך נמוך (טלפון לרוחב) — כיווץ מרבי ----- */
