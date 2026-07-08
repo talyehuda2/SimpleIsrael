@@ -184,14 +184,14 @@ h1 {
 .tick-sec { font-size: 10.5px; color: #a08a63; }
 
 /* ----- נתיבים ----- */
-.lane { position: relative; margin-top: 10px; padding-top: 22px; min-height: 60px; }
+.lane { position: relative; margin-top: 8px; padding-top: 0; min-height: 40px; }
 .lane-label {
-  position: sticky; right: 0; float: right;
+  position: sticky; right: 0; float: right; top: 0;
   direction: rtl; font-size: 12.5px; font-weight: 700; color: var(--navy);
   font-family: 'Frank Ruhl Libre', 'Heebo', serif;
   background: color-mix(in srgb, var(--bg) 82%, transparent);
   padding: 2px 10px; border-radius: 0 0 0 10px; z-index: 4;
-  margin-top: -22px; backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .lane-periods { padding-top: 2px; min-height: 32px; margin-top: 4px; }
@@ -206,7 +206,7 @@ h1 {
 .period.p1 { background: #ded0ac; }
 .period span { white-space: nowrap; padding: 0 8px; position: sticky; left: 6px; right: 6px; }
 
-.lane-kings { min-height: 82px; }
+.lane-kings { min-height: 40px; }
 
 /* ----- פסים ----- */
 .bar {

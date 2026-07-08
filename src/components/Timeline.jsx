@@ -51,7 +51,7 @@ function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight =
   return (
     <div
       className={`bar ${kind} ${selected ? 'selected' : ''}`}
-      style={{ left, width, top: row * rowHeight + 22 }}
+      style={{ left, width, top: row * rowHeight }}
       title={barTitle(item, mode)}
       onClick={() => onSelect({ ...item, kind })}
     >
@@ -138,13 +138,13 @@ export default function Timeline({
 
       {/* אירועים */}
       {visible.events && (
-        <div className="lane lane-events" style={{ height: packedEvents.rows * 40 + 52 }}>
+        <div className="lane lane-events" style={{ height: packedEvents.rows * 40 + 30 }}>
           <div className="lane-label">אירועים</div>
           {packedEvents.items.map((ev) => (
             <div
               key={ev.id}
               className={`event ${isSel('event', ev.id) ? 'selected' : ''}`}
-              style={{ left: toX(ev.year), top: ev.row * 40 + 22 }}
+              style={{ left: toX(ev.year), top: ev.row * 40 }}
               onClick={() => onSelect({ ...ev, kind: 'event', start: ev.year, end: ev.year })}
               title={mode === 'academic' ? `${ev.name} · ${toSecular(ev.year)}` : `${ev.name} · ${ev.year}`}
             >
@@ -157,7 +157,7 @@ export default function Timeline({
 
       {/* אבות ומנהיגים */}
       {visible.leaders && leaders.length > 0 && (
-        <div className="lane lane-leaders" style={{ height: packedLeaders.rows * 30 + 32 }}>
+        <div className="lane lane-leaders" style={{ height: packedLeaders.rows * 30 + 10 }}>
           <div className="lane-label">אבות ומנהיגים</div>
           {packedLeaders.items.map((l) => (
             <Bar key={l.id} item={l} toX={toX} pxPerYear={pxPerYear} kind="leader" mode={mode} row={l.row}
@@ -168,7 +168,7 @@ export default function Timeline({
 
       {/* שופטים */}
       {visible.judges && judges && judges.length > 0 && (
-        <div className="lane lane-judges" style={{ height: packedJudges.rows * 30 + 32 }}>
+        <div className="lane lane-judges" style={{ height: packedJudges.rows * 30 + 10 }}>
           <div className="lane-label">שופטים</div>
           {packedJudges.items.map((j) => (
             <Bar key={j.id} item={j} toX={toX} pxPerYear={pxPerYear} kind="judge" mode={mode} row={j.row}
@@ -203,7 +203,7 @@ export default function Timeline({
 
       {/* נביאים */}
       {visible.prophets && (
-        <div className="lane lane-prophets" style={{ height: packedProphets.rows * 30 + 32 }}>
+        <div className="lane lane-prophets" style={{ height: packedProphets.rows * 30 + 10 }}>
           <div className="lane-label">נביאים</div>
           {packedProphets.items.map((p) => (
             <Bar key={p.id} item={p} toX={toX} pxPerYear={pxPerYear} kind="prophet" mode={mode} row={p.row}
@@ -214,7 +214,7 @@ export default function Timeline({
 
       {/* ספרים */}
       {visible.books && (
-        <div className="lane lane-books" style={{ height: packedBooks.rows * 30 + 32 }}>
+        <div className="lane lane-books" style={{ height: packedBooks.rows * 30 + 10 }}>
           <div className="lane-label">ספרי התנ"ך (התקופה המתוארת)</div>
           {packedBooks.items.map((b) => (
             <Bar key={b.id} item={b} toX={toX} pxPerYear={pxPerYear} kind="book" mode={mode} row={b.row}
