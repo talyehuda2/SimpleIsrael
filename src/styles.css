@@ -256,8 +256,6 @@ h1 {
 .event:hover .event-label, .event.selected .event-label {
   background: #fff; border-color: var(--event); font-weight: 700;
 }
-/* מסתיר תווית שנחתכת בקצה אזור הגלילה — עדיף היהלום לבדו מאשר מילה חצי-קטועה */
-.event-label.label-clipped { opacity: 0; }
 
 /* ----- כרטיס פרטים ----- */
 .detail-card {

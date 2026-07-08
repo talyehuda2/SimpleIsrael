@@ -8,6 +8,10 @@ import maps from '../data/maps.json';
 export const START_YEAR = 1940;
 export const END_YEAR = 3850;
 
+// זום מינימלי להצגת שם אירוע (רק היהלום מוצג מתחת לכך) — מונע תוויות שחורגות
+// מגבולות המסך כשהזום נמוך מדי ותוויות רחבות ביחס למרחק הקצר בין אירועים סמוכים
+const EVENT_LABEL_MIN_PX = 0.9;
+
 export function yearToX(year, pxPerYear, endYear = END_YEAR) {
   return (endYear - year) * pxPerYear;
 }
@@ -149,7 +153,7 @@ export default function Timeline({
               title={mode === 'academic' ? `${ev.name} · ${toSecular(ev.year)}` : `${ev.name} · ${ev.year}`}
             >
               <span className="event-marker">◆</span>
-              <span className="event-label">{ev.name}</span>
+              {pxPerYear >= EVENT_LABEL_MIN_PX && <span className="event-label">{ev.name}</span>}
             </div>
           ))}
         </div>

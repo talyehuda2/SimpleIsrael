@@ -167,32 +167,6 @@ export default function App() {
     };
   });
 
-  // הסתרת תוויות אירועים שנחתכות בקצה הגלילה באמצע גרירה/צביטה —
-  // עדיף להראות רק את היהלום מאשר מילה שבורה חצי-נחתכת
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    let raf = null;
-    const check = () => {
-      const bounds = el.getBoundingClientRect();
-      el.querySelectorAll('.event-label').forEach((label) => {
-        const r = label.getBoundingClientRect();
-        const clipped = r.left < bounds.left || r.right > bounds.right;
-        label.classList.toggle('label-clipped', clipped);
-      });
-    };
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => { check(); raf = null; });
-    };
-    el.addEventListener('scroll', onScroll, { passive: true });
-    check();
-    return () => {
-      el.removeEventListener('scroll', onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [pxPerYear, visible.events, chronology]);
-
   const toggle = (key) => setVisible((v) => ({ ...v, [key]: !v[key] }));
   const isAcademic = chronology === 'academic';
 
