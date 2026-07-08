@@ -138,13 +138,13 @@ export default function Timeline({
 
       {/* אירועים */}
       {visible.events && (
-        <div className="lane lane-events" style={{ height: packedEvents.rows * 26 + 52 }}>
+        <div className="lane lane-events" style={{ height: packedEvents.rows * 40 + 52 }}>
           <div className="lane-label">אירועים</div>
           {packedEvents.items.map((ev) => (
             <div
               key={ev.id}
               className={`event ${isSel('event', ev.id) ? 'selected' : ''}`}
-              style={{ left: toX(ev.year), top: ev.row * 26 + 22 }}
+              style={{ left: toX(ev.year), top: ev.row * 40 + 22 }}
               onClick={() => onSelect({ ...ev, kind: 'event', start: ev.year, end: ev.year })}
               title={mode === 'academic' ? `${ev.name} · ${toSecular(ev.year)}` : `${ev.name} · ${ev.year}`}
             >
