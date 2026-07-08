@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import Timeline, { LABEL_GUTTER_PX } from './components/Timeline.jsx';
+import Timeline from './components/Timeline.jsx';
 import DetailCard from './components/DetailCard.jsx';
 import MapPanel from './components/MapPanel.jsx';
 import leaders from './data/leaders.json';
@@ -39,7 +39,7 @@ const PRESETS = {
   ],
 };
 
-const MIN_PX = 0.28;
+const MIN_PX = 0.4;
 const MAX_PX = 20;
 
 export default function App() {
@@ -60,7 +60,7 @@ export default function App() {
   // הזום המינימלי: כל הציר בדיוק ברוחב החלון
   const getMinPx = () => {
     const el = scrollRef.current;
-    return el ? Math.max(MIN_PX, (el.clientWidth - 40 - LABEL_GUTTER_PX) / (axis.end - axis.start)) : MIN_PX;
+    return el ? Math.max(MIN_PX, (el.clientWidth - 40) / (axis.end - axis.start)) : MIN_PX;
   };
 
   // תצוגת פתיחה: כל הציר על המסך; ובשינוי גודל חלון — לא להישאר קטן מהמסך
