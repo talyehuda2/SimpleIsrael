@@ -1,7 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Timeline, { LABEL_GUTTER_PX } from './components/Timeline.jsx';
 import DetailCard from './components/DetailCard.jsx';
 import MapPanel from './components/MapPanel.jsx';
+import SearchBox from './components/SearchBox.jsx';
 import leaders from './data/leaders.json';
 import judges from './data/judges.json';
 import kings from './data/kings.json';
@@ -53,15 +54,69 @@ export default function App() {
   const [showContemporaries, setShowContemporaries] = useState(false);
   const [visible, setVisible] = useState({ leaders: true, judges: true, kings: true, prophets: true, books: true, events: true });
 
+  const axis = AXIS[chronology];
+  const data = chronology === 'academic'
+    ? academicData
+    : { leaders, judges, kings, prophets, books, events, periods };
+
   // טווח ההדגשה למצב "בני-הזמן" — תקופת החיים/כהונה של הפריט הנבחר
   const highlightRange = selected && showContemporaries
     ? { start: selected.start, end: selected.end }
     : null;
 
-  const axis = AXIS[chronology];
-  const data = chronology === 'academic'
-    ? academicData
-    : { leaders, judges, kings, prophets, books, events, periods };
+  // אינדקס חיפוש — כל הפריטים הנבחרים מכל הרצועות (ללא תקופות שאינן נבחרות)
+  const searchIndex = useMemo(() => {
+    const idx = [];
+    const add = (arr, kind) => (arr || []).forEach((it) => idx.push({ ...it, kind }));
+    add(data.leaders, 'leader');
+    add(data.judges, 'judge');
+    add(data.kings.united, 'united');
+    add(data.kings.judah, 'judah');
+    add(data.kings.israel, 'israel');
+    add(data.prophets, 'prophet');
+    add(data.books, 'book');
+    (data.events || []).forEach((ev) => idx.push({ ...ev, kind: 'event', start: ev.year, end: ev.year }));
+    return idx;
+  }, [chronology]);
+
+  // קפיצה לפריט מהחיפוש: הדלקת השכבה, בחירה, וגלילה למרכז המסך
+  const LAYER_OF = {
+    leader: 'leaders', judge: 'judges', united: 'kings', judah: 'kings',
+    israel: 'kings', prophet: 'prophets', book: 'books', event: 'events',
+  };
+  const jumpTo = (item) => {
+    const layer = LAYER_OF[item.kind];
+    if (layer) setVisible((v) => (v[layer] ? v : { ...v, [layer]: true }));
+    setSelected(item);
+    const el = scrollRef.current;
+    const midYear = (item.start + item.end) / 2;
+    scrollToYear(midYear, el ? el.clientWidth / 2 : 0, pxPerYear);
+  };
+
+  // רשימת הפריטים באותה קטגוריה של הנבחר (מלכי המאוחדת+יהודה נספרים כרצף אחד)
+  const categoryList = (item) => {
+    const tag = (arr, kind) => (arr || []).map((x) => ({ ...x, kind }));
+    switch (item.kind) {
+      case 'leader': return tag(data.leaders, 'leader');
+      case 'judge': return tag(data.judges, 'judge');
+      case 'united':
+      case 'judah': return [...tag(data.kings.united, 'united'), ...tag(data.kings.judah, 'judah')];
+      case 'israel': return tag(data.kings.israel, 'israel');
+      case 'prophet': return tag(data.prophets, 'prophet');
+      case 'book': return tag(data.books, 'book');
+      case 'event': return (data.events || []).map((x) => ({ ...x, kind: 'event', start: x.year, end: x.year }));
+      default: return [];
+    }
+  };
+
+  // שכנים בזמן: הקודם = מוקדם יותר, הבא = מאוחר יותר
+  let prevItem = null, nextItem = null;
+  if (selected) {
+    const list = categoryList(selected).sort((a, b) => a.start - b.start || a.end - b.end);
+    const i = list.findIndex((x) => x.id === selected.id);
+    if (i > 0) prevItem = list[i - 1];
+    if (i !== -1 && i < list.length - 1) nextItem = list[i + 1];
+  }
 
   // רצועת התוויות צרה יותר במובייל (מסך צר) מאשר בדסקטופ
   const gutter = (typeof window !== 'undefined' && window.innerWidth <= 680) ? 130 : LABEL_GUTTER_PX;
@@ -218,6 +273,9 @@ export default function App() {
             onClick={() => setMenuOpen((o) => !o)}
           >{menuOpen ? '✕ סגירה' : '☰ אפשרויות'}</button>
         </div>
+        <div className="search-row">
+          <SearchBox index={searchIndex} onPick={jumpTo} />
+        </div>
         <div className={`controls${menuOpen ? ' open' : ''}`}>
           <div className="ctrl-stack">
             <div className="ctrl-group">
@@ -292,6 +350,7 @@ export default function App() {
         onClose={() => setSelected(null)} onOpenMap={setMapItem}
         contemporariesOn={showContemporaries}
         onToggleContemporaries={() => setShowContemporaries((o) => !o)}
+        prevItem={prevItem} nextItem={nextItem} onNav={jumpTo}
       />
 
       <MapPanel item={mapItem} onClose={() => setMapItem(null)} />

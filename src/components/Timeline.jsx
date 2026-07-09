@@ -83,10 +83,12 @@ export default function Timeline({
   const totalWidth = (endYear - startYear) * pxPerYear + gutter;
   const toX = (year) => (endYear - year) * pxPerYear;
 
-  // מצב "בני-הזמן": מסמן כל פריט כחופף (contemporary) או לא-חופף (dimmed) לטווח הנבחר
+  // מצב "בני-הזמן": מסמן כל פריט כחופף (contemporary) או לא-חופף (dimmed) לטווח הנבחר.
+  // חפיפה אמיתית בלבד (אי-שוויון חמור) — שכן צמוד באותה קטגוריה שרק "נוגע" בגבול השנה
+  // (כמו מלך קודם/הבא ברצף מלוכה) אינו נחשב בן-זמן.
   const hlOf = (s, e) => {
     if (!highlightRange) return '';
-    return s <= highlightRange.end && e >= highlightRange.start ? 'contemporary' : 'dimmed';
+    return s < highlightRange.end && e > highlightRange.start ? 'contemporary' : 'dimmed';
   };
 
   const ticks = useMemo(() => {

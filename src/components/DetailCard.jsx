@@ -18,7 +18,7 @@ const JUDGMENT_LABELS = {
   mixed: 'מעורב',
 };
 
-export default function DetailCard({ item, mode, onClose, onOpenMap, contemporariesOn, onToggleContemporaries }) {
+export default function DetailCard({ item, mode, onClose, onOpenMap, contemporariesOn, onToggleContemporaries, prevItem, nextItem, onNav }) {
   if (!item) return null;
   const hasMap = !!maps[item.id];
   return (
@@ -54,6 +54,22 @@ export default function DetailCard({ item, mode, onClose, onOpenMap, contemporar
         </button>
       )}
       {item.source && <div className="detail-source"><b>מקור:</b> {item.source}</div>}
+      {(prevItem || nextItem) && (
+        <div className="detail-nav">
+          {prevItem ? (
+            <button className="nav-btn" onClick={() => onNav(prevItem)} title="הקודם (מוקדם יותר)">
+              <span className="nav-arrow">►</span>
+              <span className="nav-name">{prevItem.name}</span>
+            </button>
+          ) : <span className="nav-spacer" />}
+          {nextItem ? (
+            <button className="nav-btn" onClick={() => onNav(nextItem)} title="הבא (מאוחר יותר)">
+              <span className="nav-name">{nextItem.name}</span>
+              <span className="nav-arrow">◄</span>
+            </button>
+          ) : <span className="nav-spacer" />}
+        </div>
+      )}
     </aside>
   );
 }
