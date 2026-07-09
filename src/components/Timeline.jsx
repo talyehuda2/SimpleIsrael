@@ -84,11 +84,17 @@ export default function Timeline({
   const toX = (year) => (endYear - year) * pxPerYear;
 
   // מצב "בני-הזמן": מסמן כל פריט כחופף (contemporary) או לא-חופף (dimmed) לטווח הנבחר.
-  // חפיפה אמיתית בלבד (אי-שוויון חמור) — שכן צמוד באותה קטגוריה שרק "נוגע" בגבול השנה
-  // (כמו מלך קודם/הבא ברצף מלוכה) אינו נחשב בן-זמן.
+  // אירוע נקודתי (s===e) נכלל אם הוא בתוך הטווח כולל הגבולות — כך פילוג המלוכה מסומן
+  // כשבוחרים את רחבעם/ירבעם שמלכותם מתחילה בדיוק באותה שנה. שני טווחים דורשים חפיפה
+  // אמיתית (אי-שוויון חמור) — כדי ששכן צמוד ברצף מלוכה שרק "נוגע" בגבול לא ייחשב בן-זמן.
   const hlOf = (s, e) => {
     if (!highlightRange) return '';
-    return s < highlightRange.end && e > highlightRange.start ? 'contemporary' : 'dimmed';
+    const { start, end } = highlightRange;
+    let overlap;
+    if (s === e) overlap = s >= start && s <= end;              // נקודה נבדקת
+    else if (start === end) overlap = start >= s && start <= e;  // הנבחר הוא אירוע נקודתי
+    else overlap = s < end && e > start;                        // טווח מול טווח
+    return overlap ? 'contemporary' : 'dimmed';
   };
 
   const ticks = useMemo(() => {
