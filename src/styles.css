@@ -60,8 +60,8 @@ header {
 }
 
 /* ----- תיבת חיפוש ----- */
-.search-row { display: flex; }
-.search-box { position: relative; width: min(360px, 100%); }
+.search-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.search-box { position: relative; flex: 1 1 240px; max-width: 360px; }
 .search-icon {
   position: absolute; inset-inline-start: 12px; top: 50%; transform: translateY(-50%);
   color: var(--muted); pointer-events: none;
@@ -101,6 +101,66 @@ header {
 .sr-dot.prophet { background: var(--prophet); }
 .sr-dot.book { background: var(--book); }
 .sr-dot.event { background: var(--event); }
+
+/* ----- כפתור אילן יוחסין ----- */
+.tree-btn {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  background: var(--navy); color: #fff; border: none; border-radius: 20px;
+  padding: 8px 15px; font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background .12s, transform .1s;
+}
+.tree-btn:hover { background: var(--navy-2); transform: translateY(-1px); }
+
+/* ----- שכבת אילן היוחסין ----- */
+.tree-overlay {
+  position: fixed; inset: 0; z-index: 50; direction: rtl;
+  background: rgb(30 22 10 / .55); backdrop-filter: blur(2px);
+  display: flex; justify-content: center; padding: 22px 12px; overflow-y: auto;
+}
+.tree-panel {
+  position: relative; margin: auto; width: 100%; max-width: 760px;
+  background: linear-gradient(180deg, var(--panel), #f6eed9);
+  border: 1.5px solid var(--gold); border-radius: 16px;
+  box-shadow: 0 20px 60px rgb(40 28 8 / .4); padding: 28px 20px 40px;
+}
+.tree-close {
+  position: absolute; top: 12px; inset-inline-start: 14px;
+  width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--bg-2); color: var(--ink); font-size: 15px; cursor: pointer;
+  transition: background .12s;
+}
+.tree-close:hover { background: var(--line-soft); }
+.tree-title { text-align: center; color: var(--navy); margin: 0 0 4px; font-size: 22px; }
+.tree-sub { text-align: center; color: var(--muted); font-size: 12.5px; margin: 0 0 22px; }
+
+.tree-flow { display: flex; flex-direction: column; align-items: center; }
+.tree-gen { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.tree-connector { width: 2px; height: 20px; background: var(--gold); opacity: .55; }
+.tree-branch { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.tree-sib-label { font-size: 11px; font-weight: 700; color: var(--gold); margin-bottom: 7px; }
+.tree-siblings {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; max-width: 640px;
+  padding: 9px 12px; border: 1px dashed var(--line); border-radius: 12px;
+  background: rgb(220 201 163 / .15);
+}
+
+.tree-node {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  font-family: inherit; text-align: center; border-radius: 10px; padding: 7px 13px;
+  border: 1.5px solid var(--line); background: var(--bg-2); cursor: default;
+  transition: transform .1s, box-shadow .1s;
+}
+.tree-node .tn-name { font-weight: 700; font-size: 14px; color: var(--ink); }
+.tree-node .tn-role { font-size: 10.5px; color: var(--muted); }
+.tree-node .tn-note { font-size: 10px; color: var(--muted); font-style: italic; max-width: 180px; }
+.tree-node.heir {
+  border-color: var(--gold); background: linear-gradient(180deg, #fff9ec, #f2e4c4);
+  box-shadow: 0 2px 8px rgb(178 138 43 / .25);
+}
+.tree-node.sibling { opacity: .7; padding: 5px 10px; }
+.tree-node.sibling .tn-name { font-size: 12.5px; font-weight: 600; }
+.tree-node.clickable { cursor: pointer; }
+.tree-node.clickable:hover { transform: translateY(-2px); box-shadow: 0 5px 14px rgb(80 60 20 / .22); }
 /* כפתור תפריט וכפתורי זום צפים — מוסתרים בדסקטופ, מופיעים במובייל */
 .menu-btn {
   display: none; border: 1.5px solid var(--navy); background: var(--panel);

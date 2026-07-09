@@ -3,6 +3,7 @@ import Timeline, { LABEL_GUTTER_PX } from './components/Timeline.jsx';
 import DetailCard from './components/DetailCard.jsx';
 import MapPanel from './components/MapPanel.jsx';
 import SearchBox from './components/SearchBox.jsx';
+import FamilyTree from './components/FamilyTree.jsx';
 import leaders from './data/leaders.json';
 import judges from './data/judges.json';
 import kings from './data/kings.json';
@@ -52,6 +53,7 @@ export default function App() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [mapItem, setMapItem] = useState(null);
   const [showContemporaries, setShowContemporaries] = useState(false);
+  const [treeOpen, setTreeOpen] = useState(false);
   const [visible, setVisible] = useState({ leaders: true, judges: true, kings: true, prophets: true, books: true, events: true });
 
   const axis = AXIS[chronology];
@@ -91,6 +93,13 @@ export default function App() {
     const el = scrollRef.current;
     const midYear = (item.start + item.end) / 2;
     scrollToYear(midYear, el ? el.clientWidth / 2 : 0, pxPerYear);
+  };
+
+  // קפיצה לפי מזהה (מאילן היוחסין). אב/דמות שקיימת רק במסורת — נעבור למצב מסורת.
+  const jumpToId = (id) => {
+    const item = searchIndex.find((x) => x.id === id);
+    if (item) jumpTo(item);
+    else if (chronology === 'academic') setChronology('tradition');
   };
 
   // רשימת הפריטים באותה קטגוריה של הנבחר (מלכי המאוחדת+יהודה נספרים כרצף אחד)
@@ -275,6 +284,9 @@ export default function App() {
         </div>
         <div className="search-row">
           <SearchBox index={searchIndex} onPick={jumpTo} />
+          <button className="tree-btn" onClick={() => setTreeOpen(true)}>
+            <span aria-hidden="true">👑</span> אילן יוחסין
+          </button>
         </div>
         <div className={`controls${menuOpen ? ' open' : ''}`}>
           <div className="ctrl-stack">
@@ -354,6 +366,8 @@ export default function App() {
       />
 
       <MapPanel item={mapItem} onClose={() => setMapItem(null)} />
+
+      <FamilyTree open={treeOpen} onClose={() => setTreeOpen(false)} onJump={jumpToId} />
 
       <footer>
         הזמן זורם מימין (עבר) לשמאל · Ctrl+גלגלת לזום ·{' '}
