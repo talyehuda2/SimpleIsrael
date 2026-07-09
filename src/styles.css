@@ -184,16 +184,41 @@ h1 {
 .tick-sec { font-size: 10.5px; color: #a08a63; }
 
 /* ----- נתיבים ----- */
-.lane { position: relative; margin-top: 8px; padding-top: 0; min-height: 40px; }
+.lane { position: relative; margin-top: 10px; padding-top: 0; min-height: 40px; border-radius: 10px; }
+
+/* רצועת רקע עדינה בגוון הקטגוריה — מקבצת ויזואלית כל נתיב עם הכותרת והפסים שלו */
+.lane-events   { background: color-mix(in srgb, var(--event)   7%, transparent); }
+.lane-leaders  { background: color-mix(in srgb, var(--leader)  8%, transparent); }
+.lane-judges   { background: color-mix(in srgb, var(--judge)  10%, transparent); }
+.lane-kings-judah  { background: color-mix(in srgb, var(--judah)  9%, transparent); }
+.lane-kings-israel { background: color-mix(in srgb, var(--israel) 9%, transparent); }
+.lane-prophets { background: color-mix(in srgb, var(--prophet) 9%, transparent); }
+.lane-books    { background: color-mix(in srgb, var(--book)    8%, transparent); }
+
 .lane-label {
   position: sticky; right: 0; float: right; top: 0;
   width: 200px; box-sizing: border-box; text-align: left; white-space: nowrap;
   direction: rtl; font-size: 12.5px; font-weight: 700; color: var(--navy);
   font-family: 'Frank Ruhl Libre', 'Heebo', serif;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
   padding: 2px 12px; border-radius: 0 0 0 10px; z-index: 4;
   backdrop-filter: blur(2px);
 }
+/* מרובע צבע בקצה השמאלי של הכותרת, בגוון הקטגוריה (כמו במקרא) — מקשר כותרת↔נתיב */
+.lane-label::after {
+  content: ''; display: inline-block; width: 11px; height: 11px; border-radius: 3px;
+  vertical-align: -1px; margin-inline-start: 7px;
+  background: var(--lane-swatch, transparent);
+}
+.lane-events   .lane-label { --lane-swatch: var(--event); }
+.lane-leaders  .lane-label { --lane-swatch: var(--leader); }
+.lane-judges   .lane-label { --lane-swatch: var(--judge); }
+.lane-kings-judah  .lane-label { --lane-swatch: var(--judah); }
+.lane-kings-israel .lane-label { --lane-swatch: var(--israel); }
+.lane-prophets .lane-label { --lane-swatch: var(--prophet); }
+.lane-books    .lane-label { --lane-swatch: var(--book); }
+/* לנתיב התקופות — בלי מרובע */
+.lane-periods .lane-label::after { display: none; }
 
 .lane-periods { padding-top: 2px; min-height: 32px; margin-top: 4px; }
 .period {

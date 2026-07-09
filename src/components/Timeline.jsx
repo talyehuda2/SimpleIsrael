@@ -185,7 +185,7 @@ export default function Timeline({
       {/* מלכים */}
       {visible.kings && (
         <>
-          <div className="lane lane-kings">
+          <div className="lane lane-kings lane-kings-judah">
             <div className="lane-label">מלכים — הממלכה המאוחדת / יהודה</div>
             {kings.united.map((k) => (
               <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="united" mode={mode}
@@ -196,7 +196,7 @@ export default function Timeline({
                 selected={isSel('judah', k.id)} onSelect={onSelect} />
             ))}
           </div>
-          <div className="lane lane-kings">
+          <div className="lane lane-kings lane-kings-israel">
             <div className="lane-label">מלכים — ממלכת ישראל</div>
             {kings.israel.map((k) => (
               <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="israel" mode={mode}
