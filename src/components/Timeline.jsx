@@ -47,14 +47,14 @@ function barTitle(item, mode) {
     : `${item.name} · ${item.start}–${item.end}`;
 }
 
-function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight = 30, row = 0 }) {
+function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight = 30, row = 0, hl = '' }) {
   const left = toX(item.end);
   const width = Math.max((item.end - item.start) * pxPerYear, 6);
   const showLabel = width > 34;
   const showDot = width > 24;
   return (
     <div
-      className={`bar ${kind} ${selected ? 'selected' : ''}`}
+      className={`bar ${kind} ${hl} ${selected ? 'selected' : ''}`}
       style={{ left, width, top: row * rowHeight }}
       title={barTitle(item, mode)}
       onClick={() => onSelect({ ...item, kind })}
@@ -78,10 +78,16 @@ export default function Timeline({
   pxPerYear, startYear = START_YEAR, endYear = END_YEAR, mode = 'tradition',
   gutter = LABEL_GUTTER_PX,
   periods, leaders, judges, kings, prophets, books, events,
-  visible, selected, onSelect,
+  visible, selected, onSelect, highlightRange = null,
 }) {
   const totalWidth = (endYear - startYear) * pxPerYear + gutter;
   const toX = (year) => (endYear - year) * pxPerYear;
+
+  // מצב "בני-הזמן": מסמן כל פריט כחופף (contemporary) או לא-חופף (dimmed) לטווח הנבחר
+  const hlOf = (s, e) => {
+    if (!highlightRange) return '';
+    return s <= highlightRange.end && e >= highlightRange.start ? 'contemporary' : 'dimmed';
+  };
 
   const ticks = useMemo(() => {
     const step = tickStep(pxPerYear);
@@ -132,7 +138,7 @@ export default function Timeline({
         {periods.map((p, i) => (
           <div
             key={p.id}
-            className={`period p${i % 2}`}
+            className={`period p${i % 2} ${hlOf(p.start, p.end)}`}
             style={{ left: toX(p.end), width: (p.end - p.start) * pxPerYear }}
             title={barTitle(p, mode)}
           >
@@ -148,7 +154,7 @@ export default function Timeline({
           {packedEvents.items.map((ev) => (
             <div
               key={ev.id}
-              className={`event ${isSel('event', ev.id) ? 'selected' : ''}`}
+              className={`event ${hlOf(ev.year, ev.year)} ${isSel('event', ev.id) ? 'selected' : ''}`}
               style={{ left: toX(ev.year), top: ev.row * 40 }}
               onClick={() => onSelect({ ...ev, kind: 'event', start: ev.year, end: ev.year })}
               title={mode === 'academic' ? `${ev.name} · ${toSecular(ev.year)}` : `${ev.name} · ${ev.year}`}
@@ -166,7 +172,7 @@ export default function Timeline({
           <div className="lane-label">אבות ומנהיגים</div>
           {packedLeaders.items.map((l) => (
             <Bar key={l.id} item={l} toX={toX} pxPerYear={pxPerYear} kind="leader" mode={mode} row={l.row}
-              selected={isSel('leader', l.id)} onSelect={onSelect} />
+              selected={isSel('leader', l.id)} onSelect={onSelect} hl={hlOf(l.start, l.end)} />
           ))}
         </div>
       )}
@@ -177,7 +183,7 @@ export default function Timeline({
           <div className="lane-label">שופטים</div>
           {packedJudges.items.map((j) => (
             <Bar key={j.id} item={j} toX={toX} pxPerYear={pxPerYear} kind="judge" mode={mode} row={j.row}
-              selected={isSel('judge', j.id)} onSelect={onSelect} />
+              selected={isSel('judge', j.id)} onSelect={onSelect} hl={hlOf(j.start, j.end)} />
           ))}
         </div>
       )}
@@ -189,18 +195,18 @@ export default function Timeline({
             <div className="lane-label">מלכים — הממלכה המאוחדת / יהודה</div>
             {kings.united.map((k) => (
               <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="united" mode={mode}
-                selected={isSel('united', k.id)} onSelect={onSelect} />
+                selected={isSel('united', k.id)} onSelect={onSelect} hl={hlOf(k.start, k.end)} />
             ))}
             {kings.judah.map((k) => (
               <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="judah" mode={mode}
-                selected={isSel('judah', k.id)} onSelect={onSelect} />
+                selected={isSel('judah', k.id)} onSelect={onSelect} hl={hlOf(k.start, k.end)} />
             ))}
           </div>
           <div className="lane lane-kings lane-kings-israel">
             <div className="lane-label">מלכים — ממלכת ישראל</div>
             {kings.israel.map((k) => (
               <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="israel" mode={mode}
-                selected={isSel('israel', k.id)} onSelect={onSelect} />
+                selected={isSel('israel', k.id)} onSelect={onSelect} hl={hlOf(k.start, k.end)} />
             ))}
           </div>
         </>
@@ -212,7 +218,7 @@ export default function Timeline({
           <div className="lane-label">נביאים</div>
           {packedProphets.items.map((p) => (
             <Bar key={p.id} item={p} toX={toX} pxPerYear={pxPerYear} kind="prophet" mode={mode} row={p.row}
-              selected={isSel('prophet', p.id)} onSelect={onSelect} />
+              selected={isSel('prophet', p.id)} onSelect={onSelect} hl={hlOf(p.start, p.end)} />
           ))}
         </div>
       )}
@@ -223,7 +229,7 @@ export default function Timeline({
           <div className="lane-label">ספרי התנ"ך</div>
           {packedBooks.items.map((b) => (
             <Bar key={b.id} item={b} toX={toX} pxPerYear={pxPerYear} kind="book" mode={mode} row={b.row}
-              selected={isSel('book', b.id)} onSelect={onSelect} />
+              selected={isSel('book', b.id)} onSelect={onSelect} hl={hlOf(b.start, b.end)} />
           ))}
         </div>
       )}

@@ -50,7 +50,13 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [mapItem, setMapItem] = useState(null);
+  const [showContemporaries, setShowContemporaries] = useState(false);
   const [visible, setVisible] = useState({ leaders: true, judges: true, kings: true, prophets: true, books: true, events: true });
+
+  // טווח ההדגשה למצב "בני-הזמן" — תקופת החיים/כהונה של הפריט הנבחר
+  const highlightRange = selected && showContemporaries
+    ? { start: selected.start, end: selected.end }
+    : null;
 
   const axis = AXIS[chronology];
   const data = chronology === 'academic'
@@ -270,6 +276,7 @@ export default function App() {
           periods={data.periods} leaders={data.leaders} judges={data.judges} kings={data.kings}
           prophets={data.prophets} books={data.books} events={data.events}
           visible={visible} selected={selected} onSelect={setSelected}
+          highlightRange={highlightRange}
         />
       </div>
 
@@ -280,7 +287,12 @@ export default function App() {
         </div>
       )}
 
-      <DetailCard item={selected} mode={chronology} onClose={() => setSelected(null)} onOpenMap={setMapItem} />
+      <DetailCard
+        item={selected} mode={chronology}
+        onClose={() => setSelected(null)} onOpenMap={setMapItem}
+        contemporariesOn={showContemporaries}
+        onToggleContemporaries={() => setShowContemporaries((o) => !o)}
+      />
 
       <MapPanel item={mapItem} onClose={() => setMapItem(null)} />
 
