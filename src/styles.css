@@ -23,6 +23,15 @@
   --prophet: #b3781a;
   --book: #157a70;
   --event: #b0392c;
+
+  /* רקע עולמי — בסיס + גוון לכל אימפריה */
+  --world: #8a7250;
+  --pw-egypt: #b8912f;
+  --pw-assyria: #5f7486;
+  --pw-babylon: #a65a34;
+  --pw-persia: #2f8f88;
+  --pw-greece: #7a7d3c;
+  --pw-rome: #9c4438;
 }
 
 html, body {
@@ -261,6 +270,7 @@ h1 {
 .lg.israel::before { background: var(--israel); }
 .lg.prophet::before { background: var(--prophet); }
 .lg.book::before { background: var(--book); }
+.lg.world::before { background: var(--world); }
 .lg.event-lg::before, .lg.dot-lg::before { display: none; }
 .lg.event-lg { color: var(--event); font-weight: 600; }
 .lg-sep { color: var(--line); }
@@ -303,6 +313,7 @@ h1 {
 .lane-kings-israel { background: color-mix(in srgb, var(--israel) 9%, transparent); }
 .lane-prophets { background: color-mix(in srgb, var(--prophet) 9%, transparent); }
 .lane-books    { background: color-mix(in srgb, var(--book)    8%, transparent); }
+.lane-world    { background: color-mix(in srgb, var(--world)  10%, transparent); }
 
 .lane-label {
   position: sticky; right: 0; float: right; top: 0;
@@ -326,6 +337,7 @@ h1 {
 .lane-kings-israel .lane-label { --lane-swatch: var(--israel); }
 .lane-prophets .lane-label { --lane-swatch: var(--prophet); }
 .lane-books    .lane-label { --lane-swatch: var(--book); }
+.lane-world    .lane-label { --lane-swatch: var(--world); }
 /* לנתיב התקופות — בלי מרובע */
 .lane-periods .lane-label::after { display: none; }
 
@@ -366,6 +378,14 @@ h1 {
 .bar.israel { background: linear-gradient(180deg, var(--israel), #3d5f27); }
 .bar.prophet { background: linear-gradient(180deg, var(--prophet), #8f5f13); }
 .bar.book { background: linear-gradient(180deg, var(--book), #0f5f57); }
+.bar.world { background: linear-gradient(180deg, var(--world), #5f4d32); }
+/* גוון לפי אימפריה (גובר על bar.world) */
+.bar.pw-egypt   { background: linear-gradient(180deg, var(--pw-egypt),   #8a6a17); }
+.bar.pw-assyria { background: linear-gradient(180deg, var(--pw-assyria), #43566a); }
+.bar.pw-babylon { background: linear-gradient(180deg, var(--pw-babylon), #7c3f20); }
+.bar.pw-persia  { background: linear-gradient(180deg, var(--pw-persia),  #1e6a63); }
+.bar.pw-greece  { background: linear-gradient(180deg, var(--pw-greece),  #585b28); }
+.bar.pw-rome    { background: linear-gradient(180deg, var(--pw-rome),    #732f26); }
 
 .dot {
   width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
@@ -424,6 +444,7 @@ h1 {
 .kind-chip.prophet { background: var(--prophet); }
 .kind-chip.book { background: var(--book); }
 .kind-chip.event { background: var(--event); }
+.kind-chip.world { background: var(--world); }
 .detail-years { font-size: 13px; color: #5a4a30; font-weight: 600; margin-bottom: 8px; }
 .detail-row { font-size: 13px; margin: 3px 0; }
 .judgment-chip {

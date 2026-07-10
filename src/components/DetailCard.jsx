@@ -10,6 +10,7 @@ const KIND_LABELS = {
   prophet: 'נביא',
   book: 'ספר',
   event: 'אירוע',
+  world: 'רקע עולמי',
 };
 
 const JUDGMENT_LABELS = {
@@ -31,6 +32,7 @@ export default function DetailCard({ item, mode, onClose, onOpenMap, contemporar
       {item.lifeText && <div className="detail-row"><b>שנות חיים:</b> {item.lifeText}</div>}
       {item.tenureText && <div className="detail-row"><b>הנהגה:</b> {item.tenureText}</div>}
       {item.kings && <div className="detail-row"><b>בימי:</b> {item.kings}</div>}
+      {item.empire && <div className="detail-row"><b>מעצמה:</b> {item.empire}</div>}
       {item.judgment && (
         <div className={`judgment-chip ${item.judgment}`}>{JUDGMENT_LABELS[item.judgment]}</div>
       )}

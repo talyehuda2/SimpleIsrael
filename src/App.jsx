@@ -11,6 +11,7 @@ import prophets from './data/prophets.json';
 import books from './data/books.json';
 import events from './data/events.json';
 import periods from './data/periods.json';
+import world from './data/world.json';
 import { academicData } from './utils/academic.js';
 
 // טווח הציר לכל מצב (בשנה עברית / שנה עברית-שקולה)
@@ -54,12 +55,12 @@ export default function App() {
   const [mapItem, setMapItem] = useState(null);
   const [showContemporaries, setShowContemporaries] = useState(false);
   const [treeOpen, setTreeOpen] = useState(false);
-  const [visible, setVisible] = useState({ leaders: true, judges: true, kings: true, prophets: true, books: true, events: true });
+  const [visible, setVisible] = useState({ leaders: true, judges: true, kings: true, prophets: true, books: true, events: true, world: true });
 
   const axis = AXIS[chronology];
   const data = chronology === 'academic'
     ? academicData
-    : { leaders, judges, kings, prophets, books, events, periods };
+    : { leaders, judges, kings, prophets, books, events, periods, world };
 
   // טווח ההדגשה למצב "בני-הזמן" — תקופת החיים/כהונה של הפריט הנבחר
   const highlightRange = selected && showContemporaries
@@ -77,6 +78,7 @@ export default function App() {
     add(data.kings.israel, 'israel');
     add(data.prophets, 'prophet');
     add(data.books, 'book');
+    add(data.world, 'world');
     (data.events || []).forEach((ev) => idx.push({ ...ev, kind: 'event', start: ev.year, end: ev.year }));
     return idx;
   }, [chronology]);
@@ -84,7 +86,7 @@ export default function App() {
   // קפיצה לפריט מהחיפוש: הדלקת השכבה, בחירה, וגלילה למרכז המסך
   const LAYER_OF = {
     leader: 'leaders', judge: 'judges', united: 'kings', judah: 'kings',
-    israel: 'kings', prophet: 'prophets', book: 'books', event: 'events',
+    israel: 'kings', prophet: 'prophets', book: 'books', event: 'events', world: 'world',
   };
   const jumpTo = (item) => {
     const layer = LAYER_OF[item.kind];
@@ -113,6 +115,7 @@ export default function App() {
       case 'israel': return tag(data.kings.israel, 'israel');
       case 'prophet': return tag(data.prophets, 'prophet');
       case 'book': return tag(data.books, 'book');
+      case 'world': return tag(data.world, 'world');
       case 'event': return (data.events || []).map((x) => ({ ...x, kind: 'event', start: x.year, end: x.year }));
       default: return [];
     }
@@ -297,6 +300,7 @@ export default function App() {
                 <label><input type="checkbox" checked={visible.prophets} onChange={() => toggle('prophets')} /> נביאים</label>
                 <label><input type="checkbox" checked={visible.books} onChange={() => toggle('books')} /> ספרים</label>
                 <label><input type="checkbox" checked={visible.events} onChange={() => toggle('events')} /> אירועים</label>
+                <label><input type="checkbox" checked={visible.world} onChange={() => toggle('world')} /> רקע עולמי</label>
               </div>
             </div>
           </div>
@@ -315,6 +319,7 @@ export default function App() {
         <span className="lg israel">ישראל</span>
         <span className="lg prophet">נביאים</span>
         <span className="lg book">ספרים</span>
+        <span className="lg world">רקע עולמי</span>
         <span className="lg event-lg">◆ אירועים</span>
         <span className="lg-sep">|</span>
         <span className="lg dot-lg"><span className="dot good" /> הישר בעיני ה'</span>
@@ -334,7 +339,7 @@ export default function App() {
           pxPerYear={pxPerYear} gutter={gutter}
           startYear={axis.start} endYear={axis.end} mode={chronology}
           periods={data.periods} leaders={data.leaders} judges={data.judges} kings={data.kings}
-          prophets={data.prophets} books={data.books} events={data.events}
+          prophets={data.prophets} books={data.books} events={data.events} world={data.world}
           visible={visible} selected={selected} onSelect={setSelected}
           highlightRange={highlightRange}
         />

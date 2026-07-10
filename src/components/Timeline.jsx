@@ -57,7 +57,7 @@ function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight =
   const showDot = width > 24;
   return (
     <div
-      className={`bar ${kind} ${hl} ${selected ? 'selected' : ''}`}
+      className={`bar ${kind} ${item.power ? 'pw-' + item.power : ''} ${hl} ${selected ? 'selected' : ''}`}
       style={{ left, width, top: row * rowHeight + LANE_TOP_PAD }}
       title={barTitle(item, mode)}
       onClick={() => onSelect({ ...item, kind })}
@@ -80,7 +80,7 @@ function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight =
 export default function Timeline({
   pxPerYear, startYear = START_YEAR, endYear = END_YEAR, mode = 'tradition',
   gutter = LABEL_GUTTER_PX,
-  periods, leaders, judges, kings, prophets, books, events,
+  periods, leaders, judges, kings, prophets, books, events, world = [],
   visible, selected, onSelect, highlightRange = null,
 }) {
   const totalWidth = (endYear - startYear) * pxPerYear + gutter;
@@ -111,6 +111,7 @@ export default function Timeline({
   const packedJudges = useMemo(() => packRows(judges || []), [judges]);
   const packedProphets = useMemo(() => packRows(prophets), [prophets]);
   const packedBooks = useMemo(() => packRows(books), [books]);
+  const packedWorld = useMemo(() => packRows(world || []), [world]);
   const packedEvents = useMemo(() => {
     // אירועים נקודתיים — שיבוץ לפי מרחק תוויות כדי שלא יתנגשו
     const sorted = [...events].sort((a, b) => b.year - a.year);
@@ -241,6 +242,17 @@ export default function Timeline({
           {packedBooks.items.map((b) => (
             <Bar key={b.id} item={b} toX={toX} pxPerYear={pxPerYear} kind="book" mode={mode} row={b.row}
               selected={isSel('book', b.id)} onSelect={onSelect} hl={hlOf(b.start, b.end)} />
+          ))}
+        </div>
+      )}
+
+      {/* רקע עולמי — מעצמות ומלכים זרים המוזכרים במקרא */}
+      {visible.world && world.length > 0 && (
+        <div className="lane lane-world" style={{ height: packedWorld.rows * 30 + 10 + LANE_TOP_PAD }}>
+          <div className="lane-label">רקע עולמי</div>
+          {packedWorld.items.map((w) => (
+            <Bar key={w.id} item={w} toX={toX} pxPerYear={pxPerYear} kind="world" mode={mode} row={w.row}
+              selected={isSel('world', w.id)} onSelect={onSelect} hl={hlOf(w.start, w.end)} />
           ))}
         </div>
       )}
