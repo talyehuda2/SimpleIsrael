@@ -150,16 +150,22 @@ header {
   border: 1.5px solid var(--line); background: var(--bg-2); cursor: default;
   transition: transform .1s, box-shadow .1s;
 }
-.tree-node .tn-name { font-weight: 700; font-size: 14px; color: var(--ink); }
+.tree-node .tn-name { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: 14px; color: var(--ink); }
+.tn-link { color: var(--navy); opacity: .75; flex: none; transition: color .12s, opacity .12s; }
+.tree-node.clickable:hover .tn-link { color: var(--gold); opacity: 1; }
+.tree-sub .tn-link { vertical-align: -2px; opacity: .9; }
 .tree-node .tn-role { font-size: 10.5px; color: var(--muted); }
 .tree-node .tn-note { font-size: 10px; color: var(--muted); font-style: italic; max-width: 180px; }
-.tree-node.heir {
+/* צומת שדרה ללא קישור (אב-קדמון) — כרטיס נקי ושקט, ללא הבלטה */
+.tree-node.heir { background: var(--panel); }
+.tree-node.sibling { opacity: .62; padding: 5px 10px; }
+.tree-node.sibling .tn-name { font-size: 12.5px; font-weight: 600; }
+/* רק דמות המקושרת לציר מקבלת הבלטה זהובה + אינטראקטיביות (מבטל עמעום של אחים) */
+.tree-node.clickable {
+  cursor: pointer; opacity: 1;
   border-color: var(--gold); background: linear-gradient(180deg, #fff9ec, #f2e4c4);
   box-shadow: 0 2px 8px rgb(178 138 43 / .25);
 }
-.tree-node.sibling { opacity: .7; padding: 5px 10px; }
-.tree-node.sibling .tn-name { font-size: 12.5px; font-weight: 600; }
-.tree-node.clickable { cursor: pointer; }
 .tree-node.clickable:hover { transform: translateY(-2px); box-shadow: 0 5px 14px rgb(80 60 20 / .22); }
 /* כפתור תפריט וכפתורי זום צפים — מוסתרים בדסקטופ, מופיעים במובייל */
 .menu-btn {
