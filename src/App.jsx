@@ -266,16 +266,6 @@ export default function App() {
                 : 'מהאבות עד חורבן בית שני · לפי המסורת (סדר עולם)'}
             </span>
           </div>
-          <div className="chrono-toggle" role="group" aria-label="בחירת כרונולוגיה">
-            <button
-              className={!isAcademic ? 'active' : ''}
-              onClick={() => setChronology('tradition')}
-            >סדר עולם</button>
-            <button
-              className={isAcademic ? 'active' : ''}
-              onClick={() => setChronology('academic')}
-            >היסטוריה מחקרית</button>
-          </div>
           <button
             className="menu-btn"
             aria-expanded={menuOpen}
