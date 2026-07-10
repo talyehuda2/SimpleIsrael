@@ -596,7 +596,7 @@ footer {
 .jc-all { border-color: var(--gold); color: var(--gold); }
 /* חצי הניווט (RTL טבעי): 'הקודם' עם חץ ימינה מימין, 'הבא' עם חץ שמאלה משמאל */
 .jc-nav { display: inline-flex; align-items: center; gap: 5px; }
-.jc-ar { font-size: 15px; line-height: 1; }
+.jc-ar { font-size: 17px; font-weight: 700; line-height: 1; }
 .jc-progress { font-size: 12.5px; font-weight: 700; color: var(--gold); margin-inline-start: auto; }
 
 .map-popup {
