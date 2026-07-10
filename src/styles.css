@@ -571,6 +571,33 @@ footer {
 .marker:hover circle { r: 21; }
 .marker.active circle { stroke: var(--gold); stroke-width: 5; }
 .marker-num { fill: #fff; font-size: 22px; font-weight: 700; pointer-events: none; }
+.marker.future { opacity: .5; }
+.marker.future:hover { opacity: .85; }
+
+/* קו ההתקדמות — מלא, בצבע הדמות, נמתח בהדרגה */
+.journey-progress {
+  fill: none; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round;
+  transition: stroke-dashoffset .6s ease;
+}
+
+/* בקרות המסע המודרך */
+.journey-controls {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 2px 0 12px;
+}
+.jc-btn {
+  font-family: inherit; font-size: 13px; font-weight: 600; padding: 6px 13px;
+  border-radius: 18px; border: 1.5px solid var(--line); background: var(--panel);
+  color: var(--navy); cursor: pointer; transition: background .12s, transform .1s;
+}
+.jc-btn:hover:not(:disabled) { background: var(--bg-2); transform: translateY(-1px); }
+.jc-btn:disabled { opacity: .4; cursor: default; }
+.jc-play { background: var(--navy); color: #fff; border-color: var(--navy); }
+.jc-play:hover:not(:disabled) { background: var(--navy-2); }
+.jc-all { border-color: var(--gold); color: var(--gold); }
+/* חצי הניווט (RTL טבעי): 'הקודם' עם חץ ימינה מימין, 'הבא' עם חץ שמאלה משמאל */
+.jc-nav { display: inline-flex; align-items: center; gap: 5px; }
+.jc-ar { font-size: 15px; line-height: 1; }
+.jc-progress { font-size: 12.5px; font-weight: 700; color: var(--gold); margin-inline-start: auto; }
 
 .map-popup {
   position: absolute; transform: translate(-50%, calc(-100% - 16px));
