@@ -114,10 +114,10 @@ export default function MapPanel({ item, onClose }) {
             {playing ? '⏸ השהיה' : step < 0 ? 'הפעלת המסע' : 'המשך'}
           </button>
           <button className="jc-btn jc-nav" onClick={prev} disabled={step < 0}>
-            <span className="jc-ar" aria-hidden="true">›</span>הקודם
+            <span className="jc-ar" aria-hidden="true">‹</span>הקודם
           </button>
           <button className="jc-btn jc-nav" onClick={next} disabled={step >= pts.length - 1}>
-            הבא<span className="jc-ar" aria-hidden="true">‹</span>
+            הבא<span className="jc-ar" aria-hidden="true">›</span>
           </button>
           {step >= 0 && <button className="jc-btn jc-all" onClick={overview}>הצג הכל</button>}
           <span className="jc-progress">{step < 0 ? 'סקירה כללית' : `תחנה ${step + 1} מתוך ${pts.length}`}</span>
