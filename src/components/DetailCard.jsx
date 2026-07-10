@@ -11,6 +11,7 @@ const KIND_LABELS = {
   book: 'ספר',
   event: 'אירוע',
   world: 'רקע עולמי',
+  empire: 'מלכות עולמית',
 };
 
 const JUDGMENT_LABELS = {

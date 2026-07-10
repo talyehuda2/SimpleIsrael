@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { hebrewYearLetters, toSecular } from '../utils/dates.js';
 import maps from '../data/maps.json';
+import empires from '../data/empires.json';
 
 // ציר הזמן זורם מימין (עבר) לשמאל (הווה), כקריאה בעברית.
 // x = מרחק מהקצה השמאלי = (endYear - שנה) * פיקסלים-לשנה.
@@ -14,6 +15,11 @@ export const LABEL_GUTTER_PX = 210;
 
 // ריווח עליון בתוך כל רצועה — הפריטים לא נוגעים בקצה העליון של רצועת הרקע.
 export const LANE_TOP_PAD = 8;
+
+// גובה שורת רצועות-השליטה (מעצמות) בראש רצועת הרקע העולמי, שמתחתיה השליטים.
+const EMPIRE_ROW_H = 30;
+// מיפוי אימפריה → משתנה צבע, לצביעת רצועת השליטה דרך --band.
+const POWER_VAR = { egypt: 'var(--pw-egypt)', assyria: 'var(--pw-assyria)', babylon: 'var(--pw-babylon)', persia: 'var(--pw-persia)', greece: 'var(--pw-greece)', rome: 'var(--pw-rome)' };
 
 export function yearToX(year, pxPerYear, endYear = END_YEAR) {
   return (endYear - year) * pxPerYear;
@@ -50,7 +56,7 @@ function barTitle(item, mode) {
     : `${item.name} · ${item.start}–${item.end}`;
 }
 
-function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight = 30, row = 0, hl = '' }) {
+function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight = 30, row = 0, hl = '', topOffset = 0 }) {
   const left = toX(item.end);
   const width = Math.max((item.end - item.start) * pxPerYear, 6);
   const showLabel = width > 34;
@@ -58,7 +64,7 @@ function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight =
   return (
     <div
       className={`bar ${kind} ${item.power ? 'pw-' + item.power : ''} ${hl} ${selected ? 'selected' : ''}`}
-      style={{ left, width, top: row * rowHeight + LANE_TOP_PAD }}
+      style={{ left, width, top: row * rowHeight + LANE_TOP_PAD + topOffset }}
       title={barTitle(item, mode)}
       onClick={() => onSelect({ ...item, kind })}
     >
@@ -246,13 +252,24 @@ export default function Timeline({
         </div>
       )}
 
-      {/* רקע עולמי — מעצמות ומלכים זרים המוזכרים במקרא */}
+      {/* רקע עולמי — רצועות השליטה של המעצמות + מלכים זרים המוזכרים במקרא */}
       {visible.world && world.length > 0 && (
-        <div className="lane lane-world" style={{ height: packedWorld.rows * 30 + 10 + LANE_TOP_PAD }}>
+        <div className="lane lane-world" style={{ height: EMPIRE_ROW_H + packedWorld.rows * 30 + 10 + LANE_TOP_PAD }}>
           <div className="lane-label">רקע עולמי</div>
+          {empires.map((e) => (
+            <div
+              key={e.id}
+              className={`empire-band pw-${e.power} ${hlOf(e.start, e.end)} ${isSel('empire', e.id) ? 'selected' : ''}`}
+              style={{ left: toX(e.end), width: (e.end - e.start) * pxPerYear, top: LANE_TOP_PAD, '--band': POWER_VAR[e.power] }}
+              onClick={() => onSelect({ ...e, kind: 'empire' })}
+              title={mode === 'academic' ? `${e.name} · ${toSecular(e.end)}` : `${e.name} · ${e.start}–${e.end}`}
+            >
+              <span>{e.name}</span>
+            </div>
+          ))}
           {packedWorld.items.map((w) => (
             <Bar key={w.id} item={w} toX={toX} pxPerYear={pxPerYear} kind="world" mode={mode} row={w.row}
-              selected={isSel('world', w.id)} onSelect={onSelect} hl={hlOf(w.start, w.end)} />
+              selected={isSel('world', w.id)} onSelect={onSelect} hl={hlOf(w.start, w.end)} topOffset={EMPIRE_ROW_H} />
           ))}
         </div>
       )}

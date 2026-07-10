@@ -387,6 +387,22 @@ h1 {
 .bar.pw-greece  { background: linear-gradient(180deg, var(--pw-greece),  #585b28); }
 .bar.pw-rome    { background: linear-gradient(180deg, var(--pw-rome),    #732f26); }
 
+/* רצועות שליטה של המעצמות (מעל השליטים) — בלוק רחב חצי-שקוף בגוון האימפריה */
+.empire-band {
+  position: absolute; height: 22px; direction: rtl; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--band) 24%, transparent);
+  border: 1px solid color-mix(in srgb, var(--band) 55%, transparent);
+  color: #4a3c28; font-size: 12px; font-weight: 700;
+  font-family: 'Frank Ruhl Libre', 'Heebo', serif;
+  transition: background .12s;
+}
+.empire-band:hover { background: color-mix(in srgb, var(--band) 38%, transparent); }
+.empire-band span { white-space: nowrap; padding: 0 8px; position: sticky; left: 6px; right: 6px; }
+.empire-band.dimmed { opacity: .18; }
+.empire-band.selected { outline: 2.5px solid var(--gold); outline-offset: 1px; z-index: 3; }
+
 .dot {
   width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
   margin-inline-start: 7px; border: 1.5px solid rgb(255 255 255 / .9);
@@ -445,6 +461,7 @@ h1 {
 .kind-chip.book { background: var(--book); }
 .kind-chip.event { background: var(--event); }
 .kind-chip.world { background: var(--world); }
+.kind-chip.empire { background: var(--world); }
 .detail-years { font-size: 13px; color: #5a4a30; font-weight: 600; margin-bottom: 8px; }
 .detail-row { font-size: 13px; margin: 3px 0; }
 .judgment-chip {
