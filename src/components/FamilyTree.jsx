@@ -28,7 +28,8 @@ function Node({ node, heir, onJump }) {
 
 export default function FamilyTree({ open, onClose, onJump }) {
   if (!open) return null;
-  const jump = (id) => { onJump(id); onClose(); };
+  // onJump כבר סוגר את האילן בעצמו (סגירה ישירה, לא דרך "אחורה") — לכן לא קוראים כאן ל-onClose
+  const jump = (id) => onJump(id);
   return (
     <div className="tree-overlay" onClick={onClose}>
       <div className="tree-panel" onClick={(e) => e.stopPropagation()}>

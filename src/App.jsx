@@ -173,11 +173,25 @@ export default function App() {
     scrollToYear(midYear, el ? el.clientWidth / 2 : 0, pxPerYear);
   };
 
-  // קפיצה לפי מזהה (מאילן היוחסין). אב/דמות שקיימת רק במסורת — נעבור למצב מסורת.
+  // קפיצה מאילן היוחסין: בחירה, הדלקת בני-הזמן, וזום-אין אל הדמות והקשרה.
+  // אב/דמות שקיימת רק במסורת — נעבור למצב מסורת.
   const jumpToId = (id) => {
     const item = searchIndex.find((x) => x.id === id);
-    if (item) jumpTo(item);
-    else if (chronology === 'academic') setChronology('tradition');
+    if (!item) { if (chronology === 'academic') setChronology('tradition'); return; }
+    // סגירת האילן ישירות (לא דרך "אחורה", שהיה מנקה את הבחירה) — אנחנו מנווטים לתצוגה חדשה
+    setTreeOpen(false);
+    overlayPushed.current = Math.max(0, overlayPushed.current - 1);
+    prevOverlay.current = { map: null, tree: false };
+    const layer = LAYER_OF[item.kind];
+    if (layer) setVisible((v) => (v[layer] ? v : { ...v, [layer]: true }));
+    setSelected(item);
+    setShowContemporaries(true); // הדגשת בני-הזמן
+    // זום-אין כך שתקופת החיים תתפוס כשליש מהרוחב — רואים את הדמות ואת מי שחי במקביל
+    const el = scrollRef.current;
+    const span = Math.max(item.end - item.start, 20);
+    const view = el ? el.clientWidth - 40 : 800;
+    const targetPx = Math.min(MAX_PX, Math.max(getMinPx(), view / (span * 3)));
+    scrollToYear((item.start + item.end) / 2, el ? el.clientWidth / 2 : 0, targetPx);
   };
 
   // החלת מצב מהכתובת (בלחיצה על "אחורה")
