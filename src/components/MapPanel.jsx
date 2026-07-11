@@ -26,12 +26,17 @@ function windowFor(p) {
   return { x, y, w, h };
 }
 
-export default function MapPanel({ item, onClose }) {
-  const [step, setStep] = useState(-1);   // -1 = סקירה כללית; 0..N-1 = תחנה במסע
+export default function MapPanel({ item, onClose, initialStep = -1, onStep }) {
+  const [step, setStep] = useState(initialStep);   // -1 = סקירה כללית; 0..N-1 = תחנה במסע
   const [playing, setPlaying] = useState(false);
   const [vb, setVb] = useState(FULL_VB);
   const vbRef = useRef(FULL_VB);
   const rafRef = useRef(0);
+  // דיווח התחנה הנוכחית כלפי מעלה (לסנכרון עם כתובת ה-URL)
+  const onStepRef = useRef(onStep);
+  onStepRef.current = onStep;
+  const initialStepRef = useRef(initialStep);
+  initialStepRef.current = initialStep;
 
   const data = item && maps[item.id];
   const color = KIND_COLOR[item && item.kind] || '#b28a2b';
@@ -45,10 +50,15 @@ export default function MapPanel({ item, onClose }) {
   const cum = pts.map((p, i) => { if (i > 0) total += Math.hypot(p.x - pts[i - 1].x, p.y - pts[i - 1].y); return total; });
   const pathPts = pts.map((p) => `${p.x},${p.y}`).join(' ');
 
-  // איפוס בכל פתיחה של דמות אחרת
+  // איפוס בכל פתיחה של דמות אחרת (או פתיחה בתחנה מסוימת מכתובת משותפת)
   useEffect(() => {
-    setStep(-1); setPlaying(false); setVb(FULL_VB); vbRef.current = FULL_VB;
+    setStep(initialStepRef.current); setPlaying(false); setVb(FULL_VB); vbRef.current = FULL_VB;
   }, [item]);
+
+  // עדכון הכתובת בכל מעבר תחנה
+  useEffect(() => {
+    if (onStepRef.current) onStepRef.current(step);
+  }, [step]);
 
   // מקש Esc לסגירה
   useEffect(() => {

@@ -12,7 +12,34 @@ import books from './data/books.json';
 import events from './data/events.json';
 import periods from './data/periods.json';
 import world from './data/world.json';
+import empires from './data/empires.json';
 import { academicData } from './utils/academic.js';
+
+// ----- מצב באמצעות כתובת ה-URL: מאפשר שיתוף קישור, סימנייה, וכפתור "אחורה" -----
+const itemKey = (it) => `${it.kind}:${it.id}`;
+
+function parseUrl() {
+  const p = new URLSearchParams(window.location.search);
+  const step = p.get('step');
+  return {
+    sel: p.get('sel'),
+    map: p.get('map'),
+    step: step != null ? parseInt(step, 10) : null,
+    tree: p.get('tree') === '1',
+  };
+}
+
+function buildUrl({ sel, map, step, tree }) {
+  const p = new URLSearchParams();
+  if (sel) p.set('sel', sel);
+  if (map) {
+    p.set('map', map);
+    if (step != null && step >= 0) p.set('step', String(step));
+  }
+  if (tree) p.set('tree', '1');
+  const qs = p.toString();
+  return window.location.pathname + (qs ? `?${qs}` : '');
+}
 
 // טווח הציר לכל מצב (בשנה עברית / שנה עברית-שקולה)
 const AXIS = {
@@ -45,16 +72,65 @@ const PRESETS = {
 const MIN_PX = 0.4;
 const MAX_PX = 20;
 
+// כל הפריטים הניתנים-לקישור (מצב מסורת) — לפענוח "kind:id" מהכתובת בלי תלות ב-state
+const ALL_ITEMS = [
+  ...leaders.map((x) => ({ ...x, kind: 'leader' })),
+  ...judges.map((x) => ({ ...x, kind: 'judge' })),
+  ...kings.united.map((x) => ({ ...x, kind: 'united' })),
+  ...kings.judah.map((x) => ({ ...x, kind: 'judah' })),
+  ...kings.israel.map((x) => ({ ...x, kind: 'israel' })),
+  ...prophets.map((x) => ({ ...x, kind: 'prophet' })),
+  ...books.map((x) => ({ ...x, kind: 'book' })),
+  ...world.map((x) => ({ ...x, kind: 'world' })),
+  ...events.map((x) => ({ ...x, kind: 'event', start: x.year, end: x.year })),
+  ...empires.map((x) => ({ ...x, kind: 'empire' })),
+];
+function resolveKey(key) {
+  if (!key) return null;
+  const i = key.indexOf(':');
+  if (i < 0) return null;
+  const kind = key.slice(0, i), id = key.slice(i + 1);
+  return ALL_ITEMS.find((x) => x.kind === kind && x.id === id) || null;
+}
+
 export default function App() {
   const scrollRef = useRef(null);
+  // מצב התחלתי מהכתובת (?sel=…&map=…&step=…&tree=1) — מאותחל ישירות ב-state כדי למנוע מרוץ
+  const initUrl = useRef(null);
+  if (initUrl.current === null) initUrl.current = parseUrl();
+  const INITIAL = initUrl.current;
+
   const [pxPerYear, setPxPerYear] = useState(1);
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState(() => resolveKey(INITIAL.sel));
   const [chronology, setChronology] = useState('tradition');
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [mapItem, setMapItem] = useState(null);
+  const [mapItem, setMapItem] = useState(() => resolveKey(INITIAL.map));
+  const [mapStep, setMapStep] = useState(INITIAL.step != null ? INITIAL.step : -1);
   const [showContemporaries, setShowContemporaries] = useState(false);
-  const [treeOpen, setTreeOpen] = useState(false);
+  const [treeOpen, setTreeOpen] = useState(INITIAL.tree);
+  const [shareMsg, setShareMsg] = useState('');
+
+  // שיתוף התצוגה הנוכחית: שיתוף מקורי במובייל (וואטסאפ וכו'), אחרת העתקה ללוח
+  const shareView = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'ציר הזמן של עם ישראל', url }); } catch { /* בוטל */ }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareMsg('הקישור הועתק ✓');
+    } catch {
+      setShareMsg('העתיקו מהכתובת שלמעלה');
+    }
+    setTimeout(() => setShareMsg(''), 2200);
+  };
+  // ניהול היסטוריית הדפדפן: popping = שינוי שהגיע מכפתור "אחורה";
+  // overlayPushed = כמה חלוניות דחפנו להיסטוריה (כדי לדעת אם "סגירה" יכולה לחזור אחורה)
+  const popping = useRef(false);
+  const overlayPushed = useRef(0);
+  const prevOverlay = useRef({ map: INITIAL.map || null, tree: INITIAL.tree });
   const [visible, setVisible] = useState({ leaders: true, judges: true, kings: true, prophets: true, books: true, events: true, world: true });
 
   const axis = AXIS[chronology];
@@ -104,6 +180,54 @@ export default function App() {
     else if (chronology === 'academic') setChronology('tradition');
   };
 
+  // החלת מצב מהכתובת (בלחיצה על "אחורה")
+  const applyUrl = (u, px) => {
+    const selItem = resolveKey(u.sel);
+    setTreeOpen(!!u.tree);
+    setMapItem(resolveKey(u.map));
+    setMapStep(u.step != null ? u.step : -1);
+    setSelected(selItem);
+    prevOverlay.current = { map: u.map || null, tree: !!u.tree };
+    if (selItem) {
+      const el = scrollRef.current;
+      scrollToYear((selItem.start + selItem.end) / 2, el ? el.clientWidth / 2 : 0, px ?? pxPerYear);
+    }
+  };
+
+  // סנכרון המצב אל הכתובת. פתיחת חלונית (מפה/אילן) דוחפת רשומת היסטוריה,
+  // כך ש"אחורה" סוגר אותה; שאר השינויים רק מחליפים את הכתובת.
+  useEffect(() => {
+    if (popping.current) {
+      popping.current = false;
+      prevOverlay.current = { map: mapItem && itemKey(mapItem), tree: treeOpen };
+      return;
+    }
+    const map = mapItem ? itemKey(mapItem) : null;
+    const url = buildUrl({ sel: selected ? itemKey(selected) : null, map, step: mapStep, tree: treeOpen });
+    // פתיחת חלונית (מפה/אילן) דוחפת רשומת היסטוריה כדי ש"אחורה" יסגור אותה; שאר השינויים מחליפים בלבד
+    const opened = (map && map !== prevOverlay.current.map) || (treeOpen && !prevOverlay.current.tree);
+    if (opened) { window.history.pushState({}, '', url); overlayPushed.current += 1; }
+    else window.history.replaceState({}, '', url);
+    prevOverlay.current = { map, tree: treeOpen };
+  }, [selected, mapItem, mapStep, treeOpen]);
+
+  // כפתור "אחורה" של הדפדפן
+  useEffect(() => {
+    const onPop = () => {
+      popping.current = true;
+      overlayPushed.current = Math.max(0, overlayPushed.current - 1);
+      applyUrl(parseUrl());
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  });
+
+  // סגירת חלונית: אם דחפנו רשומה — נחזור אחורה (כדי לא לנפח היסטוריה); אחרת נסגור ישירות
+  const closeOverlay = (fallback) => {
+    if (overlayPushed.current > 0) window.history.back();
+    else fallback();
+  };
+
   // רשימת הפריטים באותה קטגוריה של הנבחר (מלכי המאוחדת+יהודה נספרים כרצף אחד)
   const categoryList = (item) => {
     const tag = (arr, kind) => (arr || []).map((x) => ({ ...x, kind }));
@@ -141,15 +265,26 @@ export default function App() {
 
   // תצוגת פתיחה: כל הציר על המסך; ובשינוי גודל חלון — לא להישאר קטן מהמסך
   useEffect(() => {
-    setPxPerYear(getMinPx());
+    const minPx = getMinPx();
+    setPxPerYear(minPx);
+    // אם נטענו מכתובת משותפת עם דמות נבחרת — לגלול אליה במקום לקצה הימני
+    if (selected) {
+      scrollRightPending.current = false;
+      const el = scrollRef.current;
+      scrollToYear((selected.start + selected.end) / 2, el ? el.clientWidth / 2 : 0, minPx);
+    }
     const onResize = () => setPxPerYear((p) => Math.max(p, getMinPx()));
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // בהחלפת מצב כרונולוגיה — איפוס לתצוגה מלאה, פתיחה בצד ימין (העבר), וניקוי הבחירה
+  // בהחלפת מצב כרונולוגיה בפועל — איפוס לתצוגה מלאה, פתיחה בצד ימין (העבר), וניקוי הבחירה.
+  // משווים לערך הקודם (ולא לדגל mount) כדי שלא ננקה מצב ששוחזר מכתובת — עמיד גם ל-StrictMode.
+  const prevChrono = useRef(chronology);
   useEffect(() => {
-    setSelected(null);
+    if (prevChrono.current === chronology) return;
+    prevChrono.current = chronology;
+    setSelected(null); setMapItem(null); setTreeOpen(false);
     scrollRightPending.current = true;
     setPxPerYear(getMinPx());
   }, [chronology]);
@@ -280,6 +415,13 @@ export default function App() {
           <button className="tree-btn" onClick={() => setTreeOpen(true)}>
             <span aria-hidden="true">👑</span> אילן יוחסין
           </button>
+          <button className="share-btn" onClick={shareView} title="שיתוף התצוגה הנוכחית">
+            <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+              <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
+            </svg>
+            שיתוף
+          </button>
+          {shareMsg && <span className="share-msg">{shareMsg}</span>}
         </div>
         <div className={`controls${menuOpen ? ' open' : ''}`}>
           <div className="ctrl-stack">
@@ -354,15 +496,19 @@ export default function App() {
 
       <DetailCard
         item={selected} mode={chronology}
-        onClose={() => setSelected(null)} onOpenMap={setMapItem}
+        onClose={() => setSelected(null)}
+        onOpenMap={(it) => { setMapStep(-1); setMapItem(it); }}
         contemporariesOn={showContemporaries}
         onToggleContemporaries={() => setShowContemporaries((o) => !o)}
         prevItem={prevItem} nextItem={nextItem} onNav={jumpTo}
       />
 
-      <MapPanel item={mapItem} onClose={() => setMapItem(null)} />
+      <MapPanel
+        item={mapItem} onClose={() => closeOverlay(() => setMapItem(null))}
+        initialStep={mapStep} onStep={setMapStep}
+      />
 
-      <FamilyTree open={treeOpen} onClose={() => setTreeOpen(false)} onJump={jumpToId} />
+      <FamilyTree open={treeOpen} onClose={() => closeOverlay(() => setTreeOpen(false))} onJump={jumpToId} />
 
       <footer>
         הזמן זורם מימין (עבר) לשמאל · Ctrl+גלגלת לזום ·{' '}
