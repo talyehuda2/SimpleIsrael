@@ -133,18 +133,23 @@ export default function Timeline({
   const packedBooks = useMemo(() => packRows(books), [books]);
   const packedWorld = useMemo(() => packRows(world || []), [world]);
   const packedEvents = useMemo(() => {
-    // אירועים נקודתיים — שיבוץ לפי מרחק תוויות כדי שלא יתנגשו
+    // אירועים נקודתיים — שיבוץ לפי מרחק תוויות כדי שלא יתנגשו, עם תקרת שורות.
+    // מובייל: תקרה נמוכה כדי שרצועת האירועים לא תבלע את המסך ותסתיר את האנשים בטעינה.
     const sorted = [...events].sort((a, b) => b.year - a.year);
     const labelYears = 150 / pxPerYear; // רוחב משוער של תווית בשנים
+    const maxRows = gutter <= 140 ? 4 : 8;
     const rowLast = [];
     const items = sorted.map((ev) => {
       let row = rowLast.findIndex((last) => last - ev.year >= labelYears);
-      if (row === -1) { row = rowLast.length; rowLast.push(Infinity); }
+      if (row === -1) {
+        if (rowLast.length < maxRows) { row = rowLast.length; rowLast.push(Infinity); }
+        else row = rowLast.indexOf(Math.max(...rowLast)); // השורה עם המרווח הגדול ביותר
+      }
       rowLast[row] = ev.year;
       return { ...ev, row };
     });
     return { items, rows: rowLast.length };
-  }, [events, pxPerYear]);
+  }, [events, pxPerYear, gutter]);
 
   const isSel = (kind, id) => selected && selected.kind === kind && selected.id === id;
 
