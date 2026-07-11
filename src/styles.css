@@ -655,7 +655,23 @@ footer {
   h1 { font-size: 18px; }
   .subtitle { display: none; }               /* הכותרת מספיקה — חוסך גובה */
   .menu-btn { display: inline-flex; align-items: center; }
-  .chrono-toggle button { font-size: 12px; padding: 5px 10px; }
+
+  /* שורת חיפוש/פעולות — כפתורים קומפקטיים */
+  .search-row { gap: 7px; }
+  .tree-btn, .share-btn { font-size: 12px; padding: 6px 11px; }
+
+  /* בקרות המסע המודרך במפה — קומפקטי, המחוון בשורה נפרדת למעלה */
+  .journey-controls { gap: 6px; }
+  .jc-btn { font-size: 12px; padding: 5px 11px; }
+  .jc-progress { order: -1; width: 100%; margin: 0 0 2px; }
+
+  /* כותרות המפה ואילן היוחסין — קומפקטיות */
+  .map-panel { padding: 14px 14px 22px; }
+  .map-title { font-size: 18px; }
+  .map-sub { font-size: 11.5px; margin-bottom: 8px; }
+  .tree-panel { padding: 22px 12px 30px; }
+  .tree-title { font-size: 19px; }
+  .tree-sub { font-size: 11.5px; }
 
   /* בקרים מתקפלים למגירה, נפתחת בלחיצה על "אפשרויות" */
   .controls { display: none; }
