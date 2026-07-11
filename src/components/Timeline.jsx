@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { hebrewYearLetters, toSecular } from '../utils/dates.js';
 import maps from '../data/maps.json';
 import empires from '../data/empires.json';
@@ -18,6 +18,20 @@ export const LANE_TOP_PAD = 8;
 
 // גובה שורת רצועות-השליטה (מעצמות) בראש רצועת הרקע העולמי, שמתחתיה השליטים.
 const EMPIRE_ROW_H = 30;
+
+// גובה רצועה ממוזערת (מציגה רק את התווית)
+const COLLAPSED_H = 26;
+
+// תווית שכבה לחיצה — לחיצה ממזערת/מרחיבה את הרצועה
+function LaneLabel({ text, laneKey, collapsed, onToggle }) {
+  const c = !!collapsed[laneKey];
+  return (
+    <div className="lane-label" role="button" title={c ? 'הרחבת השכבה' : 'מזעור השכבה'}
+      onClick={() => onToggle(laneKey)}>
+      <span className="lane-caret" aria-hidden="true">{c ? '▸' : '▾'}</span>{text}
+    </div>
+  );
+}
 // מיפוי אימפריה → משתנה צבע, לצביעת רצועת השליטה דרך --band.
 const POWER_VAR = { egypt: 'var(--pw-egypt)', assyria: 'var(--pw-assyria)', babylon: 'var(--pw-babylon)', persia: 'var(--pw-persia)', greece: 'var(--pw-greece)', rome: 'var(--pw-rome)' };
 
@@ -134,6 +148,12 @@ export default function Timeline({
 
   const isSel = (kind, id) => selected && selected.kind === kind && selected.id === id;
 
+  // מזעור רצועות: מפתח-רצועה → האם ממוזערת
+  const [collapsed, setCollapsed] = useState({});
+  const toggleLane = (k) => setCollapsed((c) => ({ ...c, [k]: !c[k] }));
+  const laneH = (k, expanded) => (collapsed[k] ? COLLAPSED_H : expanded);
+  const cx = (k) => (collapsed[k] ? ' collapsed' : '');
+
   return (
     <div className="timeline-canvas" style={{ width: totalWidth }}>
       {/* קווי רשת + ציר שנים */}
@@ -151,9 +171,9 @@ export default function Timeline({
       ))}
 
       {/* תקופות */}
-      <div className="lane lane-periods">
-        <div className="lane-label">תקופות</div>
-        {periods.map((p, i) => (
+      <div className={`lane lane-periods${cx('periods')}`} style={{ height: laneH('periods', undefined) }}>
+        <LaneLabel text="תקופות" laneKey="periods" collapsed={collapsed} onToggle={toggleLane} />
+        {!collapsed.periods && periods.map((p, i) => (
           <div
             key={p.id}
             className={`period p${i % 2} ${hlOf(p.start, p.end)}`}
@@ -167,9 +187,9 @@ export default function Timeline({
 
       {/* אירועים */}
       {visible.events && (
-        <div className="lane lane-events" style={{ height: packedEvents.rows * 40 + 30 + LANE_TOP_PAD }}>
-          <div className="lane-label">אירועים</div>
-          {packedEvents.items.map((ev) => (
+        <div className={`lane lane-events${cx('events')}`} style={{ height: laneH('events', packedEvents.rows * 40 + 30 + LANE_TOP_PAD) }}>
+          <LaneLabel text="אירועים" laneKey="events" collapsed={collapsed} onToggle={toggleLane} />
+          {!collapsed.events && packedEvents.items.map((ev) => (
             <div
               key={ev.id}
               className={`event ${hlOf(ev.year, ev.year)} ${isSel('event', ev.id) ? 'selected' : ''}`}
@@ -186,9 +206,9 @@ export default function Timeline({
 
       {/* אבות ומנהיגים */}
       {visible.leaders && leaders.length > 0 && (
-        <div className="lane lane-leaders" style={{ height: packedLeaders.rows * 30 + 10 + LANE_TOP_PAD }}>
-          <div className="lane-label">אבות ומנהיגים</div>
-          {packedLeaders.items.map((l) => (
+        <div className={`lane lane-leaders${cx('leaders')}`} style={{ height: laneH('leaders', packedLeaders.rows * 30 + 10 + LANE_TOP_PAD) }}>
+          <LaneLabel text="אבות ומנהיגים" laneKey="leaders" collapsed={collapsed} onToggle={toggleLane} />
+          {!collapsed.leaders && packedLeaders.items.map((l) => (
             <Bar key={l.id} item={l} toX={toX} pxPerYear={pxPerYear} kind="leader" mode={mode} row={l.row}
               selected={isSel('leader', l.id)} onSelect={onSelect} hl={hlOf(l.start, l.end)} />
           ))}
@@ -197,9 +217,9 @@ export default function Timeline({
 
       {/* שופטים */}
       {visible.judges && judges && judges.length > 0 && (
-        <div className="lane lane-judges" style={{ height: packedJudges.rows * 30 + 10 + LANE_TOP_PAD }}>
-          <div className="lane-label">שופטים</div>
-          {packedJudges.items.map((j) => (
+        <div className={`lane lane-judges${cx('judges')}`} style={{ height: laneH('judges', packedJudges.rows * 30 + 10 + LANE_TOP_PAD) }}>
+          <LaneLabel text="שופטים" laneKey="judges" collapsed={collapsed} onToggle={toggleLane} />
+          {!collapsed.judges && packedJudges.items.map((j) => (
             <Bar key={j.id} item={j} toX={toX} pxPerYear={pxPerYear} kind="judge" mode={mode} row={j.row}
               selected={isSel('judge', j.id)} onSelect={onSelect} hl={hlOf(j.start, j.end)} />
           ))}
@@ -209,20 +229,20 @@ export default function Timeline({
       {/* מלכים */}
       {visible.kings && (
         <>
-          <div className="lane lane-kings lane-kings-judah">
-            <div className="lane-label">מלכים — הממלכה המאוחדת / יהודה</div>
-            {kings.united.map((k) => (
+          <div className={`lane lane-kings lane-kings-judah${cx('kings-judah')}`} style={{ height: laneH('kings-judah', undefined) }}>
+            <LaneLabel text="מלכים — הממלכה המאוחדת / יהודה" laneKey="kings-judah" collapsed={collapsed} onToggle={toggleLane} />
+            {!collapsed['kings-judah'] && kings.united.map((k) => (
               <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="united" mode={mode}
                 selected={isSel('united', k.id)} onSelect={onSelect} hl={hlOf(k.start, k.end)} />
             ))}
-            {kings.judah.map((k) => (
+            {!collapsed['kings-judah'] && kings.judah.map((k) => (
               <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="judah" mode={mode}
                 selected={isSel('judah', k.id)} onSelect={onSelect} hl={hlOf(k.start, k.end)} />
             ))}
           </div>
-          <div className="lane lane-kings lane-kings-israel">
-            <div className="lane-label">מלכים — ממלכת ישראל</div>
-            {kings.israel.map((k) => (
+          <div className={`lane lane-kings lane-kings-israel${cx('kings-israel')}`} style={{ height: laneH('kings-israel', undefined) }}>
+            <LaneLabel text="מלכים — ממלכת ישראל" laneKey="kings-israel" collapsed={collapsed} onToggle={toggleLane} />
+            {!collapsed['kings-israel'] && kings.israel.map((k) => (
               <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="israel" mode={mode}
                 selected={isSel('israel', k.id)} onSelect={onSelect} hl={hlOf(k.start, k.end)} />
             ))}
@@ -232,9 +252,9 @@ export default function Timeline({
 
       {/* נביאים */}
       {visible.prophets && (
-        <div className="lane lane-prophets" style={{ height: packedProphets.rows * 30 + 10 + LANE_TOP_PAD }}>
-          <div className="lane-label">נביאים</div>
-          {packedProphets.items.map((p) => (
+        <div className={`lane lane-prophets${cx('prophets')}`} style={{ height: laneH('prophets', packedProphets.rows * 30 + 10 + LANE_TOP_PAD) }}>
+          <LaneLabel text="נביאים" laneKey="prophets" collapsed={collapsed} onToggle={toggleLane} />
+          {!collapsed.prophets && packedProphets.items.map((p) => (
             <Bar key={p.id} item={p} toX={toX} pxPerYear={pxPerYear} kind="prophet" mode={mode} row={p.row}
               selected={isSel('prophet', p.id)} onSelect={onSelect} hl={hlOf(p.start, p.end)} />
           ))}
@@ -243,9 +263,9 @@ export default function Timeline({
 
       {/* ספרים */}
       {visible.books && (
-        <div className="lane lane-books" style={{ height: packedBooks.rows * 30 + 10 + LANE_TOP_PAD }}>
-          <div className="lane-label">ספרי התנ"ך</div>
-          {packedBooks.items.map((b) => (
+        <div className={`lane lane-books${cx('books')}`} style={{ height: laneH('books', packedBooks.rows * 30 + 10 + LANE_TOP_PAD) }}>
+          <LaneLabel text={'ספרי התנ"ך'} laneKey="books" collapsed={collapsed} onToggle={toggleLane} />
+          {!collapsed.books && packedBooks.items.map((b) => (
             <Bar key={b.id} item={b} toX={toX} pxPerYear={pxPerYear} kind="book" mode={mode} row={b.row}
               selected={isSel('book', b.id)} onSelect={onSelect} hl={hlOf(b.start, b.end)} />
           ))}
@@ -254,9 +274,9 @@ export default function Timeline({
 
       {/* רקע עולמי — רצועות השליטה של המעצמות + מלכים זרים המוזכרים במקרא */}
       {visible.world && world.length > 0 && (
-        <div className="lane lane-world" style={{ height: EMPIRE_ROW_H + packedWorld.rows * 30 + 10 + LANE_TOP_PAD }}>
-          <div className="lane-label">רקע עולמי</div>
-          {empires.map((e) => (
+        <div className={`lane lane-world${cx('world')}`} style={{ height: laneH('world', EMPIRE_ROW_H + packedWorld.rows * 30 + 10 + LANE_TOP_PAD) }}>
+          <LaneLabel text="רקע עולמי" laneKey="world" collapsed={collapsed} onToggle={toggleLane} />
+          {!collapsed.world && empires.map((e) => (
             <div
               key={e.id}
               className={`empire-band pw-${e.power} ${hlOf(e.start, e.end)} ${isSel('empire', e.id) ? 'selected' : ''}`}
@@ -267,7 +287,7 @@ export default function Timeline({
               <span>{e.name}</span>
             </div>
           ))}
-          {packedWorld.items.map((w) => (
+          {!collapsed.world && packedWorld.items.map((w) => (
             <Bar key={w.id} item={w} toX={toX} pxPerYear={pxPerYear} kind="world" mode={mode} row={w.row}
               selected={isSel('world', w.id)} onSelect={onSelect} hl={hlOf(w.start, w.end)} topOffset={EMPIRE_ROW_H} />
           ))}

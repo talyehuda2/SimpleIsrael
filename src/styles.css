@@ -332,7 +332,14 @@ h1 {
   background: color-mix(in srgb, var(--bg) 90%, transparent);
   padding: 2px 12px; border-radius: 0 0 0 10px; z-index: 4;
   backdrop-filter: blur(2px);
+  cursor: pointer; user-select: none; transition: color .12s;
 }
+.lane-label:hover { color: var(--gold); }
+/* סמן מזעור/הרחבה */
+.lane-caret { display: inline-block; width: 11px; font-size: 9px; color: var(--muted); margin-inline-end: 3px; vertical-align: 1px; }
+/* רצועה ממוזערת — רק שורת התווית */
+.lane.collapsed { overflow: hidden; min-height: 0; }
+.lane.collapsed .lane-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* מרובע צבע בקצה השמאלי של הכותרת, בגוון הקטגוריה (כמו במקרא) — מקשר כותרת↔נתיב */
 .lane-label::after {
   content: ''; display: inline-block; width: 11px; height: 11px; border-radius: 3px;
