@@ -114,7 +114,9 @@ export default function App() {
   // שיתוף התצוגה הנוכחית: שיתוף מקורי במובייל (וואטסאפ וכו'), אחרת העתקה ללוח
   const shareView = async () => {
     const url = window.location.href;
-    if (navigator.share) {
+    // שיתוף מקורי רק במכשירי מגע (מובייל/טאבלט) — בדסקטופ הוא מציג דיאלוג שבור, אז מעתיקים ללוח
+    const isTouch = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+    if (isTouch && navigator.share) {
       try { await navigator.share({ title: 'ציר הזמן של עם ישראל', url }); } catch { /* בוטל */ }
       return;
     }
