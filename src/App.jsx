@@ -72,6 +72,9 @@ const PRESETS = {
 const MIN_PX = 0.4;
 const MAX_PX = 20;
 
+// טופס משוב/דיווח (Google Forms)
+const FEEDBACK_URL = 'https://forms.gle/PosRsinUJSqd8K3a6';
+
 // כל הפריטים הניתנים-לקישור (מצב מסורת) — לפענוח "kind:id" מהכתובת בלי תלות ב-state
 const ALL_ITEMS = [
   ...leaders.map((x) => ({ ...x, kind: 'leader' })),
@@ -531,6 +534,8 @@ export default function App() {
         {isAcademic
           ? 'התאריכים לפי המחקר ההיסטורי המקובל'
           : 'התאריכים משוערים לפי המסורת; ייתכנו חפיפות בין מלכים (מלוכה משותפת)'}
+        {' · '}
+        <a className="footer-feedback" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">💬 משוב ודיווח</a>
       </footer>
 
       {aboutOpen && (
@@ -543,6 +548,9 @@ export default function App() {
               לעשות סדר בתולדות עם ישראל. ייתכנו אי-דיוקים בתאריכים, במפות, במיקומים
               ובפרטים — ואשמח לכל תיקון והערה. שימוש נעים! 📖
             </p>
+            <a className="feedback-btn" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
+              💬 משוב · דיווח על תקלה · הצעת תיקון
+            </a>
           </div>
         </div>
       )}
