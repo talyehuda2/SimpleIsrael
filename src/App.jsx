@@ -75,6 +75,9 @@ const MAX_PX = 20;
 // טופס משוב/דיווח (Google Forms)
 const FEEDBACK_URL = 'https://forms.gle/PosRsinUJSqd8K3a6';
 
+// ברירת מחדל לשכבות הגלויות (נשמר ב-localStorage בין ביקורים)
+const DEFAULT_VISIBLE = { leaders: true, judges: true, kings: true, prophets: true, books: true, events: true, world: true };
+
 // כל הפריטים הניתנים-לקישור (מצב מסורת) — לפענוח "kind:id" מהכתובת בלי תלות ב-state
 const ALL_ITEMS = [
   ...leaders.map((x) => ({ ...x, kind: 'leader' })),
@@ -136,7 +139,17 @@ export default function App() {
   const popping = useRef(false);
   const overlayPushed = useRef(0);
   const prevOverlay = useRef({ map: INITIAL.map || null, tree: INITIAL.tree });
-  const [visible, setVisible] = useState({ leaders: true, judges: true, kings: true, prophets: true, books: true, events: true, world: true });
+  const [visible, setVisible] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('si_visible'));
+      if (saved && typeof saved === 'object') return { ...DEFAULT_VISIBLE, ...saved };
+    } catch { /* אין שמירה */ }
+    return DEFAULT_VISIBLE;
+  });
+  // שמירת בחירת השכבות בין ביקורים
+  useEffect(() => {
+    try { localStorage.setItem('si_visible', JSON.stringify(visible)); } catch { /* מתעלמים */ }
+  }, [visible]);
 
   const axis = AXIS[chronology];
   const data = chronology === 'academic'
