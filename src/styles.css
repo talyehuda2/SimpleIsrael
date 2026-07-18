@@ -548,6 +548,43 @@ footer {
 .nav-arrow { color: var(--gold); font-size: 10px; flex: none; unicode-bidi: isolate; }
 .nav-spacer { flex: 1; }
 
+/* תגובות קהילה */
+.comments { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+.comments-title { margin: 0 0 10px; font-size: 15px; font-weight: 900; color: var(--navy); }
+.comment-form { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+.comment-name, .comment-body {
+  width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13.5px;
+  color: var(--ink); background: var(--panel);
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 10px;
+}
+.comment-name::placeholder, .comment-body::placeholder { color: var(--muted); }
+.comment-name:focus, .comment-body:focus {
+  outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgb(178 138 43 / .15);
+}
+.comment-body { resize: vertical; min-height: 44px; line-height: 1.5; }
+/* honeypot — מוסתר לחלוטין מבני-אדם */
+.comment-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.comment-actions { display: flex; align-items: center; gap: 10px; }
+.comment-count { font-size: 11px; color: var(--muted); }
+.comment-submit {
+  margin-inline-start: auto; background: var(--navy); color: #fff; border: none;
+  border-radius: 18px; padding: 7px 18px; font-family: inherit; font-size: 13px;
+  font-weight: 700; cursor: pointer; transition: background .12s, transform .1s;
+}
+.comment-submit:hover:not(:disabled) { background: var(--navy-2); transform: translateY(-1px); }
+.comment-submit:disabled { opacity: .5; cursor: default; }
+.comment-err { font-size: 12.5px; color: #a5321f; }
+.comments-empty { font-size: 13px; color: var(--muted); padding: 4px 0; }
+.comment-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.comment {
+  background: var(--bg-2); border: 1px solid var(--line-soft);
+  border-radius: 12px; padding: 9px 12px;
+}
+.comment-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+.comment-author { font-weight: 700; font-size: 13px; color: var(--navy); }
+.comment-date { font-size: 11px; color: var(--muted); margin-inline-start: auto; }
+.comment-text { font-size: 13.5px; line-height: 1.55; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+
 /* מצב "בני-הזמן": עמעום מי שלא חי במקביל, הדגשה עדינה של החופפים */
 .bar.dimmed, .period.dimmed, .event.dimmed { opacity: .14; filter: saturate(.5); }
 .bar.contemporary { box-shadow: 0 0 0 2px rgb(178 138 43 / .4); z-index: 2; }

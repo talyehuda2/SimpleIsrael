@@ -1,5 +1,6 @@
 import { formatRange } from '../utils/dates.js';
 import maps from '../data/maps.json';
+import Comments from './Comments.jsx';
 
 const KIND_LABELS = {
   leader: 'מנהיג',
@@ -73,6 +74,7 @@ export default function DetailCard({ item, mode, onClose, onOpenMap, contemporar
           ) : <span className="nav-spacer" />}
         </div>
       )}
+      <Comments targetKey={`${item.kind}:${item.id}`} />
     </aside>
   );
 }
