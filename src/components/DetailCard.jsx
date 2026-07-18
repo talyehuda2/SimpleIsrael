@@ -74,7 +74,7 @@ export default function DetailCard({ item, mode, onClose, onOpenMap, contemporar
           ) : <span className="nav-spacer" />}
         </div>
       )}
-      <Comments targetKey={`${item.kind}:${item.id}`} />
+      <Comments targetKey={`${item.kind}:${item.id}`} targetLabel={item.name} />
     </aside>
   );
 }

@@ -9,7 +9,7 @@ function timeAgo(iso) {
   return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-export default function Comments({ targetKey }) {
+export default function Comments({ targetKey, targetLabel }) {
   const [list, setList] = useState([]);
   const [status, setStatus] = useState('loading'); // loading | ready | error
   const [author, setAuthor] = useState('');
@@ -45,6 +45,7 @@ export default function Comments({ targetKey }) {
     setSending(true);
     const row = {
       target_key: targetKey,
+      target_label: targetLabel || null,
       author: author.trim().slice(0, MAX_NAME) || null,
       body: text,
       hp: hp.current ? hp.current.value : '',
