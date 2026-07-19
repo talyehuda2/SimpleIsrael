@@ -748,7 +748,8 @@ footer {
 
   /* כרטיס פרטים כ"גיליון" בתחתית המסך */
   .detail-card {
-    left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 52vh;
+    left: 8px; right: 8px; bottom: 8px; width: auto;
+    max-height: 82vh; max-height: calc(100dvh - 20px);
     border-radius: 14px; border-top-width: 4px;
   }
 
