@@ -455,8 +455,9 @@ h1 {
 
 /* ----- כרטיס פרטים ----- */
 .detail-card {
-  position: fixed; left: 18px; bottom: 50px; width: 350px; max-height: 62vh;
-  overflow-y: auto; background: var(--panel);
+  position: fixed; left: 18px; bottom: 50px; width: 350px;
+  max-height: calc(100vh - 80px); max-height: calc(100dvh - 80px);
+  overflow-y: auto; overflow-x: hidden; background: var(--panel);
   border: 1px solid var(--line); border-top: 4px solid var(--gold);
   border-radius: 6px 6px 14px 14px; box-shadow: 0 12px 40px rgb(40 25 0 / .28);
   padding: 18px 20px; z-index: 20; direction: rtl;
@@ -562,8 +563,11 @@ footer {
   outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgb(178 138 43 / .15);
 }
 .comment-body { resize: vertical; min-height: 44px; line-height: 1.5; }
-/* honeypot — מוסתר לחלוטין מבני-אדם */
-.comment-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+/* honeypot — מוסתר לחלוטין מבני-אדם, בלי ליצור גלילה אופקית */
+.comment-hp {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; opacity: 0;
+}
 .comment-actions { display: flex; align-items: center; gap: 10px; }
 .comment-count { font-size: 11px; color: var(--muted); }
 .comment-submit {
