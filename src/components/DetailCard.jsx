@@ -1,6 +1,9 @@
+import { lazy, Suspense } from 'react';
 import { formatRange } from '../utils/dates.js';
 import maps from '../data/maps.json';
-import Comments from './Comments.jsx';
+
+// נטען רק כשנפתח כרטיס — כך ספריית Supabase לא מכבידה על טעינת הציר
+const Comments = lazy(() => import('./Comments.jsx'));
 
 const KIND_LABELS = {
   leader: 'מנהיג',
@@ -74,7 +77,9 @@ export default function DetailCard({ item, mode, onClose, onOpenMap, contemporar
           ) : <span className="nav-spacer" />}
         </div>
       )}
-      <Comments targetKey={`${item.kind}:${item.id}`} targetLabel={item.name} />
+      <Suspense fallback={<div className="comments-loading">טוען תגובות…</div>}>
+        <Comments targetKey={`${item.kind}:${item.id}`} targetLabel={item.name} />
+      </Suspense>
     </aside>
   );
 }
