@@ -363,7 +363,13 @@ h1 {
 .illo .il-zoomwrap { transform-box: view-box; transform-origin: 120px 63px; animation: ilZoomWrap 4s ease-in-out infinite; }
 .illo .il-lens { transform-box: view-box; transform-origin: 120px 63px; animation: ilZoomLens 4s ease-in-out infinite; }
 @keyframes ilZoomWrap { 0%, 15% { transform: scale(1); } 45%, 72% { transform: scale(1.28); } 95%, 100% { transform: scale(1); } }
-@keyframes ilZoomLens { 0%, 15% { transform: scale(.8); } 45%, 72% { transform: scale(1.2); } 95%, 100% { transform: scale(.8); } }
+@keyframes ilZoomLens {
+  0% { transform: translateX(-36px) scale(.8); }
+  22% { transform: translateX(38px) scale(.85); }
+  45%, 72% { transform: translateX(0) scale(1.2); }
+  88% { transform: translateX(-36px) scale(.85); }
+  100% { transform: translateX(-36px) scale(.8); }
+}
 @keyframes ilBetween { 0%, 25% { opacity: 0; transform: scale(.4); } 50%, 68% { opacity: 1; transform: scale(1); } 85%, 100% { opacity: 0; transform: scale(.4); } }
 
 @media (prefers-reduced-motion: reduce) {
