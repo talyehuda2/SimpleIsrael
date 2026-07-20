@@ -80,6 +80,19 @@ const FEEDBACK_URL = 'https://forms.gle/PosRsinUJSqd8K3a6';
 // ברירת מחדל לשכבות הגלויות (נשמר ב-localStorage בין ביקורים)
 const DEFAULT_VISIBLE = { leaders: true, judges: true, kings: true, prophets: true, books: true, events: true, world: true };
 
+// תוויות סוג לכותרת הדף (SEO/שיתוף)
+const KIND_LABELS = {
+  leader: 'מנהיג', judge: 'שופט', united: 'מלך', judah: 'מלך יהודה', israel: 'מלך ישראל',
+  prophet: 'נביא', book: 'ספר תנ״ך', event: 'אירוע', world: 'דמות עולמית', empire: 'מלכות',
+};
+const SITE_TITLE = 'ציר הזמן של עם ישראל';
+const SITE_DESC = 'ציר זמן אינטראקטיבי של תולדות עם ישראל — מהאבות ועד חורבן בית שני.';
+function setMetaTag(sel, attr, content) {
+  let el = document.head.querySelector(`meta[${attr}="${sel}"]`);
+  if (!el) { el = document.createElement('meta'); el.setAttribute(attr, sel); document.head.appendChild(el); }
+  el.setAttribute('content', content);
+}
+
 // כל הפריטים הניתנים-לקישור (מצב מסורת) — לפענוח "kind:id" מהכתובת בלי תלות ב-state
 const ALL_ITEMS = [
   ...leaders.map((x) => ({ ...x, kind: 'leader' })),
@@ -187,6 +200,30 @@ export default function App() {
     setContempItem((prev) =>
       prev && selected && itemKey(selected) !== itemKey(prev) ? null : prev
     );
+  }, [selected]);
+
+  // עדכון כותרת הדף, התיאור וה-canonical לפי הפריט הנבחר (SEO + תצוגת שיתוף)
+  useEffect(() => {
+    const canon = document.head.querySelector('link[rel="canonical"]');
+    if (selected) {
+      const label = KIND_LABELS[selected.kind];
+      const title = `${selected.name}${label ? ' — ' + label : ''} | ${SITE_TITLE}`;
+      const desc = String(selected.description || selected.name).replace(/\s+/g, ' ').trim().slice(0, 155);
+      document.title = title;
+      setMetaTag('description', 'name', desc);
+      setMetaTag('og:title', 'property', title);
+      setMetaTag('og:description', 'property', desc);
+      setMetaTag('og:url', 'property', `${location.origin}/?sel=${selected.kind}:${selected.id}`);
+      // ה-canonical מפנה לדף-הנחיתה הסטטי של הפריט (איחוד אותות SEO)
+      if (canon) canon.setAttribute('href', `${location.origin}/p/${selected.kind}/${selected.id}`);
+    } else {
+      document.title = SITE_TITLE;
+      setMetaTag('description', 'name', SITE_DESC);
+      setMetaTag('og:title', 'property', SITE_TITLE);
+      setMetaTag('og:description', 'property', SITE_DESC);
+      setMetaTag('og:url', 'property', `${location.origin}/`);
+      if (canon) canon.setAttribute('href', `${location.origin}/`);
+    }
   }, [selected]);
 
   // אינדקס חיפוש — כל הפריטים הנבחרים מכל הרצועות (ללא תקופות שאינן נבחרות)
@@ -591,6 +628,8 @@ export default function App() {
           : 'התאריכים משוערים לפי המסורת; ייתכנו חפיפות בין מלכים (מלוכה משותפת)'}
         {' · '}
         <a className="footer-feedback" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">💬 משוב ודיווח</a>
+        {' · '}
+        <a className="footer-feedback" href="/p/">מפת האתר</a>
       </footer>
 
       {aboutOpen && (
