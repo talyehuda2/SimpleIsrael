@@ -4,6 +4,7 @@ import DetailCard from './components/DetailCard.jsx';
 import MapPanel from './components/MapPanel.jsx';
 import SearchBox from './components/SearchBox.jsx';
 import FamilyTree from './components/FamilyTree.jsx';
+import Intro from './components/Intro.jsx';
 import leaders from './data/leaders.json';
 import judges from './data/judges.json';
 import kings from './data/kings.json';
@@ -150,6 +151,15 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('si_visible', JSON.stringify(visible)); } catch { /* מתעלמים */ }
   }, [visible]);
+
+  // מדריך היכרות — נפתח מעצמו בביקור הראשון בלבד
+  const [introOpen, setIntroOpen] = useState(() => {
+    try { return !localStorage.getItem('si_seen_intro'); } catch { return false; }
+  });
+  const closeIntro = () => {
+    setIntroOpen(false);
+    try { localStorage.setItem('si_seen_intro', '1'); } catch { /* מתעלמים */ }
+  };
 
   const axis = AXIS[chronology];
   const data = chronology === 'academic'
@@ -564,9 +574,17 @@ export default function App() {
             <a className="feedback-btn" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
               💬 משוב · דיווח על תקלה · הצעת תיקון
             </a>
+            <button
+              className="intro-replay"
+              onClick={() => { setAboutOpen(false); setIntroOpen(true); }}
+            >
+              הצגת מדריך ההיכרות שוב
+            </button>
           </div>
         </div>
       )}
+
+      <Intro open={introOpen} onClose={closeIntro} />
     </div>
   );
 }
