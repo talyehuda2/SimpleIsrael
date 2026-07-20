@@ -3,12 +3,15 @@ import { useEffect, useRef, useState } from 'react';
 /* איורים מונפשים (SVG) — אחד לכל נושא. הצבעים מגיעים ממשתני ה-CSS של העיצוב. */
 
 function IlloSearch() {
+  // הקלדה בתיבת החיפוש: הטקסט "נכתב" מימין לשמאל בקפיצות (אות-אות)
+  // עם סמן מהבהב שנע איתו, ואז שורת התוצאה נדלקת.
   return (
     <svg viewBox="0 0 240 130" className="illo" role="img" aria-label="חיפוש וקפיצה">
       <rect x="30" y="18" width="180" height="30" rx="15" className="il-box" />
-      <circle cx="47" cy="33" r="6" className="il-stroke" fill="none" />
-      <line x1="51" y1="37" x2="57" y2="43" className="il-stroke" />
-      <rect x="64" y="27" width="70" height="12" rx="4" className="il-typed" />
+      <circle cx="193" cy="33" r="6" className="il-stroke" fill="none" />
+      <line x1="188" y1="37" x2="182" y2="43" className="il-stroke" />
+      <rect x="60" y="27" width="112" height="12" rx="3" className="il-typed" />
+      <rect x="170" y="25" width="2.5" height="16" rx="1" className="il-caret" />
       <rect x="40" y="66" width="160" height="16" rx="5" className="il-row" />
       <rect x="40" y="90" width="160" height="16" rx="5" className="il-row il-hit" />
     </svg>

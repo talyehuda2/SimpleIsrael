@@ -298,8 +298,11 @@ h1 {
 .illo .il-box { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
 .illo .il-stroke { stroke: var(--navy); stroke-width: 2.4; stroke-linecap: round; fill: none; }
 .illo .il-row { fill: var(--bg-2); stroke: var(--line-soft); stroke-width: 1; }
-.illo .il-typed { fill: var(--gold-soft); transform-origin: right center; animation: ilType 2.6s ease-in-out infinite; }
-@keyframes ilType { 0% { transform: scaleX(0); } 45% { transform: scaleX(1); } 90% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+.illo .il-typed { fill: var(--gold-soft); transform-box: fill-box; transform-origin: right center; animation: ilType 2.8s steps(8) infinite; }
+@keyframes ilType { 0% { transform: scaleX(0); } 45%, 88% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+.illo .il-caret { fill: var(--navy); transform-box: view-box; animation: ilCaretMove 2.8s steps(8) infinite, ilCaretBlink .5s step-end infinite; }
+@keyframes ilCaretMove { 0% { transform: translateX(0); } 45%, 88% { transform: translateX(-112px); } 100% { transform: translateX(0); } }
+@keyframes ilCaretBlink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
 .illo .il-hit { animation: ilHit 2.6s ease-in-out infinite; }
 @keyframes ilHit {
   0%, 55% { fill: var(--bg-2); stroke: var(--line-soft); }
@@ -375,6 +378,7 @@ h1 {
 @media (prefers-reduced-motion: reduce) {
   .illo * { animation: none !important; }
   .illo .il-typed { transform: scaleX(1); }
+  .illo .il-caret { transform: translateX(-112px); opacity: 1; }
   .illo .il-mprogress { stroke-dashoffset: 0; }
   .illo .il-tline { stroke-dashoffset: 0; }
   .illo .il-tn0, .illo .il-tn1, .illo .il-tn2, .illo .il-bubble { opacity: 1; transform: none; }
