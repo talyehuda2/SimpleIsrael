@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { genealogy } from '../data/genealogy.js';
 
 // אייקון "ציר זמן" — קו אופקי עם סמן, מסמן דמות שמקושרת לציר וניתן לקפוץ אליה
@@ -27,6 +28,13 @@ function Node({ node, heir, onJump }) {
 }
 
 export default function FamilyTree({ open, onClose, onJump }) {
+  // Esc סוגר את האילן (נגישות מקלדת)
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
   if (!open) return null;
   // onJump כבר סוגר את האילן בעצמו (סגירה ישירה, לא דרך "אחורה") — לכן לא קוראים כאן ל-onClose
   const jump = (id) => onJump(id);

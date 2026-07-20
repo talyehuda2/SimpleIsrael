@@ -134,7 +134,8 @@ export default function MapPanel({ item, onClose, initialStep = -1, onStep }) {
         </div>
 
         <div className="map-wrap">
-          <svg viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`} className="map-svg" preserveAspectRatio="xMidYMid meet">
+          <svg viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`} className="map-svg" preserveAspectRatio="xMidYMid meet"
+               role="img" aria-label={`מפת ארץ ישראל עם תחנות המסע${item ? ' של ' + item.name : ''}`}>
             <image href="/israel-map.jpg" x="0" y="0" width={IMG_W} height={IMG_H} />
             {/* קו התכנון — כל המסלול, מקווקו וחלש */}
             <polyline points={pathPts} className="journey" style={{ opacity: step < 0 ? 0.75 : 0.28 }} />

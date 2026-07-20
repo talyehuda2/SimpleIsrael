@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { formatRange } from '../utils/dates.js';
 import { sourceSegments } from '../utils/sefaria.js';
 import maps from '../data/maps.json';
@@ -26,6 +26,13 @@ const JUDGMENT_LABELS = {
 };
 
 export default function DetailCard({ item, mode, onClose, onOpenMap, contemporariesOn, onToggleContemporaries, prevItem, nextItem, onNav }) {
+  // Esc סוגר את הכרטיס (נגישות מקלדת)
+  useEffect(() => {
+    if (!item) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [item, onClose]);
   if (!item) return null;
   const hasMap = !!maps[item.id];
   return (
