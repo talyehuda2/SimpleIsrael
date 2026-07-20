@@ -93,7 +93,11 @@ export default function DetailCard({ item, mode, onClose, onOpenMap, contemporar
         </div>
       )}
       <Suspense fallback={<div className="comments-loading">טוען תגובות…</div>}>
-        <Comments targetKey={`${item.kind}:${item.id}`} targetLabel={item.name} />
+        <Comments
+          key={`${item.kind}:${item.id}`}
+          targetKey={`${item.kind}:${item.id}`}
+          targetLabel={item.name}
+        />
       </Suspense>
     </aside>
   );
