@@ -652,6 +652,22 @@ footer {
 .comment-date { font-size: 11px; color: var(--muted); margin-inline-start: auto; }
 .comment-text { font-size: 13.5px; line-height: 1.55; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
 
+/* צ'יפ ביטול הדגשת בני-הזמן — מופיע כשההדגשה פעילה והכרטיס סגור */
+.contemp-clear {
+  position: fixed; bottom: 52px; left: 50%; transform: translateX(-50%);
+  z-index: 18; display: inline-flex; align-items: center; gap: 7px;
+  background: var(--navy); color: #fff; border: none; border-radius: 22px;
+  padding: 9px 16px; font-family: inherit; font-size: 13px; font-weight: 700;
+  box-shadow: 0 4px 14px rgb(20 40 60 / .35); cursor: pointer; max-width: 90vw;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.contemp-clear:hover { background: var(--navy-2); }
+.contemp-clear .cc-x {
+  font-size: 12px; opacity: .8; background: rgb(255 255 255 / .18);
+  border-radius: 50%; width: 18px; height: 18px; display: inline-flex;
+  align-items: center; justify-content: center; flex: none;
+}
+
 /* מצב "בני-הזמן": עמעום מי שלא חי במקביל, הדגשה עדינה של החופפים */
 .bar.dimmed, .period.dimmed, .event.dimmed { opacity: .14; filter: saturate(.5); }
 .bar.contemporary { box-shadow: 0 0 0 2px rgb(178 138 43 / .4); z-index: 2; }

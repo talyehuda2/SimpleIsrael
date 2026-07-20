@@ -115,7 +115,9 @@ export default function App() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [mapItem, setMapItem] = useState(() => resolveKey(INITIAL.map));
   const [mapStep, setMapStep] = useState(INITIAL.step != null ? INITIAL.step : -1);
-  const [showContemporaries, setShowContemporaries] = useState(false);
+  // הפריט שבני-הזמן שלו מודגשים — נשמר בנפרד מהבחירה, כדי שההדגשה תישאר
+  // גם אחרי סגירת הכרטיס (חשוב במובייל, שם הכרטיס מסתיר את הציר).
+  const [contempItem, setContempItem] = useState(null);
   const [treeOpen, setTreeOpen] = useState(INITIAL.tree);
   const [shareMsg, setShareMsg] = useState('');
 
@@ -175,10 +177,17 @@ export default function App() {
     ? academicData
     : { leaders, judges, kings, prophets, books, events, periods, world };
 
-  // טווח ההדגשה למצב "בני-הזמן" — תקופת החיים/כהונה של הפריט הנבחר
-  const highlightRange = selected && showContemporaries
-    ? { start: selected.start, end: selected.end }
+  // טווח ההדגשה למצב "בני-הזמן" — תקופת החיים/כהונה של פריט העוגן
+  const highlightRange = contempItem
+    ? { start: contempItem.start, end: contempItem.end }
     : null;
+
+  // בחירת פריט אחר מבטלת הדגשת בני-זמן קודמת; סגירת הכרטיס (selected=null) לא.
+  useEffect(() => {
+    setContempItem((prev) =>
+      prev && selected && itemKey(selected) !== itemKey(prev) ? null : prev
+    );
+  }, [selected]);
 
   // אינדקס חיפוש — כל הפריטים הנבחרים מכל הרצועות (ללא תקופות שאינן נבחרות)
   const searchIndex = useMemo(() => {
@@ -222,7 +231,7 @@ export default function App() {
     const layer = LAYER_OF[item.kind];
     if (layer) setVisible((v) => (v[layer] ? v : { ...v, [layer]: true }));
     setSelected(item);
-    setShowContemporaries(true); // הדגשת בני-הזמן
+    setContempItem(item); // הדגשת בני-הזמן
     // זום-אין כך שתקופת החיים תתפוס כשליש מהרוחב — רואים את הדמות ואת מי שחי במקביל
     const el = scrollRef.current;
     const span = Math.max(item.end - item.start, 20);
@@ -335,7 +344,7 @@ export default function App() {
   useEffect(() => {
     if (prevChrono.current === chronology) return;
     prevChrono.current = chronology;
-    setSelected(null); setMapItem(null); setTreeOpen(false);
+    setSelected(null); setMapItem(null); setTreeOpen(false); setContempItem(null);
     scrollRightPending.current = true;
     setPxPerYear(getMinPx());
   }, [chronology]);
@@ -545,12 +554,26 @@ export default function App() {
         </div>
       )}
 
+      {contempItem && !selected && (
+        <button className="contemp-clear" onClick={() => setContempItem(null)}>
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+          </svg>
+          בני-הזמן של {contempItem.name}
+          <span className="cc-x" aria-hidden="true">✕</span>
+        </button>
+      )}
+
       <DetailCard
         item={selected} mode={chronology}
         onClose={() => setSelected(null)}
         onOpenMap={(it) => { setMapStep(-1); setMapItem(it); }}
-        contemporariesOn={showContemporaries}
-        onToggleContemporaries={() => setShowContemporaries((o) => !o)}
+        contemporariesOn={!!(selected && contempItem && itemKey(selected) === itemKey(contempItem))}
+        onToggleContemporaries={() =>
+          setContempItem((prev) =>
+            prev && selected && itemKey(prev) === itemKey(selected) ? null : selected
+          )
+        }
         prevItem={prevItem} nextItem={nextItem} onNav={jumpTo}
       />
 
