@@ -251,32 +251,106 @@ h1 {
   padding: 22px 24px; box-shadow: 0 14px 40px rgb(30 20 5 / .32);
   animation: cardIn .18s ease-out;
 }
-.intro-title {
-  margin: 2px 0 6px; font-size: 22px; color: var(--navy);
+.intro-welcome {
+  text-align: center; font-size: 15px; font-weight: 700; color: var(--gold);
+  margin-bottom: 6px;
+}
+.intro-stage { text-align: center; animation: introFade .32s ease-out; }
+@keyframes introFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.intro-illo-wrap {
+  background: linear-gradient(180deg, var(--bg-2), var(--panel));
+  border: 1px solid var(--line-soft); border-radius: 12px;
+  padding: 6px; margin: 4px auto 14px; max-width: 320px;
+}
+.illo { width: 100%; height: auto; display: block; }
+.intro-slide-title {
+  margin: 0 0 6px; font-size: 21px; color: var(--navy);
   font-family: 'Frank Ruhl Libre', serif; font-weight: 900;
 }
-.intro-sub { margin: 0 0 16px; font-size: 14px; line-height: 1.7; color: var(--muted); }
-.intro-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
-.intro-list li { display: flex; align-items: flex-start; gap: 11px; }
-.intro-icon {
-  flex: none; width: 34px; height: 34px; border-radius: 50%;
-  background: var(--bg-2); border: 1px solid var(--line);
-  display: flex; align-items: center; justify-content: center; font-size: 17px;
+.intro-slide-text {
+  margin: 0 auto; max-width: 380px; font-size: 14px;
+  line-height: 1.7; color: var(--ink); min-height: 48px;
 }
-.intro-text { display: flex; flex-direction: column; gap: 2px; }
-.intro-text b { font-size: 14.5px; color: var(--navy); }
-.intro-text span { font-size: 13px; line-height: 1.6; color: var(--ink); }
-.intro-cta {
-  display: block; width: 100%; margin-top: 20px; background: var(--navy);
-  color: #fff; border: none; border-radius: 22px; padding: 11px 18px;
-  font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
-  transition: background .12s, transform .1s;
+.intro-dots { display: flex; justify-content: center; gap: 7px; margin: 16px 0 4px; }
+.intro-dot {
+  width: 8px; height: 8px; border-radius: 50%; border: none; padding: 0;
+  background: var(--line); cursor: pointer; transition: background .15s, transform .15s;
 }
-.intro-cta:hover { background: var(--navy-2); transform: translateY(-1px); }
+.intro-dot.on { background: var(--gold); transform: scale(1.35); }
+.intro-nav { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.intro-count { font-size: 12px; color: var(--muted); margin: 0 auto; }
+.intro-btn {
+  border: none; border-radius: 22px; padding: 10px 20px; font-family: inherit;
+  font-size: 14px; font-weight: 700; cursor: pointer; transition: background .12s, transform .1s, opacity .12s;
+}
+.intro-btn.primary { background: var(--navy); color: #fff; }
+.intro-btn.primary:hover { background: var(--navy-2); transform: translateY(-1px); }
+.intro-btn.ghost { background: var(--bg-2); color: var(--navy); border: 1px solid var(--line); }
+.intro-btn.ghost:hover:not(:disabled) { background: var(--line-soft); }
+.intro-btn:disabled { opacity: .4; cursor: default; }
 .intro-replay {
   display: block; margin: 12px auto 0; background: none; border: none;
   color: var(--navy); font-family: inherit; font-size: 13px; font-weight: 700;
   text-decoration: underline; cursor: pointer;
+}
+
+/* ----- איורים מונפשים במדריך ----- */
+.illo .il-box { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+.illo .il-stroke { stroke: var(--navy); stroke-width: 2.4; stroke-linecap: round; fill: none; }
+.illo .il-row { fill: var(--bg-2); stroke: var(--line-soft); stroke-width: 1; }
+.illo .il-typed { fill: var(--gold-soft); transform-origin: right center; animation: ilType 2.6s ease-in-out infinite; }
+@keyframes ilType { 0% { transform: scaleX(0); } 45% { transform: scaleX(1); } 90% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+.illo .il-hit { animation: ilHit 2.6s ease-in-out infinite; }
+@keyframes ilHit {
+  0%, 55% { fill: var(--bg-2); stroke: var(--line-soft); }
+  70% { fill: #f2e4c4; stroke: var(--gold); filter: drop-shadow(0 0 4px rgb(178 138 43 / .6)); }
+  90%, 100% { fill: var(--bg-2); stroke: var(--line-soft); filter: none; }
+}
+
+.illo .il-cbar { fill: var(--navy); }
+.illo .il-canchor { fill: var(--gold); }
+.illo .il-cdim { animation: ilDim 2.8s ease-in-out infinite; }
+.illo .il-cd0 { animation-delay: .05s; } .illo .il-cd1 { animation-delay: .1s; }
+.illo .il-cd3 { animation-delay: .15s; } .illo .il-cd4 { animation-delay: .2s; } .illo .il-cd5 { animation-delay: .25s; }
+@keyframes ilDim { 0%, 20% { opacity: 1; } 45%, 75% { opacity: .18; } 100% { opacity: 1; } }
+.illo .il-cbracket { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 3 3; opacity: 0; animation: ilBracket 2.8s ease-in-out infinite; }
+@keyframes ilBracket { 0%, 25% { opacity: 0; } 45%, 75% { opacity: .9; } 100% { opacity: 0; } }
+
+.illo .il-tnode { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+.illo .il-troot { fill: #f2e4c4; stroke: var(--gold); }
+.illo .il-tline { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 60; stroke-dashoffset: 60; animation: ilDraw 2.6s ease-in-out infinite; }
+.illo .il-tline2 { animation-delay: .25s; }
+@keyframes ilDraw { 0% { stroke-dashoffset: 60; } 40%, 80% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 60; } }
+.illo .il-tn1, .illo .il-tn2 { opacity: 0; animation: ilPop 2.6s ease-in-out infinite; }
+.illo .il-tn1 { animation-delay: .55s; } .illo .il-tn2 { animation-delay: .75s; }
+@keyframes ilPop { 0%, 20% { opacity: 0; transform: translateY(4px); } 40%, 82% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+
+.illo .il-mpath { stroke: var(--line); stroke-width: 2.5; stroke-dasharray: 4 5; }
+.illo .il-mprogress { stroke: var(--gold); stroke-width: 3; stroke-dasharray: 230; stroke-dashoffset: 230; animation: ilTrail 2.6s linear infinite; }
+@keyframes ilTrail { 0% { stroke-dashoffset: 230; } 75% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
+.illo .il-mdot { fill: var(--gold); stroke: #fff; stroke-width: 1.5; }
+
+.illo .il-bubble { transform-origin: 130px 77px; animation: ilPop2 2.4s ease-in-out infinite; }
+@keyframes ilPop2 { 0%, 15% { opacity: 0; transform: scale(.6); } 35%, 90% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(.6); } }
+.illo .il-bub { fill: #f2e4c4; stroke: var(--gold); stroke-width: 1.5; }
+.illo .il-dot { fill: var(--navy); animation: ilBlink 1.2s ease-in-out infinite; }
+.illo .il-dot2 { animation-delay: .2s; } .illo .il-dot3 { animation-delay: .4s; }
+@keyframes ilBlink { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+
+.illo .il-tick { stroke: var(--line); stroke-width: 1.5; }
+.illo .il-nbar { fill: var(--navy); opacity: .8; }
+.illo .il-pan { animation: ilPan 4s ease-in-out infinite; }
+@keyframes ilPan { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-40px); } }
+.illo .il-lens { transform-origin: 120px 65px; animation: ilZoom 4s ease-in-out infinite; }
+@keyframes ilZoom { 0%, 100% { transform: scale(.9); } 50% { transform: scale(1.15); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .illo * { animation: none !important; }
+  .illo .il-typed { transform: scaleX(1); }
+  .illo .il-mprogress { stroke-dashoffset: 0; }
+  .illo .il-tline { stroke-dashoffset: 0; }
+  .illo .il-tn1, .illo .il-tn2, .illo .il-bubble { opacity: 1; transform: none; }
+  .illo .il-cdim { opacity: 1; }
 }
 
 .controls { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 9px 16px; }
