@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { formatRange } from '../utils/dates.js';
+import { sourceSegments } from '../utils/sefaria.js';
 import maps from '../data/maps.json';
 
 // נטען רק כשנפתח כרטיס — כך ספריית Supabase לא מכבידה על טעינת הציר
@@ -60,7 +61,21 @@ export default function DetailCard({ item, mode, onClose, onOpenMap, contemporar
           מפת המקומות
         </button>
       )}
-      {item.source && <div className="detail-source"><b>מקור:</b> {item.source}</div>}
+      {item.source && (
+        <div className="detail-source">
+          <b>מקור:</b>{' '}
+          {sourceSegments(item.source).map((seg, i) => (
+            <span key={i}>
+              {i > 0 && '; '}
+              {seg.href ? (
+                <a className="source-link" href={seg.href} target="_blank" rel="noopener noreferrer">
+                  {seg.text}
+                </a>
+              ) : seg.text}
+            </span>
+          ))}
+        </div>
+      )}
       {(prevItem || nextItem) && (
         <div className="detail-nav">
           {prevItem ? (
