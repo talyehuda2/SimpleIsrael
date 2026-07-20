@@ -80,19 +80,22 @@ function IlloComments() {
 }
 
 function IlloNav() {
+  // זום-אין: הזכוכית והריבועים גדלים, וריבועים חדשים מופיעים בין הקיימים.
+  const mains = [44, 82, 120, 158, 196];      // מרכזי הריבועים הקיימים
+  const between = [63, 101, 139, 177];        // מרכזי הריבועים החדשים (בין הקיימים)
   return (
     <svg viewBox="0 0 240 130" className="illo" role="img" aria-label="ניווט">
-      <g className="il-pan">
-        {[20, 60, 100, 140, 180, 220, 260].map((x) => (
-          <g key={x}>
-            <line x1={x} y1="26" x2={x} y2="104" className="il-tick" />
-            <rect x={x - 14} y="54" width="28" height="14" rx="4" className="il-nbar" />
-          </g>
+      <g className="il-zoomwrap">
+        {mains.map((cx) => (
+          <rect key={`m${cx}`} x={cx - 11} y="52" width="22" height="22" rx="4" className="il-nbar" />
+        ))}
+        {between.map((cx) => (
+          <rect key={`b${cx}`} x={cx - 8} y="54" width="16" height="18" rx="3" className="il-nbetween" />
         ))}
       </g>
       <g className="il-lens">
-        <circle cx="120" cy="65" r="20" className="il-stroke" fill="none" />
-        <line x1="135" y1="80" x2="146" y2="91" className="il-stroke" />
+        <circle cx="120" cy="63" r="20" className="il-stroke" fill="none" />
+        <line x1="135" y1="78" x2="147" y2="90" className="il-stroke" />
       </g>
     </svg>
   );

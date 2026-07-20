@@ -357,12 +357,14 @@ h1 {
 .illo .il-dot2 { animation-delay: .2s; } .illo .il-dot3 { animation-delay: .4s; }
 @keyframes ilBlink { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
 
-.illo .il-tick { stroke: var(--line); stroke-width: 1.5; }
-.illo .il-nbar { fill: var(--navy); opacity: .8; }
-.illo .il-pan { animation: ilPan 4s ease-in-out infinite; }
-@keyframes ilPan { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-40px); } }
-.illo .il-lens { transform-origin: 120px 65px; animation: ilZoom 4s ease-in-out infinite; }
-@keyframes ilZoom { 0%, 100% { transform: scale(.9); } 50% { transform: scale(1.15); } }
+/* ניווט/זום: הזכוכית והריבועים גדלים, וריבועים חדשים מופיעים ביניהם */
+.illo .il-nbar { fill: var(--navy); opacity: .85; }
+.illo .il-nbetween { fill: var(--gold); opacity: 0; transform-box: fill-box; transform-origin: center; animation: ilBetween 4s ease-in-out infinite; }
+.illo .il-zoomwrap { transform-box: view-box; transform-origin: 120px 63px; animation: ilZoomWrap 4s ease-in-out infinite; }
+.illo .il-lens { transform-box: view-box; transform-origin: 120px 63px; animation: ilZoomLens 4s ease-in-out infinite; }
+@keyframes ilZoomWrap { 0%, 15% { transform: scale(1); } 45%, 72% { transform: scale(1.28); } 95%, 100% { transform: scale(1); } }
+@keyframes ilZoomLens { 0%, 15% { transform: scale(.8); } 45%, 72% { transform: scale(1.2); } 95%, 100% { transform: scale(.8); } }
+@keyframes ilBetween { 0%, 25% { opacity: 0; transform: scale(.4); } 50%, 68% { opacity: 1; transform: scale(1); } 85%, 100% { opacity: 0; transform: scale(.4); } }
 
 @media (prefers-reduced-motion: reduce) {
   .illo * { animation: none !important; }
@@ -373,6 +375,7 @@ h1 {
   .illo .il-st-anchor { fill: var(--gold); stroke: var(--gold); }
   .illo .il-st-ctemp { fill: var(--gold-soft); stroke: var(--gold); }
   .illo .il-band2 { opacity: 1; }
+  .illo .il-nbetween { opacity: 1; }
 }
 
 .controls { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 9px 16px; }
