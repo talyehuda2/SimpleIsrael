@@ -307,14 +307,28 @@ h1 {
   90%, 100% { fill: var(--bg-2); stroke: var(--line-soft); filter: none; }
 }
 
-.illo .il-cbar { fill: var(--navy); }
-.illo .il-canchor { fill: var(--gold); }
-.illo .il-cdim { animation: ilDim 2.8s ease-in-out infinite; }
-.illo .il-cd0 { animation-delay: .05s; } .illo .il-cd1 { animation-delay: .1s; }
-.illo .il-cd3 { animation-delay: .15s; } .illo .il-cd4 { animation-delay: .2s; } .illo .il-cd5 { animation-delay: .25s; }
-@keyframes ilDim { 0%, 20% { opacity: 1; } 45%, 75% { opacity: .18; } 100% { opacity: 1; } }
-.illo .il-cbracket { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 3 3; opacity: 0; animation: ilBracket 2.8s ease-in-out infinite; }
-@keyframes ilBracket { 0%, 25% { opacity: 0; } 45%, 75% { opacity: .9; } 100% { opacity: 0; } }
+/* "חומת אבנים" של בני-הזמן */
+.illo .il-stone { fill: var(--bg-2); stroke: var(--line); stroke-width: 1; animation-duration: 3.4s; animation-iteration-count: infinite; animation-timing-function: ease-in-out; }
+.illo .il-band2 { fill: rgb(178 138 43 / .16); stroke: var(--gold); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0; animation: ilBand2 3.4s ease-in-out infinite; }
+@keyframes ilBand2 { 0%, 30% { opacity: 0; } 42%, 80% { opacity: 1; } 90%, 100% { opacity: 0; } }
+.illo .il-st-anchor { animation-name: ilStoneAnchor; }
+@keyframes ilStoneAnchor {
+  0%, 20% { fill: var(--bg-2); stroke: var(--line); }
+  30%, 82% { fill: var(--gold); stroke: var(--gold); }
+  92%, 100% { fill: var(--bg-2); stroke: var(--line); }
+}
+.illo .il-st-ctemp { animation-name: ilStoneCtemp; }
+@keyframes ilStoneCtemp {
+  0%, 40% { fill: var(--bg-2); stroke: var(--line); }
+  50%, 80% { fill: var(--gold-soft); stroke: var(--gold); }
+  90%, 100% { fill: var(--bg-2); stroke: var(--line); }
+}
+.illo .il-st-other { animation-name: ilStoneOther; }
+@keyframes ilStoneOther {
+  0%, 42% { opacity: 1; }
+  52%, 80% { opacity: .16; }
+  92%, 100% { opacity: 1; }
+}
 
 .illo .il-tnode { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
 .illo .il-troot { fill: #f2e4c4; stroke: var(--gold); }
@@ -350,7 +364,9 @@ h1 {
   .illo .il-mprogress { stroke-dashoffset: 0; }
   .illo .il-tline { stroke-dashoffset: 0; }
   .illo .il-tn1, .illo .il-tn2, .illo .il-bubble { opacity: 1; transform: none; }
-  .illo .il-cdim { opacity: 1; }
+  .illo .il-st-anchor { fill: var(--gold); stroke: var(--gold); }
+  .illo .il-st-ctemp { fill: var(--gold-soft); stroke: var(--gold); }
+  .illo .il-band2 { opacity: 1; }
 }
 
 .controls { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 9px 16px; }

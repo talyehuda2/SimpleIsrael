@@ -15,15 +15,25 @@ function IlloSearch() {
   );
 }
 
+// "חומת אבנים" — פסים אופקיים בשורות מדורגות, בגדלים וברווחים לא-סימטריים.
+// r: 'a' עוגן שנבחר · 'c' בן-זמן (חופף בעמודת-הזמן) · 'o' אחר (מתעמעם).
+const STONES = [
+  { x: 26, y: 15, w: 52, h: 14, r: 'o' }, { x: 92, y: 15, w: 40, h: 14, r: 'c' }, { x: 150, y: 15, w: 64, h: 14, r: 'o' },
+  { x: 40, y: 34, w: 34, h: 18, r: 'o' }, { x: 84, y: 34, w: 58, h: 18, r: 'c' }, { x: 172, y: 34, w: 42, h: 18, r: 'o' },
+  { x: 30, y: 57, w: 40, h: 16, r: 'o' }, { x: 94, y: 57, w: 44, h: 16, r: 'a' }, { x: 162, y: 57, w: 52, h: 16, r: 'o' },
+  { x: 48, y: 78, w: 30, h: 13, r: 'o' }, { x: 100, y: 78, w: 36, h: 13, r: 'c' }, { x: 156, y: 78, w: 58, h: 13, r: 'o' },
+  { x: 26, y: 96, w: 60, h: 17, r: 'o' }, { x: 104, y: 96, w: 46, h: 17, r: 'c' }, { x: 170, y: 96, w: 44, h: 17, r: 'o' },
+];
+const ROLE_CLS = { a: 'il-st-anchor', c: 'il-st-ctemp', o: 'il-st-other' };
+
 function IlloContemp() {
-  const xs = [30, 62, 94, 126, 158, 190];
   return (
     <svg viewBox="0 0 240 130" className="illo" role="img" aria-label="בני-הזמן">
-      {xs.map((x, i) => (
-        <rect key={x} x={x} y={40} width={22} height={50} rx={5}
-          className={`il-cbar ${i === 2 ? 'il-canchor' : `il-cdim il-cd${i}`}`} />
+      <rect x="88" y="8" width="54" height="116" rx="6" className="il-band2" />
+      {STONES.map((s, i) => (
+        <rect key={i} x={s.x} y={s.y} width={s.w} height={s.h} rx="3"
+          className={`il-stone ${ROLE_CLS[s.r]}`} />
       ))}
-      <rect x="26" y="34" width="94" height="62" rx="8" className="il-cbracket" fill="none" />
     </svg>
   );
 }
