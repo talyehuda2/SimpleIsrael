@@ -330,14 +330,20 @@ h1 {
   92%, 100% { opacity: 1; }
 }
 
-.illo .il-tnode { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+/* שרשרת דורות: ריבוע → קו נמתח → ריבוע → קו → ריבוע (מסונכרן במחזור אחד) */
+.illo .il-tnode { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; transform-box: fill-box; transform-origin: center; }
 .illo .il-troot { fill: #f2e4c4; stroke: var(--gold); }
-.illo .il-tline { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 60; stroke-dashoffset: 60; animation: ilDraw 2.6s ease-in-out infinite; }
-.illo .il-tline2 { animation-delay: .25s; }
-@keyframes ilDraw { 0% { stroke-dashoffset: 60; } 40%, 80% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 60; } }
-.illo .il-tn1, .illo .il-tn2 { opacity: 0; animation: ilPop 2.6s ease-in-out infinite; }
-.illo .il-tn1 { animation-delay: .55s; } .illo .il-tn2 { animation-delay: .75s; }
-@keyframes ilPop { 0%, 20% { opacity: 0; transform: translateY(4px); } 40%, 82% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+.illo .il-tline { stroke: var(--gold); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 20; stroke-dashoffset: 20; }
+.illo .il-tn0 { animation: ilTNode0 3.4s ease-in-out infinite; }
+.illo .il-tline1 { animation: ilTLine1 3.4s ease-in-out infinite; }
+.illo .il-tn1 { opacity: 0; animation: ilTNode1 3.4s ease-in-out infinite; }
+.illo .il-tline2 { animation: ilTLine2 3.4s ease-in-out infinite; }
+.illo .il-tn2 { opacity: 0; animation: ilTNode2 3.4s ease-in-out infinite; }
+@keyframes ilTNode0 { 0% { opacity: 0; transform: scale(.6); } 8%, 90% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(.6); } }
+@keyframes ilTLine1 { 0%, 14% { stroke-dashoffset: 20; } 28%, 90% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 20; } }
+@keyframes ilTNode1 { 0%, 30% { opacity: 0; transform: scale(.6); } 38%, 90% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(.6); } }
+@keyframes ilTLine2 { 0%, 44% { stroke-dashoffset: 20; } 58%, 90% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 20; } }
+@keyframes ilTNode2 { 0%, 60% { opacity: 0; transform: scale(.6); } 68%, 90% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(.6); } }
 
 .illo .il-mpath { stroke: var(--line); stroke-width: 2.5; stroke-dasharray: 4 5; }
 .illo .il-mprogress { stroke: var(--gold); stroke-width: 3; stroke-dasharray: 230; stroke-dashoffset: 230; animation: ilTrail 2.6s linear infinite; }
@@ -363,7 +369,7 @@ h1 {
   .illo .il-typed { transform: scaleX(1); }
   .illo .il-mprogress { stroke-dashoffset: 0; }
   .illo .il-tline { stroke-dashoffset: 0; }
-  .illo .il-tn1, .illo .il-tn2, .illo .il-bubble { opacity: 1; transform: none; }
+  .illo .il-tn0, .illo .il-tn1, .illo .il-tn2, .illo .il-bubble { opacity: 1; transform: none; }
   .illo .il-st-anchor { fill: var(--gold); stroke: var(--gold); }
   .illo .il-st-ctemp { fill: var(--gold-soft); stroke: var(--gold); }
   .illo .il-band2 { opacity: 1; }

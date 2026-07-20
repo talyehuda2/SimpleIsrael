@@ -39,13 +39,14 @@ function IlloContemp() {
 }
 
 function IlloTree() {
+  // שרשרת דורות אנכית: ריבוע, קו שנמתח למטה, ריבוע נוסף, וכן הלאה.
   return (
     <svg viewBox="0 0 240 130" className="illo" role="img" aria-label="אילן יוחסין">
-      <path d="M120 42 V64 H70 V78" className="il-tline" fill="none" />
-      <path d="M120 42 V64 H170 V78" className="il-tline il-tline2" fill="none" />
-      <rect x="98" y="22" width="44" height="22" rx="6" className="il-tnode il-troot" />
-      <rect x="48" y="78" width="44" height="22" rx="6" className="il-tnode il-tn1" />
-      <rect x="148" y="78" width="44" height="22" rx="6" className="il-tnode il-tn2" />
+      <line x1="120" y1="34" x2="120" y2="52" className="il-tline il-tline1" />
+      <line x1="120" y1="74" x2="120" y2="92" className="il-tline il-tline2" />
+      <rect x="96" y="12" width="48" height="22" rx="6" className="il-tnode il-troot il-tn0" />
+      <rect x="96" y="52" width="48" height="22" rx="6" className="il-tnode il-tn1" />
+      <rect x="96" y="92" width="48" height="22" rx="6" className="il-tnode il-tn2" />
     </svg>
   );
 }
@@ -171,7 +172,7 @@ export default function Intro({ open, onClose }) {
 
         <div className="intro-nav">
           <button className="intro-btn ghost" onClick={prev} disabled={step === 0}>הקודם</button>
-          <span className="intro-count">{step + 1} / {SLIDES.length}</span>
+          <span className="intro-count" dir="ltr">{step + 1} / {SLIDES.length}</span>
           <button className="intro-btn primary" onClick={next}>
             {last ? 'יאללה, מתחילים' : 'הבא'}
           </button>
