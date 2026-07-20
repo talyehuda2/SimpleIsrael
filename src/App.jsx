@@ -5,6 +5,7 @@ import MapPanel from './components/MapPanel.jsx';
 import SearchBox from './components/SearchBox.jsx';
 import FamilyTree from './components/FamilyTree.jsx';
 import Intro from './components/Intro.jsx';
+import { fetchCommentCounts } from './lib/commentCounts.js';
 import leaders from './data/leaders.json';
 import judges from './data/judges.json';
 import kings from './data/kings.json';
@@ -151,6 +152,14 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('si_visible', JSON.stringify(visible)); } catch { /* מתעלמים */ }
   }, [visible]);
+
+  // מונה תגובות לכל פריט — כדי לסמן על הציר היכן כבר יש דיון
+  const [commentCounts, setCommentCounts] = useState({});
+  useEffect(() => {
+    let alive = true;
+    fetchCommentCounts().then((c) => { if (alive) setCommentCounts(c); });
+    return () => { alive = false; };
+  }, []);
 
   // מדריך היכרות — נפתח מעצמו בביקור הראשון בלבד
   const [introOpen, setIntroOpen] = useState(() => {
@@ -525,7 +534,7 @@ export default function App() {
           periods={data.periods} leaders={data.leaders} judges={data.judges} kings={data.kings}
           prophets={data.prophets} books={data.books} events={data.events} world={data.world}
           visible={visible} selected={selected} onSelect={setSelected}
-          highlightRange={highlightRange}
+          highlightRange={highlightRange} commentCounts={commentCounts}
         />
       </div>
 

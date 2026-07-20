@@ -1,7 +1,16 @@
-import { useMemo, useState } from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 import { hebrewYearLetters, toSecular } from '../utils/dates.js';
 import maps from '../data/maps.json';
 import empires from '../data/empires.json';
+
+// מונה התגובות לכל פריט ("kind:id" → מספר), מסופק דרך context
+// כדי לא להעביר prop דרך כל אחת מקריאות <Bar>.
+const CountsCtx = createContext({});
+
+function CommentBadge({ n }) {
+  if (!n) return null;
+  return <span className="c-badge" title={`${n} תגובות`}>💬{n}</span>;
+}
 
 // ציר הזמן זורם מימין (עבר) לשמאל (הווה), כקריאה בעברית.
 // x = מרחק מהקצה השמאלי = (endYear - שנה) * פיקסלים-לשנה.
@@ -75,6 +84,7 @@ function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight =
   const width = Math.max((item.end - item.start) * pxPerYear, 6);
   const showLabel = width > 34;
   const showDot = width > 24;
+  const nComments = useContext(CountsCtx)[`${kind}:${item.id}`] || 0;
   return (
     <div
       className={`bar ${kind} ${item.power ? 'pw-' + item.power : ''} ${hl} ${selected ? 'selected' : ''}`}
@@ -91,6 +101,7 @@ function Bar({ item, toX, pxPerYear, kind, mode, selected, onSelect, rowHeight =
               <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
             </svg>
           )}
+          <CommentBadge n={nComments} />
         </span>
       )}
     </div>
@@ -101,7 +112,7 @@ export default function Timeline({
   pxPerYear, startYear = START_YEAR, endYear = END_YEAR, mode = 'tradition',
   gutter = LABEL_GUTTER_PX,
   periods, leaders, judges, kings, prophets, books, events, world = [],
-  visible, selected, onSelect, highlightRange = null,
+  visible, selected, onSelect, highlightRange = null, commentCounts = {},
 }) {
   const totalWidth = (endYear - startYear) * pxPerYear + gutter;
   const toX = (year) => (endYear - year) * pxPerYear;
@@ -160,6 +171,7 @@ export default function Timeline({
   const cx = (k) => (collapsed[k] ? ' collapsed' : '');
 
   return (
+    <CountsCtx.Provider value={commentCounts}>
     <div className="timeline-canvas" style={{ width: totalWidth }}>
       {/* קווי רשת + ציר שנים */}
       <div className="axis">
@@ -203,7 +215,10 @@ export default function Timeline({
               title={mode === 'academic' ? `${ev.name} · ${toSecular(ev.year)}` : `${ev.name} · ${ev.year}`}
             >
               <span className="event-marker">◆</span>
-              <span className="event-label">{ev.name}</span>
+              <span className="event-label">
+                {ev.name}
+                <CommentBadge n={commentCounts[`event:${ev.id}`] || 0} />
+              </span>
             </div>
           ))}
         </div>
@@ -299,5 +314,6 @@ export default function Timeline({
         </div>
       )}
     </div>
+    </CountsCtx.Provider>
   );
 }

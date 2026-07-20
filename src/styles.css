@@ -594,6 +594,15 @@ footer {
 .nav-arrow { color: var(--gold); font-size: 10px; flex: none; unicode-bidi: isolate; }
 .nav-spacer { flex: 1; }
 
+/* סימון "יש כאן תגובות" על הציר */
+.c-badge {
+  display: inline-flex; align-items: center; gap: 1px;
+  margin-inline-start: 5px; padding: 0 4px; border-radius: 8px;
+  background: rgb(178 138 43 / .18); border: 1px solid rgb(178 138 43 / .45);
+  color: var(--gold); font-size: 9px; font-weight: 700; line-height: 1.5;
+  vertical-align: middle; flex: none; white-space: nowrap;
+}
+
 /* תגובות קהילה */
 .comments-loading {
   margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft);
