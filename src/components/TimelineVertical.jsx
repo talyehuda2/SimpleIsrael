@@ -6,10 +6,17 @@ import maps from '../data/maps.json';
 // ויתרנו על אורך פרופורציונלי (בלתי אפשרי ברוחב טלפון: עד 14 פריטים חופפים
 // בו-זמנית), ובמקומו יש פס דק שמראה את משך הזמן היחסי.
 
-const KIND_LABEL = {
-  leader: 'מנהיג', judge: 'שופט', united: 'מלך — הממלכה המאוחדת',
-  judah: 'מלך יהודה', israel: 'מלך ישראל', prophet: 'נביא',
-  book: 'ספר', world: 'רקע עולמי', event: 'אירוע',
+// אייקון + תווית קצרה לעמודת הסוג שבצד ימין של כל שורה
+const KIND_META = {
+  leader: { icon: '🏛️', label: 'מנהיג' },
+  judge: { icon: '⚖️', label: 'שופט' },
+  united: { icon: '👑', label: 'מלך' },
+  judah: { icon: '👑', label: 'מלך יהודה' },
+  israel: { icon: '👑', label: 'מלך ישראל' },
+  prophet: { icon: '📜', label: 'נביא' },
+  book: { icon: '📖', label: 'ספר' },
+  world: { icon: '🌍', label: 'רקע עולמי' },
+  event: { icon: '◆', label: 'אירוע' },
 };
 
 export default function TimelineVertical({
@@ -82,15 +89,18 @@ export default function TimelineVertical({
                 className={`vrow ${it.kind}${it.power ? ' pw-' + it.power : ''}${hlOf(it.start, it.end)}${isSel ? ' selected' : ''}`}
                 onClick={() => onSelect({ ...it })}
               >
+                <span className="vrow-type">
+                  <span className="vrow-ico" aria-hidden="true">{KIND_META[it.kind].icon}</span>
+                  <span className="vrow-tlabel">{KIND_META[it.kind].label}</span>
+                </span>
                 <span className="vrow-main">
                   <span className="vrow-name">
-                    {isEvent && <span aria-hidden="true">◆ </span>}
                     {it.name}
                     {maps[it.id] && <span className="vrow-pin" aria-hidden="true"> 📍</span>}
                     {n > 0 && <span className="c-badge">💬{n}</span>}
                   </span>
                   <span className="vrow-meta">
-                    {formatRange(it.start, it.end, mode)} · {KIND_LABEL[it.kind]}
+                    {formatRange(it.start, it.end, mode)}
                   </span>
                   {!isEvent && span > 0 && (
                     <span className="vrow-track">
