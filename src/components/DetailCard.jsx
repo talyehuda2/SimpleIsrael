@@ -65,30 +65,38 @@ export default function DetailCard({ item, mode, onClose, onOpenMap, contemporar
         <div className={`judgment-chip ${item.judgment}`}>{JUDGMENT_LABELS[item.judgment]}</div>
       )}
       <p className="detail-desc">{item.description}</p>
-      <button
-        className={`contemp-btn${contemporariesOn ? ' active' : ''}`}
-        onClick={onToggleContemporaries}
-        title="הדגשת כל מי שחי במקביל"
-      >
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-          <path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-        </svg>
-        {contemporariesOn ? 'הסתר בני-הזמן' : 'בני-הזמן'}
-      </button>
-      {hasMap && (
-        <button className="map-btn" onClick={() => onOpenMap(item)}>
-          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
-            <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+      {/* שורת פעולות — אייקונים תחת התיאור */}
+      <div className="card-actions">
+        <button
+          type="button"
+          className={`card-action${contemporariesOn ? ' active' : ''}`}
+          onClick={onToggleContemporaries}
+          title="הדגשת כל מי שחי במקביל"
+          aria-pressed={contemporariesOn}
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
           </svg>
-          מפת המקומות
+          <span>בני-הזמן</span>
         </button>
-      )}
-      <button className="card-share-btn" onClick={doShare} title={`שיתוף הדף של ${item.name}`}>
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-          <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
-        </svg>
-        {shareMsg || 'שיתוף'}
-      </button>
+
+        {hasMap && (
+          <button type="button" className="card-action" onClick={() => onOpenMap(item)} title="מפת המקומות במסע">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+            </svg>
+            <span>מפה</span>
+          </button>
+        )}
+
+        <button type="button" className="card-action" onClick={doShare} title={`שיתוף הדף של ${item.name}`}>
+          <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
+            <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
+          </svg>
+          <span>{shareMsg || 'שיתוף'}</span>
+        </button>
+      </div>
+
       {item.source && (
         <div className="detail-source">
           <b>מקור:</b>{' '}
