@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { hebrewYearLetters, toSecular, formatRange } from '../src/utils/dates.js';
 import { sourceSegments } from '../src/utils/sefaria.js';
+import { writeCard } from './og.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -113,7 +114,8 @@ footer a{color:var(--gold)}
 .cl-kind{color:var(--muted);font-size:11px}
 `;
 
-function shell({ title, description, canonical, jsonld, body }) {
+function shell({ title, description, canonical, jsonld, body, ogImage }) {
+  const img = ogImage || `${SITE}/og-image.jpg`;
   return `<!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -130,14 +132,14 @@ function shell({ title, description, canonical, jsonld, body }) {
 <meta property="og:title" content="${escAttr(title)}"/>
 <meta property="og:description" content="${escAttr(description)}"/>
 <meta property="og:url" content="${escAttr(canonical)}"/>
-<meta property="og:image" content="${SITE}/og-image.jpg"/>
+<meta property="og:image" content="${img}"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
 <meta property="og:locale" content="he_IL"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="${escAttr(title)}"/>
 <meta name="twitter:description" content="${escAttr(description)}"/>
-<meta name="twitter:image" content="${SITE}/og-image.jpg"/>
+<meta name="twitter:image" content="${img}"/>
 <style>${STYLE}</style>
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script>` : ''}
 </head>
@@ -211,7 +213,8 @@ ${srcHtml ? `<div class="src"><b>מקור:</b> ${srcHtml}</div>` : ''}
 ${contempHtml}
 ${rel}`;
 
-  return shell({ title: `${it.name} — ${km.label} | ציר הזמן של עם ישראל`, description: metaDesc, canonical, jsonld, body });
+  return shell({ title: `${it.name} — ${km.label} | ציר הזמן של עם ישראל`, description: metaDesc, canonical, jsonld, body,
+    ogImage: `${SITE}/og/${it.kind}/${it.id}.jpg` });
 }
 
 // דף תקופה — מרכז את כל מי שחי/התרחש בה
@@ -248,6 +251,7 @@ ${next ? `<a href="/p/period/${next.id}">${esc(next.name)} →</a>` : '<span></s
       isPartOf: { '@type': 'WebSite', name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
     },
     body,
+    ogImage: `${SITE}/og/period/${p.id}.jpg`,
   });
 }
 
@@ -257,12 +261,22 @@ for (const it of items) {
   const dir = join(DIST, 'p', it.kind, it.id);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'index.html'), itemPage(it));
+  writeCard(DIST, join('og', it.kind, `${it.id}.jpg`), {
+    name: it.name,
+    kindLabel: KINDS[it.kind].label,
+    dates: formatRange(it.start, it.end, 'tradition'),
+  });
   count++;
 }
 sortedPeriods.forEach((p, i) => {
   const dir = join(DIST, 'p', 'period', p.id);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'index.html'), periodPage(p, i));
+  writeCard(DIST, join('og', 'period', `${p.id}.jpg`), {
+    name: p.name,
+    kindLabel: 'תקופה',
+    dates: formatRange(p.start, p.end, 'tradition'),
+  });
 });
 
 // דף אינדקס /p/

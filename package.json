@@ -19,6 +19,7 @@
     "@expo-google-fonts/frank-ruhl-libre": "^0.4.1",
     "@resvg/resvg-js": "^2.6.2",
     "@vitejs/plugin-react": "^4.3.4",
+    "jpeg-js": "^0.4.4",
     "vite": "^5.4.11"
   }
 }
