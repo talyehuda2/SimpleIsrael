@@ -741,7 +741,7 @@ export default function App() {
         </div>
       )}
 
-      <Intro open={introOpen} onClose={closeIntro} />
+      <Intro open={introOpen} onClose={closeIntro} visible={visible} setVisible={setVisible} />
     </div>
   );
 }

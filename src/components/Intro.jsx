@@ -104,6 +104,19 @@ function IlloNav() {
   );
 }
 
+// בחירת השכבות להצגה — מסך אחרון בסיור
+export const LAYERS = [
+  { key: 'leaders', icon: '🏛️', label: 'אבות ומנהיגים' },
+  { key: 'judges', icon: '⚖️', label: 'שופטים' },
+  { key: 'kings', icon: '👑', label: 'מלכים' },
+  { key: 'prophets', icon: '📜', label: 'נביאים' },
+  { key: 'books', icon: '📖', label: 'ספרי תנ״ך' },
+  { key: 'events', icon: '◆', label: 'אירועים' },
+  { key: 'world', icon: '🌍', label: 'רקע עולמי' },
+];
+const ALL_ON = { leaders: true, judges: true, kings: true, prophets: true, books: true, events: true, world: true };
+const ESSENTIALS = { leaders: true, judges: false, kings: true, prophets: true, books: false, events: true, world: false };
+
 const SLIDES = [
   { key: 'search', title: 'חיפוש וקפיצה', text: 'הקלידו שם של דמות או אירוע בתיבת החיפוש — והציר יזנק ישר אליו.', Illo: IlloSearch },
   { key: 'contemp', title: 'בני-הזמן', text: 'בכל כרטיס יש כפתור שמדגיש את כל מי שחי באותה תקופה — ומעמעם את השאר.', Illo: IlloContemp },
@@ -111,9 +124,10 @@ const SLIDES = [
   { key: 'map', title: 'מפת המסע', text: 'לדמויות נבחרות — מסע מודרך על מפת הארץ, תחנה אחר תחנה.', Illo: IlloMap },
   { key: 'comments', title: 'תגובות הקהילה', text: 'אפשר להוסיף הערה, מקור או תיקון לכל אירוע ודמות — וכולם רואים.', Illo: IlloComments },
   { key: 'nav', title: 'ניווט בציר', text: 'הזמן זורם מימין (עבר) לשמאל · זום בצביטה או ב-Ctrl+גלגלת · לחיצה על שם שכבה מקטינה אותה.', Illo: IlloNav },
+  { key: 'layers', title: 'מה להציג?', text: 'בחרו אילו שכבות יופיעו על הציר. תמיד אפשר לשנות זאת אחר כך בכפתור ☰ אפשרויות.', picker: true },
 ];
 
-export default function Intro({ open, onClose }) {
+export default function Intro({ open, onClose, visible, setVisible }) {
   const [step, setStep] = useState(0);
   const touchX = useRef(null);
 
@@ -159,9 +173,36 @@ export default function Intro({ open, onClose }) {
 
         {/* התוכן ממופתח לפי step כדי שהאנימציה תתחיל מחדש בכל מעבר */}
         <div className="intro-stage" key={s.key}>
-          <div className="intro-illo-wrap">{<s.Illo />}</div>
+          {!s.picker && <div className="intro-illo-wrap">{<s.Illo />}</div>}
           <h3 className="intro-slide-title">{s.title}</h3>
           <p className="intro-slide-text">{s.text}</p>
+
+          {s.picker && (
+            <div className="intro-picker">
+              <div className="picker-quick">
+                <button type="button" onClick={() => setVisible({ ...ALL_ON })}>הכל</button>
+                <button type="button" onClick={() => setVisible({ ...ESSENTIALS })}>העיקר בלבד</button>
+              </div>
+              <div className="picker-grid">
+                {LAYERS.map((l) => {
+                  const on = !!visible?.[l.key];
+                  return (
+                    <button
+                      key={l.key}
+                      type="button"
+                      className={`picker-item${on ? ' on' : ''}`}
+                      aria-pressed={on}
+                      onClick={() => setVisible((v) => ({ ...v, [l.key]: !v[l.key] }))}
+                    >
+                      <span className="picker-ico" aria-hidden="true">{l.icon}</span>
+                      <span className="picker-label">{l.label}</span>
+                      <span className="picker-check" aria-hidden="true">{on ? '✓' : ''}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="intro-dots" role="tablist" aria-label="התקדמות">
