@@ -138,11 +138,18 @@ export default function App() {
 
   // שיתוף התצוגה הנוכחית: שיתוף מקורי במובייל (וואטסאפ וכו'), אחרת העתקה ללוח
   const shareView = async () => {
-    const url = window.location.href;
+    // כשיש פריט נבחר משתפים את דף הפריט (/p/…) ולא את כתובת האפליקציה:
+    // רק לו יש תמונת שיתוף ייחודית ותוכן שגוגל/וואטסאפ קוראים בלי JavaScript.
+    const url = selected
+      ? `${window.location.origin}/p/${selected.kind}/${selected.id}`
+      : window.location.href;
+    const shareTitle = selected
+      ? `${selected.name} — ציר הזמן של עם ישראל`
+      : 'ציר הזמן של עם ישראל';
     // שיתוף מקורי רק במכשירי מגע (מובייל/טאבלט) — בדסקטופ הוא מציג דיאלוג שבור, אז מעתיקים ללוח
     const isTouch = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
     if (isTouch && navigator.share) {
-      try { await navigator.share({ title: 'ציר הזמן של עם ישראל', url }); } catch { /* בוטל */ }
+      try { await navigator.share({ title: shareTitle, url }); } catch { /* בוטל */ }
       return;
     }
     try {
@@ -585,7 +592,11 @@ export default function App() {
           <button className="tree-btn" onClick={() => setTreeOpen(true)}>
             <span aria-hidden="true">👑</span> אילן יוחסין
           </button>
-          <button className="share-btn" onClick={shareView} title="שיתוף התצוגה הנוכחית">
+          <button
+            className="share-btn"
+            onClick={shareView}
+            title={selected ? `שיתוף הדף של ${selected.name}` : 'שיתוף התצוגה הנוכחית'}
+          >
             <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
               <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
             </svg>
