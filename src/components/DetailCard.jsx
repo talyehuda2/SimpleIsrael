@@ -1,5 +1,6 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { formatRange } from '../utils/dates.js';
+import { shareLink, itemPageUrl } from '../lib/share.js';
 import { sourceSegments } from '../utils/sefaria.js';
 import maps from '../data/maps.json';
 
@@ -26,6 +27,7 @@ const JUDGMENT_LABELS = {
 };
 
 export default function DetailCard({ item, mode, onClose, onOpenMap, contemporariesOn, onToggleContemporaries, prevItem, nextItem, onNav }) {
+  const [shareMsg, setShareMsg] = useState('');
   // Esc סוגר את הכרטיס (נגישות מקלדת)
   useEffect(() => {
     if (!item) return undefined;
@@ -33,6 +35,19 @@ export default function DetailCard({ item, mode, onClose, onOpenMap, contemporar
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [item, onClose]);
+  // איפוס הודעת השיתוף במעבר בין פריטים
+  useEffect(() => { setShareMsg(''); }, [item]);
+
+  const doShare = async () => {
+    const res = await shareLink({
+      url: itemPageUrl(item),
+      title: `${item.name} — ציר הזמן של עם ישראל`,
+    });
+    if (res === 'copied') setShareMsg('הועתק ✓');
+    else if (res === 'failed') setShareMsg('העתקה נכשלה');
+    if (res === 'copied' || res === 'failed') setTimeout(() => setShareMsg(''), 2000);
+  };
+
   if (!item) return null;
   const hasMap = !!maps[item.id];
   return (
@@ -68,6 +83,12 @@ export default function DetailCard({ item, mode, onClose, onOpenMap, contemporar
           מפת המקומות
         </button>
       )}
+      <button className="card-share-btn" onClick={doShare} title={`שיתוף הדף של ${item.name}`}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
+        </svg>
+        {shareMsg || 'שיתוף'}
+      </button>
       {item.source && (
         <div className="detail-source">
           <b>מקור:</b>{' '}

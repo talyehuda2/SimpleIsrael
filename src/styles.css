@@ -725,6 +725,17 @@ footer {
 }
 .map-btn:hover { background: var(--navy-2); transform: translateY(-1px); }
 
+/* שיתוף הדמות/האירוע — משתף את דף הפריט, שנושא תמונת שיתוף ייעודית */
+.card-share-btn {
+  display: flex; align-items: center; gap: 6px; width: fit-content;
+  margin: 4px 0 10px; margin-inline-start: auto;
+  background: transparent; color: var(--navy); border: 1.5px solid var(--line);
+  border-radius: 20px; padding: 6px 14px; font-family: inherit;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: background .12s, border-color .12s, transform .1s;
+}
+.card-share-btn:hover { background: var(--panel); border-color: var(--gold); transform: translateY(-1px); }
+
 /* מתג "בני-הזמן" — כפתור משני מתחת לתיאור */
 .contemp-btn {
   display: flex; align-items: center; gap: 6px; width: fit-content;

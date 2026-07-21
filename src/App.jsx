@@ -8,6 +8,7 @@ import FamilyTree from './components/FamilyTree.jsx';
 import Intro from './components/Intro.jsx';
 import { fetchCommentCounts } from './lib/commentCounts.js';
 import { handleAdminParam } from './lib/admin.js';
+import { shareLink } from './lib/share.js';
 import leaders from './data/leaders.json';
 import judges from './data/judges.json';
 import kings from './data/kings.json';
@@ -137,28 +138,15 @@ export default function App() {
   const [shareMsg, setShareMsg] = useState('');
 
   // שיתוף התצוגה הנוכחית: שיתוף מקורי במובייל (וואטסאפ וכו'), אחרת העתקה ללוח
+  // כפתור הכותרת משתף את האתר עצמו; שיתוף דמות נעשה מתוך הכרטיס שלה.
   const shareView = async () => {
-    // כשיש פריט נבחר משתפים את דף הפריט (/p/…) ולא את כתובת האפליקציה:
-    // רק לו יש תמונת שיתוף ייחודית ותוכן שגוגל/וואטסאפ קוראים בלי JavaScript.
-    const url = selected
-      ? `${window.location.origin}/p/${selected.kind}/${selected.id}`
-      : window.location.href;
-    const shareTitle = selected
-      ? `${selected.name} — ציר הזמן של עם ישראל`
-      : 'ציר הזמן של עם ישראל';
-    // שיתוף מקורי רק במכשירי מגע (מובייל/טאבלט) — בדסקטופ הוא מציג דיאלוג שבור, אז מעתיקים ללוח
-    const isTouch = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
-    if (isTouch && navigator.share) {
-      try { await navigator.share({ title: shareTitle, url }); } catch { /* בוטל */ }
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      setShareMsg('הקישור הועתק ✓');
-    } catch {
-      setShareMsg('העתיקו מהכתובת שלמעלה');
-    }
-    setTimeout(() => setShareMsg(''), 2200);
+    const res = await shareLink({
+      url: `${window.location.origin}/`,
+      title: 'ציר הזמן של עם ישראל',
+    });
+    if (res === 'copied') setShareMsg('הקישור הועתק ✓');
+    else if (res === 'failed') setShareMsg('העתיקו מהכתובת שלמעלה');
+    if (res === 'copied' || res === 'failed') setTimeout(() => setShareMsg(''), 2200);
   };
   // ניהול היסטוריית הדפדפן: popping = שינוי שהגיע מכפתור "אחורה";
   // overlayPushed = כמה חלוניות דחפנו להיסטוריה (כדי לדעת אם "סגירה" יכולה לחזור אחורה)
@@ -595,7 +583,7 @@ export default function App() {
           <button
             className="share-btn"
             onClick={shareView}
-            title={selected ? `שיתוף הדף של ${selected.name}` : 'שיתוף התצוגה הנוכחית'}
+            title="שיתוף האתר"
           >
             <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
               <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
