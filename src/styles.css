@@ -999,3 +999,73 @@ footer {
     box-shadow: 0 3px 10px rgb(20 40 60 / .35);
   }
 }
+
+/* ============ ציר אנכי — "זרם כרונולוגי" למובייל ============ */
+.vtl-wrap {
+  flex: 1; overflow-y: auto; overflow-x: hidden; position: relative;
+  overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;
+  scrollbar-color: var(--gold) transparent;
+}
+.vstream { padding: 6px 10px 28px; display: flex; flex-direction: column; gap: 4px; }
+.vstream-empty { color: var(--muted); font-size: 14px; text-align: center; padding: 30px 12px; }
+
+.vsec { display: flex; flex-direction: column; gap: 5px; }
+.vsec-head {
+  position: sticky; top: 0; z-index: 5; margin: 12px 0 2px;
+  display: flex; align-items: baseline; gap: 8px;
+  background: linear-gradient(180deg, var(--bg) 72%, transparent);
+  padding: 7px 2px 6px; font-size: 15px; font-weight: 900; color: var(--navy);
+  font-family: 'Frank Ruhl Libre', serif; border-bottom: 2px solid var(--gold);
+}
+.vsec-years { margin-inline-start: auto; font-size: 11px; font-weight: 400; color: var(--muted); font-family: inherit; }
+
+.vrow {
+  position: relative; display: block; width: 100%; text-align: right;
+  border: none; border-radius: 9px; padding: 8px 11px; cursor: pointer;
+  color: #fff; font-family: inherit; box-shadow: 0 1px 3px rgb(40 25 0 / .2);
+  transition: filter .12s, transform .08s;
+}
+.vrow:active { transform: scale(.995); }
+.vrow:hover { filter: brightness(1.07); }
+.vrow.selected { outline: 3px solid var(--gold); outline-offset: 1px; }
+.vrow-main { display: flex; flex-direction: column; gap: 2px; }
+.vrow-name { font-size: 14.5px; font-weight: 700; line-height: 1.35; }
+.vrow-meta { font-size: 11px; opacity: .88; line-height: 1.4; }
+.vrow-pin { font-size: 10px; }
+.vrow .c-badge {
+  margin-inline-start: 6px; background: rgb(255 255 255 / .22);
+  border-color: rgb(255 255 255 / .4); color: #fff;
+}
+.vrow-track { margin-top: 5px; height: 3px; border-radius: 3px; background: rgb(255 255 255 / .22); display: block; }
+.vrow-fill { display: block; height: 100%; border-radius: 3px; background: rgb(255 255 255 / .75); }
+.vrow-dot { position: absolute; left: 10px; top: 10px; width: 9px; height: 9px; border-radius: 50%; }
+.vrow-dot.good { background: #6fd47a; } .vrow-dot.bad { background: #ff8f88; } .vrow-dot.mixed { background: #ffd166; }
+
+.vrow.leader  { background: linear-gradient(90deg, var(--leader), #7f2141); }
+.vrow.judge   { background: linear-gradient(90deg, var(--judge), #97531f); }
+.vrow.united  { background: linear-gradient(90deg, var(--united), #542f7f); }
+.vrow.judah   { background: linear-gradient(90deg, var(--judah), #1b476f); }
+.vrow.israel  { background: linear-gradient(90deg, var(--israel), #3d5f27); }
+.vrow.prophet { background: linear-gradient(90deg, var(--prophet), #8f5f13); }
+.vrow.book    { background: linear-gradient(90deg, var(--book), #0f5f57); }
+.vrow.world   { background: linear-gradient(90deg, var(--world), #5f4d32); }
+.vrow.event   { background: linear-gradient(90deg, #6d4b16, #8a6320); }
+.vrow.pw-egypt   { background: linear-gradient(90deg, var(--pw-egypt), #8a6a17); }
+.vrow.pw-assyria { background: linear-gradient(90deg, var(--pw-assyria), #43566a); }
+.vrow.pw-babylon { background: linear-gradient(90deg, var(--pw-babylon), #7c3f20); }
+.vrow.pw-persia  { background: linear-gradient(90deg, var(--pw-persia), #1e6a63); }
+.vrow.pw-greece  { background: linear-gradient(90deg, var(--pw-greece), #585b28); }
+.vrow.pw-rome    { background: linear-gradient(90deg, var(--pw-rome), #732f26); }
+
+.vrow.dimmed { opacity: .2; filter: saturate(.5); }
+.vrow.contemporary { box-shadow: 0 0 0 2.5px rgb(178 138 43 / .75); }
+
+/* כפתור מעבר בין ציר אופקי/אנכי */
+.orient-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; color: var(--navy); border: 1.5px solid var(--line);
+  border-radius: 20px; padding: 6px 13px; font-family: inherit;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+.orient-btn:hover { background: var(--panel); border-color: var(--gold); }

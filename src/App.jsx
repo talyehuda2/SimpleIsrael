@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Timeline, { LABEL_GUTTER_PX } from './components/Timeline.jsx';
+import TimelineVertical from './components/TimelineVertical.jsx';
 import DetailCard from './components/DetailCard.jsx';
 import MapPanel from './components/MapPanel.jsx';
 import SearchBox from './components/SearchBox.jsx';
@@ -168,6 +169,19 @@ export default function App() {
     try { localStorage.setItem('si_visible', JSON.stringify(visible)); } catch { /* מתעלמים */ }
   }, [visible]);
 
+  // ציר אנכי ("זרם כרונולוגי") — ברירת מחדל במובייל, ונשמר בין ביקורים
+  const [vertical, setVertical] = useState(() => {
+    try {
+      const saved = localStorage.getItem('si_vertical');
+      if (saved === '1') return true;
+      if (saved === '0') return false;
+    } catch { /* אין שמירה */ }
+    return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 680px)').matches;
+  });
+  useEffect(() => {
+    try { localStorage.setItem('si_vertical', vertical ? '1' : '0'); } catch { /* מתעלמים */ }
+  }, [vertical]);
+
   // מונה תגובות לכל פריט — כדי לסמן על הציר היכן כבר יש דיון
   const [commentCounts, setCommentCounts] = useState({});
   useEffect(() => {
@@ -251,9 +265,10 @@ export default function App() {
     const layer = LAYER_OF[item.kind];
     if (layer) setVisible((v) => (v[layer] ? v : { ...v, [layer]: true }));
     setSelected(item);
+    if (vertical) { scrollToItem(item); return; }
     const el = scrollRef.current;
     const midYear = (item.start + item.end) / 2;
-    scrollToYear(midYear, el ? el.clientWidth / 2 : 0, pxPerYear);
+    scrollToYear(midYear, centerOffset(el), pxPerYear);
   };
 
   // קפיצה מאילן היוחסין: בחירה, הדלקת בני-הזמן, וזום-אין אל הדמות והקשרה.
@@ -269,12 +284,13 @@ export default function App() {
     if (layer) setVisible((v) => (v[layer] ? v : { ...v, [layer]: true }));
     setSelected(item);
     setContempItem(item); // הדגשת בני-הזמן
+    if (vertical) { scrollToItem(item); return; }
     // זום-אין כך שתקופת החיים תתפוס כשליש מהרוחב — רואים את הדמות ואת מי שחי במקביל
     const el = scrollRef.current;
     const span = Math.max(item.end - item.start, 20);
-    const view = el ? el.clientWidth - 40 : 800;
+    const view = el ? (vertical ? el.clientHeight : el.clientWidth) - 40 : 800;
     const targetPx = Math.min(MAX_PX, Math.max(getMinPx(), view / (span * 3)));
-    scrollToYear((item.start + item.end) / 2, el ? el.clientWidth / 2 : 0, targetPx);
+    scrollToYear((item.start + item.end) / 2, centerOffset(el), targetPx);
   };
 
   // החלת מצב מהכתובת (בלחיצה על "אחורה")
@@ -286,8 +302,9 @@ export default function App() {
     setSelected(selItem);
     prevOverlay.current = { map: u.map || null, tree: !!u.tree };
     if (selItem) {
+      if (vertical) { scrollToItem(selItem); return; }
       const el = scrollRef.current;
-      scrollToYear((selItem.start + selItem.end) / 2, el ? el.clientWidth / 2 : 0, px ?? pxPerYear);
+      scrollToYear((selItem.start + selItem.end) / 2, centerOffset(el), px ?? pxPerYear);
     }
   };
 
@@ -357,23 +374,37 @@ export default function App() {
   // הזום המינימלי: כל הציר (כולל רצועת התוויות בימין) בדיוק ברוחב החלון
   const getMinPx = () => {
     const el = scrollRef.current;
+    // בציר האנכי הגלילה טבעית — אין צורך לדחוס את כל הטווח לגובה המסך
+    if (vertical) return MIN_PX;
     return el ? Math.max(MIN_PX, (el.clientWidth - 40 - gutter) / (axis.end - axis.start)) : MIN_PX;
   };
 
-  // תצוגת פתיחה: כל הציר על המסך; ובשינוי גודל חלון — לא להישאר קטן מהמסך
+  // זום פתיחה לכל מצב: אופקי — כל הציר על המסך; אנכי — צפיפות נוחה לגלילה
+  const VERTICAL_DEFAULT_PX = 2.5;
+  const openingPx = () => (vertical ? VERTICAL_DEFAULT_PX : getMinPx());
+
+  // תצוגת פתיחה; ובשינוי גודל חלון — לא להישאר קטן מהמסך
   useEffect(() => {
-    const minPx = getMinPx();
-    setPxPerYear(minPx);
-    // אם נטענו מכתובת משותפת עם דמות נבחרת — לגלול אליה במקום לקצה הימני
+    const px = openingPx();
+    setPxPerYear(px);
+    // אם נטענו מכתובת משותפת עם דמות נבחרת — לגלול אליה במקום לקצה
     if (selected) {
       scrollRightPending.current = false;
-      const el = scrollRef.current;
-      scrollToYear((selected.start + selected.end) / 2, el ? el.clientWidth / 2 : 0, minPx);
+      if (vertical) scrollToItem(selected);
+      else scrollToYear((selected.start + selected.end) / 2, centerOffset(scrollRef.current), px);
     }
     const onResize = () => setPxPerYear((p) => Math.max(p, getMinPx()));
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+
+  // החלפת כיוון הציר — התאמת הזום ומיקום הגלילה למצב החדש
+  const prevVertical = useRef(vertical);
+  useEffect(() => {
+    if (prevVertical.current === vertical) return;
+    prevVertical.current = vertical;
+    setPxPerYear(vertical ? VERTICAL_DEFAULT_PX : getMinPx());
+  }, [vertical]);
 
   // בהחלפת מצב כרונולוגיה בפועל — איפוס לתצוגה מלאה, פתיחה בצד ימין (העבר), וניקוי הבחירה.
   // משווים לערך הקודם (ולא לדגל mount) כדי שלא ננקה מצב ששוחזר מכתובת — עמיד גם ל-StrictMode.
@@ -397,19 +428,37 @@ export default function App() {
     if (scrollRightPending.current) {
       scrollRightPending.current = false;
       pendingScroll.current = null;
-      el.scrollLeft = el.scrollWidth; // הקצה הימני = תחילת הציר (העבר)
+      // אופקי: הקצה הימני = תחילת הציר (העבר). אנכי: הקצה העליון הוא כבר העבר.
+      if (vertical) el.scrollTop = 0; else el.scrollLeft = el.scrollWidth;
       return;
     }
     if (!pendingScroll.current) return;
     const { year, offset } = pendingScroll.current;
     pendingScroll.current = null;
-    el.scrollLeft = (axis.end - year) * pxPerYear - offset;
-  }, [pxPerYear, chronology]);
+    if (vertical) el.scrollTop = (year - axis.start) * pxPerYear - offset;
+    else el.scrollLeft = (axis.end - year) * pxPerYear - offset;
+  }, [pxPerYear, chronology, vertical]);
+
+  // מרכז המסך בציר הרלוונטי (רוחב באופקי, גובה באנכי)
+  const centerOffset = (el) => (el ? (vertical ? el.clientHeight : el.clientWidth) / 2 : 0);
+
+  // בזרם האנכי המיקום אינו פרופורציונלי לשנה — גוללים אל השורה עצמה
+  const scrollToItem = (it) => {
+    const el = scrollRef.current;
+    if (!el || !it) return;
+    requestAnimationFrame(() => {
+      const node = el.querySelector(`[data-key="${it.kind}:${it.id}"]`);
+      if (node) node.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+  };
 
   const scrollToYear = (year, offset, px) => {
     const el = scrollRef.current;
-    if (px === pxPerYear) el.scrollLeft = (axis.end - year) * px - offset;
-    else {
+    if (!el) return;
+    if (px === pxPerYear) {
+      if (vertical) el.scrollTop = (year - axis.start) * px - offset;
+      else el.scrollLeft = (axis.end - year) * px - offset;
+    } else {
       pendingScroll.current = { year, offset };
       setPxPerYear(px);
     }
@@ -418,6 +467,14 @@ export default function App() {
   const goTo = (preset) => {
     const el = scrollRef.current;
     if (!el) return;
+    if (vertical) {
+      // גלילה אל הפריט הראשון בטווח המבוקש
+      const first = searchIndex
+        .filter((x) => x.end >= preset.start && x.start <= preset.end)
+        .sort((a, b) => a.start - b.start)[0];
+      if (first) scrollToItem(first); else el.scrollTop = 0;
+      return;
+    }
     const px = Math.min(MAX_PX, Math.max(getMinPx(), (el.clientWidth - 40) / (preset.end - preset.start)));
     scrollToYear(preset.end, 20, px);
   };
@@ -425,9 +482,15 @@ export default function App() {
   const zoom = (factor, anchorX) => {
     const el = scrollRef.current;
     if (!el) return;
+    const px = Math.min(MAX_PX, Math.max(getMinPx(), pxPerYear * factor));
+    if (vertical) {
+      const offset = el.clientHeight / 2;
+      const yearAtAnchor = axis.start + (el.scrollTop + offset) / pxPerYear;
+      scrollToYear(yearAtAnchor, offset, px);
+      return;
+    }
     const offset = anchorX ?? el.clientWidth / 2;
     const yearAtAnchor = axis.end - (el.scrollLeft + offset) / pxPerYear;
-    const px = Math.min(MAX_PX, Math.max(getMinPx(), pxPerYear * factor));
     scrollToYear(yearAtAnchor, offset, px);
   };
 
@@ -518,6 +581,14 @@ export default function App() {
             </svg>
             שיתוף
           </button>
+          <button
+            className="orient-btn"
+            onClick={() => { setVertical((v) => !v); scrollRightPending.current = true; }}
+            title={vertical ? 'מעבר לציר אופקי' : 'מעבר לציר אנכי (נוח לגלילה בטלפון)'}
+          >
+            <span aria-hidden="true">{vertical ? '↔' : '↕'}</span>
+            {vertical ? 'ציר אופקי' : 'ציר אנכי'}
+          </button>
           {shareMsg && <span className="share-msg">{shareMsg}</span>}
         </div>
         <div className={`controls${menuOpen ? ' open' : ''}`}>
@@ -543,10 +614,12 @@ export default function App() {
               </div>
             </div>
           </div>
-          <div className="zoom-btns">
-            <button onClick={() => zoom(1.4)} title="התקרבות">+</button>
-            <button onClick={() => zoom(0.7)} title="התרחקות">−</button>
-          </div>
+          {!vertical && (
+            <div className="zoom-btns">
+              <button onClick={() => zoom(1.4)} aria-label="התקרבות" title="התקרבות">+</button>
+              <button onClick={() => zoom(0.7)} aria-label="התרחקות" title="התרחקות">−</button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -573,18 +646,31 @@ export default function App() {
         </div>
       )}
 
-      <div className="scroll-area" ref={scrollRef} dir="ltr">
-        <Timeline
-          pxPerYear={pxPerYear} gutter={gutter}
-          startYear={axis.start} endYear={axis.end} mode={chronology}
-          periods={data.periods} leaders={data.leaders} judges={data.judges} kings={data.kings}
-          prophets={data.prophets} books={data.books} events={data.events} world={data.world}
-          visible={visible} selected={selected} onSelect={setSelected}
-          highlightRange={highlightRange} commentCounts={commentCounts}
-        />
-      </div>
+      {vertical ? (
+        <div className="vtl-wrap" ref={scrollRef}>
+          <TimelineVertical
+            pxPerYear={pxPerYear}
+            startYear={axis.start} endYear={axis.end} mode={chronology}
+            periods={data.periods} leaders={data.leaders} judges={data.judges} kings={data.kings}
+            prophets={data.prophets} books={data.books} events={data.events} world={data.world}
+            visible={visible} selected={selected} onSelect={setSelected}
+            highlightRange={highlightRange} commentCounts={commentCounts}
+          />
+        </div>
+      ) : (
+        <div className="scroll-area" ref={scrollRef} dir="ltr">
+          <Timeline
+            pxPerYear={pxPerYear} gutter={gutter}
+            startYear={axis.start} endYear={axis.end} mode={chronology}
+            periods={data.periods} leaders={data.leaders} judges={data.judges} kings={data.kings}
+            prophets={data.prophets} books={data.books} events={data.events} world={data.world}
+            visible={visible} selected={selected} onSelect={setSelected}
+            highlightRange={highlightRange} commentCounts={commentCounts}
+          />
+        </div>
+      )}
 
-      {!selected && (
+      {!selected && !vertical && (
         <div className="fab-zoom">
           <button onClick={() => zoom(1.4)} aria-label="התקרבות">+</button>
           <button onClick={() => zoom(0.7)} aria-label="התרחקות">−</button>
