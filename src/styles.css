@@ -217,6 +217,16 @@ h1 {
   font-style: italic; line-height: 1; display: flex; align-items: center; justify-content: center;
 }
 .about-btn:hover { background: var(--gold); color: #fff; }
+/* כפתור המדריך — נבדל מ"אודות" בצבע, כדי שיהיה ברור שזו פעולה אחרת */
+.guide-btn {
+  border-color: var(--navy); color: var(--navy); font-style: normal; font-size: 15px;
+}
+.guide-btn:hover { background: var(--navy); color: #fff; }
+/* מעט גדולים יותר במגע, לנוחות הלחיצה */
+@media (max-width: 680px) {
+  .about-btn { width: 26px; height: 26px; font-size: 15px; }
+  .guide-btn { font-size: 17px; }
+}
 
 /* ----- חלון אודות ----- */
 .about-overlay {

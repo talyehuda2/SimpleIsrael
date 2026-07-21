@@ -561,6 +561,12 @@ export default function App() {
             <div className="title-row">
               <h1>ציר הזמן של עם ישראל</h1>
               <button className="about-btn" onClick={() => setAboutOpen(true)} title="אודות" aria-label="אודות">i</button>
+              <button
+                className="about-btn guide-btn"
+                onClick={() => setIntroOpen(true)}
+                title="מדריך היכרות — מה אפשר לעשות כאן"
+                aria-label="מדריך היכרות"
+              >?</button>
             </div>
             <span className="subtitle">
               {isAcademic
@@ -735,12 +741,6 @@ export default function App() {
             <a className="feedback-btn" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
               💬 משוב · דיווח על תקלה · הצעת תיקון
             </a>
-            <button
-              className="intro-replay"
-              onClick={() => { setAboutOpen(false); setIntroOpen(true); }}
-            >
-              הצגת מדריך ההיכרות שוב
-            </button>
           </div>
         </div>
       )}
