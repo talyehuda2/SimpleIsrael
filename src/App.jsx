@@ -7,6 +7,7 @@ import SearchBox from './components/SearchBox.jsx';
 import FamilyTree from './components/FamilyTree.jsx';
 import Intro from './components/Intro.jsx';
 import { fetchCommentCounts } from './lib/commentCounts.js';
+import { handleAdminParam } from './lib/admin.js';
 import leaders from './data/leaders.json';
 import judges from './data/judges.json';
 import kings from './data/kings.json';
@@ -181,6 +182,9 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('si_vertical', vertical ? '1' : '0'); } catch { /* מתעלמים */ }
   }, [vertical]);
+
+  // כניסה/יציאה ממצב ניהול דרך ?admin=1
+  useEffect(() => { handleAdminParam(); }, []);
 
   // מונה תגובות לכל פריט — כדי לסמן על הציר היכן כבר יש דיון
   const [commentCounts, setCommentCounts] = useState({});
