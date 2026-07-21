@@ -1069,8 +1069,19 @@ footer {
   margin-inline-start: 6px; background: rgb(255 255 255 / .22);
   border-color: rgb(255 255 255 / .4); color: #fff;
 }
-.vrow-track { margin-top: 5px; height: 3px; border-radius: 3px; background: rgb(255 255 255 / .22); display: block; }
-.vrow-fill { display: block; height: 100%; border-radius: 3px; background: rgb(255 255 255 / .75); }
+/* הקו = כל התקופה שבכותרת; המילוי = החלק שבו הפריט מתקיים (זמן זורם מימין לשמאל) */
+.vrow-track {
+  position: relative; display: block; margin-top: 6px; height: 4px;
+  border-radius: 3px; background: rgb(255 255 255 / .2);
+}
+.vrow-fill {
+  position: absolute; top: -1px; bottom: -1px; display: block;
+  border-radius: 3px; background: rgb(255 255 255 / .85);
+}
+.vrow-fill.point { border-radius: 50%; width: 5px !important; top: -2.5px; bottom: -2.5px; }
+/* קצה ישר = ממשיך אל מחוץ לתקופה */
+.vrow-fill.cont-before { border-start-end-radius: 0; border-end-end-radius: 0; }
+.vrow-fill.cont-after { border-start-start-radius: 0; border-end-start-radius: 0; }
 .vrow-dot { position: absolute; left: 10px; top: 10px; width: 9px; height: 9px; border-radius: 50%; }
 .vrow-dot.good { background: #6fd47a; } .vrow-dot.bad { background: #ff8f88; } .vrow-dot.mixed { background: #ffd166; }
 

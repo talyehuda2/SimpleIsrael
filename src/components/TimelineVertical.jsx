@@ -47,10 +47,6 @@ export default function TimelineVertical({
     return out.sort((a, b) => a.start - b.start || a.end - b.end || a.name.localeCompare(b.name, 'he'));
   }, [leaders, judges, kings, prophets, books, world, events, visible]);
 
-  const maxSpan = useMemo(
-    () => Math.max(1, ...items.map((i) => i.end - i.start)),
-    [items]
-  );
 
   // חלוקה לקטעים לפי תקופה — כותרת דביקה שנותנת הקשר בזמן הגלילה
   const sections = useMemo(() => {
@@ -76,11 +72,20 @@ export default function TimelineVertical({
               <span className="vsec-years">{era.start}–{era.end}</span>
             </h2>
           )}
+          {/* הקו מייצג את כל התקופה שבכותרת; הפריט מסומן עליו במיקומו היחסי בתוכה */}
           {list.map((it) => {
-            const span = it.end - it.start;
             const isEvent = it.kind === 'event';
             const n = commentCounts[`${it.kind}:${it.id}`] || 0;
             const isSel = selected && selected.kind === it.kind && selected.id === it.id;
+            const eStart = era ? era.start : startYear;
+            const eEnd = era ? era.end : endYear;
+            const eSpan = Math.max(1, eEnd - eStart);
+            const s = Math.max(eStart, it.start);
+            const e = Math.min(eEnd, it.end);
+            const offPct = Math.max(0, Math.min(100, ((s - eStart) / eSpan) * 100));
+            const wPct = Math.max(1.8, Math.min(100 - offPct, ((e - s) / eSpan) * 100));
+            const before = it.start < eStart;   // התחיל עוד לפני התקופה
+            const after = it.end > eEnd;        // נמשך אל מעבר לתקופה
             return (
               <button
                 key={`${it.kind}:${it.id}`}
@@ -102,11 +107,15 @@ export default function TimelineVertical({
                   <span className="vrow-meta">
                     {formatRange(it.start, it.end, mode)}
                   </span>
-                  {!isEvent && span > 0 && (
-                    <span className="vrow-track">
-                      <span className="vrow-fill" style={{ width: `${Math.max(4, (span / maxSpan) * 100)}%` }} />
-                    </span>
-                  )}
+                  <span
+                    className="vrow-track"
+                    title={era ? `${era.name}: ${era.start}–${era.end}` : undefined}
+                  >
+                    <span
+                      className={`vrow-fill${isEvent ? ' point' : ''}${before ? ' cont-before' : ''}${after ? ' cont-after' : ''}`}
+                      style={{ insetInlineStart: `${offPct}%`, width: `${wPct}%` }}
+                    />
+                  </span>
                 </span>
                 {it.judgment && <span className={`vrow-dot ${it.judgment}`} aria-hidden="true" />}
               </button>
