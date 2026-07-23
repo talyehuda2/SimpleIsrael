@@ -715,6 +715,70 @@ footer {
 .footer-feedback { color: var(--gold); font-weight: 700; text-decoration: none; white-space: nowrap; }
 .footer-feedback:hover { text-decoration: underline; }
 
+/* ----- מיני-ציר בכרטיס: מיקום הפריט על כל ההיסטוריה ----- */
+.dc-era { margin: 14px 0 10px; }
+.dc-era-track {
+  position: relative; height: 6px; border-radius: 4px;
+  background: linear-gradient(90deg, var(--line) 0%, var(--bg-2) 100%);
+  border: 1px solid var(--line);
+}
+.dc-era-span {
+  position: absolute; top: -1px; bottom: -1px; border-radius: 4px;
+  background: var(--gold);
+}
+/* סמן עגול שתמיד נראה — גם כשהטווח קצר מאוד */
+.dc-era-dot {
+  position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%;
+  transform: translateY(-50%);
+  background: var(--gold); border: 2.5px solid var(--panel);
+  box-shadow: 0 1px 3px rgb(40 25 0 / .35);
+}
+.dc-era-labels {
+  display: flex; justify-content: space-between;
+  font-size: 9.5px; color: var(--muted); margin-top: 4px;
+}
+
+/* ----- תגיות מטא-דאטה ----- */
+.dc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
+.dc-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--bg-2); border: 1px solid var(--line-soft);
+  border-radius: 8px; padding: 4px 9px; font-size: 11.5px; color: var(--ink);
+}
+.dc-tag.judgment { font-weight: 700; }
+.dc-tag.judgment.good { background: #e3f0e5; border-color: #b9d9be; color: #2f6b39; }
+.dc-tag.judgment.bad { background: #f6e0dd; border-color: #e3b8b1; color: #8c3327; }
+.dc-tag.judgment.mixed { background: #f6eeda; border-color: #e0cd9c; color: #8a6a24; }
+
+/* ----- קיצור התיאור ----- */
+.dc-more {
+  background: none; border: none; padding: 0; margin-inline-start: 6px;
+  color: var(--gold); font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; text-decoration: underline;
+}
+
+/* ----- בני-הזמן כשבבי ניווט ----- */
+.dc-contemp { margin: 12px 0 4px; }
+.dc-contemp-head {
+  display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px;
+  font-size: 11px; color: var(--muted);
+}
+.dc-hl {
+  margin-inline-start: auto; background: none; border: none; padding: 0;
+  color: var(--gold); font-family: inherit; font-size: 11px; font-weight: 700;
+  cursor: pointer; text-decoration: underline; white-space: nowrap;
+}
+.dc-hl.on { color: var(--navy); }
+.dc-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.dc-chip {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  padding: 4px 10px; font-family: inherit; font-size: 11.5px; font-weight: 600;
+  color: var(--navy); cursor: pointer; transition: border-color .12s, background .12s;
+}
+.dc-chip:hover { border-color: var(--gold); background: var(--bg-2); }
+.dc-chip.more { color: var(--muted); cursor: default; }
+.dc-cbig { font-size: 17px; line-height: 1; }
+
 /* ----- שורת הפעולות בכרטיס: בני-הזמן / מפה / שיתוף ----- */
 .card-actions { display: flex; gap: 8px; margin: 12px 0 14px; }
 .card-action {
@@ -728,6 +792,8 @@ footer {
 .card-action span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .card-action:hover { background: var(--panel); border-color: var(--gold); transform: translateY(-1px); }
 .card-action.active { background: var(--gold); border-color: var(--gold); color: #fff; }
+.card-action.primary { background: var(--navy); border-color: var(--navy); color: #fff; }
+.card-action.primary:hover { background: var(--navy-2); border-color: var(--navy-2); }
 
 /* ניווט "הקודם/הבא" באותה קטגוריה */
 .detail-nav {

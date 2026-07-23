@@ -255,6 +255,23 @@ export default function App() {
     return idx;
   }, [chronology]);
 
+  // בני-הזמן של הפריט הנבחר — לשבבי הניווט בכרטיס. רק דמויות (אנשים),
+  // לא ספרים/אירועים/מעצמות, שאינם "בני-זמן" במובן הרגיל.
+  const PERSON_KINDS = new Set(['leader', 'judge', 'united', 'judah', 'israel', 'prophet', 'world']);
+  const selectedContemporaries = useMemo(() => {
+    if (!selected) return [];
+    const ov = (a, b) => {
+      if (a.start === a.end) return a.start >= b.start && a.start <= b.end;
+      if (b.start === b.end) return b.start >= a.start && b.start <= a.end;
+      return a.start < b.end && a.end > b.start;
+    };
+    return searchIndex
+      .filter((x) => PERSON_KINDS.has(x.kind)
+        && !(x.kind === selected.kind && x.id === selected.id)
+        && ov(selected, x))
+      .sort((a, b) => a.start - b.start);
+  }, [selected, searchIndex]);
+
   // קפיצה לפריט מהחיפוש: הדלקת השכבה, בחירה, וגלילה למרכז המסך
   const LAYER_OF = {
     leader: 'leaders', judge: 'judges', united: 'kings', judah: 'kings',
@@ -707,6 +724,9 @@ export default function App() {
           )
         }
         prevItem={prevItem} nextItem={nextItem} onNav={jumpTo}
+        axisStart={axis.start} axisEnd={axis.end}
+        contemporaries={selectedContemporaries}
+        commentCount={selected ? (commentCounts[itemKey(selected)] || 0) : 0}
       />
 
       <MapPanel
