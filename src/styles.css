@@ -1204,3 +1204,57 @@ footer {
   transition: background .12s, border-color .12s;
 }
 .orient-btn:hover { background: var(--panel); border-color: var(--gold); }
+
+/* ============ מסך תובנות ============ */
+.ins-overlay {
+  position: fixed; inset: 0; z-index: 60; direction: rtl;
+  background: rgb(30 20 5 / .5); display: flex; align-items: flex-start;
+  justify-content: center; padding: 20px 14px; overflow-y: auto; overscroll-behavior: contain;
+}
+.ins-panel {
+  position: relative; background: var(--panel); border: 1px solid var(--line);
+  border-top: 4px solid var(--gold); border-radius: 14px; width: 100%; max-width: 560px;
+  padding: 22px 24px 28px; box-shadow: 0 14px 40px rgb(30 20 5 / .32); animation: cardIn .18s ease-out;
+}
+.ins-title { margin: 2px 0 4px; font-size: 23px; font-weight: 900; color: var(--navy); font-family: 'Frank Ruhl Libre', serif; }
+.ins-sub { margin: 0 0 18px; font-size: 13.5px; line-height: 1.6; color: var(--muted); }
+.ins-card { border-top: 1px solid var(--line-soft); padding-top: 16px; margin-top: 16px; }
+.ins-card:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+.ins-card h3 { margin: 0 0 12px; font-size: 16px; color: var(--navy); font-weight: 900; }
+.ins-punch {
+  margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: var(--ink);
+  background: linear-gradient(180deg, #fff9ec, #f4e8cc); border-inline-start: 3px solid var(--gold);
+  border-radius: 8px; padding: 9px 12px;
+}
+
+/* מלכים — הישר מול הרע */
+.ins-jrow { margin-bottom: 12px; }
+.ins-jhead { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.ins-jlabel { font-size: 13.5px; font-weight: 700; color: var(--navy); }
+.ins-javg { margin-inline-start: auto; font-size: 11px; color: var(--muted); }
+.ins-jbar { display: flex; height: 26px; border-radius: 7px; overflow: hidden; background: var(--bg-2); }
+.ins-seg { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; min-width: 20px; }
+.ins-seg.good { background: #4c8a4f; } .ins-seg.mixed { background: #cc9a2b; } .ins-seg.bad { background: #b0473a; }
+.ins-legend { display: flex; gap: 14px; font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+.ins-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: 4px; vertical-align: -1px; }
+.ins-legend i.good { background: #4c8a4f; } .ins-legend i.mixed { background: #cc9a2b; } .ins-legend i.bad { background: #b0473a; }
+
+/* מלוכות ארוכות */
+.ins-lrow { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.ins-lname { flex: 0 0 132px; font-size: 12.5px; color: var(--navy); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ins-lrealm { color: var(--muted); font-weight: 400; font-size: 11px; }
+.ins-ltrack { flex: 1; height: 16px; background: var(--bg-2); border-radius: 5px; overflow: hidden; }
+.ins-lfill { display: block; height: 100%; border-radius: 5px; background: var(--navy); }
+.ins-lfill.good { background: #4c8a4f; } .ins-lfill.mixed { background: #cc9a2b; } .ins-lfill.bad { background: #b0473a; }
+.ins-lyears { flex: 0 0 auto; font-size: 12px; font-weight: 700; color: var(--ink); min-width: 22px; text-align: center; }
+
+/* צפיפות נביאים */
+.ins-density { display: flex; align-items: flex-end; gap: 2px; height: 70px; padding: 0 2px; }
+.ins-dbar { flex: 1; min-height: 2px; background: var(--gold); border-radius: 2px 2px 0 0; opacity: .85; }
+.ins-drange { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); margin-top: 4px; }
+
+/* במספרים */
+.ins-counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; }
+.ins-count { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px 6px; text-align: center; }
+.ins-count b { display: block; font-size: 22px; color: var(--navy); font-weight: 900; }
+.ins-count span { font-size: 11px; color: var(--muted); }

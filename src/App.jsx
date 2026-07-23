@@ -6,6 +6,7 @@ import MapPanel from './components/MapPanel.jsx';
 import SearchBox from './components/SearchBox.jsx';
 import FamilyTree from './components/FamilyTree.jsx';
 import Intro from './components/Intro.jsx';
+import Insights from './components/Insights.jsx';
 import { fetchCommentCounts } from './lib/commentCounts.js';
 import { handleAdminParam } from './lib/admin.js';
 import { shareLink } from './lib/share.js';
@@ -129,6 +130,7 @@ export default function App() {
   const [chronology, setChronology] = useState('tradition');
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [insightsOpen, setInsightsOpen] = useState(false);
   const [mapItem, setMapItem] = useState(() => resolveKey(INITIAL.map));
   const [mapStep, setMapStep] = useState(INITIAL.step != null ? INITIAL.step : -1);
   // הפריט שבני-הזמן שלו מודגשים — נשמר בנפרד מהבחירה, כדי שההדגשה תישאר
@@ -597,6 +599,9 @@ export default function App() {
           <button className="tree-btn" onClick={() => setTreeOpen(true)}>
             <span aria-hidden="true">👑</span> אילן יוחסין
           </button>
+          <button className="tree-btn" onClick={() => setInsightsOpen(true)}>
+            <span aria-hidden="true">📊</span> תובנות
+          </button>
           <button
             className="share-btn"
             onClick={shareView}
@@ -765,6 +770,7 @@ export default function App() {
       )}
 
       <Intro open={introOpen} onClose={closeIntro} visible={visible} setVisible={setVisible} />
+      <Insights open={insightsOpen} onClose={() => setInsightsOpen(false)} />
     </div>
   );
 }
