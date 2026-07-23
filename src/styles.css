@@ -1246,6 +1246,7 @@ footer {
 .ins-ltrack { flex: 1; height: 16px; background: var(--bg-2); border-radius: 5px; overflow: hidden; }
 .ins-lfill { display: block; height: 100%; border-radius: 5px; background: var(--navy); }
 .ins-lfill.good { background: #4c8a4f; } .ins-lfill.mixed { background: #cc9a2b; } .ins-lfill.bad { background: #b0473a; }
+.ins-lfill.book { background: var(--book, #0f6b62); } .ins-lfill.prophet { background: var(--prophet, #b07a19); }
 .ins-lyears { flex: 0 0 auto; font-size: 12px; font-weight: 700; color: var(--ink); min-width: 22px; text-align: center; }
 
 /* צפיפות נביאים */

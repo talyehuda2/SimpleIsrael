@@ -50,10 +50,23 @@ function compute() {
     'רקע עולמי': world.length,
   };
 
+  // ספרי תנ״ך לפי טווח השנים שהם מכסים
+  const longestBooks = books
+    .map((b) => ({ ...b, span: b.end - b.start }))
+    .sort((a, b) => b.span - a.span)
+    .slice(0, 6);
+
+  // הנביאים עם הקריירה הארוכה ביותר
+  const longestProphets = prophets
+    .map((p) => ({ ...p, span: p.end - p.start }))
+    .sort((a, b) => b.span - a.span)
+    .slice(0, 6);
+
   return {
     judah, israel,
     avgJudah: avg(kings.judah), avgIsrael: avg(kings.israel),
     longest, shortest, density, maxDensity, peak, counts,
+    longestBooks, longestProphets,
   };
 }
 
@@ -87,6 +100,8 @@ export default function Insights({ open, onClose }) {
   const s = useMemo(compute, []);
   if (!open) return null;
   const maxDur = s.longest[0].dur;
+  const maxBook = s.longestBooks[0].span;
+  const maxProph = s.longestProphets[0].span;
 
   return (
     <div className="ins-overlay" onClick={onClose}>
@@ -144,6 +159,37 @@ export default function Insights({ open, onClose }) {
           <p className="ins-punch">
             השיא: {s.peak.n} נביאים פעילים בו-זמנית סביב שנת {s.peak.year} ({toSecular(s.peak.year)}) — ערב חורבן בית ראשון.
           </p>
+        </section>
+
+        {/* ספרים לפי כיסוי */}
+        <section className="ins-card">
+          <h3>הספרים המקיפים ביותר</h3>
+          {s.longestBooks.map((b) => (
+            <div key={b.id} className="ins-lrow">
+              <span className="ins-lname">{b.name}</span>
+              <span className="ins-ltrack">
+                <span className="ins-lfill book" style={{ width: `${(b.span / maxBook) * 100}%` }} />
+              </span>
+              <span className="ins-lyears">{b.span}</span>
+            </div>
+          ))}
+          <p className="ins-punch">
+            {s.longestBooks[0].name} פורש על פני {s.longestBooks[0].span} שנה — מבריאת העולם ועד שיבת ציון.
+          </p>
+        </section>
+
+        {/* קריירות נבואיות ארוכות */}
+        <section className="ins-card">
+          <h3>הקריירות הנבואיות הארוכות</h3>
+          {s.longestProphets.map((p) => (
+            <div key={p.id} className="ins-lrow">
+              <span className="ins-lname">{p.name}</span>
+              <span className="ins-ltrack">
+                <span className="ins-lfill prophet" style={{ width: `${(p.span / maxProph) * 100}%` }} />
+              </span>
+              <span className="ins-lyears">{p.span}</span>
+            </div>
+          ))}
         </section>
 
         {/* במספרים */}
