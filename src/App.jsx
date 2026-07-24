@@ -787,7 +787,11 @@ export default function App() {
       )}
 
       <Intro open={introOpen} onClose={closeIntro} visible={visible} setVisible={setVisible} />
-      <Insights open={insightsOpen} onClose={() => setInsightsOpen(false)} />
+      <Insights
+        open={insightsOpen}
+        onClose={() => setInsightsOpen(false)}
+        onJump={(id) => { setInsightsOpen(false); jumpToId(id); }}
+      />
     </div>
   );
 }

@@ -89,7 +89,7 @@ function JudgmentBar({ label, data, avg }) {
   );
 }
 
-export default function Insights({ open, onClose }) {
+export default function Insights({ open, onClose, onJump }) {
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -129,13 +129,13 @@ export default function Insights({ open, onClose }) {
         <section className="ins-card">
           <h3>המלוכות הארוכות ביותר</h3>
           {s.longest.map((k) => (
-            <div key={`${k.realm}:${k.name}`} className="ins-lrow">
+            <button key={`${k.realm}:${k.name}`} type="button" className="ins-lrow clickable" onClick={() => onJump(k.id)} title={`מעבר ל${k.name} בציר`}>
               <span className="ins-lname">{k.name} <span className="ins-lrealm">({k.realm})</span></span>
               <span className="ins-ltrack">
                 <span className={`ins-lfill ${k.judgment || ''}`} style={{ width: `${(k.dur / maxDur) * 100}%` }} />
               </span>
               <span className="ins-lyears">{k.dur}</span>
-            </div>
+            </button>
           ))}
           <p className="ins-punch">
             {s.longest[0].name} מלך {s.longest[0].dur} שנה — הארוך בהיסטוריה — ובכל זאת נשפט כ״עשה הרע״.
@@ -165,13 +165,13 @@ export default function Insights({ open, onClose }) {
         <section className="ins-card">
           <h3>הספרים המקיפים ביותר</h3>
           {s.longestBooks.map((b) => (
-            <div key={b.id} className="ins-lrow">
+            <button key={b.id} type="button" className="ins-lrow clickable" onClick={() => onJump(b.id)} title={`מעבר ל${b.name} בציר`}>
               <span className="ins-lname">{b.name}</span>
               <span className="ins-ltrack">
                 <span className="ins-lfill book" style={{ width: `${(b.span / maxBook) * 100}%` }} />
               </span>
               <span className="ins-lyears">{b.span}</span>
-            </div>
+            </button>
           ))}
           <p className="ins-punch">
             {s.longestBooks[0].name} פורש על פני {s.longestBooks[0].span} שנה — מבריאת העולם ועד שיבת ציון.
@@ -182,13 +182,13 @@ export default function Insights({ open, onClose }) {
         <section className="ins-card">
           <h3>הקריירות הנבואיות הארוכות</h3>
           {s.longestProphets.map((p) => (
-            <div key={p.id} className="ins-lrow">
+            <button key={p.id} type="button" className="ins-lrow clickable" onClick={() => onJump(p.id)} title={`מעבר ל${p.name} בציר`}>
               <span className="ins-lname">{p.name}</span>
               <span className="ins-ltrack">
                 <span className="ins-lfill prophet" style={{ width: `${(p.span / maxProph) * 100}%` }} />
               </span>
               <span className="ins-lyears">{p.span}</span>
-            </div>
+            </button>
           ))}
         </section>
 

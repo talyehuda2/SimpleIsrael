@@ -1247,7 +1247,14 @@ footer {
 .ins-legend i.good { background: #4c8a4f; } .ins-legend i.mixed { background: #cc9a2b; } .ins-legend i.bad { background: #b0473a; }
 
 /* מלוכות ארוכות */
-.ins-lrow { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.ins-lrow { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; width: 100%; }
+/* שורות לחיצות — קופצות לדמות בציר */
+button.ins-lrow {
+  background: none; border: none; padding: 4px 6px; margin: 0 -6px 3px; border-radius: 8px;
+  font-family: inherit; text-align: right; cursor: pointer; transition: background .12s;
+}
+button.ins-lrow:hover { background: var(--bg-2); }
+button.ins-lrow:hover .ins-lname { color: var(--gold); }
 .ins-lname { flex: 0 0 132px; font-size: 12.5px; color: var(--navy); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ins-lrealm { color: var(--muted); font-weight: 400; font-size: 11px; }
 .ins-ltrack { flex: 1; height: 16px; background: var(--bg-2); border-radius: 5px; overflow: hidden; }
