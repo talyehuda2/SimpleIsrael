@@ -281,7 +281,9 @@ export default function App() {
   const relatedEra = useMemo(() => {
     if (!selected) return [];
     const exclude = new Set(selectedContemporaries.map((c) => `${c.kind}:${c.id}`));
-    return relatedByEra(selected, searchIndex, periods, exclude, 6);
+    // רק דמויות (לא ספרים/אירועים) — כדי שהרשימה לא תהיה עמוסה
+    const persons = searchIndex.filter((x) => PERSON_KINDS.has(x.kind));
+    return relatedByEra(selected, persons, periods, exclude, 6);
   }, [selected, selectedContemporaries, searchIndex]);
   const relatedPlace = useMemo(() => {
     if (!selected) return [];
