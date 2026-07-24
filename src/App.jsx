@@ -138,6 +138,7 @@ export default function App() {
   // הפריט שבני-הזמן שלו מודגשים — נשמר בנפרד מהבחירה, כדי שההדגשה תישאר
   // גם אחרי סגירת הכרטיס (חשוב במובייל, שם הכרטיס מסתיר את הציר).
   const [contempItem, setContempItem] = useState(null);
+  const [mapMin, setMapMin] = useState(false); // מפת המסע ממוזערת לרצועה?
   const [treeOpen, setTreeOpen] = useState(INITIAL.tree);
   const [shareMsg, setShareMsg] = useState('');
 
@@ -181,6 +182,9 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('si_vertical', vertical ? '1' : '0'); } catch { /* מתעלמים */ }
   }, [vertical]);
+
+  // מפת המסע נפתחת מלאה בכל בחירת דמות חדשה
+  useEffect(() => { setMapMin(false); }, [selected]);
 
   // כניסה/יציאה ממצב ניהול דרך ?admin=1
   useEffect(() => { handleAdminParam(); }, []);
@@ -734,27 +738,32 @@ export default function App() {
         </button>
       )}
 
-      <DetailCard
-        item={selected} mode={chronology}
-        onClose={() => setSelected(null)}
-        onOpenMap={(it) => { setMapStep(-1); setMapItem(it); }}
-        contemporariesOn={!!(selected && contempItem && itemKey(selected) === itemKey(contempItem))}
-        onToggleContemporaries={() =>
-          setContempItem((prev) =>
-            prev && selected && itemKey(prev) === itemKey(selected) ? null : selected
-          )
-        }
-        prevItem={prevItem} nextItem={nextItem} onNav={jumpTo}
-        axisStart={axis.start} axisEnd={axis.end}
-        contemporaries={selectedContemporaries}
-        relatedEra={relatedEra} relatedPlace={relatedPlace}
-        commentCount={selected ? (commentCounts[itemKey(selected)] || 0) : 0}
-      />
-
-      <MapPanel
-        item={mapItem} onClose={() => closeOverlay(() => setMapItem(null))}
-        initialStep={mapStep} onStep={setMapStep}
-      />
+      {selected && (
+        <div className={`card-dock${selected && maps[selected.id] && !mapMin ? ' with-map' : ''}`}>
+          <DetailCard
+            item={selected} mode={chronology}
+            onClose={() => setSelected(null)}
+            contemporariesOn={!!(selected && contempItem && itemKey(selected) === itemKey(contempItem))}
+            onToggleContemporaries={() =>
+              setContempItem((prev) =>
+                prev && selected && itemKey(prev) === itemKey(selected) ? null : selected
+              )
+            }
+            prevItem={prevItem} nextItem={nextItem} onNav={jumpTo}
+            axisStart={axis.start} axisEnd={axis.end}
+            contemporaries={selectedContemporaries}
+            relatedEra={relatedEra} relatedPlace={relatedPlace}
+            commentCount={selected ? (commentCounts[itemKey(selected)] || 0) : 0}
+          />
+          {maps[selected.id] && (
+            <MapPanel
+              docked item={selected}
+              minimized={mapMin}
+              onToggleMin={() => setMapMin((m) => !m)}
+            />
+          )}
+        </div>
+      )}
 
       <FamilyTree open={treeOpen} onClose={() => closeOverlay(() => setTreeOpen(false))} onJump={jumpToId} />
 

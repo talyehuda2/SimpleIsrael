@@ -26,7 +26,7 @@ function windowFor(p) {
   return { x, y, w, h };
 }
 
-export default function MapPanel({ item, onClose, initialStep = -1, onStep }) {
+export default function MapPanel({ item, onClose, initialStep = -1, onStep, docked = false, minimized = false, onToggleMin }) {
   const [step, setStep] = useState(initialStep);   // -1 = סקירה כללית; 0..N-1 = תחנה במסע
   const [playing, setPlaying] = useState(false);
   const [vb, setVb] = useState(FULL_VB);
@@ -60,12 +60,13 @@ export default function MapPanel({ item, onClose, initialStep = -1, onStep }) {
     if (onStepRef.current) onStepRef.current(step);
   }, [step]);
 
-  // מקש Esc לסגירה
+  // מקש Esc לסגירה — רק במצב חלונית מלאה (במצב מעוגן הכרטיס מטפל ב-Esc)
   useEffect(() => {
+    if (docked) return undefined;
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [onClose, docked]);
 
   // "טיסה" חלקה של ה-viewBox אל התחנה הפעילה (או חזרה לסקירה מלאה)
   useEffect(() => {
@@ -100,6 +101,16 @@ export default function MapPanel({ item, onClose, initialStep = -1, onStep }) {
 
   if (!data) return null;
 
+  // מצב מעוגן וממוזער — רצועה דקה לצד הכרטיס, לחיצה פותחת שוב
+  if (docked && minimized) {
+    return (
+      <button className="map-strip" onClick={onToggleMin} title="הצגת מפת המסע">
+        <span className="map-strip-icon" aria-hidden="true">📍</span>
+        <span className="map-strip-text">מפת המסע</span>
+      </button>
+    );
+  }
+
   const active = step >= 0 ? pts[step] : null;
   const progressOffset = step < 0 ? total : total - cum[step];
 
@@ -112,10 +123,11 @@ export default function MapPanel({ item, onClose, initialStep = -1, onStep }) {
     setPlaying(true);
   };
 
-  return (
-    <div className="map-overlay" onClick={onClose}>
-      <aside className="map-panel" onClick={(e) => e.stopPropagation()}>
-        <button className="map-close" onClick={onClose} aria-label="סגירה">✕</button>
+  const panel = (
+    <aside className={`map-panel${docked ? ' docked' : ''}`} onClick={docked ? undefined : (e) => e.stopPropagation()}>
+        {docked
+          ? <button className="map-min" onClick={onToggleMin} aria-label="מזעור המפה" title="מזעור">⟨</button>
+          : <button className="map-close" onClick={onClose} aria-label="סגירה">✕</button>}
         <h3 className="map-title">{data.title}</h3>
         <p className="map-sub">עקבו אחר המסע שלב-אחר-שלב, או לחצו על נקודה במפה</p>
 
@@ -186,7 +198,8 @@ export default function MapPanel({ item, onClose, initialStep = -1, onStep }) {
             </li>
           ))}
         </ol>
-      </aside>
-    </div>
+    </aside>
   );
+
+  return docked ? panel : <div className="map-overlay" onClick={onClose}>{panel}</div>;
 }

@@ -651,15 +651,21 @@ h1 {
 }
 
 /* ----- כרטיס פרטים ----- */
+/* עוגן משותף: כרטיס הפרטים + מפת המסע לצדו */
+.card-dock {
+  position: fixed; left: 18px; bottom: 50px; z-index: 20;
+  display: flex; align-items: flex-end; gap: 8px; direction: ltr;
+  max-width: calc(100vw - 36px);
+}
 .detail-card {
-  position: fixed; left: 18px; bottom: 50px; width: 350px;
+  flex: 0 0 350px; width: 350px;
   max-height: calc(100vh - 80px); max-height: calc(100dvh - 80px);
   overflow-y: auto; overflow-x: hidden; background: var(--panel);
   /* שלא תיווצר גלילה של ציר הזמן שמאחור בזמן גלילה בכרטיס */
   overscroll-behavior: contain; touch-action: pan-y;
   border: 1px solid var(--line); border-top: 4px solid var(--gold);
   border-radius: 6px 6px 14px 14px; box-shadow: 0 12px 40px rgb(40 25 0 / .28);
-  padding: 18px 20px; z-index: 20; direction: rtl;
+  padding: 18px 20px; direction: rtl;
   animation: cardIn .18s ease-out;
 }
 @keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -928,6 +934,34 @@ footer {
   padding: 16px 18px 24px; animation: mapIn .22s ease-out;
 }
 @keyframes mapIn { from { transform: translateX(-26px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ----- מפת המסע מעוגנת לצד הכרטיס ----- */
+.map-panel.docked {
+  direction: rtl;
+  width: min(430px, 44vw); height: auto; align-self: stretch;
+  max-height: calc(100dvh - 80px);
+  border: 1px solid var(--line); border-top: 4px solid var(--gold);
+  border-radius: 6px 6px 14px 14px; box-shadow: 0 12px 40px rgb(40 25 0 / .28);
+  padding: 16px 18px 20px; animation: cardIn .18s ease-out;
+}
+.map-min {
+  position: absolute; left: 12px; top: 12px; width: 24px; height: 24px;
+  border-radius: 50%; border: 1.5px solid var(--gold); background: transparent;
+  color: var(--gold); font-size: 15px; line-height: 1; cursor: pointer;
+}
+.map-min:hover { background: var(--gold); color: #fff; }
+/* רצועת מפה ממוזערת */
+.map-strip {
+  align-self: stretch; flex: 0 0 42px; direction: rtl;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  background: linear-gradient(160deg, #f4e8cc, #e2cfa4);
+  border: 1px solid var(--gold); border-radius: 12px; cursor: pointer;
+  padding: 14px 0; box-shadow: 0 12px 40px rgb(40 25 0 / .22);
+  transition: filter .12s;
+}
+.map-strip:hover { filter: brightness(1.05); }
+.map-strip-icon { font-size: 20px; }
+.map-strip-text { writing-mode: vertical-rl; font-size: 12.5px; font-weight: 700; color: var(--navy); letter-spacing: 1px; }
 .map-close {
   position: absolute; left: 12px; top: 12px; border: none; background: none;
   font-size: 17px; color: #b0a082; cursor: pointer;
@@ -1072,12 +1106,26 @@ footer {
 
   .academic-note { padding: 7px 12px; font-size: 11.5px; }
 
+  /* מובייל: המפה כרצועה מעל הכרטיס (אין מקום לצד-בצד) */
+  .card-dock {
+    left: 8px; right: 8px; bottom: 8px; max-width: none;
+    flex-direction: column-reverse; align-items: stretch; direction: rtl; gap: 6px;
+  }
   /* כרטיס פרטים כ"גיליון" בתחתית המסך */
   .detail-card {
-    left: 8px; right: 8px; bottom: 8px; width: auto;
-    max-height: 82vh; max-height: calc(100dvh - 20px);
+    flex: 0 1 auto; width: auto;
+    max-height: 52vh; max-height: calc(52dvh);
     border-radius: 14px; border-top-width: 4px;
   }
+  .card-dock:not(.with-map) .detail-card { max-height: calc(100dvh - 20px); }
+  .map-panel.docked {
+    width: auto; align-self: stretch; max-height: 40vh; max-height: 40dvh;
+  }
+  .map-strip {
+    flex-direction: row; align-self: stretch; width: auto; flex: 0 0 auto;
+    padding: 8px 12px; gap: 8px;
+  }
+  .map-strip-text { writing-mode: horizontal-tb; letter-spacing: normal; }
 
   /* כפתורי זום צפים */
   .fab-zoom {
