@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { hebrewYearLetters, toSecular, formatRange } from '../src/utils/dates.js';
 import { sourceSegments } from '../src/utils/sefaria.js';
+import { buildPlaceIndex, relatedByPlace } from '../src/utils/related.js';
 import { writeCard } from './og.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -79,6 +80,11 @@ const periodOf = (it) =>
 const periodUrl = (p) => `${SITE}/p/period/${p.id}`;
 const itemsInPeriod = (p) =>
   items.filter((it) => overlaps(it, p)).sort((a, b) => a.start - b.start);
+
+// אינדקס מקומות ל"אותו מקום"
+const maps = read('maps.json');
+const placeIndex = buildPlaceIndex(maps);
+const byId = (id) => items.find((x) => x.id === id) || null;
 
 const STYLE = `
 :root{--bg:#efe4c8;--panel:#fbf5e7;--ink:#33281a;--muted:#7c6a4f;--navy:#163a57;--gold:#b28a2b;--line:#dcc9a3}
@@ -202,6 +208,16 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
   </ul>
 </section>` : '';
 
+  const places = relatedByPlace(it.id, placeIndex, byId);
+  const placeHtml = places.length ? `
+<section class="related">
+  <h2>אולי יעניין אותך גם — אותו מקום</h2>
+  <p class="related-sub">דמויות שקשורות לאותם מקומות כמו ${esc(it.name)}:</p>
+  <ul class="chips">
+    ${places.map((c) => `<li><a href="/p/${c.kind}/${c.id}"><span class="cl-name">${esc(c.name)}</span><span class="cl-kind">${esc(c.place)}</span></a></li>`).join('\n    ')}
+  </ul>
+</section>` : '';
+
   const body = `
 <div class="chip">${esc(km.label)}</div>
 <h1>${esc(it.name)}</h1>
@@ -211,6 +227,7 @@ ${rows.join('\n')}
 ${srcHtml ? `<div class="src"><b>מקור:</b> ${srcHtml}</div>` : ''}
 <a class="cta" href="/?sel=${it.kind}:${it.id}">פתחו בציר הזמן האינטראקטיבי ←</a>
 ${contempHtml}
+${placeHtml}
 ${rel}`;
 
   return shell({ title: `${it.name} — ${km.label} | ציר הזמן של עם ישראל`, description: metaDesc, canonical, jsonld, body,

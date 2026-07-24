@@ -21,7 +21,8 @@ const DESC_LIMIT = 165;
 
 export default function DetailCard({
   item, mode, onClose, onOpenMap, contemporariesOn, onToggleContemporaries,
-  prevItem, nextItem, onNav, axisStart, axisEnd, contemporaries = [], commentCount = 0,
+  prevItem, nextItem, onNav, axisStart, axisEnd, contemporaries = [],
+  relatedEra = [], relatedPlace = [], commentCount = 0,
 }) {
   const [shareMsg, setShareMsg] = useState('');
   const [expanded, setExpanded] = useState(false);
@@ -181,6 +182,34 @@ export default function DetailCard({
               <span className="nav-arrow">◄</span>
             </button>
           ) : <span className="nav-spacer" />}
+        </div>
+      )}
+
+      {(relatedPlace.length > 0 || relatedEra.length > 0) && (
+        <div className="dc-related">
+          <h3 className="dc-related-title">אולי יעניין אותך גם</h3>
+          {relatedPlace.length > 0 && (
+            <div className="dc-relgroup">
+              <span className="dc-rellabel">אותו מקום</span>
+              <div className="dc-chips">
+                {relatedPlace.map((r) => (
+                  <button key={`${r.kind}:${r.id}`} className="dc-chip" onClick={() => onNav(r)} title={`${r.name} · ${r.place}`}>
+                    {r.name}<span className="dc-chip-sub"> · {r.place}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {relatedEra.length > 0 && (
+            <div className="dc-relgroup">
+              <span className="dc-rellabel">מאותה תקופה</span>
+              <div className="dc-chips">
+                {relatedEra.map((r) => (
+                  <button key={`${r.kind}:${r.id}`} className="dc-chip" onClick={() => onNav(r)}>{r.name}</button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

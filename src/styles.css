@@ -777,6 +777,13 @@ footer {
 }
 .dc-chip:hover { border-color: var(--gold); background: var(--bg-2); }
 .dc-chip.more { color: var(--muted); cursor: default; }
+.dc-chip-sub { color: var(--muted); font-weight: 400; font-size: 10.5px; }
+
+/* "אולי יעניין אותך גם" */
+.dc-related { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.dc-related-title { margin: 0 0 8px; font-size: 14px; font-weight: 900; color: var(--navy); }
+.dc-relgroup { margin-bottom: 8px; }
+.dc-rellabel { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
 .dc-cbig { font-size: 17px; line-height: 1; }
 
 /* ----- שורת הפעולות בכרטיס: בני-הזמן / מפה / שיתוף ----- */

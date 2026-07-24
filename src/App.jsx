@@ -20,6 +20,8 @@ import periods from './data/periods.json';
 import world from './data/world.json';
 import empires from './data/empires.json';
 import { academicData } from './utils/academic.js';
+import maps from './data/maps.json';
+import { buildPlaceIndex, relatedByEra, relatedByPlace } from './utils/related.js';
 
 // ----- מצב באמצעות כתובת ה-URL: מאפשר שיתוף קישור, סימנייה, וכפתור "אחורה" -----
 const itemKey = (it) => `${it.kind}:${it.id}`;
@@ -273,6 +275,18 @@ export default function App() {
         && ov(selected, x))
       .sort((a, b) => a.start - b.start);
   }, [selected, searchIndex]);
+
+  // "אולי יעניין אותך גם" — קשרי תקופה ומקום (עמיד: מחושב פעם אחת)
+  const placeIndex = useMemo(() => buildPlaceIndex(maps), []);
+  const relatedEra = useMemo(() => {
+    if (!selected) return [];
+    const exclude = new Set(selectedContemporaries.map((c) => `${c.kind}:${c.id}`));
+    return relatedByEra(selected, searchIndex, periods, exclude, 6);
+  }, [selected, selectedContemporaries, searchIndex]);
+  const relatedPlace = useMemo(() => {
+    if (!selected) return [];
+    return relatedByPlace(selected.id, placeIndex, (id) => ALL_ITEMS.find((x) => x.id === id));
+  }, [selected, placeIndex]);
 
   // קפיצה לפריט מהחיפוש: הדלקת השכבה, בחירה, וגלילה למרכז המסך
   const LAYER_OF = {
@@ -731,6 +745,7 @@ export default function App() {
         prevItem={prevItem} nextItem={nextItem} onNav={jumpTo}
         axisStart={axis.start} axisEnd={axis.end}
         contemporaries={selectedContemporaries}
+        relatedEra={relatedEra} relatedPlace={relatedPlace}
         commentCount={selected ? (commentCounts[itemKey(selected)] || 0) : 0}
       />
 
