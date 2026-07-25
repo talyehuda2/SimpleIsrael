@@ -183,9 +183,6 @@ export default function App() {
     try { localStorage.setItem('si_vertical', vertical ? '1' : '0'); } catch { /* מתעלמים */ }
   }, [vertical]);
 
-  // מפת המסע נפתחת מלאה בכל בחירת דמות חדשה
-  useEffect(() => { setMapMin(false); }, [selected]);
-
   // כניסה/יציאה ממצב ניהול דרך ?admin=1
   useEffect(() => { handleAdminParam(); }, []);
 

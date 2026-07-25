@@ -6,17 +6,9 @@
 
 export const genealogy = [
   { main: { id: 'avraham', name: 'אברהם', role: 'האב הראשון', note: 'שרה' } },
-  { main: { id: 'yitzchak', name: 'יצחק', note: 'רבקה' }, siblings: [{ name: 'ישמעאל' }] },
-  { main: { id: 'yaakov', name: 'יעקב', note: 'רחל ולאה' }, siblings: [{ name: 'עשו' }] },
-  {
-    main: { name: 'יהודה', role: 'שבט המלוכה' },
-    siblingsLabel: 'שנים עשר שבטי ישראל',
-    siblings: [
-      { name: 'ראובן' }, { name: 'שמעון' }, { name: 'לוי' }, { name: 'דן' },
-      { name: 'נפתלי' }, { name: 'גד' }, { name: 'אשר' }, { name: 'יששכר' },
-      { name: 'זבולן' }, { id: 'yosef', name: 'יוסף' }, { name: 'בנימין' },
-    ],
-  },
+  { main: { id: 'yitzchak', name: 'יצחק', note: 'רבקה' } },
+  { main: { id: 'yaakov', name: 'יעקב', note: 'רחל ולאה' } },
+  { main: { name: 'יהודה', role: 'שבט המלוכה' } },
   { main: { name: 'פרץ' }, siblings: [{ name: 'זרח' }] },
   { main: { name: 'חצרון' } },
   { main: { name: 'רם' } },
