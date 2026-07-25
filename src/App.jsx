@@ -7,6 +7,7 @@ import SearchBox from './components/SearchBox.jsx';
 import FamilyTree from './components/FamilyTree.jsx';
 import Intro from './components/Intro.jsx';
 import Insights from './components/Insights.jsx';
+import NotesBox from './components/NotesBox.jsx';
 import { fetchCommentCounts } from './lib/commentCounts.js';
 import { handleAdminParam } from './lib/admin.js';
 import { shareLink } from './lib/share.js';
@@ -133,6 +134,7 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [insightsOpen, setInsightsOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
   const [mapItem, setMapItem] = useState(() => resolveKey(INITIAL.map));
   const [mapStep, setMapStep] = useState(INITIAL.step != null ? INITIAL.step : -1);
   // הפריט שבני-הזמן שלו מודגשים — נשמר בנפרד מהבחירה, כדי שההדגשה תישאר
@@ -598,6 +600,16 @@ export default function App() {
                 title="מדריך היכרות — מה אפשר לעשות כאן"
                 aria-label="מדריך היכרות"
               >?</button>
+              <button
+                className="about-btn note-btn"
+                onClick={() => setNotesOpen(true)}
+                title="הערה למנהל — הערות, הארות, תיקונים ותקלות"
+                aria-label="הערה למנהל"
+              >
+                <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+                  <path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z" />
+                </svg>
+              </button>
             </div>
             <span className="subtitle">
               {isAcademic
@@ -798,6 +810,7 @@ export default function App() {
         onClose={() => setInsightsOpen(false)}
         onJump={(id) => { setInsightsOpen(false); jumpToId(id); }}
       />
+      <NotesBox open={notesOpen} onClose={() => setNotesOpen(false)} />
     </div>
   );
 }
