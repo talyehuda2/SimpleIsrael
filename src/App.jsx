@@ -230,6 +230,15 @@ export default function App() {
   };
   const openTour = () => { setIntroMode('tour'); setIntroOpen(true); };
 
+  // תפריט המטא (⋯) בכותרת — נסגר בלחיצה מחוץ לו
+  const [metaOpen, setMetaOpen] = useState(false);
+  useEffect(() => {
+    if (!metaOpen) return undefined;
+    const onDoc = (e) => { if (!e.target.closest('.meta-wrap')) setMetaOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [metaOpen]);
+
   // מצב ריק חכם: כשכלום לא נבחר — הזמנה עדינה לדמות היום (נסגרת לסשן)
   const [dailyHintHidden, setDailyHintHidden] = useState(() => {
     try { return !!sessionStorage.getItem('si_daily_hint_off'); } catch { return false; }
@@ -251,6 +260,20 @@ export default function App() {
   const highlightRange = contempItem
     ? { start: contempItem.start, end: contempItem.end }
     : null;
+
+  // "המשיכו מאיפה שעצרתם" — הדמות האחרונה שנצפתה, לצ'יפ של מבקר חוזר
+  const [lastVisited] = useState(() => {
+    try {
+      const raw = localStorage.getItem('si_last_sel');
+      if (!raw) return null;
+      const [key, name] = raw.split('|');
+      return key && name ? { key, name } : null;
+    } catch { return null; }
+  });
+  useEffect(() => {
+    if (!selected) return;
+    try { localStorage.setItem('si_last_sel', `${itemKey(selected)}|${selected.name}`); } catch { /* מתעלמים */ }
+  }, [selected]);
 
   // ספירת פתיחות כרטיס — בפתיחה השנייה מציעים את האילן (פעם אחת בלבד)
   useEffect(() => {
@@ -702,23 +725,22 @@ export default function App() {
           <div className="title-block">
             <div className="title-row">
               <h1>ציר הזמן של עם ישראל</h1>
-              <button className="about-btn" onClick={() => setAboutOpen(true)} title="אודות" aria-label="אודות">i</button>
-              <button
-                className="about-btn guide-btn"
-                onClick={openTour}
-                title="מדריך היכרות — מה אפשר לעשות כאן"
-                aria-label="מדריך היכרות"
-              >?</button>
-              <button
-                className="about-btn note-btn"
-                onClick={() => setNotesOpen(true)}
-                title="הערה למנהל — הערות, הארות, תיקונים ותקלות"
-                aria-label="הערה למנהל"
-              >
-                <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
-                  <path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z" />
-                </svg>
-              </button>
+              {/* פעולות מטא מאוגדות בתפריט אחד — פחות רעש בכותרת */}
+              <span className="meta-wrap">
+                <button
+                  className="about-btn meta-btn"
+                  onClick={() => setMetaOpen((o) => !o)}
+                  aria-haspopup="true" aria-expanded={metaOpen}
+                  title="אודות · מדריך · הערה למנהל" aria-label="תפריט מידע"
+                >⋯</button>
+                {metaOpen && (
+                  <span className="meta-menu" onClick={() => setMetaOpen(false)}>
+                    <button onClick={() => setAboutOpen(true)}>ℹ️ אודות הפרויקט</button>
+                    <button onClick={openTour}>❓ מדריך היכרות</button>
+                    <button onClick={() => setNotesOpen(true)}>✉️ הערה למנהל</button>
+                  </span>
+                )}
+              </span>
             </div>
             <span className="subtitle">
               {isAcademic
@@ -775,13 +797,13 @@ export default function App() {
             <div className="ctrl-group">
               <span className="ctrl-label">שכבות</span>
               <div className="toggles">
-                {!isAcademic && <label><input type="checkbox" checked={visible.leaders} onChange={() => toggle('leaders')} /> אבות ומנהיגים</label>}
-                {!isAcademic && <label><input type="checkbox" checked={visible.judges} onChange={() => toggle('judges')} /> שופטים</label>}
-                <label><input type="checkbox" checked={visible.kings} onChange={() => toggle('kings')} /> מלכים</label>
-                <label><input type="checkbox" checked={visible.prophets} onChange={() => toggle('prophets')} /> נביאים</label>
-                <label><input type="checkbox" checked={visible.books} onChange={() => toggle('books')} /> ספרים</label>
-                <label><input type="checkbox" checked={visible.events} onChange={() => toggle('events')} /> אירועים</label>
-                <label><input type="checkbox" checked={visible.world} onChange={() => toggle('world')} /> רקע עולמי</label>
+                {!isAcademic && <label><input type="checkbox" checked={visible.leaders} onChange={() => toggle('leaders')} /> <span className="tg-dot dot-leaders" aria-hidden="true" />אבות ומנהיגים</label>}
+                {!isAcademic && <label><input type="checkbox" checked={visible.judges} onChange={() => toggle('judges')} /> <span className="tg-dot dot-judges" aria-hidden="true" />שופטים</label>}
+                <label><input type="checkbox" checked={visible.kings} onChange={() => toggle('kings')} /> <span className="tg-dot dot-kings" aria-hidden="true" />מלכים</label>
+                <label><input type="checkbox" checked={visible.prophets} onChange={() => toggle('prophets')} /> <span className="tg-dot dot-prophets" aria-hidden="true" />נביאים</label>
+                <label><input type="checkbox" checked={visible.books} onChange={() => toggle('books')} /> <span className="tg-dot dot-books" aria-hidden="true" />ספרים</label>
+                <label><input type="checkbox" checked={visible.events} onChange={() => toggle('events')} /> <span className="tg-dot dot-events" aria-hidden="true" />אירועים</label>
+                <label><input type="checkbox" checked={visible.world} onChange={() => toggle('world')} /> <span className="tg-dot dot-world" aria-hidden="true" />רקע עולמי</label>
               </div>
             </div>
           </div>
@@ -866,8 +888,19 @@ export default function App() {
       {!selected && !introOpen && !contempItem && dailyFigure && !dailyHintHidden && (
         <div className="daily-hint">
           <button className="daily-hint-go" onClick={() => jumpToId(dailyFigure.id)}>
-            ✨ דמות היום: <b>{dailyFigure.name}</b> — הכירו
+            ✨ דמות היום: <b>{dailyFigure.name}</b>
           </button>
+          {lastVisited && lastVisited.key !== itemKey(dailyFigure) && (
+            <button
+              className="daily-hint-go daily-hint-resume"
+              onClick={() => {
+                const it = searchIndex.find((x) => itemKey(x) === lastVisited.key);
+                if (it) jumpTo(it);
+              }}
+            >
+              ⏮ המשיכו: <b>{lastVisited.name}</b>
+            </button>
+          )}
           <button className="daily-hint-x" onClick={hideDailyHint} aria-label="סגירת ההצעה">✕</button>
         </div>
       )}

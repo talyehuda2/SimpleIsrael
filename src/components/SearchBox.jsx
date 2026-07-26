@@ -13,10 +13,25 @@ const GROUP_LABEL = { 0: 'התאמה ישירה', 1: 'קשור למקום', 2: '
 // נרמול לחיפוש: הסרת ניקוד, גרשיים ורווחים כדי שההשוואה תהיה סלחנית
 const norm = (s) => (s || '').replace(/[֑-ׇ"'׳״\s]/g, '');
 
+// placeholder חי — מדגים שהחיפוש מבין גם מקומות ונושאים, לא רק שמות
+const HINTS = [
+  'חיפוש דמות, מקום או נושא…',
+  'נסו: דוד המלך',
+  'נסו: חברון',
+  'נסו: יציאת מצרים',
+  'נסו: ברית',
+];
+
 export default function SearchBox({ index, onPick }) {
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
+  const [hint, setHint] = useState(0);
   const boxRef = useRef(null);
+
+  useEffect(() => {
+    const t = setInterval(() => setHint((h) => (h + 1) % HINTS.length), 3500);
+    return () => clearInterval(t);
+  }, []);
 
   // התאמה רב-שכבתית: שם (מדויק ביותר) → מקום במסע → הקשר בתיאור.
   // כך "חברון" מציף את כל מי שעבר שם, ו"ברית" את מי שמופיע בהקשרו.
@@ -50,7 +65,7 @@ export default function SearchBox({ index, onPick }) {
       <input
         type="search"
         value={q}
-        placeholder="חיפוש דמות, מקום או נושא…"
+        placeholder={HINTS[hint]}
         aria-label="חיפוש"
         onChange={(e) => { setQ(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}

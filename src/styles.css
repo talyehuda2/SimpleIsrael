@@ -761,6 +761,8 @@ h1 {
   color: #fff; font-size: 12.5px; font-weight: 500;
   box-shadow: 0 1px 3px rgb(40 25 0 / .28);
   transition: transform .1s, box-shadow .1s, filter .1s;
+  /* מלכים קצרים בזום-אאוט לא יהפכו לרסיסים בלתי-לחיצים */
+  min-width: 13px;
 }
 .bar:hover {
   filter: brightness(1.08); transform: translateY(-1px);
@@ -1593,3 +1595,39 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 }
 
 @keyframes sheetUp { from { transform: translateY(30%); opacity: .6; } to { transform: none; opacity: 1; } }
+
+/* ===== ליטוש דסקטופ: תפריט מטא, נקודות שכבה, מקרא רזה ===== */
+.meta-wrap { position: relative; display: inline-flex; }
+.meta-btn { font-size: 16px; letter-spacing: 1px; }
+.meta-menu {
+  position: absolute; top: calc(100% + 6px); inset-inline-start: 0; z-index: 50;
+  display: flex; flex-direction: column; min-width: 185px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 10px 30px rgb(40 25 0 / .22); padding: 5px; animation: hintIn .15s ease-out;
+}
+.meta-menu button {
+  border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 600;
+  color: var(--ink); text-align: start; padding: 9px 12px; border-radius: 8px; cursor: pointer;
+}
+.meta-menu button:hover { background: var(--bg-2); }
+
+/* נקודות צבע על בוררי השכבות — המקרא חי איפה שמדליקים ומכבים */
+.tg-dot {
+  display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+  vertical-align: -1px; margin-inline-end: 3px;
+}
+.dot-leaders { background: var(--leader); }
+.dot-judges { background: var(--judge); }
+.dot-kings { background: linear-gradient(90deg, var(--united) 0 33%, var(--judah) 33% 66%, var(--israel) 66% 100%); }
+.dot-prophets { background: var(--prophet); }
+.dot-books { background: var(--book); }
+.dot-events { background: var(--event); }
+.dot-world { background: var(--world); }
+
+/* בדסקטופ המקרא מציג רק את שיפוטי המלכים — צבעי השכבות כבר על הבוררים */
+@media (min-width: 681px) {
+  .legend .lg:not(.dot-lg):not(.event-lg), .legend .lg-sep { display: none; }
+}
+
+/* צ'יפ "המשיכו" — מופרד קלות מדמות היום */
+.daily-hint-resume { border-inline-start: 1px solid var(--line-soft); }
