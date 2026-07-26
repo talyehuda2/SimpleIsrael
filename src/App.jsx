@@ -129,7 +129,12 @@ export default function App() {
   if (initUrl.current === null) initUrl.current = parseUrl();
   const INITIAL = initUrl.current;
 
-  const [pxPerYear, setPxPerYear] = useState(1);
+  // זום התחלתי משוער לתקופת הפתיחה (האבות) — כך ה-commit הראשון כבר מצויר
+  // ברוחב הנכון, והגלילה-לקצה-הימני נוחתת בדיוק על התקופה. מדויק סופית באפקט הפתיחה.
+  const [pxPerYear, setPxPerYear] = useState(() => {
+    const first = PRESETS.tradition[1];
+    return Math.min(MAX_PX, Math.max(MIN_PX, (window.innerWidth - 60) / (first.end - first.start)));
+  });
   const [selected, setSelected] = useState(() => resolveKey(INITIAL.sel));
   const [chronology, setChronology] = useState('tradition');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -209,14 +214,29 @@ export default function App() {
     return () => { alive = false; };
   }, []);
 
-  // מדריך היכרות — נפתח מעצמו בביקור הראשון בלבד
+  // מדריך היכרות — בביקור ראשון נפתח מסך-פתיחה קצר ("ברוכים הבאים");
+  // כפתור ה-? פותח את הסיור המלא. ההעדפה נשמרת ב-localStorage.
   const [introOpen, setIntroOpen] = useState(() => {
     try { return !localStorage.getItem('si_seen_intro'); } catch { return false; }
   });
+  const [introMode, setIntroMode] = useState(introOpen ? 'welcome' : 'tour');
   const closeIntro = () => {
     setIntroOpen(false);
     try { localStorage.setItem('si_seen_intro', '1'); } catch { /* מתעלמים */ }
   };
+  const openTour = () => { setIntroMode('tour'); setIntroOpen(true); };
+
+  // מצב ריק חכם: כשכלום לא נבחר — הזמנה עדינה לדמות היום (נסגרת לסשן)
+  const [dailyHintHidden, setDailyHintHidden] = useState(() => {
+    try { return !!sessionStorage.getItem('si_daily_hint_off'); } catch { return false; }
+  });
+  const hideDailyHint = () => {
+    setDailyHintHidden(true);
+    try { sessionStorage.setItem('si_daily_hint_off', '1'); } catch { /* מתעלמים */ }
+  };
+
+  // הדרכה קונטקסטואלית: אחרי הכרטיס השני — טיפ חד-פעמי על אילן היוחסין
+  const [treeCoach, setTreeCoach] = useState(false);
 
   const axis = AXIS[chronology];
   const data = chronology === 'academic'
@@ -227,6 +247,25 @@ export default function App() {
   const highlightRange = contempItem
     ? { start: contempItem.start, end: contempItem.end }
     : null;
+
+  // ספירת פתיחות כרטיס — בפתיחה השנייה מציעים את האילן (פעם אחת בלבד)
+  useEffect(() => {
+    if (!selected) return;
+    try {
+      const n = parseInt(localStorage.getItem('si_card_opens') || '0', 10) + 1;
+      localStorage.setItem('si_card_opens', String(n));
+      if (n === 2 && !localStorage.getItem('si_coach_tree')) {
+        setTreeCoach(true);
+        localStorage.setItem('si_coach_tree', '1');
+      }
+    } catch { /* מתעלמים */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected && itemKey(selected)]);
+  useEffect(() => {
+    if (!treeCoach) return undefined;
+    const t = setTimeout(() => setTreeCoach(false), 9000);
+    return () => clearTimeout(t);
+  }, [treeCoach]);
 
   // בחירת פריט אחר מבטלת הדגשת בני-זמן קודמת; סגירת הכרטיס (selected=null) לא.
   useEffect(() => {
@@ -448,10 +487,18 @@ export default function App() {
   const VERTICAL_DEFAULT_PX = 2.5;
   const openingPx = () => (vertical ? VERTICAL_DEFAULT_PX : getMinPx());
 
-  // תצוגת פתיחה; ובשינוי גודל חלון — לא להישאר קטן מהמסך
+  // תצוגת פתיחה; ובשינוי גודל חלון — לא להישאר קטן מהמסך.
+  // באופקי ללא קישור-עומק נפתחים מזוהמים אל התקופה הראשונה (האבות) — קריא
+  // ומזמין במקום "קיר" של כל ההיסטוריה; הגלילה לקצה הימני מציבה אותנו בדיוק שם.
   useEffect(() => {
-    const px = openingPx();
-    setPxPerYear(px);
+    const el = scrollRef.current;
+    const first = PRESETS[chronology][1];
+    const eraPx = el && !vertical && !selected && first
+      ? Math.min(MAX_PX, Math.max(getMinPx(), (el.clientWidth - 40) / (first.end - first.start)))
+      : null;
+    const px = eraPx ?? openingPx();
+    // כשהאומדן ההתחלתי כבר קרוב — לא מרנדרים שוב (שומר על הגלילה לקצה הימני)
+    if (eraPx == null || Math.abs(eraPx - pxPerYear) / pxPerYear > 0.02) setPxPerYear(px);
     // אם נטענו מכתובת משותפת עם דמות נבחרת — לגלול אליה במקום לקצה
     if (selected) {
       scrollRightPending.current = false;
@@ -544,6 +591,36 @@ export default function App() {
     scrollToYear(preset.end, 20, px);
   };
 
+  // התקופה שבמרכז התצוגה — מדליקה את הצ'יפ המתאים בפס התקופות
+  const [activeEra, setActiveEra] = useState(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return undefined;
+    let raf = 0;
+    const compute = () => {
+      raf = 0;
+      const presets = PRESETS[chronology].filter((p) => p.name !== 'הכל');
+      let year = null;
+      if (vertical) {
+        // הזרם האנכי אינו פרופורציונלי — קוראים את שנת הכותרת האחרונה שנגללה
+        const heads = el.querySelectorAll('.vsec-head');
+        for (const h of heads) {
+          if (h.getBoundingClientRect().top > 260) break;
+          const m = (h.getAttribute('aria-label') || '').match(/(\d+)\s*עד/);
+          if (m) year = parseInt(m[1], 10) + 1;
+        }
+      } else {
+        year = axis.end - (el.scrollLeft + el.clientWidth / 2) / pxPerYear;
+      }
+      const hit = year != null ? presets.find((p) => year >= p.start && year <= p.end) : null;
+      setActiveEra(hit ? hit.name : null);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(compute); };
+    compute();
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => { el.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, [vertical, pxPerYear, chronology, axis.end]);
+
   const zoom = (factor, anchorX) => {
     const el = scrollRef.current;
     if (!el) return;
@@ -624,7 +701,7 @@ export default function App() {
               <button className="about-btn" onClick={() => setAboutOpen(true)} title="אודות" aria-label="אודות">i</button>
               <button
                 className="about-btn guide-btn"
-                onClick={() => setIntroOpen(true)}
+                onClick={openTour}
                 title="מדריך היכרות — מה אפשר לעשות כאן"
                 aria-label="מדריך היכרות"
               >?</button>
@@ -692,14 +769,6 @@ export default function App() {
         <div className={`controls${menuOpen ? ' open' : ''}`}>
           <div className="ctrl-stack">
             <div className="ctrl-group">
-              <span className="ctrl-label">טווח</span>
-              <div className="presets">
-                {PRESETS[chronology].map((p) => (
-                  <button key={p.name} onClick={() => { goTo(p); setMenuOpen(false); }}>{p.name}</button>
-                ))}
-              </div>
-            </div>
-            <div className="ctrl-group">
               <span className="ctrl-label">שכבות</span>
               <div className="toggles">
                 {!isAcademic && <label><input type="checkbox" checked={visible.leaders} onChange={() => toggle('leaders')} /> אבות ומנהיגים</label>}
@@ -720,6 +789,18 @@ export default function App() {
           )}
         </div>
       </header>
+
+      {/* פס תקופות קבוע — אוריינטציה ("איפה אני?") וניווט ("קח אותי") במחווה אחת */}
+      <nav className="era-strip" aria-label="ניווט תקופות">
+        {PRESETS[chronology].map((p) => (
+          <button
+            key={p.name}
+            className={`era-chip${p.name === 'הכל' ? ' era-all' : ''}${activeEra === p.name ? ' on' : ''}`}
+            onClick={() => goTo(p)}
+            aria-current={activeEra === p.name ? 'true' : undefined}
+          >{p.name}</button>
+        ))}
+      </nav>
 
       <div className="legend">
         {!isAcademic && <span className="lg leader">אבות ומנהיגים</span>}
@@ -774,6 +855,24 @@ export default function App() {
         <div className="fab-zoom">
           <button onClick={() => zoom(1.4)} aria-label="התקרבות">+</button>
           <button onClick={() => zoom(0.7)} aria-label="התרחקות">−</button>
+        </div>
+      )}
+
+      {/* מצב ריק: הזמנה לדמות היום — נקודת כניסה במקום מסך אילם */}
+      {!selected && !introOpen && !contempItem && dailyFigure && !dailyHintHidden && (
+        <div className="daily-hint">
+          <button className="daily-hint-go" onClick={() => jumpToId(dailyFigure.id)}>
+            ✨ דמות היום: <b>{dailyFigure.name}</b> — הכירו
+          </button>
+          <button className="daily-hint-x" onClick={hideDailyHint} aria-label="סגירת ההצעה">✕</button>
+        </div>
+      )}
+
+      {/* טיפ חד-פעמי אחרי הכרטיס השני — גילוי האילן */}
+      {treeCoach && (
+        <div className="coach-toast" role="status">
+          💡 טיפ: כפתור <b>👑 אילן יוחסין</b> למעלה מציג את השושלת מאברהם עד המלכים — ולחיצה קופצת לדמות
+          <button className="coach-x" onClick={() => setTreeCoach(false)} aria-label="סגירה">✕</button>
         </div>
       )}
 
@@ -850,7 +949,10 @@ export default function App() {
         </div>
       )}
 
-      <Intro open={introOpen} onClose={closeIntro} visible={visible} setVisible={setVisible} />
+      <Intro
+        open={introOpen} onClose={closeIntro} visible={visible} setVisible={setVisible}
+        mode={introMode} onStartJourney={() => jumpToId('avraham')}
+      />
       <Insights
         open={insightsOpen}
         onClose={() => setInsightsOpen(false)}

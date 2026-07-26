@@ -27,6 +27,14 @@ export default function DetailCard({
   const [shareMsg, setShareMsg] = useState('');
   const [expanded, setExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  // טיפ חד-פעמי בכרטיס הראשון: מה עושים עם "חי במקביל"
+  const [coachContemp, setCoachContemp] = useState(() => {
+    try { return !localStorage.getItem('si_coach_contemp'); } catch { return false; }
+  });
+  const dismissCoachContemp = () => {
+    setCoachContemp(false);
+    try { localStorage.setItem('si_coach_contemp', '1'); } catch { /* מתעלמים */ }
+  };
 
   useEffect(() => {
     if (!item) return undefined;
@@ -128,6 +136,12 @@ export default function DetailCard({
               {contemporariesOn ? 'בטל הדגשה' : 'הדגש בציר'}
             </button>
           </div>
+          {coachContemp && (
+            <div className="coach-tip">
+              💡 לחצו על שם כדי לקפוץ אליו, או על "הדגש בציר" כדי לראות את כל בני הדור
+              <button className="coach-x" onClick={dismissCoachContemp} aria-label="הבנתי">✕</button>
+            </div>
+          )}
           <div className="dc-chips">
             {contemporaries.slice(0, 8).map((c) => (
               <button key={`${c.kind}:${c.id}`} className="dc-chip" onClick={() => onNav(c)} title={`${c.name} · ${c.start}–${c.end}`}>

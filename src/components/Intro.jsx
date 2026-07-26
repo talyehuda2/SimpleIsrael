@@ -127,11 +127,14 @@ const SLIDES = [
   { key: 'layers', title: 'מה להציג?', text: 'בחרו אילו שכבות יופיעו על הציר. תמיד אפשר לשנות זאת אחר כך בכפתור ☰ אפשרויות.', picker: true },
 ];
 
-export default function Intro({ open, onClose, visible, setVisible }) {
+export default function Intro({ open, onClose, visible, setVisible, mode = 'tour', onStartJourney }) {
   const [step, setStep] = useState(0);
+  // בביקור ראשון מציגים מסך-פתיחה יחיד ("ברוכים הבאים") במקום סיור של 7 שקפים;
+  // הסיור המלא נשאר זמין דרך "סיור קצר בכלים" וכפתור ה-? בכותרת.
+  const [phase, setPhase] = useState(mode);
   const touchX = useRef(null);
 
-  useEffect(() => { if (open) setStep(0); }, [open]);
+  useEffect(() => { if (open) { setStep(0); setPhase(mode); } }, [open, mode]);
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => {
@@ -144,6 +147,34 @@ export default function Intro({ open, onClose, visible, setVisible }) {
   }, [open, onClose]);
 
   if (!open) return null;
+
+  // מסך פתיחה — משפט ערך אחד ופעולה אחת ברורה, בלי ללמד לפני שרואים
+  if (phase === 'welcome') {
+    return (
+      <div className="intro-overlay" onClick={onClose}>
+        <div className="intro-card intro-welcome-card" onClick={(e) => e.stopPropagation()}>
+          <button className="about-close" onClick={onClose} aria-label="דילוג וסגירה">✕</button>
+          <div className="intro-hero" aria-hidden="true">📖</div>
+          <h2 className="intro-welcome-title">ציר הזמן של עם ישראל</h2>
+          <p className="intro-value">
+            כל ההיסטוריה המקראית על ציר אחד — מהאבות ועד חורבן בית שני.
+            דמויות, מלכים ונביאים, מפות מסע ואילן יוחסין.
+          </p>
+          <button
+            className="intro-btn primary intro-journey"
+            onClick={() => { onClose(); onStartJourney?.(); }}
+          >
+            ✨ התחילו את המסע
+          </button>
+          <div className="intro-welcome-links">
+            <button className="intro-link" onClick={() => setPhase('tour')}>סיור קצר בכלים</button>
+            <span aria-hidden="true">·</span>
+            <button className="intro-link" onClick={onClose}>אסתדר לבד</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const last = step === SLIDES.length - 1;
   const s = SLIDES[step];
@@ -179,9 +210,10 @@ export default function Intro({ open, onClose, visible, setVisible }) {
 
           {s.picker && (
             <div className="intro-picker">
+              {/* הבחירה המהירה גם מסיימת — שלא ייתקעו בשקף האחרון בלי להבין איך יוצאים */}
               <div className="picker-quick">
-                <button type="button" onClick={() => setVisible({ ...ALL_ON })}>הכל</button>
-                <button type="button" onClick={() => setVisible({ ...ESSENTIALS })}>העיקר בלבד</button>
+                <button type="button" onClick={() => { setVisible({ ...ALL_ON }); onClose(); }}>הכל — מתחילים</button>
+                <button type="button" onClick={() => { setVisible({ ...ESSENTIALS }); onClose(); }}>העיקר בלבד — מתחילים</button>
               </div>
               <div className="picker-grid">
                 {LAYERS.map((l) => {
