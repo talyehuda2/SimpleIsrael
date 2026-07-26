@@ -733,7 +733,7 @@ export default function App() {
       )}
 
       {vertical ? (
-        <div className="vtl-wrap" ref={scrollRef}>
+        <div className="vtl-wrap" ref={scrollRef} role="main" aria-label="ציר הזמן">
           <TimelineVertical
             pxPerYear={pxPerYear}
             startYear={axis.start} endYear={axis.end} mode={chronology}
@@ -744,7 +744,7 @@ export default function App() {
           />
         </div>
       ) : (
-        <div className="scroll-area" ref={scrollRef} dir="ltr">
+        <div className="scroll-area" ref={scrollRef} dir="ltr" role="main" aria-label="ציר הזמן">
           <Timeline
             pxPerYear={pxPerYear} gutter={gutter}
             startYear={axis.start} endYear={axis.end} mode={chronology}

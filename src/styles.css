@@ -6,12 +6,13 @@
   --bg-2: #e7d9ba;          /* קלף כהה מעט (פסים) */
   --panel: #fbf5e7;         /* קרם בהיר — כותרת/כרטיסים */
   --ink: #33281a;           /* דיו חום עמוק */
-  --muted: #7c6a4f;
+  --muted: #6d5c42;         /* מעומעם — מוכהה לעמידה ב-WCAG AA (4.5:1) */
   --line: #dcc9a3;          /* קו שיער חמים */
   --line-soft: #e8dcc0;
   --navy: #163a57;          /* כחול עמוק — אקסנט ראשי */
   --navy-2: #1d4b70;
-  --gold: #b28a2b;
+  --gold: #b28a2b;          /* זהב מותג — לגבולות, רקעים ואקסנטים */
+  --gold-ink: #7a5b16;      /* זהב-דיו — לכתב/אייקונים, עומד ב-AA (4.5:1) */
   --gold-soft: #d9b755;
 
   /* ----- צבעי נתיבים (גווני אבן-חן, קריאים על קלף) ----- */
@@ -74,7 +75,7 @@ header {
 }
 .ctrl-group { display: flex; align-items: center; gap: 7px; }
 .ctrl-label {
-  font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: .3px;
+  font-size: 11px; font-weight: 700; color: var(--gold-ink); letter-spacing: .3px;
   text-transform: none; padding-inline-end: 2px;
 }
 
@@ -121,7 +122,7 @@ header {
 .sr-kind { margin-inline-start: auto; font-size: 11.5px; color: var(--muted); }
 /* מדוע התוצאה תואמת — מקום במסע או הקשר בתיאור */
 .sr-why {
-  font-size: 11px; color: var(--gold); font-weight: 600; white-space: nowrap;
+  font-size: 11px; color: var(--gold-ink); font-weight: 600; white-space: nowrap;
   background: rgb(178 138 43 / .1); border-radius: 6px; padding: 1px 7px;
 }
 .sr-empty { color: var(--muted); font-size: 13px; padding: 8px 10px; cursor: default; }
@@ -183,7 +184,7 @@ header {
 .tree-gen { display: flex; flex-direction: column; align-items: center; width: 100%; }
 .tree-connector { width: 2px; height: 20px; background: var(--gold); opacity: .55; }
 .tree-branch { display: flex; flex-direction: column; align-items: center; width: 100%; }
-.tree-sib-label { font-size: 11px; font-weight: 700; color: var(--gold); margin-bottom: 7px; }
+.tree-sib-label { font-size: 11px; font-weight: 700; color: var(--gold-ink); margin-bottom: 7px; }
 .tree-siblings {
   display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; max-width: 640px;
   padding: 9px 12px; border: 1px dashed var(--line); border-radius: 12px;
@@ -198,7 +199,7 @@ header {
 }
 .tree-node .tn-name { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: 14px; color: var(--ink); }
 .tn-link { color: var(--navy); opacity: .75; flex: none; transition: color .12s, opacity .12s; }
-.tree-node.clickable:hover .tn-link { color: var(--gold); opacity: 1; }
+.tree-node.clickable:hover .tn-link { color: var(--gold-ink); opacity: 1; }
 .tree-sub .tn-link { vertical-align: -2px; opacity: .9; }
 .tree-node .tn-role { font-size: 10.5px; color: var(--muted); }
 .tree-node .tn-note { font-size: 10px; color: var(--muted); font-style: italic; max-width: 180px; }
@@ -217,7 +218,7 @@ header {
 .tree-spouses { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 6px; }
 .tree-node.spouse { padding: 5px 11px; }
 .tree-node.spouse .tn-name { font-size: 12.5px; }
-.tree-node.spouse .tn-ring { color: var(--gold); font-weight: 700; opacity: .9; margin-inline-end: -2px; }
+.tree-node.spouse .tn-ring { color: var(--gold-ink); font-weight: 700; opacity: .9; margin-inline-end: -2px; }
 /* כפתור תפריט וכפתורי זום צפים — מוסתרים בדסקטופ, מופיעים במובייל */
 .menu-btn {
   display: none; border: 1.5px solid var(--navy); background: var(--panel);
@@ -234,7 +235,7 @@ h1 {
 .title-row { display: flex; align-items: center; gap: 9px; }
 .about-btn {
   width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--gold);
-  background: transparent; color: var(--gold); cursor: pointer; flex-shrink: 0;
+  background: transparent; color: var(--gold-ink); cursor: pointer; flex-shrink: 0;
   font-family: 'Frank Ruhl Libre', Georgia, serif; font-weight: 700; font-size: 14px;
   font-style: italic; line-height: 1; display: flex; align-items: center; justify-content: center;
 }
@@ -245,7 +246,7 @@ h1 {
 }
 .guide-btn:hover { background: var(--navy); color: #fff; }
 /* כפתור "הערה למנהל" — נבדל בצבע מ"אודות" ומ"מדריך" */
-.note-btn { border-color: var(--gold); color: var(--gold); }
+.note-btn { border-color: var(--gold); color: var(--gold-ink); }
 .note-btn:hover { background: var(--gold); color: #fff; }
 .note-btn svg { display: block; }
 
@@ -336,7 +337,7 @@ h1 {
   animation: cardIn .18s ease-out;
 }
 .intro-welcome {
-  text-align: center; font-size: 15px; font-weight: 700; color: var(--gold);
+  text-align: center; font-size: 15px; font-weight: 700; color: var(--gold-ink);
   margin-bottom: 6px;
 }
 .intro-stage { text-align: center; animation: introFade .32s ease-out; }
@@ -373,7 +374,7 @@ h1 {
 }
 .picker-item .picker-ico { font-size: 15px; flex: none; opacity: .55; }
 .picker-item .picker-label { flex: 1; min-width: 0; }
-.picker-item .picker-check { flex: none; color: var(--gold); font-weight: 900; width: 12px; }
+.picker-item .picker-check { flex: none; color: var(--gold-ink); font-weight: 900; width: 12px; }
 .picker-item.on {
   background: linear-gradient(180deg, #fff9ec, #f2e4c4);
   border-color: var(--gold); color: var(--navy);
@@ -602,7 +603,7 @@ h1 {
   backdrop-filter: blur(2px);
   cursor: pointer; user-select: none; transition: color .12s;
 }
-.lane-label:hover { color: var(--gold); }
+.lane-label:hover { color: var(--gold-ink); }
 /* סמן מזעור/הרחבה */
 .lane-caret { display: inline-block; width: 11px; font-size: 9px; color: var(--muted); margin-inline-end: 3px; vertical-align: 1px; }
 /* רצועה ממוזערת — רק שורת התווית */
@@ -775,7 +776,7 @@ h1 {
   border-top: 1px solid var(--line); padding-top: 9px;
 }
 .source-link {
-  color: var(--gold); font-weight: 700; text-decoration: none;
+  color: var(--gold-ink); font-weight: 700; text-decoration: none;
   border-bottom: 1px dotted var(--gold); transition: color .12s, border-color .12s;
 }
 .source-link:hover { color: var(--navy); border-bottom-color: var(--navy); }
@@ -786,7 +787,7 @@ footer {
   background: linear-gradient(0deg, var(--panel), #f6eed9);
   border-top: 1.5px solid var(--gold); text-align: center;
 }
-.footer-feedback { color: var(--gold); font-weight: 700; text-decoration: none; white-space: nowrap; }
+.footer-feedback { color: var(--gold-ink); font-weight: 700; text-decoration: none; white-space: nowrap; }
 .footer-feedback:hover { text-decoration: underline; }
 
 /* ----- מיני-ציר בכרטיס: מיקום הפריט על כל ההיסטוריה ----- */
@@ -827,7 +828,7 @@ footer {
 /* ----- קיצור התיאור ----- */
 .dc-more {
   background: none; border: none; padding: 0; margin-inline-start: 6px;
-  color: var(--gold); font-family: inherit; font-size: 13px; font-weight: 700;
+  color: var(--gold-ink); font-family: inherit; font-size: 13px; font-weight: 700;
   cursor: pointer; text-decoration: underline;
 }
 
@@ -839,7 +840,7 @@ footer {
 }
 .dc-hl {
   margin-inline-start: auto; background: none; border: none; padding: 0;
-  color: var(--gold); font-family: inherit; font-size: 11px; font-weight: 700;
+  color: var(--gold-ink); font-family: inherit; font-size: 11px; font-weight: 700;
   cursor: pointer; text-decoration: underline; white-space: nowrap;
 }
 .dc-hl.on { color: var(--navy); }
@@ -889,7 +890,7 @@ footer {
 }
 .nav-btn:hover { background: var(--line-soft); transform: translateY(-1px); }
 .nav-btn .nav-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nav-arrow { color: var(--gold); font-size: 10px; flex: none; unicode-bidi: isolate; }
+.nav-arrow { color: var(--gold-ink); font-size: 10px; flex: none; unicode-bidi: isolate; }
 .nav-spacer { flex: 1; }
 
 /* סימון "יש כאן תגובות" על הציר */
@@ -897,7 +898,7 @@ footer {
   display: inline-flex; align-items: center; gap: 1px;
   margin-inline-start: 5px; padding: 0 4px; border-radius: 8px;
   background: rgb(178 138 43 / .18); border: 1px solid rgb(178 138 43 / .45);
-  color: var(--gold); font-size: 9px; font-weight: 700; line-height: 1.5;
+  color: var(--gold-ink); font-size: 9px; font-weight: 700; line-height: 1.5;
   vertical-align: middle; flex: none; white-space: nowrap;
 }
 
@@ -954,7 +955,7 @@ footer {
   font-family: inherit; font-size: 12px; font-weight: 700; color: var(--navy);
   text-decoration: underline;
 }
-.comment-link:hover { color: var(--gold); }
+.comment-link:hover { color: var(--gold-ink); }
 .comment-link.danger { color: #a5321f; }
 .comment-link:disabled { opacity: .5; cursor: default; }
 .comment-cancel {
@@ -1015,7 +1016,7 @@ footer {
 .map-min {
   position: absolute; left: 12px; top: 12px; width: 24px; height: 24px;
   border-radius: 50%; border: 1.5px solid var(--gold); background: transparent;
-  color: var(--gold); line-height: 1; cursor: pointer;
+  color: var(--gold-ink); line-height: 1; cursor: pointer;
   /* חץ SVG המצביע שמאלה — לכיוון שאליו המפה מתכווצת אל הרצועה */
   display: flex; align-items: center; justify-content: center;
 }
@@ -1085,11 +1086,11 @@ footer {
 .jc-btn:disabled { opacity: .4; cursor: default; }
 .jc-play { background: var(--navy); color: #fff; border-color: var(--navy); }
 .jc-play:hover:not(:disabled) { background: var(--navy-2); }
-.jc-all { border-color: var(--gold); color: var(--gold); }
+.jc-all { border-color: var(--gold); color: var(--gold-ink); }
 /* חצי הניווט (RTL טבעי): 'הקודם' עם חץ ימינה מימין, 'הבא' עם חץ שמאלה משמאל */
 .jc-nav { display: inline-flex; align-items: center; gap: 5px; }
 .jc-ar { font-size: 17px; font-weight: 700; line-height: 1; }
-.jc-progress { font-size: 12.5px; font-weight: 700; color: var(--gold); margin-inline-start: auto; }
+.jc-progress { font-size: 12.5px; font-weight: 700; color: var(--gold-ink); margin-inline-start: auto; }
 
 .map-popup {
   position: absolute; transform: translate(-50%, calc(-100% - 16px));
@@ -1112,7 +1113,7 @@ footer {
   background: rgb(255 255 255 / .3); border-radius: 50%; width: 18px; height: 18px;
   display: inline-flex; align-items: center; justify-content: center; font-size: 11px;
 }
-.map-popup-label { font-size: 12px; font-weight: 600; color: var(--gold); padding: 6px 10px 0; }
+.map-popup-label { font-size: 12px; font-weight: 600; color: var(--gold-ink); padding: 6px 10px 0; }
 .map-popup-desc { font-size: 12.5px; line-height: 1.55; margin: 3px 0 0; padding: 0 10px 9px; color: var(--ink); }
 
 .map-legend { list-style: none; margin: 14px 0 0; padding: 0; }
@@ -1372,7 +1373,7 @@ button.ins-lrow {
   font-family: inherit; text-align: right; cursor: pointer; transition: background .12s;
 }
 button.ins-lrow:hover { background: var(--bg-2); }
-button.ins-lrow:hover .ins-lname { color: var(--gold); }
+button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 .ins-lname { flex: 0 0 132px; font-size: 12.5px; color: var(--navy); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ins-lrealm { color: var(--muted); font-weight: 400; font-size: 11px; }
 .ins-ltrack { flex: 1; height: 16px; background: var(--bg-2); border-radius: 5px; overflow: hidden; }

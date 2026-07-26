@@ -67,9 +67,9 @@ export default function TimelineVertical({
       {sections.map(({ era, list }) => (
         <section key={era ? era.id : 'other'} className="vsec">
           {era && (
-            <h2 className="vsec-head">
-              <span className="vsec-name">{era.name}</span>
-              <span className="vsec-years">{era.start}–{era.end}</span>
+            <h2 className="vsec-head" aria-label={`${era.name}, ${era.start} עד ${era.end}`}>
+              <span className="vsec-name" aria-hidden="true">{era.name}</span>
+              <span className="vsec-years" aria-hidden="true">{era.start}–{era.end}</span>
             </h2>
           )}
           {/* הקו מייצג את כל התקופה שבכותרת; הפריט מסומן עליו במיקומו היחסי בתוכה */}
