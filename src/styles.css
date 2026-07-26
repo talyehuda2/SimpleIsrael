@@ -842,6 +842,7 @@ h1 {
 .card-dock.with-map { align-items: stretch; }
 .card-dock.with-map .detail-card { max-height: calc(100dvh - 80px); }
 .detail-card {
+  position: relative; /* עוגן לכפתורי הסגירה/שיתוף — שלא ייצמדו ל-dock ויוסתרו ע"י הידית */
   flex: 0 0 350px; width: 350px;
   max-height: calc(100vh - 80px); max-height: calc(100dvh - 80px);
   overflow-y: auto; overflow-x: hidden; background: var(--panel);

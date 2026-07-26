@@ -158,9 +158,9 @@ export default function App() {
     window.addEventListener('resize', on); // גיבוי — לא כל דפדפן משגר change על שינוי גודל
     return () => { mq.removeEventListener('change', on); window.removeEventListener('resize', on); };
   }, []);
-  useEffect(() => { setMapOpen(false); setSheetPos('half'); }, [selected]);
-  // מובייל: הכרטיס כ"גיליון תחתון" עם שני מצבי גובה, וגיליון "עוד" לפעולות המשניות
-  const [sheetPos, setSheetPos] = useState('half');
+  useEffect(() => { setMapOpen(false); setSheetPos('full'); }, [selected]);
+  // מובייל: הכרטיס כ"גיליון תחתון" — נפתח מלא (אינטואיטיבי); גרירה מטה מקטינה/סוגרת
+  const [sheetPos, setSheetPos] = useState('full');
   const [moreOpen, setMoreOpen] = useState(false);
   const sheetTouchY = useRef(null);
   const [treeOpen, setTreeOpen] = useState(INITIAL.tree);
