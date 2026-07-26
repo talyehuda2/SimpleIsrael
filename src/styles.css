@@ -740,6 +740,10 @@ h1 {
 .kind-chip.world { background: var(--world); }
 .kind-chip.empire { background: var(--world); }
 .detail-years { font-size: 13px; color: #5a4a30; font-weight: 600; margin-bottom: 8px; }
+.detail-approx {
+  display: inline-block; font-size: 11px; color: var(--muted); font-style: italic;
+  margin: -4px 0 8px; cursor: help; border-bottom: 1px dotted var(--line);
+}
 .detail-row { font-size: 13px; margin: 3px 0; }
 .judgment-chip {
   display: inline-block; font-size: 12px; font-weight: 600;

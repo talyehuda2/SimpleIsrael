@@ -70,6 +70,11 @@ export default function DetailCard({
       <div className={`kind-chip ${item.kind}`}>{KIND_LABELS[item.kind]}</div>
       <h2>{item.name}</h2>
       <div className="detail-years">{formatRange(item.start, item.end, mode)}</div>
+      {item.approxDates && (
+        <div className="detail-approx" title="התורה אינה מפרטת את שנות חייה; התאריכים משוערים לפי בעלהּ ולפי אירועים מתוארכים בסמוך">
+          ≈ תאריכים משוערים
+        </div>
+      )}
 
       {/* מיני-ציר — הקשר כרונולוגי במבט אחד */}
       <div className="dc-era" title="מיקום על ציר הזמן כולו">
