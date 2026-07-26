@@ -7,6 +7,9 @@ const KIND_LABEL = {
   world: 'רקע עולמי', empire: 'מלכות עולמית',
 };
 
+// כותרות הקבוצות בתוצאות — הפרדה בין התאמה ישירה, קשר-מקום וקשר-הקשר
+const GROUP_LABEL = { 0: 'התאמה ישירה', 1: 'קשור למקום', 2: 'מוזכר בהקשר' };
+
 // נרמול לחיפוש: הסרת ניקוד, גרשיים ורווחים כדי שההשוואה תהיה סלחנית
 const norm = (s) => (s || '').replace(/[֑-ׇ"'׳״\s]/g, '');
 
@@ -58,15 +61,21 @@ export default function SearchBox({ index, onPick }) {
       />
       {open && results.length > 0 && (
         <ul className="search-results">
-          {results.map(({ it, place, theme }) => (
-            <li key={`${it.kind}-${it.id}`} onClick={() => pick(it)}>
-              <span className={`sr-dot ${it.kind}`} />
-              <span className="sr-name">{it.name}</span>
-              {place && <span className="sr-why">📍 {place}</span>}
-              {theme && <span className="sr-why">בהקשר זה</span>}
-              <span className="sr-kind">{KIND_LABEL[it.kind]}</span>
-            </li>
-          ))}
+          {[0, 1, 2].flatMap((rank) => {
+            const group = results.filter((r) => r.rank === rank);
+            if (!group.length) return [];
+            return [
+              <li key={`head-${rank}`} className="sr-head" aria-hidden="true">{GROUP_LABEL[rank]}</li>,
+              ...group.map(({ it, place }) => (
+                <li key={`${it.kind}-${it.id}`} className="sr-item" onClick={() => pick(it)}>
+                  <span className={`sr-dot ${it.kind}`} />
+                  <span className="sr-name">{it.name}</span>
+                  {place && <span className="sr-why">📍 {place}</span>}
+                  <span className="sr-kind">{KIND_LABEL[it.kind]}</span>
+                </li>
+              )),
+            ];
+          })}
         </ul>
       )}
       {open && q && results.length === 0 && (
