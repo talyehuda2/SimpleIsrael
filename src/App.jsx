@@ -641,11 +641,11 @@ export default function App() {
         </div>
         <div className="search-row">
           <SearchBox index={searchIndex} onPick={jumpTo} />
-          <button className="tree-btn" onClick={() => setTreeOpen(true)}>
-            <span aria-hidden="true">👑</span> אילן יוחסין
+          <button className="tree-btn" onClick={() => setTreeOpen(true)} title="אילן יוחסין">
+            <span aria-hidden="true">👑</span> <span className="btn-label">אילן יוחסין</span>
           </button>
-          <button className="tree-btn" onClick={() => setInsightsOpen(true)}>
-            <span aria-hidden="true">📊</span> תובנות
+          <button className="tree-btn" onClick={() => setInsightsOpen(true)} title="תובנות">
+            <span aria-hidden="true">📊</span> <span className="btn-label">תובנות</span>
           </button>
           {dailyFigure && (
             <button
@@ -653,7 +653,7 @@ export default function App() {
               onClick={() => jumpToId(dailyFigure.id)}
               title={`דמות היום: ${dailyFigure.name} — לחצו לצפייה`}
             >
-              <span aria-hidden="true">🗓️</span> דמות היום
+              <span aria-hidden="true">🗓️</span> <span className="btn-label">דמות היום</span>
               <span className="daily-name">· {dailyFigure.name}</span>
             </button>
           )}
@@ -665,7 +665,7 @@ export default function App() {
             <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
               <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
             </svg>
-            שיתוף
+            <span className="btn-label">שיתוף</span>
           </button>
           <button
             className="orient-btn"
@@ -673,7 +673,7 @@ export default function App() {
             title={vertical ? 'מעבר לציר אופקי' : 'מעבר לציר אנכי (נוח לגלילה בטלפון)'}
           >
             <span aria-hidden="true">{vertical ? '↔' : '↕'}</span>
-            {vertical ? 'ציר אופקי' : 'ציר אנכי'}
+            <span className="btn-label">{vertical ? 'ציר אופקי' : 'ציר אנכי'}</span>
           </button>
           {shareMsg && <span className="share-msg">{shareMsg}</span>}
         </div>

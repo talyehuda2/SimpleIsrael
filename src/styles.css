@@ -1140,9 +1140,13 @@ footer {
   .subtitle { display: none; }               /* הכותרת מספיקה — חוסך גובה */
   .menu-btn { display: inline-flex; align-items: center; }
 
-  /* שורת חיפוש/פעולות — כפתורים קומפקטיים */
-  .search-row { gap: 7px; }
-  .tree-btn, .share-btn { font-size: 12px; padding: 6px 11px; }
+  /* שורת חיפוש/פעולות — כפתורים כאייקונים בלבד כדי לחסוך גובה header.
+     התוויות נשארות בעץ הנגישות (sr-only), האייקונים לבדם נראים. */
+  .search-row { gap: 8px; }
+  .search-box { flex: 1 1 100%; max-width: none; }   /* חיפוש בשורה מלאה משלו */
+  .btn-label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .daily-name { display: none; }
+  .tree-btn, .share-btn, .orient-btn { font-size: 15px; padding: 9px 12px; gap: 0; min-width: 44px; justify-content: center; }
 
   /* בקרות המסע המודרך במפה — קומפקטי, המחוון בשורה נפרדת למעלה */
   .journey-controls { gap: 6px; }
