@@ -23,6 +23,7 @@ import empires from './data/empires.json';
 import { academicData } from './utils/academic.js';
 import maps from './data/maps.json';
 import { buildPlaceIndex, relatedByEra, relatedByPlace } from './utils/related.js';
+import { figureOfDay } from './utils/daily.js';
 
 // ----- מצב באמצעות כתובת ה-URL: מאפשר שיתוף קישור, סימנייה, וכפתור "אחורה" -----
 const itemKey = (it) => `${it.kind}:${it.id}`;
@@ -275,6 +276,11 @@ export default function App() {
   // בני-הזמן של הפריט הנבחר — לשבבי הניווט בכרטיס. רק דמויות (אנשים),
   // לא ספרים/אירועים/מעצמות, שאינם "בני-זמן" במובן הרגיל.
   const PERSON_KINDS = new Set(['leader', 'judge', 'united', 'judah', 'israel', 'prophet', 'world']);
+  // דמות היום — מתוך הדמויות (לא ספרים/אירועים), בחירה דטרמיניסטית לפי התאריך
+  const dailyFigure = useMemo(
+    () => figureOfDay(searchIndex.filter((x) => PERSON_KINDS.has(x.kind))),
+    [searchIndex],
+  );
   const selectedContemporaries = useMemo(() => {
     if (!selected) return [];
     const ov = (a, b) => {
@@ -641,6 +647,16 @@ export default function App() {
           <button className="tree-btn" onClick={() => setInsightsOpen(true)}>
             <span aria-hidden="true">📊</span> תובנות
           </button>
+          {dailyFigure && (
+            <button
+              className="tree-btn daily-btn"
+              onClick={() => jumpToId(dailyFigure.id)}
+              title={`דמות היום: ${dailyFigure.name} — לחצו לצפייה`}
+            >
+              <span aria-hidden="true">🗓️</span> דמות היום
+              <span className="daily-name">· {dailyFigure.name}</span>
+            </button>
+          )}
           <button
             className="share-btn"
             onClick={shareView}

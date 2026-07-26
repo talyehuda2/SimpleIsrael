@@ -142,6 +142,10 @@ header {
   cursor: pointer; transition: background .12s, transform .1s;
 }
 .tree-btn:hover { background: var(--navy-2); transform: translateY(-1px); }
+/* דמות היום — הדגשה זהובה עדינה, מזמינה לגלות */
+.daily-btn { background: var(--gold); color: #3a2c08; }
+.daily-btn:hover { background: #c99a2f; }
+.daily-name { font-weight: 700; margin-inline-start: 5px; }
 
 .share-btn {
   display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
