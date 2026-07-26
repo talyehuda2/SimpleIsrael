@@ -66,6 +66,12 @@ export default function DetailCard({
   return (
     <aside className="detail-card">
       <button className="close-btn" onClick={onClose} aria-label="סגירה">✕</button>
+      <button className="card-share" onClick={doShare} title={`שיתוף הדף של ${item.name}`} aria-label={`שיתוף הדף של ${item.name}`}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
+        </svg>
+        {shareMsg && <span className="card-share-msg">{shareMsg}</span>}
+      </button>
 
       <div className={`kind-chip ${item.kind}`}>{KIND_LABELS[item.kind]}</div>
       <h2>{item.name}</h2>
@@ -134,12 +140,12 @@ export default function DetailCard({
       )}
 
       <div className="card-actions">
-        <button type="button" className="card-action" onClick={doShare} title={`שיתוף הדף של ${item.name}`}>
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-            <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
-          </svg>
-          <span>{shareMsg || 'שיתוף'}</span>
-        </button>
+        {onOpenMap && (
+          <button type="button" className="card-action" onClick={onOpenMap} title={`מפת המסע של ${item.name}`}>
+            <span className="dc-cbig" aria-hidden="true">🗺️</span>
+            <span>מפת מסע</span>
+          </button>
+        )}
         <button
           type="button"
           className={`card-action${showComments ? ' active' : ''}`}

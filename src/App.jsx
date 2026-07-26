@@ -141,7 +141,19 @@ export default function App() {
   // הפריט שבני-הזמן שלו מודגשים — נשמר בנפרד מהבחירה, כדי שההדגשה תישאר
   // גם אחרי סגירת הכרטיס (חשוב במובייל, שם הכרטיס מסתיר את הציר).
   const [contempItem, setContempItem] = useState(null);
-  const [mapMin, setMapMin] = useState(false); // מפת המסע ממוזערת לרצועה?
+  const [mapMin, setMapMin] = useState(false); // מפת המסע ממוזערת לרצועה? (דסקטופ)
+  const [mapOpen, setMapOpen] = useState(false); // מפת המסע כשכבה מלאה (מובייל)
+  // במובייל המפה אינה מעוגנת לצד הכרטיס (זה מחלק את המסך לשניים) אלא נפתחת לפי דרישה
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 680px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 680px)');
+    const on = () => setIsMobile(mq.matches);
+    mq.addEventListener('change', on);
+    window.addEventListener('resize', on); // גיבוי — לא כל דפדפן משגר change על שינוי גודל
+    return () => { mq.removeEventListener('change', on); window.removeEventListener('resize', on); };
+  }, []);
+  useEffect(() => { setMapOpen(false); }, [selected]);
   const [treeOpen, setTreeOpen] = useState(INITIAL.tree);
   const [shareMsg, setShareMsg] = useState('');
 
@@ -720,9 +732,11 @@ export default function App() {
         <span className="lg world">רקע עולמי</span>
         <span className="lg event-lg">◆ אירועים</span>
         <span className="lg-sep">|</span>
-        <span className="lg dot-lg"><span className="dot good" /> הישר בעיני ה'</span>
-        <span className="lg dot-lg"><span className="dot bad" /> הרע בעיני ה'</span>
-        <span className="lg dot-lg"><span className="dot mixed" /> מעורב</span>
+        <span className="legend-judgments">
+          <span className="lg dot-lg"><span className="dot good" /> הישר בעיני ה'</span>
+          <span className="lg dot-lg"><span className="dot bad" /> הרע בעיני ה'</span>
+          <span className="lg dot-lg"><span className="dot mixed" /> מעורב</span>
+        </span>
       </div>
 
       {isAcademic && (
@@ -774,10 +788,11 @@ export default function App() {
       )}
 
       {selected && (
-        <div className={`card-dock${selected && maps[selected.id] && !mapMin ? ' with-map' : ''}`}>
+        <div className={`card-dock${!isMobile && maps[selected.id] && !mapMin ? ' with-map' : ''}`}>
           <DetailCard
             item={selected} mode={chronology}
             onClose={() => setSelected(null)}
+            onOpenMap={isMobile && maps[selected.id] ? () => setMapOpen(true) : undefined}
             contemporariesOn={!!(selected && contempItem && itemKey(selected) === itemKey(contempItem))}
             onToggleContemporaries={() =>
               setContempItem((prev) =>
@@ -790,7 +805,7 @@ export default function App() {
             relatedEra={relatedEra} relatedPlace={relatedPlace}
             commentCount={selected ? (commentCounts[itemKey(selected)] || 0) : 0}
           />
-          {maps[selected.id] && (
+          {!isMobile && maps[selected.id] && (
             <MapPanel
               docked item={selected}
               minimized={mapMin}
@@ -798,6 +813,11 @@ export default function App() {
             />
           )}
         </div>
+      )}
+
+      {/* מובייל: מפת המסע נפתחת כשכבה מלאה לפי דרישה, לא מחולקת עם הכרטיס */}
+      {isMobile && mapOpen && selected && maps[selected.id] && (
+        <MapPanel item={selected} onClose={() => setMapOpen(false)} />
       )}
 
       <FamilyTree open={treeOpen} onClose={() => closeOverlay(() => setTreeOpen(false))} onJump={jumpToId} />

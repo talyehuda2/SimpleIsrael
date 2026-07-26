@@ -587,6 +587,7 @@ h1 {
 .lg.event-lg { color: var(--event); font-weight: 600; }
 .lg-sep { color: var(--line); }
 .lg.dot-lg { display: inline-flex; align-items: center; gap: 4px; }
+.legend-judgments { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 15px; }
 
 /* ----- הערת מצב מחקרי ----- */
 .academic-note {
@@ -756,6 +757,9 @@ h1 {
   display: flex; align-items: flex-end; gap: 8px; direction: ltr;
   max-width: calc(100vw - 36px);
 }
+/* כשהמפה מעוגנת לצד הכרטיס — שניהם באותו גובה (יישור עליון ותחתון) */
+.card-dock.with-map { align-items: stretch; }
+.card-dock.with-map .detail-card { max-height: calc(100dvh - 80px); }
 .detail-card {
   flex: 0 0 350px; width: 350px;
   max-height: calc(100vh - 80px); max-height: calc(100dvh - 80px);
@@ -773,10 +777,18 @@ h1 {
   font-family: 'Frank Ruhl Libre', 'Heebo', serif; font-weight: 700;
 }
 .close-btn {
-  position: absolute; left: 12px; top: 12px; border: none; background: none;
+  position: absolute; right: 12px; top: 12px; border: none; background: none;
   font-size: 16px; cursor: pointer; color: #b0a082;
 }
 .close-btn:hover { color: var(--ink); }
+/* שיתוף — אייקון בפינה שמאל-למעלה של הכרטיס (במקום כפתור באמצע) */
+.card-share {
+  position: absolute; left: 12px; top: 10px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: none; background: none; cursor: pointer; color: var(--gold-ink); padding: 2px;
+}
+.card-share:hover { color: var(--navy); }
+.card-share-msg { font-size: 11.5px; font-weight: 700; color: var(--navy); white-space: nowrap; }
 .kind-chip {
   display: block; width: fit-content; font-size: 11.5px; font-weight: 700; color: #fff;
   border-radius: 20px; padding: 2px 11px; margin-bottom: 2px;
@@ -1211,7 +1223,11 @@ footer {
   .legend { display: none; }
   .app.menu-open .legend {
     display: flex; padding: 8px 12px; font-size: 11.5px; gap: 6px 12px;
+    justify-content: center;
   }
+  /* שלושת שיפוטי המלכים בשורה משלהם, מסודרים ומרוכזים */
+  .lg-sep { display: none; }
+  .legend-judgments { flex-basis: 100%; justify-content: center; gap: 5px 14px; margin-top: 2px; }
 
   .academic-note { padding: 7px 12px; font-size: 11.5px; }
 
