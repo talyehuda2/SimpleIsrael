@@ -858,14 +858,14 @@ h1 {
   margin: 8px 0 3px; font-size: 22px; color: var(--navy);
   font-family: 'Frank Ruhl Libre', 'Heebo', serif; font-weight: 700;
 }
+/* פינת הפעולות — שמאל-למעלה (הימין שייך לתגית הסוג ב-RTL): ✕ בקצה, שיתוף לידו */
 .close-btn {
-  position: absolute; right: 12px; top: 12px; border: none; background: none;
+  position: absolute; left: 12px; top: 12px; border: none; background: none;
   font-size: 16px; cursor: pointer; color: #b0a082;
 }
 .close-btn:hover { color: var(--ink); }
-/* שיתוף — אייקון בפינה שמאל-למעלה של הכרטיס (במקום כפתור באמצע) */
 .card-share {
-  position: absolute; left: 12px; top: 10px; z-index: 2;
+  position: absolute; left: 42px; top: 10px; z-index: 2;
   display: inline-flex; align-items: center; gap: 6px;
   border: none; background: none; cursor: pointer; color: var(--gold-ink); padding: 2px;
 }
