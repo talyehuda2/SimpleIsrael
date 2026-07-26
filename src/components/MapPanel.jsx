@@ -126,7 +126,13 @@ export default function MapPanel({ item, onClose, initialStep = -1, onStep, dock
   const panel = (
     <aside className={`map-panel${docked ? ' docked' : ''}`} onClick={docked ? undefined : (e) => e.stopPropagation()}>
         {docked
-          ? <button className="map-min" onClick={onToggleMin} aria-label="מזעור המפה" title="מזעור">⟨</button>
+          ? (
+            <button className="map-min" onClick={onToggleMin} aria-label="מזעור המפה" title="מזעור">
+              <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+                <path d="M15 4 L7 12 L15 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          )
           : <button className="map-close" onClick={onClose} aria-label="סגירה">✕</button>}
         <h3 className="map-title">{data.title}</h3>
         <p className="map-sub">עקבו אחר המסע שלב-אחר-שלב, או לחצו על נקודה במפה</p>
