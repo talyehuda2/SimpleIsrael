@@ -158,7 +158,11 @@ export default function App() {
     window.addEventListener('resize', on); // גיבוי — לא כל דפדפן משגר change על שינוי גודל
     return () => { mq.removeEventListener('change', on); window.removeEventListener('resize', on); };
   }, []);
-  useEffect(() => { setMapOpen(false); }, [selected]);
+  useEffect(() => { setMapOpen(false); setSheetPos('half'); }, [selected]);
+  // מובייל: הכרטיס כ"גיליון תחתון" עם שני מצבי גובה, וגיליון "עוד" לפעולות המשניות
+  const [sheetPos, setSheetPos] = useState('half');
+  const [moreOpen, setMoreOpen] = useState(false);
+  const sheetTouchY = useRef(null);
   const [treeOpen, setTreeOpen] = useState(INITIAL.tree);
   const [shareMsg, setShareMsg] = useState('');
 
@@ -886,8 +890,27 @@ export default function App() {
         </button>
       )}
 
+      {/* מובייל: רקע מוכהה מאחורי הגיליון — הקשה עליו סוגרת */}
+      {isMobile && selected && <div className="sheet-backdrop" onClick={() => setSelected(null)} />}
       {selected && (
-        <div className={`card-dock${!isMobile && maps[selected.id] && !mapMin ? ' with-map' : ''}`}>
+        <div className={`card-dock${!isMobile && maps[selected.id] && !mapMin ? ' with-map' : ''}${isMobile ? ` sheet ${sheetPos}` : ''}`}>
+          {isMobile && (
+            <button
+              className="sheet-handle"
+              aria-label={sheetPos === 'half' ? 'הרחבת הכרטיס' : 'כיווץ הכרטיס'}
+              onClick={() => setSheetPos((p) => (p === 'half' ? 'full' : 'half'))}
+              onTouchStart={(e) => { sheetTouchY.current = e.touches[0].clientY; }}
+              onTouchEnd={(e) => {
+                const y0 = sheetTouchY.current; sheetTouchY.current = null;
+                if (y0 == null) return;
+                const dy = e.changedTouches[0].clientY - y0;
+                if (dy < -40) setSheetPos('full');
+                else if (dy > 40) { if (sheetPos === 'full') setSheetPos('half'); else setSelected(null); }
+              }}
+            >
+              <span className="sheet-grip" aria-hidden="true" />
+            </button>
+          )}
           <DetailCard
             item={selected} mode={chronology}
             onClose={() => setSelected(null)}
@@ -921,8 +944,36 @@ export default function App() {
 
       <FamilyTree open={treeOpen} onClose={() => closeOverlay(() => setTreeOpen(false))} onJump={jumpToId} />
 
+      {/* מובייל: סרגל פעולות תחתון — בגובה אגודל, במקום ערימת כפתורים בכותרת */}
+      {isMobile && (
+        <nav className="bottom-nav" aria-label="פעולות עיקריות">
+          <button onClick={() => setTreeOpen(true)}><span aria-hidden="true">👑</span>אילן</button>
+          <button onClick={() => dailyFigure && jumpToId(dailyFigure.id)}><span aria-hidden="true">🗓️</span>היום</button>
+          <button onClick={() => setInsightsOpen(true)}><span aria-hidden="true">📊</span>תובנות</button>
+          <button onClick={() => setMoreOpen(true)} aria-haspopup="true" aria-expanded={moreOpen}><span aria-hidden="true">⋯</span>עוד</button>
+        </nav>
+      )}
+      {isMobile && moreOpen && (
+        <div className="more-overlay" onClick={() => setMoreOpen(false)}>
+          <div className="more-sheet" onClick={(e) => e.stopPropagation()}>
+            <span className="sheet-grip" aria-hidden="true" />
+            <button className="more-item" onClick={() => { setMoreOpen(false); shareView(); }}>🔗 שיתוף האתר</button>
+            <button className="more-item" onClick={() => { setMoreOpen(false); setVertical((v) => !v); scrollRightPending.current = true; }}>
+              {vertical ? '↔ מעבר לציר אופקי' : '↕ מעבר לציר אנכי'}
+            </button>
+            <button className="more-item" onClick={() => { setMoreOpen(false); setMenuOpen(true); }}>🎚️ שכבות ומקרא</button>
+            <button className="more-item" onClick={() => { setMoreOpen(false); openTour(); }}>❓ מדריך היכרות</button>
+            <button className="more-item" onClick={() => { setMoreOpen(false); setAboutOpen(true); }}>ℹ️ אודות הפרויקט</button>
+            <button className="more-item" onClick={() => { setMoreOpen(false); setNotesOpen(true); }}>✉️ הערה למנהל</button>
+          </div>
+        </div>
+      )}
+
       <footer>
-        הזמן זורם מימין (עבר) לשמאל · Ctrl+גלגלת לזום ·{' '}
+        {vertical
+          ? 'גללו מטה לאורך הדורות — מהאבות ועד בית שני'
+          : 'הזמן זורם מימין (עבר) לשמאל · Ctrl+גלגלת לזום'}
+        {' · '}
         {isAcademic
           ? 'התאריכים לפי המחקר ההיסטורי המקובל'
           : 'התאריכים משוערים לפי המסורת; ייתכנו חפיפות בין מלכים (מלוכה משותפת)'}

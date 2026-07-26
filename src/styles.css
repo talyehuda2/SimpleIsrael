@@ -1525,3 +1525,71 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 .ins-count { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px 6px; text-align: center; }
 .ins-count b { display: block; font-size: 22px; color: var(--navy); font-weight: 900; }
 .ins-count span { font-size: 11px; color: var(--muted); }
+
+/* ===== מובייל כאפליקציה: סרגל תחתון, header רזה, גיליונות ===== */
+.bottom-nav, .more-overlay, .sheet-backdrop, .sheet-handle { display: none; }
+.sheet-grip { display: block; width: 42px; height: 5px; border-radius: 3px; background: var(--line); margin: 7px auto; }
+
+@media (max-width: 680px) {
+  /* header רזה: כותרת + חיפוש בלבד; כל הפעולות עברו לסרגל התחתון ול"עוד" */
+  .title-row .about-btn { display: none; }
+  .menu-btn { display: none; }
+  .search-row .tree-btn, .search-row .share-btn, .search-row .orient-btn { display: none; }
+
+  /* סרגל פעולות תחתון — בהישג אגודל */
+  .bottom-nav {
+    display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
+    background: var(--panel); border-top: 1.5px solid var(--gold);
+    padding: 3px 6px calc(3px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 18px rgb(40 25 0 / .12);
+  }
+  .bottom-nav button {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px;
+    border: none; background: none; font-family: inherit; font-size: 11px; font-weight: 700;
+    color: var(--ink); padding: 5px 0 4px; cursor: pointer; border-radius: 10px;
+  }
+  .bottom-nav button:active { background: var(--bg-2); }
+  .bottom-nav button > span:first-child { font-size: 19px; line-height: 1.15; }
+
+  /* גיליון "עוד" */
+  .more-overlay {
+    display: flex; position: fixed; inset: 0; z-index: 44;
+    background: rgb(30 20 5 / .42); align-items: flex-end;
+  }
+  .more-sheet {
+    width: 100%; background: var(--panel); border-radius: 16px 16px 0 0;
+    padding: 2px 16px calc(12px + env(safe-area-inset-bottom));
+    animation: sheetUp .22s ease-out; box-shadow: 0 -10px 34px rgb(40 25 0 / .3);
+  }
+  .more-item {
+    display: block; width: 100%; text-align: start; border: none; background: none;
+    font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ink);
+    padding: 13px 6px; border-bottom: 1px solid var(--line-soft); cursor: pointer;
+  }
+  .more-item:last-child { border-bottom: none; }
+
+  /* הכרטיס כגיליון תחתון: ידית, רקע, שני מצבי גובה */
+  .sheet-backdrop { display: block; position: fixed; inset: 0; z-index: 19; background: rgb(30 20 5 / .35); }
+  .card-dock.sheet {
+    left: 0; right: 0; bottom: 0; gap: 0;
+    flex-direction: column; align-items: stretch; direction: rtl;
+  }
+  .sheet-handle {
+    display: block; border: none; cursor: pointer; padding: 2px 0 0;
+    background: var(--panel); border-radius: 16px 16px 0 0;
+    border-top: 4px solid var(--gold); touch-action: none;
+  }
+  /* מעבר חד בין המדרגות (snap) — אנימציית max-height אינה אמינה בין יחידות viewport */
+  .card-dock.sheet .detail-card { border-radius: 0; border-top: none; margin: 0; }
+  .card-dock.sheet.half .detail-card { max-height: 46dvh; }
+  .card-dock.sheet.full .detail-card { max-height: 96dvh; }
+
+  /* מרכיבים צפים — מעל הסרגל התחתון */
+  footer { margin-bottom: 52px; }
+  .daily-hint { bottom: 84px; }
+  .contemp-clear { bottom: 84px; }
+  .fab-zoom { bottom: 96px; }
+  .vtl-wrap { padding-bottom: 58px; }
+}
+
+@keyframes sheetUp { from { transform: translateY(30%); opacity: .6; } to { transform: none; opacity: 1; } }
