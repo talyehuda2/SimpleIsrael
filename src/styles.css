@@ -995,6 +995,8 @@ footer {
   position: absolute; left: 12px; top: 12px; width: 24px; height: 24px;
   border-radius: 50%; border: 1.5px solid var(--gold); background: transparent;
   color: var(--gold); font-size: 15px; line-height: 1; cursor: pointer;
+  /* המפה מתכווצת שמאלה אל הרצועה — מבטלים את שיקוף ה-RTL כדי שהחץ ⟨ יצביע שמאלה */
+  direction: ltr;
 }
 .map-min:hover { background: var(--gold); color: #fff; }
 /* רצועת מפה ממוזערת */
