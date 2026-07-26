@@ -196,6 +196,11 @@ header {
   box-shadow: 0 2px 8px rgb(178 138 43 / .25);
 }
 .tree-node.clickable:hover { transform: translateY(-2px); box-shadow: 0 5px 14px rgb(80 60 20 / .22); }
+/* רעיות האב — מוצגות מתחתיו כשורת קישורים רכה; טבעת ⚭ מקשרת אליו */
+.tree-spouses { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 6px; }
+.tree-node.spouse { padding: 5px 11px; }
+.tree-node.spouse .tn-name { font-size: 12.5px; }
+.tree-node.spouse .tn-ring { color: var(--gold); font-weight: 700; opacity: .9; margin-inline-end: -2px; }
 /* כפתור תפריט וכפתורי זום צפים — מוסתרים בדסקטופ, מופיעים במובייל */
 .menu-btn {
   display: none; border: 1.5px solid var(--navy); background: var(--panel);

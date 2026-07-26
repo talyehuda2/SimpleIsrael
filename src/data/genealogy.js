@@ -5,9 +5,9 @@
 // המקורות לשלשלת: בראשית, רות ד', דברי הימים א' ב'–ג', מלכים.
 
 export const genealogy = [
-  { main: { id: 'avraham', name: 'אברהם', role: 'האב הראשון', note: 'שרה' } },
-  { main: { id: 'yitzchak', name: 'יצחק', note: 'רבקה' } },
-  { main: { id: 'yaakov', name: 'יעקב', note: 'רחל ולאה' } },
+  { main: { id: 'avraham', name: 'אברהם', role: 'האב הראשון', spouses: [{ id: 'sarah', name: 'שרה' }] } },
+  { main: { id: 'yitzchak', name: 'יצחק', spouses: [{ id: 'rivka', name: 'רבקה' }] } },
+  { main: { id: 'yaakov', name: 'יעקב', spouses: [{ id: 'rachel', name: 'רחל' }, { id: 'leah', name: 'לאה' }] } },
   { main: { name: 'יהודה', role: 'שבט המלוכה' } },
   { main: { name: 'פרץ' }, siblings: [{ name: 'זרח' }] },
   { main: { name: 'חצרון' } },

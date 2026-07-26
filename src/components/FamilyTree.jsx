@@ -11,19 +11,36 @@ function TimelineMark() {
   );
 }
 
-function Node({ node, heir, onJump }) {
+function Node({ node, heir, spouse, onJump }) {
   const clickable = !!node.id;
   return (
     <button
-      className={`tree-node${heir ? ' heir' : ' sibling'}${clickable ? ' clickable' : ''}`}
+      className={`tree-node${heir ? ' heir' : spouse ? ' spouse' : ' sibling'}${clickable ? ' clickable' : ''}`}
       onClick={() => clickable && onJump(node.id)}
       disabled={!clickable}
       title={clickable ? 'קפיצה לציר הזמן' : undefined}
     >
-      <span className="tn-name">{node.name}{clickable && <TimelineMark />}</span>
+      <span className="tn-name">
+        {spouse && <span className="tn-ring" aria-hidden="true">⚭ </span>}
+        {node.name}{clickable && <TimelineMark />}
+      </span>
       {node.role && <span className="tn-role">{node.role}</span>}
       {node.note && <span className="tn-note">{node.note}</span>}
     </button>
+  );
+}
+
+// דמות ראשית + רעיותיה (מוצגות מתחתיה כקישורים ניתנים ללחיצה)
+function MainWithSpouses({ g, jump }) {
+  return (
+    <>
+      <Node node={g.main} heir onJump={jump} />
+      {g.main.spouses && (
+        <div className="tree-spouses">
+          {g.main.spouses.map((sp) => <Node key={sp.id} node={sp} spouse onJump={jump} />)}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -57,10 +74,10 @@ export default function FamilyTree({ open, onClose, onJump }) {
                     {g.siblings.map((s, j) => <Node key={j} node={s} onJump={jump} />)}
                   </div>
                   <div className="tree-connector" />
-                  <Node node={g.main} heir onJump={jump} />
+                  <MainWithSpouses g={g} jump={jump} />
                 </div>
               ) : (
-                <Node node={g.main} heir onJump={jump} />
+                <MainWithSpouses g={g} jump={jump} />
               )}
             </div>
           ))}
