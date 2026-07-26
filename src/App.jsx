@@ -259,6 +259,16 @@ export default function App() {
     add(data.books, 'book');
     add(data.world, 'world');
     (data.events || []).forEach((ev) => idx.push({ ...ev, kind: 'event', start: ev.year, end: ev.year }));
+    // העשרה לחיפוש לפי מקום: כל דמות מקבלת את שמות התחנות במסע חייה (מ-maps)
+    const MAPPED = new Set(['leader', 'judge', 'united', 'judah', 'israel', 'prophet', 'world']);
+    for (const it of idx) {
+      if (!MAPPED.has(it.kind)) continue;
+      const m = maps[it.id];
+      if (!m) continue;
+      const pts = Array.isArray(m) ? m : (m.points || []);
+      const names = [...new Set(pts.map((p) => p.name).filter(Boolean))];
+      if (names.length) it.places = names;
+    }
     return idx;
   }, [chronology]);
 
