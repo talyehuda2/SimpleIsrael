@@ -87,7 +87,10 @@ const placeIndex = buildPlaceIndex(maps);
 const byId = (id) => items.find((x) => x.id === id) || null;
 
 const STYLE = `
-:root{--bg:#efe4c8;--panel:#fbf5e7;--ink:#33281a;--muted:#7c6a4f;--navy:#163a57;--gold:#b28a2b;--line:#dcc9a3}
+@font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;font-display:swap;src:url('/fonts/frankruhllibre-hebrew.woff2') format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;font-display:swap;src:url('/fonts/frankruhllibre-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Heebo';font-weight:300 700;font-display:swap;src:url('/fonts/heebo-hebrew.woff2') format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+:root{--bg:#efe4c8;--panel:#fbf5e7;--ink:#33281a;--muted:#6d5c42;--navy:#163a57;--gold:#b28a2b;--line:#dcc9a3}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Frank Ruhl Libre','Heebo',Georgia,serif;line-height:1.7}
 .wrap{max-width:720px;margin:0 auto;padding:20px 18px 48px}
@@ -130,9 +133,8 @@ function shell({ title, description, canonical, jsonld, body, ogImage }) {
 <title>${escAttr(title)}</title>
 <meta name="description" content="${escAttr(description)}"/>
 <link rel="canonical" href="${escAttr(canonical)}"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@400;700&display=swap" rel="stylesheet"/>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/frankruhllibre-hebrew.woff2" crossorigin/>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/heebo-hebrew.woff2" crossorigin/>
 <meta property="og:type" content="article"/>
 <meta property="og:site_name" content="ציר הזמן של עם ישראל"/>
 <meta property="og:title" content="${escAttr(title)}"/>
