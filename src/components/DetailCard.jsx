@@ -81,14 +81,34 @@ export default function DetailCard({
         {shareMsg && <span className="card-share-msg">{shareMsg}</span>}
       </button>
 
-      <div className={`kind-chip ${item.kind}`}>{KIND_LABELS[item.kind]}</div>
-      <h2>{item.name}</h2>
-      <div className="detail-years">{formatRange(item.start, item.end, mode)}</div>
-      {item.approxDates && (
-        <div className="detail-approx" title="התורה אינה מפרטת את שנות חייה; התאריכים משוערים לפי בעלהּ ולפי אירועים מתוארכים בסמוך">
-          ≈ תאריכים משוערים
-        </div>
-      )}
+      {/* גיבור: תגית+שיפוט בשורה, שם עם חיצי ניווט, תאריכים עם "משוער" מוטמע */}
+      <div className="dc-chiprow">
+        <div className={`kind-chip ${item.kind}`}>{KIND_LABELS[item.kind]}</div>
+        {item.judgment && (
+          <span className={`dc-judgment ${item.judgment}`}>{JUDGMENT_LABELS[item.judgment]}</span>
+        )}
+      </div>
+      <div className="dc-titlerow">
+        <h2>{item.name}</h2>
+        <span className="dc-navpair">
+          {prevItem && (
+            <button className="dc-navbtn" onClick={() => onNav(prevItem)} title={`מוקדם יותר: ${prevItem.name}`} aria-label={`מוקדם יותר: ${prevItem.name}`}>
+              <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M9 4 L17 12 L9 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          )}
+          {nextItem && (
+            <button className="dc-navbtn" onClick={() => onNav(nextItem)} title={`מאוחר יותר: ${nextItem.name}`} aria-label={`מאוחר יותר: ${nextItem.name}`}>
+              <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M15 4 L7 12 L15 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          )}
+        </span>
+      </div>
+      <div className="detail-years">
+        {formatRange(item.start, item.end, mode)}
+        {item.approxDates && (
+          <span className="detail-approx-inline" title="התורה אינה מפרטת את שנות חייה; התאריכים משוערים לפי בעלהּ ולפי אירועים מתוארכים בסמוך"> · ≈ משוער</span>
+        )}
+      </div>
 
       {/* מיני-ציר — הקשר כרונולוגי במבט אחד */}
       <div className="dc-era" title="מיקום על ציר הזמן כולו">
@@ -101,14 +121,15 @@ export default function DetailCard({
         <div className="dc-era-labels"><span>האבות</span><span>חורבן בית שני</span></div>
       </div>
 
+      {/* שורת מטא שקטה — טקסט מופרד בנקודות במקום ענן תגיות */}
       {tags.length > 0 && (
-        <div className="dc-tags">
+        <div className="dc-meta">
           {tags.map((t, i) => (
-            <span key={i} className="dc-tag"><span aria-hidden="true">{t.icon}</span>{t.text}</span>
+            <span key={i} className="dc-meta-item">
+              {i > 0 && <span className="dc-meta-sep" aria-hidden="true"> · </span>}
+              <span aria-hidden="true">{t.icon}</span> {t.text}
+            </span>
           ))}
-          {item.judgment && (
-            <span className={`dc-tag judgment ${item.judgment}`}>{JUDGMENT_LABELS[item.judgment]}</span>
-          )}
         </div>
       )}
 
@@ -142,13 +163,31 @@ export default function DetailCard({
               <button className="coach-x" onClick={dismissCoachContemp} aria-label="הבנתי">✕</button>
             </div>
           )}
-          <div className="dc-chips">
-            {contemporaries.slice(0, 8).map((c) => (
+          <div className="dc-chips scroll">
+            {contemporaries.slice(0, 20).map((c) => (
               <button key={`${c.kind}:${c.id}`} className="dc-chip" onClick={() => onNav(c)} title={`${c.name} · ${c.start}–${c.end}`}>
                 {c.name}
               </button>
             ))}
-            {contemporaries.length > 8 && <span className="dc-chip more">+{contemporaries.length - 8}</span>}
+          </div>
+        </div>
+      )}
+
+      {/* "אולי יעניין אותך" — מדור אחד, שורה נגללת אחת; 📍 מסמן קשר-מקום */}
+      {(relatedPlace.length > 0 || relatedEra.length > 0) && (
+        <div className="dc-related">
+          <div className="dc-row-label">אולי יעניין אותך גם</div>
+          <div className="dc-chips scroll">
+            {relatedPlace.map((r) => (
+              <button key={`p-${r.kind}:${r.id}`} className="dc-chip" onClick={() => onNav(r)} title={`${r.name} · ${r.place}`}>
+                📍 {r.name}<span className="dc-chip-sub"> · {r.place}</span>
+              </button>
+            ))}
+            {relatedEra
+              .filter((r) => !relatedPlace.some((p) => p.kind === r.kind && p.id === r.id))
+              .map((r) => (
+                <button key={`e-${r.kind}:${r.id}`} className="dc-chip" onClick={() => onNav(r)}>{r.name}</button>
+              ))}
           </div>
         </div>
       )}
@@ -182,51 +221,6 @@ export default function DetailCard({
                 : seg.text}
             </span>
           ))}
-        </div>
-      )}
-
-      {(prevItem || nextItem) && (
-        <div className="detail-nav">
-          {prevItem ? (
-            <button className="nav-btn" onClick={() => onNav(prevItem)} title="הקודם (מוקדם יותר)">
-              <span className="nav-arrow">►</span>
-              <span className="nav-name">{prevItem.name}</span>
-            </button>
-          ) : <span className="nav-spacer" />}
-          {nextItem ? (
-            <button className="nav-btn" onClick={() => onNav(nextItem)} title="הבא (מאוחר יותר)">
-              <span className="nav-name">{nextItem.name}</span>
-              <span className="nav-arrow">◄</span>
-            </button>
-          ) : <span className="nav-spacer" />}
-        </div>
-      )}
-
-      {(relatedPlace.length > 0 || relatedEra.length > 0) && (
-        <div className="dc-related">
-          <h3 className="dc-related-title">אולי יעניין אותך גם</h3>
-          {relatedPlace.length > 0 && (
-            <div className="dc-relgroup">
-              <span className="dc-rellabel">אותו מקום</span>
-              <div className="dc-chips">
-                {relatedPlace.map((r) => (
-                  <button key={`${r.kind}:${r.id}`} className="dc-chip" onClick={() => onNav(r)} title={`${r.name} · ${r.place}`}>
-                    {r.name}<span className="dc-chip-sub"> · {r.place}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {relatedEra.length > 0 && (
-            <div className="dc-relgroup">
-              <span className="dc-rellabel">מאותה תקופה</span>
-              <div className="dc-chips">
-                {relatedEra.map((r) => (
-                  <button key={`${r.kind}:${r.id}`} className="dc-chip" onClick={() => onNav(r)}>{r.name}</button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
 

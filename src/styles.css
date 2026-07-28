@@ -1632,6 +1632,50 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 /* צ'יפ "המשיכו" — מופרד קלות מדמות היום */
 .daily-hint-resume { border-inline-start: 1px solid var(--line-soft); }
 
+/* ===== כרטיס שקט: שלושה מפלסים במקום שמונה אזורים ===== */
+.dc-chiprow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 3px; }
+.dc-judgment {
+  font-size: 10.5px; font-weight: 700; border-radius: 12px; padding: 2px 9px;
+  border: 1px solid transparent;
+}
+.dc-judgment.good { color: #2e6b33; background: rgb(79 122 51 / .12); border-color: rgb(79 122 51 / .3); }
+.dc-judgment.bad { color: #9c2f24; background: rgb(176 57 44 / .1); border-color: rgb(176 57 44 / .3); }
+.dc-judgment.mixed { color: #7a5b16; background: rgb(178 138 43 / .12); border-color: rgb(178 138 43 / .3); }
+
+.dc-titlerow { display: flex; align-items: center; gap: 8px; }
+.dc-titlerow h2 { flex: 1; min-width: 0; }
+.dc-navpair { display: inline-flex; gap: 4px; flex: none; }
+.dc-navbtn {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); background: var(--bg-2); color: var(--navy);
+  cursor: pointer; padding: 0; transition: border-color .12s, background .12s;
+}
+.dc-navbtn:hover { border-color: var(--gold); background: var(--panel); }
+
+.detail-approx-inline { font-size: 11px; color: var(--muted); font-style: italic; cursor: help; }
+
+.dc-meta { font-size: 12px; color: var(--muted); line-height: 1.7; margin: 8px 0 2px; }
+.dc-meta-sep { opacity: .55; }
+
+/* שורת צ'יפים נגללת — שורה אחת במקום ענן; דהייה עדינה בקצה הגלילה */
+.dc-chips.scroll {
+  flex-wrap: nowrap; overflow-x: auto; padding-bottom: 3px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(to left, transparent 0, #000 16px);
+}
+.dc-chips.scroll::-webkit-scrollbar { display: none; }
+.dc-chips.scroll .dc-chip { flex: none; white-space: nowrap; }
+
+.dc-row-label { font-size: 11px; font-weight: 700; color: var(--muted); margin: 10px 0 5px; }
+.dc-related { margin-top: 2px; }
+
+/* פעולות ומקור — תחתית קומפקטית ושקטה */
+.card-actions { margin: 12px 0 10px; }
+.card-action { flex-direction: row; gap: 6px; padding: 7px 8px; font-size: 12px; }
+.card-action .dc-cbig { font-size: 15px; }
+.detail-source { font-size: 11.5px; padding-top: 8px; }
+
 /* ===== מסע מודרך ===== */
 /* בדסקטופ הכרטיס והמפה בצד שמאל — השורה יושבת מימין-למטה, לא מתנגשת */
 .tour-bar {
