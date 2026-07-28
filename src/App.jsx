@@ -22,6 +22,7 @@ import world from './data/world.json';
 import empires from './data/empires.json';
 import { academicData } from './utils/academic.js';
 import maps from './data/maps.json';
+import tours from './data/tours.json';
 import { buildPlaceIndex, relatedByEra, relatedByPlace } from './utils/related.js';
 import { figureOfDay } from './utils/daily.js';
 
@@ -158,11 +159,24 @@ export default function App() {
     window.addEventListener('resize', on); // גיבוי — לא כל דפדפן משגר change על שינוי גודל
     return () => { mq.removeEventListener('change', on); window.removeEventListener('resize', on); };
   }, []);
-  useEffect(() => { setMapOpen(false); setSheetPos('full'); }, [selected]);
+  // במסע מודרך הגיליון נפתח חצי — כדי שהציר ושורת המסע יישארו גלויים
+  useEffect(() => { setMapOpen(false); setSheetPos(tourActiveRef.current ? 'half' : 'full'); }, [selected]);
   // מובייל: הכרטיס כ"גיליון תחתון" — נפתח מלא (אינטואיטיבי); גרירה מטה מקטינה/סוגרת
   const [sheetPos, setSheetPos] = useState('full');
   const [moreOpen, setMoreOpen] = useState(false);
   const sheetTouchY = useRef(null);
+
+  // מסע מודרך — סיור רציף דמות-אחר-דמות עם שורת הקשר מקשרת
+  const [tour, setTour] = useState(null); // { data, step }
+  const [toursOpen, setToursOpen] = useState(false);
+  const tourActiveRef = useRef(false);
+  const tourJump = (data, step) => {
+    tourActiveRef.current = true;
+    setTour({ data, step });
+    jumpToId(data.stops[step].ref);
+  };
+  const startTour = (data) => { setToursOpen(false); setMoreOpen(false); tourJump(data, 0); };
+  const exitTour = () => { tourActiveRef.current = false; setTour(null); };
   const [treeOpen, setTreeOpen] = useState(INITIAL.tree);
   const [shareMsg, setShareMsg] = useState('');
 
@@ -762,6 +776,9 @@ export default function App() {
           <button className="tree-btn" onClick={() => setInsightsOpen(true)} title="תובנות">
             <span aria-hidden="true">📊</span> <span className="btn-label">תובנות</span>
           </button>
+          <button className="tree-btn" onClick={() => setToursOpen(true)} title="מסעות מודרכים — סיור דמות-אחר-דמות">
+            <span aria-hidden="true">🧭</span> <span className="btn-label">מסעות</span>
+          </button>
           {dailyFigure && (
             <button
               className="tree-btn daily-btn"
@@ -885,7 +902,45 @@ export default function App() {
       )}
 
       {/* מצב ריק: הזמנה לדמות היום — נקודת כניסה במקום מסך אילם */}
-      {!selected && !introOpen && !contempItem && dailyFigure && !dailyHintHidden && (
+      {/* שורת המסע המודרך — כותרת, הקשר, וניווט תחנות */}
+      {tour && (
+        <div className="tour-bar" role="region" aria-label="מסע מודרך">
+          <button className="tour-x" onClick={exitTour} aria-label="יציאה מהמסע">✕</button>
+          <div className="tour-info">
+            <div className="tour-title">
+              {tour.data.icon} {tour.data.title} · <span dir="ltr">{tour.step + 1}/{tour.data.stops.length}</span>
+            </div>
+            <div className="tour-note">{tour.data.stops[tour.step].note}</div>
+          </div>
+          <div className="tour-nav">
+            <button className="tour-btn" disabled={tour.step === 0} onClick={() => tourJump(tour.data, tour.step - 1)}>הקודם</button>
+            {tour.step < tour.data.stops.length - 1
+              ? <button className="tour-btn tour-next" onClick={() => tourJump(tour.data, tour.step + 1)}>הבא</button>
+              : <button className="tour-btn tour-next" onClick={exitTour}>סיום ✓</button>}
+          </div>
+        </div>
+      )}
+
+      {/* בוחר המסעות */}
+      {toursOpen && (
+        <div className="tours-overlay" onClick={() => setToursOpen(false)}>
+          <div className="tours-panel" onClick={(e) => e.stopPropagation()}>
+            <h3 className="tours-title">🧭 מסעות מודרכים</h3>
+            <p className="tours-sub">סיור דמות-אחר-דמות עם ההקשר המחבר — מתקדמים בקצב שלכם</p>
+            {tours.map((t) => (
+              <button key={t.id} className="tour-card" onClick={() => startTour(t)}>
+                <span className="tour-card-icon" aria-hidden="true">{t.icon}</span>
+                <span className="tour-card-body">
+                  <b>{t.title}</b>
+                  <small>{t.subtitle} · {t.stops.length} תחנות</small>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!selected && !introOpen && !contempItem && !tour && dailyFigure && !dailyHintHidden && (
         <div className="daily-hint">
           <button className="daily-hint-go" onClick={() => jumpToId(dailyFigure.id)}>
             ✨ דמות היום: <b>{dailyFigure.name}</b>
@@ -990,6 +1045,7 @@ export default function App() {
         <div className="more-overlay" onClick={() => setMoreOpen(false)}>
           <div className="more-sheet" onClick={(e) => e.stopPropagation()}>
             <span className="sheet-grip" aria-hidden="true" />
+            <button className="more-item" onClick={() => { setMoreOpen(false); setToursOpen(true); }}>🧭 מסעות מודרכים</button>
             <button className="more-item" onClick={() => { setMoreOpen(false); shareView(); }}>🔗 שיתוף האתר</button>
             <button className="more-item" onClick={() => { setMoreOpen(false); setVertical((v) => !v); scrollRightPending.current = true; }}>
               {vertical ? '↔ מעבר לציר אופקי' : '↕ מעבר לציר אנכי'}

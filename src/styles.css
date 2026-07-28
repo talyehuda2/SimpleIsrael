@@ -1631,3 +1631,58 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 
 /* צ'יפ "המשיכו" — מופרד קלות מדמות היום */
 .daily-hint-resume { border-inline-start: 1px solid var(--line-soft); }
+
+/* ===== מסע מודרך ===== */
+/* בדסקטופ הכרטיס והמפה בצד שמאל — השורה יושבת מימין-למטה, לא מתנגשת */
+.tour-bar {
+  position: fixed; bottom: 42px; right: 16px; z-index: 34;
+  display: flex; align-items: center; gap: 10px;
+  width: min(440px, calc(100vw - 24px));
+  background: var(--navy); color: #fff; border-radius: 14px;
+  padding: 9px 13px; box-shadow: 0 10px 30px rgb(10 20 30 / .4);
+  direction: rtl; animation: fadeIn .25s ease-out;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.tour-x { border: none; background: none; color: #fff; opacity: .7; cursor: pointer; font-size: 13px; flex: none; padding: 2px; }
+.tour-x:hover { opacity: 1; }
+.tour-info { flex: 1; min-width: 0; }
+.tour-title { font-size: 11.5px; font-weight: 700; color: var(--gold-soft); margin-bottom: 1px; }
+.tour-note { font-size: 13px; line-height: 1.5; }
+.tour-nav { display: flex; gap: 6px; flex: none; }
+.tour-btn {
+  border: 1px solid rgb(255 255 255 / .35); background: none; color: #fff;
+  font-family: inherit; font-size: 12.5px; font-weight: 700;
+  border-radius: 16px; padding: 5px 13px; cursor: pointer;
+}
+.tour-btn:disabled { opacity: .35; cursor: default; }
+.tour-next { background: var(--gold); border-color: var(--gold); color: #2c2107; }
+.tour-next:hover:not(:disabled) { background: var(--gold-soft); }
+
+.tours-overlay {
+  position: fixed; inset: 0; z-index: 46; background: rgb(30 20 5 / .45);
+  display: flex; align-items: center; justify-content: center;
+}
+.tours-panel {
+  width: min(430px, 92vw); background: var(--panel); border-radius: 16px;
+  border-top: 4px solid var(--gold); padding: 20px 20px 14px;
+  box-shadow: 0 18px 50px rgb(40 25 0 / .35);
+}
+.tours-title { margin: 0 0 4px; color: var(--navy); font-size: 20px; }
+.tours-sub { margin: 0 0 14px; color: var(--muted); font-size: 12.5px; }
+.tour-card {
+  display: flex; gap: 12px; align-items: center; width: 100%; text-align: start;
+  background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 9px; cursor: pointer; font-family: inherit;
+  transition: border-color .12s, transform .1s;
+}
+.tour-card:hover { border-color: var(--gold); transform: translateY(-1px); }
+.tour-card-icon { font-size: 24px; flex: none; }
+.tour-card-body b { display: block; color: var(--navy); font-size: 15px; }
+.tour-card-body small { color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+@media (max-width: 680px) {
+  /* במובייל הגיליון תופס את התחתית — השורה נצמדת מתחת לפס התקופות */
+  .tour-bar { top: 142px; bottom: auto; right: 50%; transform: translateX(50%); }
+  .tours-overlay { align-items: flex-end; }
+  .tours-panel { width: 100%; border-radius: 16px 16px 0 0; padding-bottom: calc(16px + env(safe-area-inset-bottom)); animation: sheetUp .22s ease-out; }
+}
