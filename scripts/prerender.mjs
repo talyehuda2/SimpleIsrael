@@ -173,7 +173,7 @@ ${ld ? `<script type="application/ld+json">${JSON.stringify(ld)}</script>` : ''}
 <header><a href="/">← ציר הזמן של עם ישראל</a></header>
 ${crumbsHtml}
 ${body}
-<footer>חלק מ<a href="/">ציר הזמן של עם ישראל</a> · מהאבות ועד חורבן בית שני · <a href="/p/">מפת האתר</a></footer>
+<footer>חלק מ<a href="/">ציר הזמן של עם ישראל</a> · מהאבות ועד חורבן בית שני · <a href="/p">מפת האתר</a></footer>
 </div></body>
 </html>`;
 }
@@ -224,7 +224,7 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
   // פירורי לחם: בית ← התקופה ← הדמות (התקופה מקושרת לדף-התקופה שלה)
   const crumbs = [
     { name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
-    era ? { name: era.name, url: periodUrl(era) } : { name: 'מפת האתר', url: SITE + '/p/' },
+    era ? { name: era.name, url: periodUrl(era) } : { name: 'מפת האתר', url: SITE + '/p' },
     { name: it.name },
   ];
 
@@ -351,13 +351,13 @@ mkdirSync(join(DIST, 'p'), { recursive: true });
 writeFileSync(join(DIST, 'p', 'index.html'), shell({
   title: 'מפת האתר — כל הדמויות והאירועים | ציר הזמן של עם ישראל',
   description: 'רשימת כל הדמויות, האירועים וספרי התנ״ך שעל ציר הזמן של עם ישראל — מהאבות ועד חורבן בית שני.',
-  canonical: `${SITE}/p/`,
+  canonical: `${SITE}/p`,
   jsonld: null,
   body: idxBody,
 }));
 
 // sitemap.xml
-const urls = [`${SITE}/`, `${SITE}/p/`, ...sortedPeriods.map(periodUrl), ...items.map(urlOf)];
+const urls = [`${SITE}/`, `${SITE}/p`, ...sortedPeriods.map(periodUrl), ...items.map(urlOf)];
 const lastmod = new Date().toISOString().slice(0, 10);
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -383,7 +383,7 @@ if (!html.includes('application/ld+json')) {
   html = html.replace('</head>', `<script type="application/ld+json">${JSON.stringify(siteLd)}</script>\n</head>`);
 }
 if (!html.includes('id="crawl-index"')) {
-  html = html.replace('</body>', `<noscript><nav id="crawl-index"><a href="/p/">מפת האתר — כל הדמויות והאירועים</a></nav></noscript>\n</body>`);
+  html = html.replace('</body>', `<noscript><nav id="crawl-index"><a href="/p">מפת האתר — כל הדמויות והאירועים</a></nav></noscript>\n</body>`);
 }
 writeFileSync(indexPath, html);
 
