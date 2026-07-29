@@ -95,6 +95,10 @@ const STYLE = `
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Frank Ruhl Libre','Heebo',Georgia,serif;line-height:1.7}
 .wrap{max-width:720px;margin:0 auto;padding:20px 18px 48px}
 header a{color:var(--navy);text-decoration:none;font-weight:700;font-size:15px}
+.crumbs{font-size:12.5px;color:var(--muted);margin:14px 0 -8px}
+.crumbs a{color:var(--gold);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+.crumbs .sep{opacity:.6}
 .chip{display:inline-block;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.3px;margin:22px 0 4px}
 h1{margin:0 0 6px;font-size:32px;color:var(--navy);font-weight:900}
 .dates{color:var(--muted);font-size:15px;margin-bottom:16px}
@@ -123,8 +127,22 @@ footer a{color:var(--gold)}
 .cl-kind{color:var(--muted);font-size:11px}
 `;
 
-function shell({ title, description, canonical, jsonld, body, ogImage }) {
+function shell({ title, description, canonical, jsonld, body, ogImage, crumbs }) {
   const img = ogImage || `${SITE}/og-image.jpg`;
+  // פירורי לחם: גם ניווט גלוי וגם BreadcrumbList לגוגל (מוצג בתוצאות החיפוש)
+  const crumbLd = crumbs && crumbs.length ? {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: crumbs.map((c, i) => ({
+      '@type': 'ListItem', position: i + 1, name: c.name,
+      ...(c.url ? { item: c.url } : {}),
+    })),
+  } : null;
+  const ld = crumbLd ? [jsonld, crumbLd].filter(Boolean) : jsonld;
+  const crumbsHtml = crumbs && crumbs.length ? `
+<nav class="crumbs" aria-label="מיקום באתר">${crumbs.map((c) =>
+    c.url ? `<a href="${escAttr(c.url)}">${esc(c.name)}</a>` : `<span aria-current="page">${esc(c.name)}</span>`
+  ).join('<span class="sep"> / </span>')}</nav>` : '';
   return `<!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -149,10 +167,11 @@ function shell({ title, description, canonical, jsonld, body, ogImage }) {
 <meta name="twitter:description" content="${escAttr(description)}"/>
 <meta name="twitter:image" content="${img}"/>
 <style>${STYLE}</style>
-${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script>` : ''}
+${ld ? `<script type="application/ld+json">${JSON.stringify(ld)}</script>` : ''}
 </head>
 <body><div class="wrap">
 <header><a href="/">← ציר הזמן של עם ישראל</a></header>
+${crumbsHtml}
 ${body}
 <footer>חלק מ<a href="/">ציר הזמן של עם ישראל</a> · מהאבות ועד חורבן בית שני · <a href="/p/">מפת האתר</a></footer>
 </div></body>
@@ -191,14 +210,23 @@ ${prev ? `<a href="/p/${prev.kind}/${prev.id}">← ${esc(prev.name)}</a>` : '<sp
 ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<span></span>'}
 </nav>`;
 
+  const ogImage = `${SITE}/og/${it.kind}/${it.id}.jpg`;
   const jsonld = {
     '@context': 'https://schema.org',
     '@type': km.schema,
     name: it.name,
     description: desc,
     url: canonical,
+    image: ogImage,
+    mainEntityOfPage: canonical,
     isPartOf: { '@type': 'WebSite', name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
   };
+  // פירורי לחם: בית ← התקופה ← הדמות (התקופה מקושרת לדף-התקופה שלה)
+  const crumbs = [
+    { name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
+    era ? { name: era.name, url: periodUrl(era) } : { name: 'מפת האתר', url: SITE + '/p/' },
+    { name: it.name },
+  ];
 
   const contemps = contemporariesOf(it);
   const contempHtml = contemps.length ? `
@@ -233,7 +261,7 @@ ${placeHtml}
 ${rel}`;
 
   return shell({ title: `${it.name} — ${km.label} | ציר הזמן של עם ישראל`, description: metaDesc, canonical, jsonld, body,
-    ogImage: `${SITE}/og/${it.kind}/${it.id}.jpg` });
+    ogImage, crumbs });
 }
 
 // דף תקופה — מרכז את כל מי שחי/התרחש בה
@@ -267,10 +295,16 @@ ${next ? `<a href="/p/period/${next.id}">${esc(next.name)} →</a>` : '<span></s
       name: p.name,
       description: metaDesc,
       url: periodUrl(p),
+      image: `${SITE}/og/period/${p.id}.jpg`,
+      inLanguage: 'he',
       isPartOf: { '@type': 'WebSite', name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
     },
     body,
     ogImage: `${SITE}/og/period/${p.id}.jpg`,
+    crumbs: [
+      { name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
+      { name: p.name },
+    ],
   });
 }
 
@@ -324,9 +358,10 @@ writeFileSync(join(DIST, 'p', 'index.html'), shell({
 
 // sitemap.xml
 const urls = [`${SITE}/`, `${SITE}/p/`, ...sortedPeriods.map(periodUrl), ...items.map(urlOf)];
+const lastmod = new Date().toISOString().slice(0, 10);
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((u) => `<url><loc>${u}</loc></url>`).join('\n')}
+${urls.map((u) => `<url><loc>${u}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n')}
 </urlset>`;
 writeFileSync(join(DIST, 'sitemap.xml'), sitemap);
 
