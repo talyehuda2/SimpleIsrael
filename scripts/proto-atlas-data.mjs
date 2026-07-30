@@ -19,11 +19,16 @@ const pool = [...leaders, ...kings.united, ...kings.judah, ...kings.israel];
 const fig = (id) => pool.find((x) => x.id === id);
 const ev = (id) => events.find((x) => x.id === id);
 
+const KIND = { avraham:'מנהיג', sarah:'מנהיגה', yitzchak:'מנהיג', yaakov:'מנהיג', yosef:'מנהיג',
+  moshe:'מנהיג', aharon:'מנהיג', miriam:'מנהיגה', 'yehoshua-l':'מנהיג',
+  shaul:'מלך — הממלכה המאוחדת', david:'מלך — הממלכה המאוחדת', shlomo:'מלך — הממלכה המאוחדת' };
+
 const figCard = (id) => {
   const f = fig(id);
   const m = maps[id];
   return {
-    id, name: f.name,
+    id, name: f.name, kind: KIND[id] || 'דמות',
+    desc: f.description || '', verse: f.verse || null, vref: f.verseRef || null, src: f.source || null,
     sub: `${f.start}–${f.end}` + (f.lifeText ? ` · ${f.lifeText}` : f.reignText ? ` · ${f.reignText}` : ''),
     map: m ? {
       title: m.title,
@@ -37,7 +42,8 @@ const figCard = (id) => {
 };
 const evCard = (id) => {
   const e = ev(id);
-  return { id, name: e.name, sub: `אירוע · ${e.year}`, map: null };
+  return { id, name: e.name, kind: 'אירוע', sub: `אירוע · ${e.year}`,
+    desc: e.description || '', verse: e.verse || null, vref: e.verseRef || null, src: e.source || null, map: null };
 };
 
 const data = {

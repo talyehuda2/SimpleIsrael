@@ -18,8 +18,26 @@ html{scroll-behavior:smooth}
 @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo','Segoe UI',Arial,sans-serif}
 
-/* ================= המפה — חלון קבוע בצד שמאל ================= */
-#map-pane{position:fixed;top:0;bottom:0;left:0;width:calc(100% - var(--story-w));
+/* ================= פאנל הפירוט — שמאל קיצוני ================= */
+:root{ --detail-w:330px }
+#detail-pane{position:fixed;top:0;bottom:0;left:0;width:var(--detail-w);z-index:5;
+  background:var(--panel);border-inline-end:1px solid var(--line);
+  padding:18px 20px;overflow-y:auto;overscroll-behavior:contain}
+#detail-pane .kind{display:inline-block;font-size:11.5px;font-weight:800;color:#fff;
+  background:var(--wine);border-radius:14px;padding:2px 12px;margin-bottom:6px}
+#detail-pane h2{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:26px;color:var(--navy);margin:0}
+#detail-pane .yrs{font-size:12.5px;color:var(--muted);font-weight:600;margin:2px 0 10px}
+#detail-pane .verse{background:var(--bg);border-inline-start:3px solid var(--gold);border-radius:10px;
+  padding:9px 13px;margin:0 0 12px}
+#detail-pane .verse p{font-family:'Frank Ruhl Libre',serif;font-size:14.5px;line-height:1.7;color:var(--ink);margin:0;font-weight:600}
+#detail-pane .verse small{display:block;font-size:10.5px;color:var(--gold-ink);font-weight:700;margin-top:3px}
+#detail-pane .desc{font-size:13.5px;line-height:1.8;margin:0 0 12px}
+#detail-pane .src{font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:9px}
+#detail-pane .src b{color:var(--navy)}
+
+/* ================= המפה — בין הפירוט לטור הסיפור ================= */
+#map-pane{position:fixed;top:0;bottom:0;left:var(--detail-w);
+  width:calc(100% - var(--story-w) - var(--detail-w));
   display:flex;flex-direction:column;background:linear-gradient(180deg,#f6edd8,var(--bg));
   border-inline-start:1px solid var(--line)}
 #map-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 16px;
@@ -32,18 +50,23 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo','Se
 .mbtn:disabled{opacity:.4;cursor:default}
 .mbtn.play{background:var(--navy);border-color:var(--navy);color:#fff}
 #map-box{position:relative;flex:1;min-height:0;display:grid;place-items:center;overflow:hidden}
-#map-fit{position:relative;transition:opacity .35s}
+#map-fit{position:relative;transition:opacity .35s;overflow:hidden;border-radius:6px}
 #map-fit.fade{opacity:0}
-#map-fit img{position:absolute;inset:0;width:100%;height:100%}
-#map-fit svg{position:absolute;inset:0;width:100%;height:100%}
-.route{fill:none;stroke:var(--gold-ink);stroke-width:4;stroke-dasharray:9 9;stroke-linecap:round;opacity:.65}
-.route-done{fill:none;stroke:var(--wine);stroke-width:5;stroke-linecap:round;
+/* שכבת הזום — המצלמה מתקרבת לתחנה הפעילה בזמן המסע */
+#map-zoom{position:absolute;inset:0;transform-origin:0 0;
+  transition:transform .95s cubic-bezier(.25,.8,.25,1);--z:1}
+@media (prefers-reduced-motion: reduce){ #map-zoom{transition:none} }
+#map-zoom img{position:absolute;inset:0;width:100%;height:100%}
+#map-zoom svg{position:absolute;inset:0;width:100%;height:100%}
+/* הסמנים והקווים בגודל קבוע-חזותית — מחולקים במקדם הזום */
+.route{fill:none;stroke:var(--gold-ink);stroke-width:calc(4px / var(--z,1));stroke-dasharray:9 9;stroke-linecap:round;opacity:.65}
+.route-done{fill:none;stroke:var(--wine);stroke-width:calc(5px / var(--z,1));stroke-linecap:round;
   stroke-dasharray:var(--len);stroke-dashoffset:var(--len)}
-.pt circle{fill:var(--wine);stroke:#fbf5e7;stroke-width:3;r:15}
-.pt text{fill:#fff;font-size:15px;font-weight:800;text-anchor:middle;dominant-baseline:central}
+.pt circle{fill:var(--wine);stroke:#fbf5e7;stroke-width:calc(3px / var(--z,1));r:calc(15px / var(--z,1))}
+.pt text{fill:#fff;font-size:calc(15px / var(--z,1));font-weight:800;text-anchor:middle;dominant-baseline:central}
 .pt{cursor:pointer}
 .pt.done circle{fill:var(--gold)}
-.pt.now circle{r:19;stroke-width:4}
+.pt.now circle{r:calc(19px / var(--z,1));stroke-width:calc(4px / var(--z,1))}
 /* חלונית תחנה */
 #popup{position:absolute;z-index:6;width:230px;background:var(--panel);border:1.5px solid var(--gold);
   border-radius:12px;box-shadow:0 10px 28px rgb(60 40 0 / .3);padding:0;overflow:hidden;
@@ -71,8 +94,9 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo','Se
   padding:10px 18px;font-size:13.5px;color:var(--muted)}
 
 /* ================= טור הסיפור — ימין ================= */
+/* ריפוד תחתון גדול — כדי שגם הכרטיס האחרון יכול להגיע לקו המוקד בגלילה טבעית */
 #story{position:relative;z-index:10;width:var(--story-w);margin-inline-end:auto;
-  padding:18px 20px 40vh;min-height:100vh}
+  padding:18px 20px 62vh;min-height:100vh}
 /* חוט הזהב */
 #story::before{content:'';position:absolute;top:0;bottom:0;inset-inline-end:14px;width:2px;
   background:var(--gold);opacity:.45}
@@ -96,6 +120,12 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo','Se
 .card.on{opacity:1;border-color:var(--gold);box-shadow:0 8px 24px rgb(60 40 0 / .18)}
 .card.on::after{background:var(--wine);transform:scale(1.5)}
 
+/* מסכים צרים: אין מקום לשלוש עמודות — הפירוט מוסתר והמפה מתרחבת */
+@media (max-width:1150px){
+  #detail-pane{display:none}
+  #map-pane{left:0;width:calc(100% - var(--story-w))}
+}
+
 /* ================= מובייל ================= */
 @media (max-width:760px){
   :root{--story-w:100%}
@@ -111,18 +141,22 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo','Se
 </head>
 <body>
 
+<aside id="detail-pane" aria-label="פרטי הדמות"></aside>
+
 <div id="map-pane">
   <div id="map-head">
     <h2 id="map-title">אטלס הדורות</h2>
     <button class="mbtn play" id="b-play">▶ הפעלת המסע</button>
     <button class="mbtn" id="b-prev">הקודם</button>
     <button class="mbtn" id="b-next">הבא</button>
-    <button class="mbtn" id="b-all">סקירה</button>
+    <button class="mbtn" id="b-all" title="חזרה למבט על כל המסלול">סקירה כללית</button>
   </div>
   <div id="map-box">
     <div id="map-fit">
-      <img src="/israel-map.jpg" alt="מפת ארץ ישראל והמרחב"/>
-      <svg id="ov" viewBox="0 0 820 1231" preserveAspectRatio="xMidYMid meet"></svg>
+      <div id="map-zoom">
+        <img src="/israel-map.jpg" alt="מפת ארץ ישראל והמרחב"/>
+        <svg id="ov" viewBox="0 0 820 1231" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
       <div id="popup"></div>
     </div>
     <div id="map-empty"><span>לפריט זה אין מפת מסע — בחרו דמות אחרת מהציר</span></div>
@@ -159,8 +193,13 @@ async function build() {
     });
   });
   story.insertAdjacentHTML('beforeend', html.join(''));
+  // לחיצה על כרטיס — גלילה שממרכזת אותו בדיוק על קו המוקד (ואז הבחירה נופלת עליו)
   document.querySelectorAll('.card').forEach((el) =>
-    el.addEventListener('click', () => el.scrollIntoView({ block: 'center' })));
+    el.addEventListener('click', () => {
+      const focus = innerHeight * (matchMedia('(max-width:760px)').matches ? .72 : .45);
+      const b = el.getBoundingClientRect();
+      scrollTo({ top: scrollY + b.top + b.height / 2 - focus, behavior: 'smooth' });
+    }));
   fitMap(); pick(); addEventListener('scroll', pick, { passive: true });
   setInterval(pick, 300); // גיבוי לסביבות בלי אירועי scroll
   addEventListener('resize', () => { fitMap(); render(); });
@@ -183,15 +222,29 @@ const smooth = (pts) => {
   for (let i = 1; i < pts.length; i++) d += ` L ${pts[i].X} ${pts[i].Y}`;
   return d;
 };
+// ---------- פאנל הפירוט — הכרטיס המלא של הדמות הפעילה ----------
+function renderDetail(c) {
+  const d = $('#detail-pane'); if (!d) return;
+  if (!c) { d.innerHTML = ''; return; }
+  d.innerHTML =
+    `<span class="kind">${c.kind}</span><h2>${c.name}</h2><div class="yrs">${c.sub}</div>` +
+    (c.verse ? `<div class="verse"><p>„${c.verse}”</p>${c.vref ? `<small>${c.vref}</small>` : ''}</div>` : '') +
+    (c.desc ? `<p class="desc">${c.desc}</p>` : '') +
+    (c.src ? `<div class="src"><b>מקור:</b> ${c.src}</div>` : '');
+  d.scrollTop = 0;
+}
+
 function render() {
   const c = cards[active];
   const ov = $('#ov'), lg = $('#legend');
   stopPlay();
+  renderDetail(c);
   if (!c || !c.map) {
     ov.innerHTML = ''; lg.innerHTML = '';
     $('#map-title').textContent = c ? c.name : 'אטלס הדורות';
     $('#map-empty').classList.toggle('show', !!(c && !c.map));
     $('#popup').classList.remove('show');
+    zoomTo(-1);
     ['b-play','b-prev','b-next','b-all'].forEach(id => $('#'+id).disabled = true);
     return;
   }
@@ -212,6 +265,24 @@ function render() {
   step = -1; paint();
 }
 
+// ---------- מצלמת הזום: מתקרבת לתחנה הפעילה, מתרחקת בסקירה ----------
+function zoomTo(i) {
+  const mz = $('#map-zoom'), s = +$('#map-fit').dataset.s || 1;
+  const c = cards[active];
+  if (i < 0 || !c || !c.map) {
+    mz.style.transform = ''; mz.style.setProperty('--z', 1);
+    return { Z: 1, tx: 0, ty: 0 };
+  }
+  const Z = matchMedia('(max-width:760px)').matches ? 1.7 : 2.1;
+  const fw = IMG_W * s, fh = IMG_H * s, p = c.map.points[i];
+  let tx = fw / 2 - Z * (p.X * s), ty = fh / 2 - Z * (p.Y * s);
+  tx = Math.min(0, Math.max(fw - Z * fw, tx));
+  ty = Math.min(0, Math.max(fh - Z * fh, ty));
+  mz.style.transform = `translate(${tx}px, ${ty}px) scale(${Z})`;
+  mz.style.setProperty('--z', Z);
+  return { Z, tx, ty };
+}
+
 // ---------- צעדי המסע ----------
 function paint() {
   const c = cards[active]; if (!c || !c.map) return;
@@ -224,15 +295,21 @@ function paint() {
   $('#legend').querySelectorAll('.lg').forEach(b => b.classList.toggle('now', +b.dataset.p === step));
   const done = ov.querySelector('.route-done'), len = +done.dataset.len || 0;
   done.style.strokeDashoffset = step <= 0 ? len : len * (1 - step / (pts.length - 1));
+  // מצבי הכפתורים: "סקירה כללית" פעיל רק כשיש ממה לחזור
+  $('#b-all').disabled = step < 0;
+  $('#b-prev').disabled = step < 0;
+  $('#b-next').disabled = step >= pts.length - 1;
+  const cam = zoomTo(step);
   // חלונית
   const pop = $('#popup');
   if (step < 0) { pop.classList.remove('show'); return; }
   const p = pts[step], s = +$('#map-fit').dataset.s || 1;
   pop.innerHTML = `<div class="ph"><i>${p.n}</i>${p.name}</div>
     <div class="pl">${p.label || ''}</div><p class="pd">${(p.desc || '').slice(0, 150)}${(p.desc||'').length>150?'…':''}</p>`;
-  const fx = p.X * s, fy = p.Y * s, fw = IMG_W * s, fh = IMG_H * s;
+  const fw = IMG_W * s, fh = IMG_H * s;
+  const fx = cam.Z * (p.X * s) + cam.tx, fy = cam.Z * (p.Y * s) + cam.ty;
   pop.style.insetInlineStart = Math.max(6, Math.min(fw - 236, fx - 115)) + 'px';
-  pop.style.top = (fy > fh * .55 ? fy * 1 - 150 : fy + 26) + 'px';
+  pop.style.top = Math.max(6, Math.min(fh - 160, fy > fh * .55 ? fy - 150 : fy + 30)) + 'px';
   pop.classList.add('show');
 }
 function setStep(i, manual) {
@@ -267,10 +344,8 @@ function pick() {
     const d = Math.abs((b.top + b.bottom) / 2 - mid);
     if (d < best) { best = d; cur = +el.dataset.i; }
   });
-  // עיגון לקצוות: בראש הדף — הכרטיס הראשון; בתחתית — האחרון
-  const se = document.scrollingElement;
+  // עיגון עליון בלבד: בראש הדף תמיד הכרטיס הראשון (הריפוד התחתון מאפשר לאחרון להיבחר טבעית)
   if (scrollY < 50) cur = 0;
-  else if (scrollY + innerHeight > se.scrollHeight - 50) cur = cards.length - 1;
   if (cur !== active) {
     active = cur;
     document.querySelectorAll('.card').forEach(el => el.classList.toggle('on', +el.dataset.i === active));
