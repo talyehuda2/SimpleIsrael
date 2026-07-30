@@ -105,6 +105,9 @@ h1{margin:0 0 6px;font-size:32px;color:var(--navy);font-weight:900}
 .row{margin:6px 0;font-size:15px}
 .row b{color:var(--navy)}
 .desc{font-size:17px;line-height:1.85;margin:16px 0}
+.verse{margin:18px 0;padding:12px 16px;border-inline-start:3px solid var(--gold);background:linear-gradient(180deg,#fff9ec,#f6ecd4);border-radius:0 10px 10px 0;font-size:17px;line-height:1.8;color:var(--navy)}
+.verse .vtext::before,.verse .vtext::after{content:'״';opacity:.5}
+.verse cite{display:block;margin-top:6px;font-size:13px;font-style:normal;color:var(--gold);font-weight:700}
 .src{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin-top:20px}
 .src a{color:var(--gold);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--gold)}
 .cta{display:inline-block;margin:22px 0 8px;background:var(--navy);color:#fff;text-decoration:none;border-radius:22px;padding:12px 22px;font-size:16px;font-weight:700}
@@ -248,12 +251,16 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
   </ul>
 </section>` : '';
 
+  const verseHtml = it.verse ? `
+<blockquote class="verse"><span class="vtext">${esc(it.verse)}</span>${it.verseRef ? `<cite>${esc(it.verseRef)}</cite>` : ''}</blockquote>` : '';
+
   const body = `
 <div class="chip">${esc(km.label)}</div>
 <h1>${esc(it.name)}</h1>
 <div class="dates">${esc(dates)}</div>
 ${rows.join('\n')}
 <p class="desc">${esc(desc)}</p>
+${verseHtml}
 ${srcHtml ? `<div class="src"><b>מקור:</b> ${srcHtml}</div>` : ''}
 <a class="cta" href="/?sel=${it.kind}:${it.id}">פתחו בציר הזמן האינטראקטיבי ←</a>
 ${contempHtml}

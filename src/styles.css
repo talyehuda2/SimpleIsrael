@@ -1632,6 +1632,24 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 /* צ'יפ "המשיכו" — מופרד קלות מדמות היום */
 .daily-hint-resume { border-inline-start: 1px solid var(--line-soft); }
 
+/* ===== הפסוק המגדיר — ציטוט מוגבה ===== */
+.dc-verse {
+  margin: 12px 0 4px; padding: 10px 14px;
+  border-inline-start: 3px solid var(--gold);
+  background: linear-gradient(180deg, #fff9ec, #f6ecd4);
+  border-radius: 0 10px 10px 0;
+}
+.dc-verse-text {
+  display: block; font-family: 'Frank Ruhl Libre', serif;
+  font-size: 14.5px; line-height: 1.75; color: var(--navy); font-weight: 500;
+}
+.dc-verse-text::before { content: '״'; opacity: .5; }
+.dc-verse-text::after { content: '״'; opacity: .5; }
+.dc-verse-ref {
+  display: block; margin-top: 4px; font-size: 11px; font-style: normal;
+  color: var(--gold-ink); font-weight: 700;
+}
+
 /* ===== כרטיס שקט: שלושה מפלסים במקום שמונה אזורים ===== */
 .dc-chiprow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 3px; }
 .dc-judgment {

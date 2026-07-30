@@ -144,6 +144,14 @@ export default function DetailCard({
         </p>
       )}
 
+      {/* הפסוק המגדיר — ציטוט מוגבה שנותן את הנקודה בלשון המקרא עצמו */}
+      {item.verse && (
+        <blockquote className="dc-verse">
+          <span className="dc-verse-text">{item.verse}</span>
+          {item.verseRef && <cite className="dc-verse-ref">{item.verseRef}</cite>}
+        </blockquote>
+      )}
+
       {contemporaries.length > 0 && (
         <div className="dc-contemp">
           <div className="dc-contemp-head">
