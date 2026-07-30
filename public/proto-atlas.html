@@ -154,8 +154,8 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo','Se
   <div id="map-box">
     <div id="map-fit">
       <div id="map-zoom">
-        <img src="/israel-map.jpg" alt="מפת ארץ ישראל והמרחב"/>
-        <svg id="ov" viewBox="0 0 820 1231" preserveAspectRatio="xMidYMid meet"></svg>
+        <img src="/israel_map_square.png" alt="מפת ארץ ישראל והמרחב"/>
+        <svg id="ov" viewBox="0 0 1254 1254" preserveAspectRatio="xMidYMid meet"></svg>
       </div>
       <div id="popup"></div>
     </div>
@@ -173,7 +173,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo','Se
 
 <script>
 const $ = (s) => document.querySelector(s);
-const IMG_W = 820, IMG_H = 1231;
+const IMG_W = 1254, IMG_H = 1254; // israel_map_square.png — ממלאת את חלון המפה
 let DATA = null, cards = [], active = -1, step = -1, playT = null;
 
 // ---------- בניית טור הסיפור ----------
