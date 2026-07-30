@@ -23,6 +23,7 @@ import empires from './data/empires.json';
 import { academicData } from './utils/academic.js';
 import maps from './data/maps.json';
 import tours from './data/tours.json';
+import collections from './data/collections.json';
 import { buildPlaceIndex, relatedByEra, relatedByPlace } from './utils/related.js';
 import { figureOfDay } from './utils/daily.js';
 
@@ -177,6 +178,16 @@ export default function App() {
   };
   const startTour = (data) => { setToursOpen(false); setMoreOpen(false); tourJump(data, 0); };
   const exitTour = () => { tourActiveRef.current = false; setTour(null); };
+
+  // אוספים תמטיים — קבוצות של דמויות/אירועים שקשורים ברעיון אחד
+  const [collection, setCollection] = useState(null);
+  // מזהה פריט → האוספים שהוא חבר בהם (לצ'יפ בכרטיס)
+  const collectionsById = useMemo(() => {
+    const m = {};
+    for (const c of collections) for (const id of c.members) (m[id] ||= []).push(c);
+    return m;
+  }, []);
+  const openCollection = (c) => { setToursOpen(false); setMoreOpen(false); setCollection(c); };
   const [treeOpen, setTreeOpen] = useState(INITIAL.tree);
   const [shareMsg, setShareMsg] = useState('');
 
@@ -921,13 +932,15 @@ export default function App() {
         </div>
       )}
 
-      {/* בוחר המסעות */}
+      {/* בוחר מסעות ואוספים */}
       {toursOpen && (
         <div className="tours-overlay" onClick={() => setToursOpen(false)}>
           <div className="tours-panel" onClick={(e) => e.stopPropagation()}>
+            <button className="about-close" onClick={() => setToursOpen(false)} aria-label="סגירה">✕</button>
             <h3 className="tours-title">🧭 מסעות מודרכים</h3>
             <p className="tours-sub">סיור דמות-אחר-דמות עם ההקשר המחבר — מתקדמים בקצב שלכם</p>
-            {tours.map((t) => (
+            {/* מסע שיש לו אוסף מקביל מוצג רק שם, כדי לא לחזור על אותו שם פעמיים */}
+            {tours.filter((t) => !collections.some((c) => c.tour === t.id)).map((t) => (
               <button key={t.id} className="tour-card" onClick={() => startTour(t)}>
                 <span className="tour-card-icon" aria-hidden="true">{t.icon}</span>
                 <span className="tour-card-body">
@@ -936,6 +949,48 @@ export default function App() {
                 </span>
               </button>
             ))}
+            <h3 className="tours-title tours-title-2">👭 אוספים</h3>
+            <p className="tours-sub">קבוצות שקשורות ברעיון אחד — הצצה לכולן במבט</p>
+            {collections.map((c) => (
+              <button key={c.id} className="tour-card" onClick={() => openCollection(c)}>
+                <span className="tour-card-icon" aria-hidden="true">{c.icon}</span>
+                <span className="tour-card-body">
+                  <b>{c.title}</b>
+                  <small>{c.subtitle} · {c.members.length} דמויות</small>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* תצוגת אוסף — התיאור וכל החברים כרשימה לחיצה */}
+      {collection && (
+        <div className="tours-overlay" onClick={() => setCollection(null)}>
+          <div className="tours-panel" onClick={(e) => e.stopPropagation()}>
+            <button className="about-close" onClick={() => setCollection(null)} aria-label="סגירה">✕</button>
+            <h3 className="tours-title">{collection.icon} {collection.title}</h3>
+            <p className="tours-sub">{collection.subtitle}</p>
+            <p className="coll-desc">{collection.description}</p>
+            {collection.tour && tours.some((t) => t.id === collection.tour) && (
+              <button
+                className="coll-tour-btn"
+                onClick={() => { const t = tours.find((x) => x.id === collection.tour); setCollection(null); startTour(t); }}
+              >🧭 התחילו סיור מודרך באוסף</button>
+            )}
+            <div className="coll-list">
+              {collection.members.map((id) => {
+                const it = searchIndex.find((x) => x.id === id);
+                if (!it) return null;
+                return (
+                  <button key={id} className="coll-item" onClick={() => { setCollection(null); jumpToId(id); }}>
+                    <span className={`sr-dot ${it.kind}`} />
+                    <span className="coll-item-name">{it.name}</span>
+                    <span className="coll-item-years">{it.start === it.end ? it.start : `${it.start}–${it.end}`}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
@@ -1013,6 +1068,8 @@ export default function App() {
             axisStart={axis.start} axisEnd={axis.end}
             contemporaries={selectedContemporaries}
             relatedEra={relatedEra} relatedPlace={relatedPlace}
+            collections={collectionsById[selected.id] || []}
+            onOpenCollection={openCollection}
             commentCount={selected ? (commentCounts[itemKey(selected)] || 0) : 0}
           />
           {!isMobile && maps[selected.id] && (

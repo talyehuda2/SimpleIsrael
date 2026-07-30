@@ -23,6 +23,7 @@ const books = read('books.json');
 const world = read('world.json');
 const events = read('events.json');
 const periods = read('periods.json');
+const collections = read('collections.json');
 
 const KINDS = {
   leader: { label: 'מנהיג', schema: 'Person', group: 'אבות ומנהיגים' },
@@ -315,6 +316,46 @@ ${next ? `<a href="/p/period/${next.id}">${esc(next.name)} →</a>` : '<span></s
   });
 }
 
+// דף אוסף — קבוצת דמויות שקשורות ברעיון אחד
+function collectionPage(c) {
+  const members = c.members.map((id) => items.find((x) => x.id === id)).filter(Boolean);
+  const url = `${SITE}/p/collection/${c.id}`;
+  const metaDesc = truncate(`${c.title} — ${c.subtitle}. ${members.map((m) => m.name).join(', ')}`, 155);
+  const body = `
+<div class="chip">אוסף</div>
+<h1>${esc(c.icon)} ${esc(c.title)}</h1>
+<div class="dates">${esc(c.subtitle)} · ${members.length} דמויות</div>
+<p class="desc">${esc(c.description)}</p>
+<section class="related">
+  <h2>הדמויות באוסף</h2>
+  <ul class="chips">
+    ${members.map((m) => `<li><a href="/p/${m.kind}/${m.id}"><span class="cl-name">${esc(m.name)}</span><span class="cl-kind">${esc(formatRange(m.start, m.end, 'tradition'))}</span></a></li>`).join('\n    ')}
+  </ul>
+</section>
+<a class="cta" href="/">פתחו בציר הזמן האינטראקטיבי ←</a>`;
+  return shell({
+    title: `${c.title} — ${c.subtitle} | ציר הזמן של עם ישראל`,
+    description: metaDesc,
+    canonical: url,
+    jsonld: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: c.title,
+      description: c.description,
+      url,
+      inLanguage: 'he',
+      isPartOf: { '@type': 'WebSite', name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
+      hasPart: members.map((m) => ({ '@type': 'Person', name: m.name, url: urlOf(m) })),
+    },
+    body,
+    crumbs: [
+      { name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
+      { name: 'אוספים', url: SITE + '/p/' },
+      { name: c.title },
+    ],
+  });
+}
+
 // ---- כתיבה ----
 let count = 0;
 for (const it of items) {
@@ -338,6 +379,14 @@ sortedPeriods.forEach((p, i) => {
     dates: formatRange(p.start, p.end, 'tradition'),
   });
 });
+for (const c of collections) {
+  const dir = join(DIST, 'p', 'collection', c.id);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'index.html'), collectionPage(c));
+  writeCard(DIST, join('og', 'collection', `${c.id}.jpg`), {
+    name: c.title, kindLabel: 'אוסף', dates: c.subtitle,
+  });
+}
 
 // דף אינדקס /p/
 const groups = {};
@@ -351,6 +400,8 @@ const idxBody = `<div class="chip">מפת האתר</div>
 <div class="idx">
 <h2>תקופות</h2>
 <ul>${sortedPeriods.map((p) => `<li><a href="/p/period/${p.id}">${esc(p.name)}</a></li>`).join('')}</ul>
+<h2>אוספים</h2>
+<ul>${collections.map((c) => `<li><a href="/p/collection/${c.id}">${esc(c.icon)} ${esc(c.title)}</a></li>`).join('')}</ul>
 ${Object.entries(groups).map(([g, list]) => `<h2>${esc(g)}</h2>
 <ul>${list.map((it) => `<li><a href="/p/${it.kind}/${it.id}">${esc(it.name)}</a></li>`).join('')}</ul>`).join('\n')}
 </div>`;
@@ -364,7 +415,12 @@ writeFileSync(join(DIST, 'p', 'index.html'), shell({
 }));
 
 // sitemap.xml
-const urls = [`${SITE}/`, `${SITE}/p`, ...sortedPeriods.map(periodUrl), ...items.map(urlOf)];
+const urls = [
+  `${SITE}/`, `${SITE}/p`,
+  ...sortedPeriods.map(periodUrl),
+  ...collections.map((c) => `${SITE}/p/collection/${c.id}`),
+  ...items.map(urlOf),
+];
 const lastmod = new Date().toISOString().slice(0, 10);
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

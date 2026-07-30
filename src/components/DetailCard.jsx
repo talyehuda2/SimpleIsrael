@@ -23,6 +23,7 @@ export default function DetailCard({
   item, mode, onClose, onOpenMap, contemporariesOn, onToggleContemporaries,
   prevItem, nextItem, onNav, axisStart, axisEnd, contemporaries = [],
   relatedEra = [], relatedPlace = [], commentCount = 0,
+  collections = [], onOpenCollection,
 }) {
   const [shareMsg, setShareMsg] = useState('');
   const [expanded, setExpanded] = useState(false);
@@ -87,6 +88,15 @@ export default function DetailCard({
         {item.judgment && (
           <span className={`dc-judgment ${item.judgment}`}>{JUDGMENT_LABELS[item.judgment]}</span>
         )}
+        {/* שיוך לאוספים — פתח להרחבה מהקשר של הדמות */}
+        {collections.map((c) => (
+          <button
+            key={c.id}
+            className="dc-coll-chip"
+            onClick={() => onOpenCollection?.(c)}
+            title={`${c.title} — ${c.subtitle}`}
+          >{c.icon} {c.title}</button>
+        ))}
       </div>
       <div className="dc-titlerow">
         <h2>{item.name}</h2>
