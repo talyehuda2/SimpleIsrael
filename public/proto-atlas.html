@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="noindex"/>
+<title>אטלס הדורות — אב־טיפוס | ציר הזמן של עם ישראל</title>
+<style>
+@font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;font-display:swap;src:url('/fonts/frankruhllibre-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
+@font-face{font-family:'Heebo';font-weight:300 700;font-display:swap;src:url('/fonts/heebo-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
+:root{
+  --bg:#efe4cb; --panel:#fbf5e7; --ink:#33281a; --muted:#6d5c42;
+  --navy:#163a57; --gold:#b28a2b; --gold-ink:#7a5b16; --line:#dcc9a3;
+  --story-w: 400px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo','Segoe UI',Arial,sans-serif}
+
+/* ===== המפה — במה קבועה מאחורי הכול ===== */
+#stage{position:fixed;inset:0;overflow:hidden;background:radial-gradient(ellipse at 60% 40%, #f2e7cf, #e2d3ae)}
+#world{position:absolute;top:0;left:0;width:820px;height:1231px;transform-origin:0 0;
+  transition:transform 1.1s cubic-bezier(.25,.8,.25,1);will-change:transform}
+#world img{position:absolute;inset:0;width:100%;height:100%;display:block;
+  filter:saturate(.92);}
+#world svg{position:absolute;inset:0;width:100%;height:100%}
+@media (prefers-reduced-motion: reduce){ #world{transition:none} }
+
+.jpath{fill:none;stroke:var(--gold-ink);stroke-width:3.2;stroke-linecap:round;
+  stroke-dasharray:var(--len);stroke-dashoffset:var(--len);
+  transition:stroke-dashoffset 1.1s cubic-bezier(.25,.8,.25,1);
+  filter:drop-shadow(0 1px 2px rgb(60 40 0 / .5))}
+.jpath.ghost{stroke:var(--gold);opacity:.28;stroke-dasharray:7 8;stroke-dashoffset:0;transition:none;filter:none}
+.mk circle{fill:#9c2b50;stroke:#fbf5e7;stroke-width:2.5;r:9;transition:all .5s}
+.mk text{fill:#fff;font-size:11px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.mk .mklabel{fill:#33281a;font-size:15px;font-weight:800;text-anchor:start;dominant-baseline:central;
+  paint-order:stroke;stroke:#fbf5e7;stroke-width:4px;opacity:0;transition:opacity .5s}
+.mk.seen circle{fill:#b28a2b}
+.mk.on circle{r:13;fill:#9c2b50}
+.mk.on .mklabel{opacity:1}
+.mk{opacity:0;transition:opacity .5s}
+.mk.seen,.mk.on{opacity:1}
+.chapter-hidden{display:none}
+
+/* וינייטה עדינה שממסגרת את הבמה */
+#stage::after{content:'';position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 0 120px rgb(60 40 10 / .28)}
+
+/* ===== HUD ===== */
+#hud{position:fixed;top:14px;inset-inline-start:16px;z-index:30;display:flex;align-items:center;gap:10px;
+  background:var(--panel);border:1.5px solid var(--gold);border-radius:14px;padding:7px 14px;
+  box-shadow:0 4px 16px rgb(60 40 0 / .2);font-size:13px;transition:opacity .4s}
+#hud b{color:var(--navy);font-family:'Frank Ruhl Libre',serif}
+#hud .cnt{color:var(--gold-ink);font-weight:700;font-variant-numeric:tabular-nums}
+#hud.dim{opacity:0}
+#back{position:fixed;top:14px;inset-inline-end:16px;z-index:30;background:var(--navy);color:#fff;
+  text-decoration:none;font-size:12.5px;font-weight:700;border-radius:14px;padding:8px 14px;
+  box-shadow:0 4px 16px rgb(10 20 40 / .3)}
+
+/* ===== שכבת הסיפור הנגללת ===== */
+/* RTL: inline-end = שמאל; margin שמאלי אוטומטי דוחף את הטור ימינה — צד הקריאה */
+#story{position:relative;z-index:10;width:var(--story-w);margin-inline-end:auto;padding:0 18px}
+.spacer{height:46vh}
+.hero,.era{min-height:92vh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:8px}
+.hero h1{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:40px;color:var(--navy);margin:0;
+  text-shadow:0 1px 0 var(--panel)}
+.hero .tag{background:var(--gold);color:#2c2107;font-size:12px;font-weight:800;border-radius:12px;padding:3px 12px}
+.hero p{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;
+  font-size:14.5px;max-width:34ch;box-shadow:0 6px 20px rgb(60 40 0 / .15)}
+.hero .down{color:var(--gold-ink);font-weight:700;font-size:13px;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+@media (prefers-reduced-motion: reduce){.hero .down{animation:none}}
+
+.era .verse{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:26px;color:var(--navy);
+  background:var(--panel);border-inline-start:4px solid var(--gold);border-radius:12px;padding:16px 18px;
+  max-width:30ch;box-shadow:0 8px 26px rgb(60 40 0 / .2);text-wrap:balance;margin:0}
+.era .vref{font-size:12px;color:var(--gold-ink);font-weight:700}
+.era h2{font-family:'Frank Ruhl Libre',serif;font-size:19px;color:var(--muted);font-weight:700;margin:6px 0 0}
+
+.stop{min-height:74vh;display:flex;align-items:center}
+.stop-card{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--gold);
+  border-radius:14px;padding:15px 18px;box-shadow:0 10px 30px rgb(60 40 0 / .22);width:100%;
+  opacity:.45;transform:translateY(10px);transition:opacity .5s,transform .5s}
+.stop.active .stop-card{opacity:1;transform:none}
+.stop-num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;
+  background:#9c2b50;color:#fff;font-size:12px;font-weight:800;margin-inline-end:8px}
+.stop-card h3{display:inline;font-family:'Frank Ruhl Libre',serif;font-size:19px;color:var(--navy);margin:0}
+.stop-card .why{display:block;font-size:12px;color:var(--gold-ink);font-weight:700;margin:6px 0 4px}
+.stop-card p{margin:0;font-size:13.5px;line-height:1.75}
+
+.outro{min-height:88vh;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.outro .box{background:var(--navy);color:#f4ecd8;border-radius:16px;padding:20px 22px;font-size:14px;line-height:1.8;
+  box-shadow:0 12px 36px rgb(10 20 40 / .35)}
+.outro .box b{color:#d9b755}
+.outro a.btn{background:var(--gold);color:#2c2107;text-decoration:none;font-weight:800;border-radius:22px;
+  padding:11px 22px;width:fit-content;font-size:14px}
+
+@media (max-width:680px){
+  :root{--story-w:100%}
+  #story{padding:0 12px}
+  .hero h1{font-size:31px}
+  .era .verse{font-size:21px}
+  .stop{min-height:78vh;align-items:flex-end;padding-bottom:9vh}
+  #hud{top:auto;bottom:12px;inset-inline-start:12px;font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<div id="stage" aria-hidden="true">
+  <div id="world">
+    <img src="/israel-map.jpg" alt=""/>
+    <svg id="overlay" viewBox="0 0 820 1231"></svg>
+  </div>
+</div>
+
+<div id="hud" class="dim"><b id="hud-ch">אטלס הדורות</b><span class="cnt" id="hud-cnt"></span></div>
+<a id="back" href="/">→ לציר הזמן</a>
+
+<main id="story">
+  <header class="hero">
+    <span class="tag">אב־טיפוס · קונספט ג׳+א׳</span>
+    <h1>אטלס הדורות</h1>
+    <p>הארץ היא הבמה, והסיפור נגלל עליה: גללו מטה — והמצלמה תיסע על המפה מתחנה לתחנה, מחרן ועד הר נבו.</p>
+    <span class="down">↓ גללו כדי לצאת לדרך</span>
+  </header>
+</main>
+
+<script>
+// ===== נתונים: שלושה פרקי מסע (מתוך maps.json של האתר) =====
+const projX = (lon, lat) => 226.10 * lon + 21.00 * lat - 8226.5;
+const projY = (lon, lat) => -38.05 * lon - 311.53 * lat + 11836.5;
+const P = (p) => ({ ...p, X: p.x != null ? p.x : projX(p.lon, p.lat), Y: p.y != null ? p.y : projY(p.lon, p.lat) });
+
+const CHAPTERS = [
+  {
+    id:'avraham', title:'מסע אברהם', era:'תקופת האבות',
+    verse:'לֶךְ־לְךָ מֵאַרְצְךָ וּמִמּוֹלַדְתְּךָ וּמִבֵּית אָבִיךָ, אֶל־הָאָרֶץ אֲשֶׁר אַרְאֶךָּ', vref:'בראשית י"ב, א',
+    stops:[
+      { name:'אור כשדים', x:802, y:210, why:'עיר הולדתו', text:'מקום הולדתו של אברם בדרום מסופוטמיה. משם יצא תרח אביו עם אברם, שרי ולוט ללכת ארצה כנען.' },
+      { name:'חרן', x:662, y:48, why:'הקריאה', text:'בחרן, בגיל 75, נצטווה: "לך לך מארצך" — ויצא אל ארץ שאינו מכיר, על סמך הבטחה בלבד.' },
+      { name:'שכם', lat:32.21, lon:35.28, why:'המזבח הראשון', text:'בבואו ארצה עצר באלון מורה. שם נראה אליו ה\': "לזרעך אתן את הארץ הזאת" — ויבן מזבח ראשון.' },
+      { name:'בית אל', lat:31.93, lon:35.22, why:'ויקרא בשם ה\'', text:'העתיק אהלו אל ההר ויקרא בשם ה\'. לכאן ישוב גם אחרי הירידה למצרים.' },
+      { name:'מצרים', x:118, y:806, why:'ירידה בעת רעב', text:'ויהי רעב בארץ. שרי נלקחה אל בית פרעה — וה\' נגע את פרעה בנגעים גדולים, וישלחם עם רכוש רב.' },
+      { name:'חברון', lat:31.53, lon:35.10, why:'אלוני ממרא', text:'כאן ביקרוהו שלושת המלאכים, וכאן קנה את מערת המכפלה — האחיזה הראשונה בקרקע הארץ.' },
+      { name:'באר שבע', lat:31.25, lon:34.79, why:'אשל וברית', text:'נטע אשל וקרא בשם ה\' אל עולם. מכאן יצא אל הניסיון הגדול מכולם.' },
+      { name:'הר המוריה', lat:31.78, lon:35.24, why:'העקידה', text:'"קח נא את בנך את יחידך". על ההר הזה נעקד יצחק — ובמקום הזה ייבנה לימים בית המקדש.' },
+    ],
+  },
+  {
+    id:'yaakov', title:'מסעות יעקב', era:'הדור השלישי',
+    verse:'וְהִנֵּה אָנֹכִי עִמָּךְ, וּשְׁמַרְתִּיךָ בְּכֹל אֲשֶׁר־תֵּלֵךְ', vref:'בראשית כ"ח, ט"ו',
+    stops:[
+      { name:'באר שבע', lat:31.25, lon:34.79, why:'הבריחה', text:'יעקב יוצא מבאר שבע וילך חרנה — בורח מפני עשו אחיו, לבדו, עם מקל בלבד.' },
+      { name:'בית אל', lat:31.93, lon:35.22, why:'חלום הסולם', text:'"סולם מוצב ארצה וראשו השמימה". בלילה אחד במקום הזה מקבל הבורח הבטחה: אינך לבד.' },
+      { name:'חרן', x:655, y:52, why:'עשרים שנה בנכר', text:'בבית לבן: שבע שנים ברחל, רמאות הלילה, שבע נוספות — ואחד עשר בנים. הגלות הראשונה של יעקב.' },
+      { name:'פנואל', lat:32.20, lon:35.62, why:'המאבק', text:'במעבר יבוק נאבק איש עמו עד עלות השחר. "לא יעקב ייאמר עוד שמך — כי אם ישראל".' },
+      { name:'שכם', lat:32.21, lon:35.28, why:'ויבוא שלם', text:'קונה חלקת שדה — הקניין השני של המשפחה בארץ. וכאן גם מעשה דינה.' },
+      { name:'אפרת', lat:31.72, lon:35.20, why:'קבורת רחל', text:'בדרך אפרתה מתה רחל בלדתה את בנימין. "היא מצבת קבורת רחל עד היום".' },
+      { name:'חברון', lat:31.53, lon:35.10, why:'אל יצחק אביו', text:'הבן שיצא במקל אחד חוזר אל בית אביו — שני מחנות, שנים עשר בנים.' },
+      { name:'מצרים', x:118, y:806, why:'הירידה', text:'בן 130, אל יוסף: "אנוכי ארד עמך מצרימה — ואנוכי אעלך גם עלה". ראשית גלות מצרים.' },
+    ],
+  },
+  {
+    id:'moshe', title:'מסע משה', era:'יציאת מצרים והמדבר',
+    verse:'וַיּוֹצִאֲךָ בְּפָנָיו בְּכֹחוֹ הַגָּדֹל מִמִּצְרָיִם', vref:'דברים ד\', ל"ז',
+    stops:[
+      { name:'גושן', x:176, y:782, why:'תיבה על היאור', text:'נולד בצל גזירת "כל הבן הילוד". בת פרעה משתה אותו מן המים — "כי מן המים משיתיהו".' },
+      { name:'מדין וחורב', x:300, y:1200, why:'הסנה הבוער', text:'רועה צאן במדבר רואה סנה בוער איננו אוכל — ונשלח: "ועתה לכה ואשלחך אל פרעה".' },
+      { name:'מצרים', x:140, y:830, why:'עשר המכות', text:'"שלח את עמי". עשר מכות — ובחצות ליל ט"ו בניסן יוצאים שש מאות אלף ביד רמה.' },
+      { name:'ים סוף', x:375, y:1160, why:'קריעת הים', text:'"ויבקעו המים" — ישראל ביבשה, מצרים בים. על השפה הזאת שרו את שירת הים.' },
+      { name:'הר סיני', x:450, y:1195, why:'מתן תורה', text:'קולות וברקים וקול שופר. עשרת הדיברות, הלוחות — וגם שברם. הברית שממנה הכול.' },
+      { name:'קדש ברנע', lat:30.69, lon:34.64, why:'חטא המרגלים', text:'מכאן נשלחו שנים עשר, ורק שניים אמרו "עלה נעלה". ליל הבכייה קבע ארבעים שנות מדבר.' },
+      { name:'הר נבו', lat:31.77, lon:35.73, why:'ולא תעבור שמה', text:'ממול יריחו רואה משה את כל הארץ שאליה הוליך ארבעים שנה — ואינו נכנס. "ולא קם נביא עוד".' },
+    ],
+  },
+];
+CHAPTERS.forEach(c => c.stops = c.stops.map(P));
+
+// ===== בניית ה-DOM של הסיפור =====
+const story = document.getElementById('story');
+const frag = [];
+CHAPTERS.forEach((c, ci) => {
+  frag.push(`<section class="era" data-era="${ci}">
+    <span class="vref">${c.era} · ${c.vref}</span>
+    <p class="verse">„${c.verse}”</p>
+    <h2>${c.title} · ${c.stops.length} תחנות</h2>
+  </section>`);
+  c.stops.forEach((s, si) => {
+    frag.push(`<section class="stop" data-ch="${ci}" data-stop="${si}">
+      <div class="stop-card">
+        <span class="stop-num">${si + 1}</span><h3>${s.name}</h3>
+        <span class="why">${s.why}</span>
+        <p>${s.text}</p>
+      </div>
+    </section>`);
+  });
+});
+frag.push(`<section class="outro">
+  <div class="box">זהו <b>אב־טיפוס</b> של קונספט "אטלס הדורות" — הארץ כבמה וסיפור נגלל.<br/>
+  בגרסה מלאה: כל 30+ המסעות, סמני תקופה, וכניסה מכל כרטיס דמות.<br/><br/>
+  <b>מה דעתך?</b> זה הכיוון?</div>
+  <a class="btn" href="/">→ חזרה לציר הזמן</a>
+</section>`);
+story.insertAdjacentHTML('beforeend', frag.join(''));
+
+// ===== שכבת ה-SVG: נתיבים וסמנים =====
+const overlay = document.getElementById('overlay');
+const smoothPath = (pts) => {
+  if (pts.length < 2) return '';
+  let d = `M ${pts[0].X} ${pts[0].Y}`;
+  for (let i = 1; i < pts.length; i++) {
+    const p0 = pts[i - 1], p1 = pts[i];
+    const mx = (p0.X + p1.X) / 2, my = (p0.Y + p1.Y) / 2;
+    d += ` Q ${p0.X + (mx - p0.X) * .4} ${p0.Y + (my - p0.Y) * 1.2} ${mx} ${my} T ${p1.X} ${p1.Y}`;
+  }
+  return d;
+};
+const chapterEls = CHAPTERS.map((c, ci) => {
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.setAttribute('class', 'chapter-hidden');
+  g.innerHTML = `<path class="jpath ghost" d="${smoothPath(c.stops)}"/><path class="jpath main" d="${smoothPath(c.stops)}"/>` +
+    c.stops.map((s, si) => `<g class="mk" data-mk="${ci}-${si}" transform="translate(${s.X} ${s.Y})">
+      <circle r="9"/><text>${si + 1}</text><text class="mklabel" x="17">${s.name}</text></g>`).join('');
+  overlay.appendChild(g);
+  const main = g.querySelector('.jpath.main');
+  const len = main.getTotalLength();
+  main.style.setProperty('--len', len);
+  main.dataset.len = len;
+  return g;
+});
+
+// ===== מצלמה =====
+const world = document.getElementById('world');
+const isMobile = () => matchMedia('(max-width: 680px)').matches;
+const camera = (X, Y, s) => {
+  const vw = innerWidth, vh = innerHeight;
+  const cx = isMobile() ? vw / 2 : (vw - 400) / 2;   // מרכז האזור הפנוי (הסיפור מימין)
+  const cy = isMobile() ? vh * .38 : vh * .5;
+  world.style.transform = `translate(${cx - s * X}px, ${cy - s * Y}px) scale(${s})`;
+};
+const overview = () => {
+  const vw = innerWidth, vh = innerHeight;
+  const free = isMobile() ? vw : vw - 400;
+  const s = Math.min(free / 820, vh / 1231) * .95;
+  camera(410, 615, Math.max(s, .3));
+};
+const STOP_ZOOM = () => (isMobile() ? 1.15 : 1.5);
+
+// ===== התקדמות: תצפיתן גלילה =====
+const hud = document.getElementById('hud'), hudCh = document.getElementById('hud-ch'), hudCnt = document.getElementById('hud-cnt');
+const setChapterVisible = (ci) => chapterEls.forEach((g, i) => g.classList.toggle('chapter-hidden', i > ci));
+const pathProgress = (ci, si) => {
+  const main = chapterEls[ci].querySelector('.jpath.main');
+  const len = +main.dataset.len || 0;
+  const frac = si / Math.max(1, CHAPTERS[ci].stops.length - 1);
+  main.style.strokeDashoffset = len * (1 - frac);
+  // פרקים קודמים — מלאים; סמנים
+  chapterEls.forEach((g, gi) => { if (gi < ci) { const m = g.querySelector('.jpath.main'); m.style.strokeDashoffset = 0; } });
+  document.querySelectorAll('.mk').forEach(mk => {
+    const [mc, ms] = mk.dataset.mk.split('-').map(Number);
+    mk.classList.toggle('on', mc === ci && ms === si);
+    mk.classList.toggle('seen', mc < ci || (mc === ci && ms <= si));
+  });
+};
+const activate = (el) => {
+  if (el.classList.contains('era')) {
+    const ci = +el.dataset.era;
+    setChapterVisible(ci); overview();
+    hud.classList.remove('dim');
+    hudCh.textContent = CHAPTERS[ci].title; hudCnt.textContent = CHAPTERS[ci].era;
+    if (ci > 0) pathProgress(ci - 1, CHAPTERS[ci - 1].stops.length - 1);
+    return;
+  }
+  if (el.classList.contains('stop')) {
+    const ci = +el.dataset.ch, si = +el.dataset.stop;
+    const s = CHAPTERS[ci].stops[si];
+    setChapterVisible(ci);
+    camera(s.X, s.Y, STOP_ZOOM());
+    pathProgress(ci, si);
+    hud.classList.remove('dim');
+    hudCh.textContent = CHAPTERS[ci].title;
+    hudCnt.textContent = `תחנה ${si + 1} / ${CHAPTERS[ci].stops.length}`;
+    document.querySelectorAll('.stop.active').forEach(x => x.classList.remove('active'));
+    el.classList.add('active');
+    return;
+  }
+  // hero / outro
+  hud.classList.add('dim'); overview(); setChapterVisible(el.classList.contains('outro') ? CHAPTERS.length - 1 : 0);
+};
+// בחירת המקטע הפעיל לפי מרכז המסך — מאזין scroll ישיר (אמין בכל דפדפן)
+const sections = [...document.querySelectorAll('.hero, .era, .stop, .outro')];
+let activeEl = null;
+const pick = () => {
+  const mid = innerHeight * .5;
+  let cur = sections[0];
+  for (const s of sections) {
+    if (s.getBoundingClientRect().top <= mid) cur = s; else break;
+  }
+  if (cur !== activeEl) { activeEl = cur; activate(cur); }
+};
+addEventListener('scroll', pick, { passive: true });
+addEventListener('resize', () => { if (activeEl) activate(activeEl); else overview(); });
+// גיבוי לסביבות שבהן אירועי scroll מדוללים/קפואים (webview מוטמע וכד')
+setInterval(pick, 300);
+overview();
+pick();
+</script>
+</body>
+</html>
