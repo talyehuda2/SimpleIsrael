@@ -14,7 +14,7 @@
   --wine:#9c2b50;
   --leader:#9c2b50; --judge:#bd7038; --united:#6a3ca0; --judah:#245c93; --israel:#4f7a33;
   --prophet:#b3781a; --book:#157a70; --event:#b0392c; --world:#8a7250;
-  --bar:56px; --detail-w:320px; --story-w:390px;
+  --bar:56px; --detail-w:320px; --story-w:340px; --era-w:126px; --erabar:0px;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo','Segoe UI',Arial,sans-serif}
@@ -25,10 +25,15 @@ button{font-family:inherit}
   padding:0 14px;background:var(--panel);border-bottom:2px solid var(--gold);box-shadow:0 2px 10px rgb(60 40 0 / .12)}
 #bar h1{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:18px;color:var(--navy);margin:0;white-space:nowrap}
 #bar h1 span{font-size:11px;color:var(--gold-ink);font-weight:700;font-family:'Heebo',sans-serif}
-#eras{flex:1;min-width:0;display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+#bar .spacer{flex:1}
+/* סרגל התקופות — טור אנכי בקצה ימין, צמוד לרשימת השמות */
+#eras{position:fixed;top:var(--bar);bottom:0;inset-inline-start:0;width:var(--era-w);z-index:20;
+  display:flex;flex-direction:column;gap:5px;padding:12px 9px;overflow-y:auto;scrollbar-width:none;
+  background:var(--panel);border-inline-end:1px solid var(--line)}
 #eras::-webkit-scrollbar{display:none}
-.echip{flex:none;font-size:12px;font-weight:600;color:var(--ink);background:var(--bg);border:1px solid var(--line);
-  border-radius:14px;padding:4px 11px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.echip{flex:none;font-size:11.5px;font-weight:600;color:var(--ink);background:var(--bg);border:1px solid var(--line);
+  border-radius:11px;padding:6px 8px;cursor:pointer;white-space:normal;text-align:center;line-height:1.35;
+  transition:background .15s,color .15s,border-color .15s}
 .echip:hover{border-color:var(--gold)}
 .echip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .tool{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;
@@ -59,7 +64,8 @@ button{font-family:inherit}
   color:var(--navy);border-radius:10px;padding:7px 4px;cursor:pointer;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #detail .nav button:hover:not(:disabled){border-color:var(--gold)} #detail .nav button:disabled{opacity:.35;cursor:default}
 
-#mapPane{position:fixed;top:var(--bar);bottom:0;left:var(--detail-w);width:calc(100% - var(--story-w) - var(--detail-w));
+#mapPane{position:fixed;top:var(--bar);bottom:0;left:var(--detail-w);
+  width:calc(100% - var(--story-w) - var(--detail-w) - var(--era-w));
   display:flex;flex-direction:column;background:linear-gradient(180deg,#f6edd8,var(--bg));border-inline-start:1px solid var(--line)}
 #mapHead{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px 14px;background:var(--panel);border-bottom:2px solid var(--gold)}
 #mapTitle{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:16px;color:var(--navy);margin:0;flex:1;min-width:0;
@@ -103,7 +109,9 @@ button{font-family:inherit}
 #noMap span{background:var(--panel);border:1px dashed var(--gold);border-radius:12px;padding:10px 18px;font-size:13px;color:var(--muted)}
 
 /* ===================== טור הסיפור ===================== */
-#story{position:relative;z-index:10;width:var(--story-w);margin-inline-end:auto;padding:calc(var(--bar) + 14px) 18px 62vh}
+/* RTL: inline-start = ימין — משאירים מקום לסרגל התקופות, וה-auto בצד השני דוחף ימינה */
+#story{position:relative;z-index:10;width:var(--story-w);
+  margin-inline-start:var(--era-w);margin-inline-end:auto;padding:calc(var(--bar) + 14px) 16px 62vh}
 #story::before{content:'';position:absolute;top:0;bottom:0;inset-inline-end:12px;width:2px;background:var(--gold);opacity:.4}
 .ehead{position:sticky;top:calc(var(--bar) + 8px);z-index:12;margin:22px 0 10px;width:fit-content;max-width:100%;
   background:var(--navy);color:#f4ecd8;font-size:13.5px;font-weight:800;border-radius:12px;padding:6px 14px;
@@ -181,17 +189,21 @@ button{font-family:inherit}
 
 /* ===================== מובייל ===================== */
 @media (max-width:980px){
-  :root{--story-w:100%}
+  :root{--story-w:100%;--era-w:0px;--erabar:44px;--maph:42vh}
   #detail{display:none}
-  #mapPane{left:0;width:100%;top:var(--bar);height:42vh;bottom:auto;border-inline-start:none;border-bottom:2px solid var(--gold)}
+  /* התקופות חוזרות לרצועה אופקית מתחת לסרגל */
+  #eras{top:var(--bar);bottom:auto;inset-inline-start:0;width:100%;height:var(--erabar);
+    flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:6px 10px;gap:6px;
+    border-inline-end:none;border-bottom:1px solid var(--line)}
+  .echip{white-space:nowrap;padding:4px 11px;border-radius:14px}
+  #mapPane{left:0;width:100%;top:calc(var(--bar) + var(--erabar));height:var(--maph);bottom:auto;
+    border-inline-start:none;border-bottom:2px solid var(--gold)}
   #legend{display:none}
-  #story{padding-top:calc(var(--bar) + 42vh + 12px);padding-bottom:34vh}
-  .ehead{top:calc(var(--bar) + 42vh + 6px)}
+  #story{margin-inline-start:0;padding-top:calc(var(--bar) + var(--erabar) + var(--maph) + 12px);padding-bottom:34vh}
+  .ehead{top:calc(var(--bar) + var(--erabar) + var(--maph) + 6px)}
   .card.on .more{display:block}
   #bar h1 span{display:none}
-  #eras{order:3;flex-basis:100%;flex:none}
-  #bar{height:auto;flex-wrap:wrap;padding:7px 10px;gap:7px}
-  :root{--bar:92px}
+  #bar{padding:7px 10px;gap:7px}
   #pop{width:185px}
   .tool span.tl{display:none}
 }
@@ -201,7 +213,7 @@ button{font-family:inherit}
 
 <header id="bar">
   <h1>🗺️ אטלס הדורות <span>אב־טיפוס</span></h1>
-  <nav id="eras" aria-label="תקופות"></nav>
+  <span class="spacer"></span>
   <div id="tools">
     <button class="tool" id="tLayers">🎚️ <span class="tl">שכבות</span></button>
     <button class="tool" id="tTree">👑 <span class="tl">אילן</span></button>
@@ -211,6 +223,7 @@ button{font-family:inherit}
   </div>
 </header>
 
+<nav id="eras" aria-label="תקופות"></nav>
 <aside id="detail" aria-label="פרטי הפריט"></aside>
 
 <div id="mapPane">
@@ -268,10 +281,10 @@ async function build() {
   }));
   syncBar();
   renderStory();
-  fitMap();
+  balanceColumns(); fitMap();
   addEventListener('scroll', pick, { passive: true });
   setInterval(pick, 300);
-  addEventListener('resize', () => { syncBar(); fitMap(); alignFirst(); paint(); });
+  addEventListener('resize', () => { syncBar(); balanceColumns(); fitMap(); paint(); });
   addEventListener('keydown', (e) => {
     if (e.key === 'Escape') document.querySelectorAll('.ov').forEach(o => o.remove());
   });
@@ -298,7 +311,6 @@ function renderStory() {
 }
 const refreshVisible = () => {
   visible = [...document.querySelectorAll('.card:not(.hidden)')];
-  alignFirst();
   pick(true);
 };
 const focusLine = () => innerHeight * (matchMedia('(max-width:980px)').matches ? .74 : .45);
@@ -306,16 +318,6 @@ const focusLine = () => innerHeight * (matchMedia('(max-width:980px)').matches ?
 function syncBar() {
   const h = Math.round($('#bar').getBoundingClientRect().height);
   document.documentElement.style.setProperty('--bar', h + 'px');
-}
-// מיישר את הכרטיס הראשון לקו הבחירה בגלילה 0 — אחרת כרטיסים בראש הדף
-// אינם ניתנים למרכוז (הגלילה נחסמת ב-0) ולעולם אינם נבחרים.
-function alignFirst() {
-  const first = visible[0]; if (!first) return;
-  const st = $('#story');
-  st.style.paddingTop = '0px';
-  const b = first.getBoundingClientRect();
-  const pad = focusLine() - ((b.top + scrollY) + b.height / 2);
-  st.style.paddingTop = Math.max(0, pad) + 'px';
 }
 // גלילה חלקה משלנו — scrollTo({behavior:'smooth'}) אינו אמין בכל הסביבות.
 // רשת ביטחון: אם rAF אינו רץ (למשל בלשונית שאינה מקומפזת), קופצים ליעד.
@@ -337,15 +339,44 @@ function scrollToY(target) {
   animT = requestAnimationFrame(tick);
   safeT = setTimeout(() => { if (!animDone) { cancelAnimationFrame(animT); scrollTo(0, to); animDone = true; pick(); } }, dur + 140);
 }
+// כרטיסים בקצוות הדף אינם יכולים להגיע לקו הבחירה (הגלילה נחסמת) — במקרה
+// כזה "נועצים" את הבחירה עליהם, והנעיצה משתחררת ברגע שהמשתמש גולל בעצמו.
+let pinned = null;
+['wheel', 'touchstart', 'keydown'].forEach((ev) =>
+  addEventListener(ev, () => { pinned = null; }, { passive: true }));
+
 function centerCard(el) {
   const b = el.getBoundingClientRect();
-  scrollToY(scrollY + b.top + b.height / 2 - focusLine());
+  const want = scrollY + b.top + b.height / 2 - focusLine();
+  const max = document.documentElement.scrollHeight - innerHeight;
+  const to = Math.max(0, Math.min(max, want));
+  pinned = Math.abs(to - want) > 2 ? +el.dataset.i : null;
+  scrollToY(to);
+  if (pinned !== null) pick(true);
 }
 
 // ==================== מפה ====================
+// המפה ריבועית, ולכן בחלון רחב-ונמוך נותרים שוליים ריקים בצדדים. מרחיבים את
+// עמודת הפירוט כדי לצמצם את חלון המפה לריבוע — כך המפה ממלאת את מלוא רוחבו.
+function balanceColumns() {
+  const root = document.documentElement;
+  if (matchMedia('(max-width:980px)').matches) {
+    // מובייל: גובה חלון המפה = רוחב המסך (ריבוע) — כך המפה ממלאת את מלוא הרוחב
+    root.style.removeProperty('--detail-w');
+    const headH = $('#mapHead').getBoundingClientRect().height;
+    const boxH = Math.min(innerWidth, innerHeight * .5);
+    root.style.setProperty('--maph', Math.round(boxH + headH) + 'px');
+    return;
+  }
+  root.style.removeProperty('--detail-w'); root.style.removeProperty('--maph');
+  const storyW = $('#story').getBoundingClientRect().width;
+  const boxH = $('#mapBox').getBoundingClientRect().height;
+  const w = Math.max(300, Math.min(620, innerWidth - storyW - boxH));
+  root.style.setProperty('--detail-w', Math.round(w) + 'px');
+}
 function fitMap() {
   const box = $('#mapBox').getBoundingClientRect();
-  const s = Math.min(box.width / IMG, box.height / IMG) * .98;
+  const s = Math.min(box.width / IMG, box.height / IMG) * .995;
   const f = $('#fit');
   f.style.width = IMG * s + 'px'; f.style.height = IMG * s + 'px'; f.dataset.s = s;
 }
@@ -462,6 +493,8 @@ function pick(force) {
     const d = Math.abs((b.top+b.bottom)/2 - mid);
     if (d < best) { best = d; cur = +el.dataset.i; }
   });
+  if (pinned !== null) cur = pinned;            // בחירה נעוצה גוברת
+  else if (scrollY <= 2) cur = +visible[0].dataset.i;  // בראש הדף — הפריט הראשון
   if (cur === active && !force) return;
   active = cur;
   document.querySelectorAll('.card').forEach(el => el.classList.toggle('on', +el.dataset.i === active));
