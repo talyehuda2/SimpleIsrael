@@ -1,19 +1,26 @@
 // מחולל נתונים לאב-הטיפוס "אטלס הדורות" (public/proto-atlas.html).
-// שולף דמויות + מסעות מנתוני האתר וכותב public/proto-data.json.
+// מייצא את כל פריטי האתר מקובצים לפי תקופה, יחד עם אילן היוחסין ותובנות
+// מחושבות מראש — כדי שהאב-טיפוס יהיה עצמאי (vanilla JS, בלי React).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { genealogy } from '../src/data/genealogy.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f) => JSON.parse(readFileSync(join(ROOT, 'src', 'data', f), 'utf8'));
 
 const maps = read('maps.json');
 const leaders = read('leaders.json');
+const judges = read('judges.json');
 const kings = read('kings.json');
+const prophets = read('prophets.json');
+const books = read('books.json');
+const world = read('world.json');
 const events = read('events.json');
+const periods = read('periods.json');
 
-// ===== היטל למפה המרובעת (israel_map_square.png, 1254x1254) =====
-// הציור החדש אינו עקבי-אפינית (הצפון "הוזז" אמנותית), לכן: affine בסיסי
+// ===== היטל למפה המרובעת (israel_map_square2.png, 1254x1254) =====
+// הציור אינו עקבי-אפינית (הצפון "הוזז" אמנותית), לכן: affine בסיסי
 // מריבועים-פחותים + תיקון שאריות IDW שמדויק בכל 11 עוגני הערים שזוהו בתמונה.
 const ANCHORS = [
   // [lon, lat, pxX, pxY] — נקודות הערים שזוהו על israel_map_square2.png
@@ -51,59 +58,122 @@ const proj2 = (lon, lat) => {
 };
 // נקודות שהוצבו ידנית בפיקסלים של המפה הישנה: היפוך ההיטל הישן -> lat/lon -> היטל חדש
 const DET = 226.10 * -311.53 - 21.00 * -38.05;
-const oldToLatLon = (X, Y) => {
-  const u = X + 8226.5, v = Y - 11836.5;
-  return { lon: (-311.53 * u + -21.00 * v) / DET, lat: (38.05 * u + 226.10 * v) / DET };
-};
-const projX = null, projY = null; // הוחלפו ב-proj2 (שומר שלא ישתמשו בטעות)
+const oldToLatLon = (X, Y) => ({
+  lon: (-311.53 * (X + 8226.5) + -21.00 * (Y - 11836.5)) / DET,
+  lat: (38.05 * (X + 8226.5) + 226.10 * (Y - 11836.5)) / DET,
+});
 
-const pool = [...leaders, ...kings.united, ...kings.judah, ...kings.israel];
-const fig = (id) => pool.find((x) => x.id === id);
-const ev = (id) => events.find((x) => x.id === id);
-
-const KIND = { avraham:'מנהיג', sarah:'מנהיגה', yitzchak:'מנהיג', yaakov:'מנהיג', yosef:'מנהיג',
-  moshe:'מנהיג', aharon:'מנהיג', miriam:'מנהיגה', 'yehoshua-l':'מנהיג',
-  shaul:'מלך — הממלכה המאוחדת', david:'מלך — הממלכה המאוחדת', shlomo:'מלך — הממלכה המאוחדת' };
-
-const figCard = (id) => {
-  const f = fig(id);
+const mapOf = (id) => {
   const m = maps[id];
+  if (!m) return null;
   return {
-    id, name: f.name, kind: KIND[id] || 'דמות',
-    desc: f.description || '', verse: f.verse || null, vref: f.verseRef || null, src: f.source || null,
-    sub: `${f.start}–${f.end}` + (f.lifeText ? ` · ${f.lifeText}` : f.reignText ? ` · ${f.reignText}` : ''),
-    map: m ? {
-      title: m.title,
-      points: (m.points || []).sort((a, b) => a.order - b.order).map((p) => {
-        const ll = p.x != null ? oldToLatLon(p.x, p.y) : { lon: p.lon, lat: p.lat };
-        const q = proj2(ll.lon, ll.lat);
-        return { n: p.order, name: p.name, label: p.label, desc: p.desc, X: +q.X.toFixed(1), Y: +q.Y.toFixed(1) };
-      }),
-    } : null,
+    title: m.title,
+    points: (m.points || []).slice().sort((a, b) => a.order - b.order).map((p) => {
+      const ll = p.x != null ? oldToLatLon(p.x, p.y) : { lon: p.lon, lat: p.lat };
+      const q = proj2(ll.lon, ll.lat);
+      return { n: p.order, name: p.name, label: p.label, desc: p.desc, X: +q.X.toFixed(1), Y: +q.Y.toFixed(1) };
+    }),
   };
 };
-const evCard = (id) => {
-  const e = ev(id);
-  return { id, name: e.name, kind: 'אירוע', sub: `אירוע · ${e.year}`,
-    desc: e.description || '', verse: e.verse || null, vref: e.verseRef || null, src: e.source || null, map: null };
+
+// ===== איסוף כל הפריטים =====
+const KINDS = {
+  leader: { label: 'מנהיג', layer: 'leaders' },
+  judge: { label: 'שופט', layer: 'judges' },
+  united: { label: 'מלך — הממלכה המאוחדת', layer: 'kings' },
+  judah: { label: 'מלך יהודה', layer: 'kings' },
+  israel: { label: 'מלך ישראל', layer: 'kings' },
+  prophet: { label: 'נביא', layer: 'prophets' },
+  book: { label: 'ספר תנ״ך', layer: 'books' },
+  event: { label: 'אירוע', layer: 'events' },
+  world: { label: 'רקע עולמי', layer: 'world' },
 };
 
-const data = {
-  eras: [
-    { title: 'תקופת האבות', verse: '„לך לך מארצך”',
-      cards: ['avraham', 'sarah', 'yitzchak', 'yaakov'].map(figCard).concat([evCard('akeida')], ['yosef'].map(figCard)) },
-    { title: 'יציאת מצרים והמדבר', verse: '„בכוחו הגדול ממצרים”',
-      cards: ['moshe', 'aharon', 'miriam', 'yehoshua-l'].map(figCard) },
-    { title: 'ראשית המלוכה', verse: '„שום תשים עליך מלך”',
-      cards: ['shaul', 'david', 'shlomo'].map(figCard) },
-  ],
+const item = (x, kind) => {
+  const meta = [];
+  if (x.reignText) meta.push('👑 ' + x.reignText);
+  if (x.lifeText) meta.push('⏳ ' + x.lifeText);
+  if (x.tenureText) meta.push('⚖️ ' + x.tenureText);
+  if (x.kings) meta.push('🤝 בימי ' + x.kings);
+  if (x.empire) meta.push('🌍 ' + x.empire);
+  return {
+    id: x.id, kind, kindLabel: KINDS[kind].label, layer: KINDS[kind].layer,
+    name: x.name, start: x.start, end: x.end,
+    approx: !!x.approxDates,
+    judgment: x.judgment || null,
+    meta,
+    desc: x.description || '',
+    verse: x.verse || null, vref: x.verseRef || null, src: x.source || null,
+    map: mapOf(x.id),
+  };
 };
-// העקידה אחרי שרה (כרונולוגית 2085 — מות שרה בשנת העקידה)
-const avot = data.eras[0].cards;
-const ak = avot.splice(avot.findIndex((c) => c.id === 'akeida'), 1)[0];
-avot.splice(2, 0, ak);
 
+const all = [
+  ...leaders.map((x) => item(x, 'leader')),
+  ...judges.map((x) => item(x, 'judge')),
+  ...kings.united.map((x) => item(x, 'united')),
+  ...kings.judah.map((x) => item(x, 'judah')),
+  ...kings.israel.map((x) => item(x, 'israel')),
+  ...prophets.map((x) => item(x, 'prophet')),
+  ...books.map((x) => item(x, 'book')),
+  ...world.map((x) => item(x, 'world')),
+  ...events.map((x) => item({ ...x, start: x.year, end: x.year }, 'event')),
+];
+
+// ===== קיבוץ לפי תקופה (לפי שנת ההתחלה) =====
+const sortedPeriods = [...periods].sort((a, b) => a.start - b.start);
+const periodOf = (it) =>
+  sortedPeriods.find((p) => it.start >= p.start && it.start < p.end)
+  || sortedPeriods.find((p) => it.start >= p.start && it.start <= p.end)
+  || sortedPeriods[sortedPeriods.length - 1];
+
+// פסוק פותח לכל תקופה — מן הפריט הראשון בה שיש לו פסוק
+const eras = sortedPeriods.map((p) => {
+  const list = all.filter((it) => periodOf(it).id === p.id)
+    .sort((a, b) => a.start - b.start || a.name.localeCompare(b.name, 'he'));
+  return { id: p.id, title: p.name, start: p.start, end: p.end, items: list };
+}).filter((e) => e.items.length);
+
+// ===== תובנות (אותם חישובים כמו רכיב Insights) =====
+const realm = (arr) => ({
+  total: arr.length,
+  g: arr.filter((k) => k.judgment === 'good').length,
+  m: arr.filter((k) => k.judgment === 'mixed').length,
+  b: arr.filter((k) => k.judgment === 'bad').length,
+});
+const avg = (arr) => Math.round((arr.reduce((s, k) => s + (k.end - k.start), 0) / arr.length) * 10) / 10;
+const withRealm = [
+  ...kings.judah.map((k) => ({ ...k, realm: 'יהודה' })),
+  ...kings.israel.map((k) => ({ ...k, realm: 'ישראל' })),
+  ...kings.united.map((k) => ({ ...k, realm: 'המאוחדת' })),
+].map((k) => ({ id: k.id, name: k.name, realm: k.realm, dur: k.end - k.start }));
+
+const density = [];
+let peak = { n: 0, year: 0 };
+for (let y = 2820; y <= 3460; y += 20) {
+  const n = prophets.filter((p) => p.start <= y && p.end >= y).length;
+  density.push({ y, n });
+  if (n > peak.n) peak = { n, year: y };
+}
+
+const insights = {
+  judah: realm(kings.judah), israel: realm(kings.israel),
+  avgJudah: avg(kings.judah), avgIsrael: avg(kings.israel),
+  longest: [...withRealm].sort((a, b) => b.dur - a.dur).slice(0, 6),
+  density, maxDensity: Math.max(...density.map((d) => d.n)), peak,
+  counts: {
+    מלכים: kings.judah.length + kings.israel.length + kings.united.length,
+    נביאים: prophets.length, שופטים: judges.length,
+    'אבות ומנהיגים': leaders.length, אירועים: events.length,
+    'ספרי תנ״ך': books.length, 'רקע עולמי': world.length,
+  },
+  longestBooks: books.map((b) => ({ id: b.id, name: b.name, span: b.end - b.start }))
+    .sort((a, b) => b.span - a.span).slice(0, 6),
+  longestProphets: prophets.map((p) => ({ id: p.id, name: p.name, span: p.end - p.start }))
+    .sort((a, b) => b.span - a.span).slice(0, 6),
+};
+
+const data = { eras, genealogy, insights };
 writeFileSync(join(ROOT, 'public', 'proto-data.json'), JSON.stringify(data), 'utf8');
-const n = data.eras.reduce((s, e) => s + e.cards.length, 0);
-console.log('proto-data.json:', data.eras.length, 'תקופות,', n, 'כרטיסים,',
-  data.eras.flatMap(e => e.cards).filter(c => c.map).length, 'עם מפה');
+console.log('proto-data.json:', eras.length, 'תקופות,', all.length, 'פריטים,',
+  all.filter((x) => x.map).length, 'עם מפה,', genealogy.length, 'דורות באילן');
