@@ -62,8 +62,11 @@ button{font-family:inherit}
 #detail .src{font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:9px;margin-bottom:12px}
 #detail .src b{color:var(--navy)}
 #detail .nav{display:flex;gap:6px}
-#detail .nav button{flex:1;font-size:11.5px;font-weight:700;border:1px solid var(--line);background:var(--bg);
-  color:var(--navy);border-radius:10px;padding:7px 4px;cursor:pointer;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#detail .nav button{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
+  font-size:11.5px;font-weight:700;border:1px solid var(--line);background:var(--bg);
+  color:var(--navy);border-radius:10px;padding:7px 6px;cursor:pointer;min-width:0}
+#detail .nav button span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#detail .nav button svg{flex:none;color:var(--gold-ink)}
 #detail .nav button:hover:not(:disabled){border-color:var(--gold)} #detail .nav button:disabled{opacity:.35;cursor:default}
 
 #mapPane{position:fixed;top:var(--bar);bottom:0;left:0;width:var(--map-w);
@@ -127,8 +130,13 @@ button{font-family:inherit}
   margin:0 0 10px;cursor:pointer;opacity:.55;transition:opacity .25s,border-color .25s,box-shadow .25s}
 .card::after{content:'';position:absolute;top:17px;inset-inline-end:-10.5px;width:8px;height:8px;border-radius:50%;
   background:var(--gold);border:2px solid var(--bg);transition:transform .25s,background .25s}
-.card h3{font-family:'Frank Ruhl Libre',serif;font-size:17px;font-weight:900;color:var(--navy);margin:0;display:flex;align-items:center;gap:7px}
-.card h3 i{width:9px;height:9px;border-radius:3px;flex:none}
+.card{display:flex;align-items:flex-start;gap:10px}
+.cbody{flex:1;min-width:0}
+/* אייקון הסוג — בצד ימין של הכרטיס (RTL: הילד הראשון) */
+.kicon{flex:none;display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;
+  font-size:15px;line-height:1;background:color-mix(in srgb, var(--kc) 15%, transparent);
+  border:1px solid color-mix(in srgb, var(--kc) 45%, transparent);color:var(--kc)}
+.card h3{font-family:'Frank Ruhl Libre',serif;font-size:17px;font-weight:900;color:var(--navy);margin:0}
 .card .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
 .card.on{opacity:1;border-color:var(--gold);box-shadow:0 7px 22px rgb(60 40 0/.16)}
 .card.on::after{background:var(--wine);transform:scale(1.5)}
@@ -285,7 +293,14 @@ const LAYERS = [
 ];
 const KIND_COLOR = { leader:'var(--leader)', judge:'var(--judge)', united:'var(--united)', judah:'var(--judah)',
   israel:'var(--israel)', prophet:'var(--prophet)', book:'var(--book)', event:'var(--event)', world:'var(--world)' };
+const KIND_ICON = { leader:'🏛️', judge:'⚖️', united:'👑', judah:'👑', israel:'👑',
+  prophet:'📜', book:'📖', event:'◆', world:'🌍' };
 const JUD = { good:"עשה הישר בעיני ה'", bad:"עשה הרע בעיני ה'", mixed:'מעורב' };
+// חיצים כ-SVG (חסינים לשיקוף bidi): קודקוד מימין = מצביע ימינה, ולהפך
+const chev = (d) => `<svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path d="${d}"
+  fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CHEV_R = chev('M9 4 L17 12 L9 20');
+const CHEV_L = chev('M15 4 L7 12 L15 20');
 
 let DATA = null, items = [], visible = [], active = -1, step = -1, playT = null;
 // מרכז אזור התחנות בכל המסעות — נקודת העיגון הקבועה של חיתוך המפה, כך שגם
@@ -329,10 +344,13 @@ function renderStory() {
     html.push(`<div class="ehead" id="eh-${ei}">✦ <b>${era.title}</b> · ${era.start}–${era.end}</div>`);
     era.items.forEach((it) => {
       const idx = items.indexOf(it);
-      html.push(`<article class="card${on[it.layer] ? '' : ' hidden'}" data-i="${idx}" data-layer="${it.layer}">
-        <h3><i style="background:${KIND_COLOR[it.kind]}"></i>${it.name}</h3>
-        <div class="sub">${it.kindLabel} · ${it.start}–${it.end}${it.approx ? ' ≈' : ''}</div>
-        <div class="more">${it.verse ? `<i>„${it.verse}”</i><br/>` : ''}${it.desc.slice(0,190)}${it.desc.length>190?'…':''}</div>
+      html.push(`<article class="card${on[it.layer] ? '' : ' hidden'}" data-i="${idx}" data-era="${ei}" data-layer="${it.layer}">
+        <span class="kicon" style="--kc:${KIND_COLOR[it.kind]}" title="${it.kindLabel}">${KIND_ICON[it.kind]}</span>
+        <div class="cbody">
+          <h3>${it.name}</h3>
+          <div class="sub">${it.kindLabel} · ${it.start}–${it.end}${it.approx ? ' ≈' : ''}</div>
+          <div class="more">${it.verse ? `<i>„${it.verse}”</i><br/>` : ''}${it.desc.slice(0,190)}${it.desc.length>190?'…':''}</div>
+        </div>
       </article>`);
       gi++;
     });
@@ -538,9 +556,11 @@ function renderDetail(it) {
     (it.verse ? `<div class="verse"><p>„${it.verse}”</p>${it.vref?`<small>${it.vref}</small>`:''}</div>` : '') +
     (it.desc ? `<p class="desc">${it.desc}</p>` : '') +
     (it.src ? `<div class="src"><b>מקור:</b> ${it.src}</div>` : '') +
+    // חיצי SVG ולא תווי ‹ › — האחרונים ממוסכים ע"י ה-bidi ב-RTL ומתהפכים.
+    // מוקדם יותר = ימינה (הזמן זורם ימין→שמאל), מאוחר יותר = שמאלה.
     `<div class="nav">
-       <button id="dPrev" ${prev?'':'disabled'}>› ${nm(prev)||'—'}</button>
-       <button id="dNext" ${next?'':'disabled'}>${nm(next)||'—'} ‹</button>
+       <button id="dPrev" ${prev?'':'disabled'} title="מוקדם יותר">${CHEV_R}<span>${nm(prev)||'—'}</span></button>
+       <button id="dNext" ${next?'':'disabled'} title="מאוחר יותר"><span>${nm(next)||'—'}</span>${CHEV_L}</button>
      </div>`;
   d.scrollTop = 0;
   if (prev) $('#dPrev').addEventListener('click', () => centerCard(prev));
@@ -562,10 +582,9 @@ function pick(force) {
   if (cur === active && !force) return;
   active = cur;
   document.querySelectorAll('.card').forEach(el => el.classList.toggle('on', +el.dataset.i === active));
-  // הדגשת התקופה הפעילה בסרגל
+  // הדגשת התקופה הפעילה בסרגל — לפי המאפיין על הכרטיס עצמו
   const card = document.querySelector(`.card[data-i="${active}"]`);
-  let ei = 0, node = card;
-  while (node) { if (node.classList?.contains('ehead')) { ei = +node.id.split('-')[1]; break; } node = node.previousElementSibling; }
+  const ei = card ? +card.dataset.era : 0;
   $('#eras').querySelectorAll('.echip').forEach(b => b.classList.toggle('on', +b.dataset.e === ei));
   const f = $('#fit'); f.classList.add('fade');
   setTimeout(() => { render(); f.classList.remove('fade'); }, 170);
