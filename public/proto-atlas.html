@@ -260,7 +260,12 @@ body.sheet-open #dMap{display:flex}
     flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:6px 10px;gap:6px;
     border-inline-end:none;border-bottom:1px solid var(--line)}
   .echip{white-space:nowrap;padding:4px 11px;border-radius:14px}
-  #mapBody{display:block}
+  /* חלון המפה חייב למלא את מה שנותר מהמסך (ה-flex של הבסיס נשמר) */
+  #mapBody{display:flex}
+  #mapBox{flex:1;min-width:0}
+  #mapHead{padding:6px 10px;gap:5px}
+  #mapTitle{font-size:15px}
+  .mbtn{font-size:11.5px;padding:5px 10px}
   #legend{display:none}
   /* הזרם האנכי תופס את כל המסך */
   #story{margin-inline-start:0;padding-top:calc(var(--bar) + var(--erabar) + 12px);padding-bottom:18vh}
@@ -280,7 +285,7 @@ body.sheet-open #dMap{display:flex}
   <h1>🗺️ אטלס הדורות <span>אב־טיפוס</span></h1>
   <span class="spacer"></span>
   <div id="tools">
-    <button class="tool" id="tTree">👑 <span class="tl">אילן</span></button>
+    <button class="tool" id="tTree">👑 <span class="tl">בית דוד</span></button>
     <button class="tool" id="tIns">📊 <span class="tl">תובנות</span></button>
     <button class="tool" id="tShare">🔗 <span class="tl">שיתוף</span></button>
     <a class="tool primary" href="/" title="מעבר לתצוגת ציר הזמן">↔ <span class="tl">ציר הזמן</span></a>
@@ -563,9 +568,16 @@ function zoomTo(i) {
   const offX = (box.width - w) / 2, offY = (box.height - w) / 2;
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
   if (i < 0 || !it || !it.map) {
-    // סקירה: מבט קבוע וזהה לכולם, מעוגן על מרכז אזור התחנות (לא על מרכז הקנבס)
-    const ox = clamp(box.width / 2 - offX - ANCHOR.x * s, box.width - w - offX, -offX);
-    const oy = clamp(box.height / 2 - offY - ANCHOR.y * s, box.height - w - offY, -offY);
+    // סקירה: בדסקטופ מבט קבוע לכולם (מעוגן על מרכז אזור התחנות הכללי).
+    // במובייל המפה נפתחת עבור פריט מסוים ובחיתוך צר, ולכן ממסגרים את מסעו.
+    let ax = ANCHOR.x, ay = ANCHOR.y;
+    if (isNarrow() && it && it.map) {
+      const xs = it.map.points.map(p => p.X), ys = it.map.points.map(p => p.Y);
+      ax = (Math.min(...xs) + Math.max(...xs)) / 2;
+      ay = (Math.min(...ys) + Math.max(...ys)) / 2;
+    }
+    const ox = clamp(box.width / 2 - offX - ax * s, box.width - w - offX, -offX);
+    const oy = clamp(box.height / 2 - offY - ay * s, box.height - w - offY, -offY);
     z.style.transform = `translate(${ox}px, ${oy}px) scale(1)`;
     z.style.setProperty('--z', 1);
     return { Z: 1, tx: ox, ty: oy, offX, offY };
