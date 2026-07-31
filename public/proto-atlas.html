@@ -361,12 +361,27 @@ function centerCard(el) {
 // ==================== מפה ====================
 // המפה ריבועית, ולכן בחלון רחב-ונמוך נותרים שוליים ריקים בצדדים. מרחיבים את
 // עמודת הפירוט כדי לצמצם את חלון המפה לריבוע — כך המפה ממלאת את מלוא רוחבו.
-function balanceColumns() { /* העמודות ברוחב קבוע — המפה מתמלאת בחיתוך, לא בהרחבת הפירוט */ }
-// המפה ממלאת את חלונה כמו background-size:cover — הצד הארוך נחתך במקום
-// להשאיר שוליים ריקים. #mapBox עם overflow:hidden חותך את העודף.
+// מצמצמים את חלון המפה לריבוע (עד גבול סביר) כדי שהמפה הריבועית תמלא אותו —
+// העודף עובר לעמודת הפירוט, אך היא לא גדלה מעבר ל-430px.
+function balanceColumns() {
+  const root = document.documentElement;
+  root.style.removeProperty('--detail-w');
+  if (matchMedia('(max-width:980px)').matches) {
+    const headH = $('#mapHead').getBoundingClientRect().height;
+    root.style.setProperty('--maph', Math.round(Math.min(innerWidth, innerHeight * .5) + headH) + 'px');
+    return;
+  }
+  root.style.removeProperty('--maph');
+  const boxH = $('#mapBox').getBoundingClientRect().height;
+  const storyW = $('#story').getBoundingClientRect().width;
+  const erasW = $('#eras').getBoundingClientRect().width;
+  const w = Math.max(320, Math.min(430, innerWidth - storyW - erasW - boxH));
+  root.style.setProperty('--detail-w', Math.round(w) + 'px');
+}
+// כל המפה נראית תמיד (contain) — אותו מבט לכל פריט, בלי תזוזות.
 function fitMap() {
   const box = $('#mapBox').getBoundingClientRect();
-  const s = Math.max(box.width / IMG, box.height / IMG);
+  const s = Math.min(box.width / IMG, box.height / IMG);
   const f = $('#fit');
   f.style.width = IMG * s + 'px'; f.style.height = IMG * s + 'px'; f.dataset.s = s;
 }
@@ -379,7 +394,8 @@ function render() {
     ov.innerHTML = ''; lg.innerHTML = '';
     $('#mapTitle').textContent = it ? it.name : 'אטלס הדורות';
     $('#noMap').classList.toggle('show', !!(it && !it.map));
-    $('#pop').classList.remove('show'); zoomTo(-1);
+    $('#pop').classList.remove('show');
+    fitMap(); zoomTo(-1);   // המקרא התרוקן — החלון גדל, מתאימים מחדש
     ['bPlay','bPrev','bNext','bAll'].forEach(id => $('#'+id).disabled = true);
     return;
   }
@@ -394,38 +410,27 @@ function render() {
   lg.innerHTML = pts.map((p,i) => `<button class="lg" data-p="${i}"><i>${p.n}</i>${p.name}</button>`).join('');
   ov.querySelectorAll('.pt').forEach(g => g.addEventListener('click', () => setStep(+g.dataset.p, true)));
   lg.querySelectorAll('.lg').forEach(b => b.addEventListener('click', () => setStep(+b.dataset.p, true)));
+  fitMap();   // המקרא נטען ושינה את גובה החלון — מתאימים אחריו
   step = -1; paint();
 }
 
-// המפה חתוכה (cover), ולכן המצלמה ממקדת: בסקירה — מרכז גבולות המסע;
-// בתחנה — התחנה עצמה. הקיזוז מוגבל כך שלא ייחשפו שוליים ריקים מחוץ לתמונה.
+// סקירה = אותו מבט קבוע לכל פריט (כל המפה, בלי תזוזה). רק במסע מתקרבים
+// לתחנה — וההצמדה לשולי התמונה מבטיחה שלא ייחשף שטח שאין בו מפה: תחנה בפינה
+// נשארת בפינה במקום להתמרכז ולגרור את המפה החוצה.
 function zoomTo(i) {
   const z = $('#zoom'), s = +$('#fit').dataset.s || 1, it = items[active];
   const box = $('#mapBox').getBoundingClientRect();
-  const w = IMG * s;                       // גודל התמונה המותאמת (ריבועית)
-  const offX = (box.width - w) / 2, offY = (box.height - w) / 2;  // מרכוז ה-fit בתוך החלון
-  if (!it || !it.map) { z.style.transform = ''; z.style.setProperty('--z', 1); return { Z:1, tx:0, ty:0 }; }
-
-  let Z, cx, cy;
-  if (i < 0) {
-    // סקירה: ממרכזים את גבולות המסע, ואם הוא רחב מהפריים — מתרחקים כדי שאף
-    // תחנה לא תיחתך (עד גבול שבו נחשפים שוליים צנועים בלבד).
-    const xs = it.map.points.map(p => p.X * s), ys = it.map.points.map(p => p.Y * s);
-    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-    cx = (x0 + x1) / 2; cy = (y0 + y1) / 2;
-    const pad = 84;
-    const need = Math.min((box.width - pad) / Math.max(1, x1 - x0), (box.height - pad) / Math.max(1, y1 - y0));
-    Z = Math.max(.72, Math.min(1, need));
-  } else {
-    Z = matchMedia('(max-width:980px)').matches ? 1.7 : 2.1;
-    cx = it.map.points[i].X * s; cy = it.map.points[i].Y * s;
+  const w = IMG * s;
+  const offX = (box.width - w) / 2, offY = (box.height - w) / 2;
+  if (i < 0 || !it || !it.map) {
+    z.style.transform = ''; z.style.setProperty('--z', 1);
+    return { Z: 1, tx: 0, ty: 0, offX, offY };
   }
+  const Z = matchMedia('(max-width:980px)').matches ? 1.7 : 2.1;
+  const p = it.map.points[i];
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-  // בסקירה מרשים "רפיון" קטן בהצמדה לשוליים, אחרת תחנות בקצה התמונה נחתכות
-  // בכמה פיקסלים ואי אפשר למרכז את המסע כלל.
-  const sx = i < 0 ? box.width * .07 : 0, sy = i < 0 ? box.height * .07 : 0;
-  const tx = clamp(box.width / 2 - offX - cx * Z, box.width - w * Z - offX - sx, -offX + sx);
-  const ty = clamp(box.height / 2 - offY - cy * Z, box.height - w * Z - offY - sy, -offY + sy);
+  const tx = clamp(box.width / 2 - offX - p.X * s * Z, box.width - w * Z - offX, -offX);
+  const ty = clamp(box.height / 2 - offY - p.Y * s * Z, box.height - w * Z - offY, -offY);
   z.style.transform = `translate(${tx}px, ${ty}px) scale(${Z})`;
   z.style.setProperty('--z', Z);
   return { Z, tx, ty, offX, offY };
