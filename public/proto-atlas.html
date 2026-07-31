@@ -275,9 +275,12 @@ async function build() {
   DATA = await (await fetch('/proto-data.json')).json();
   DATA.eras.forEach(e => e.items.forEach(it => items.push(it)));
   $('#eras').innerHTML = DATA.eras.map((e,i) => `<button class="echip" data-e="${i}">${e.title}</button>`).join('');
+  // לחיצה על תקופה = מעבר לפריט הראשון שלה. (חישוב לפי כותרת התקופה אינו
+  // אמין: היא sticky, ולכן ה-rect שלה הוא המיקום הנעוץ ולא המיקום בדף.)
   $('#eras').querySelectorAll('.echip').forEach(b => b.addEventListener('click', () => {
-    const h = document.getElementById('eh-' + b.dataset.e);
-    if (h) scrollToY(scrollY + h.getBoundingClientRect().top - innerHeight * .22);
+    const first = document.querySelector(`.card:not(.hidden)[data-era="${b.dataset.e}"]`);
+    if (first) centerCard(first);
+    else toast('אין פריטים גלויים בתקופה זו — בדקו את השכבות');
   }));
   syncBar();
   renderStory();
@@ -358,25 +361,12 @@ function centerCard(el) {
 // ==================== מפה ====================
 // המפה ריבועית, ולכן בחלון רחב-ונמוך נותרים שוליים ריקים בצדדים. מרחיבים את
 // עמודת הפירוט כדי לצמצם את חלון המפה לריבוע — כך המפה ממלאת את מלוא רוחבו.
-function balanceColumns() {
-  const root = document.documentElement;
-  if (matchMedia('(max-width:980px)').matches) {
-    // מובייל: גובה חלון המפה = רוחב המסך (ריבוע) — כך המפה ממלאת את מלוא הרוחב
-    root.style.removeProperty('--detail-w');
-    const headH = $('#mapHead').getBoundingClientRect().height;
-    const boxH = Math.min(innerWidth, innerHeight * .5);
-    root.style.setProperty('--maph', Math.round(boxH + headH) + 'px');
-    return;
-  }
-  root.style.removeProperty('--detail-w'); root.style.removeProperty('--maph');
-  const storyW = $('#story').getBoundingClientRect().width;
-  const boxH = $('#mapBox').getBoundingClientRect().height;
-  const w = Math.max(300, Math.min(620, innerWidth - storyW - boxH));
-  root.style.setProperty('--detail-w', Math.round(w) + 'px');
-}
+function balanceColumns() { /* העמודות ברוחב קבוע — המפה מתמלאת בחיתוך, לא בהרחבת הפירוט */ }
+// המפה ממלאת את חלונה כמו background-size:cover — הצד הארוך נחתך במקום
+// להשאיר שוליים ריקים. #mapBox עם overflow:hidden חותך את העודף.
 function fitMap() {
   const box = $('#mapBox').getBoundingClientRect();
-  const s = Math.min(box.width / IMG, box.height / IMG) * .995;
+  const s = Math.max(box.width / IMG, box.height / IMG);
   const f = $('#fit');
   f.style.width = IMG * s + 'px'; f.style.height = IMG * s + 'px'; f.dataset.s = s;
 }
@@ -407,15 +397,38 @@ function render() {
   step = -1; paint();
 }
 
+// המפה חתוכה (cover), ולכן המצלמה ממקדת: בסקירה — מרכז גבולות המסע;
+// בתחנה — התחנה עצמה. הקיזוז מוגבל כך שלא ייחשפו שוליים ריקים מחוץ לתמונה.
 function zoomTo(i) {
   const z = $('#zoom'), s = +$('#fit').dataset.s || 1, it = items[active];
-  if (i < 0 || !it || !it.map) { z.style.transform = ''; z.style.setProperty('--z', 1); return { Z:1, tx:0, ty:0 }; }
-  const Z = matchMedia('(max-width:980px)').matches ? 1.7 : 2.1;
-  const w = IMG * s, p = it.map.points[i];
-  let tx = w/2 - Z*(p.X*s), ty = w/2 - Z*(p.Y*s);
-  tx = Math.min(0, Math.max(w - Z*w, tx)); ty = Math.min(0, Math.max(w - Z*w, ty));
-  z.style.transform = `translate(${tx}px, ${ty}px) scale(${Z})`; z.style.setProperty('--z', Z);
-  return { Z, tx, ty };
+  const box = $('#mapBox').getBoundingClientRect();
+  const w = IMG * s;                       // גודל התמונה המותאמת (ריבועית)
+  const offX = (box.width - w) / 2, offY = (box.height - w) / 2;  // מרכוז ה-fit בתוך החלון
+  if (!it || !it.map) { z.style.transform = ''; z.style.setProperty('--z', 1); return { Z:1, tx:0, ty:0 }; }
+
+  let Z, cx, cy;
+  if (i < 0) {
+    // סקירה: ממרכזים את גבולות המסע, ואם הוא רחב מהפריים — מתרחקים כדי שאף
+    // תחנה לא תיחתך (עד גבול שבו נחשפים שוליים צנועים בלבד).
+    const xs = it.map.points.map(p => p.X * s), ys = it.map.points.map(p => p.Y * s);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    cx = (x0 + x1) / 2; cy = (y0 + y1) / 2;
+    const pad = 84;
+    const need = Math.min((box.width - pad) / Math.max(1, x1 - x0), (box.height - pad) / Math.max(1, y1 - y0));
+    Z = Math.max(.72, Math.min(1, need));
+  } else {
+    Z = matchMedia('(max-width:980px)').matches ? 1.7 : 2.1;
+    cx = it.map.points[i].X * s; cy = it.map.points[i].Y * s;
+  }
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  // בסקירה מרשים "רפיון" קטן בהצמדה לשוליים, אחרת תחנות בקצה התמונה נחתכות
+  // בכמה פיקסלים ואי אפשר למרכז את המסע כלל.
+  const sx = i < 0 ? box.width * .07 : 0, sy = i < 0 ? box.height * .07 : 0;
+  const tx = clamp(box.width / 2 - offX - cx * Z, box.width - w * Z - offX - sx, -offX + sx);
+  const ty = clamp(box.height / 2 - offY - cy * Z, box.height - w * Z - offY - sy, -offY + sy);
+  z.style.transform = `translate(${tx}px, ${ty}px) scale(${Z})`;
+  z.style.setProperty('--z', Z);
+  return { Z, tx, ty, offX, offY };
 }
 
 function paint() {
@@ -433,12 +446,16 @@ function paint() {
   const cam = zoomTo(step);
   const pop = $('#pop');
   if (step < 0) { pop.classList.remove('show'); return; }
-  const p = pts[step], s = +$('#fit').dataset.s || 1, w = IMG * s;
+  const p = pts[step], s = +$('#fit').dataset.s || 1;
   pop.innerHTML = `<div class="ph"><i>${p.n}</i>${p.name}</div><div class="pl">${p.label||''}</div>
     <p class="pd">${(p.desc||'').slice(0,150)}${(p.desc||'').length>150?'…':''}</p>`;
+  // מיקום התחנה בקואורדינטות ה-fit, ותיחום לאזור הנראה בפועל (התמונה חתוכה)
+  const box = $('#mapBox').getBoundingClientRect();
   const fx = cam.Z*(p.X*s)+cam.tx, fy = cam.Z*(p.Y*s)+cam.ty;
-  pop.style.insetInlineStart = Math.max(6, Math.min(w-231, fx-112)) + 'px';
-  pop.style.top = Math.max(6, Math.min(w-155, fy > w*.55 ? fy-150 : fy+30)) + 'px';
+  const visL = -cam.offX, visT = -cam.offY;
+  const cl = (v,lo,hi) => Math.min(hi, Math.max(lo, v));
+  pop.style.left = cl(fx-112, visL+6, visL+box.width-231) + 'px';
+  pop.style.top  = cl(fy > visT+box.height*.55 ? fy-150 : fy+30, visT+6, visT+box.height-155) + 'px';
   pop.classList.add('show');
 }
 function setStep(i, manual) {
