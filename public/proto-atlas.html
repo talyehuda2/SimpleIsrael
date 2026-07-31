@@ -67,15 +67,25 @@ button{font-family:inherit}
   color:var(--navy);border-radius:10px;padding:7px 6px;cursor:pointer;min-width:0}
 #detail .nav button span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #detail .nav button svg{flex:none;color:var(--gold-ink)}
+/* פקדים שמופיעים רק במובייל */
+#sheetClose,#mapClose,#sheetBack,#dMap{display:none}
+#sheetClose{position:absolute;left:12px;top:10px;border:none;background:none;font-size:17px;color:var(--muted);cursor:pointer;z-index:2}
+#mapClose{align-items:center;gap:5px}
+#dMap{width:100%;margin:2px 0 10px;justify-content:center;gap:7px;font-size:13.5px;font-weight:800;
+  background:var(--navy);border:1px solid var(--navy);color:#fff;border-radius:11px;padding:10px;cursor:pointer}
+body.sheet-open #dMap{display:flex}
 #detail .nav button:hover:not(:disabled){border-color:var(--gold)} #detail .nav button:disabled{opacity:.35;cursor:default}
 
 #mapPane{position:fixed;top:var(--bar);bottom:0;left:0;width:var(--map-w);
   display:flex;flex-direction:column;background:linear-gradient(180deg,#f6edd8,var(--bg))}
 /* גוף המפה: החלון מימין, ומקרא המקומות כטור אנכי משמאלו */
 #mapBody{flex:1;min-height:0;display:flex}
-#mapHead{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px 14px;background:var(--panel);border-bottom:2px solid var(--gold)}
-#mapTitle{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:16px;color:var(--navy);margin:0;flex:1;min-width:0;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* כותרת ממורכזת ושורת כפתורים ממורכזת מתחתיה */
+#mapHead{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 14px;
+  background:var(--panel);border-bottom:2px solid var(--gold)}
+#mapTitle{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:16px;color:var(--navy);margin:0;
+  max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+#mapBtns{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}
 .mbtn{font-size:12px;font-weight:700;border-radius:15px;padding:5px 12px;cursor:pointer;border:1px solid var(--line);
   background:var(--panel);color:var(--navy)}
 .mbtn:hover:not(:disabled){border-color:var(--gold)} .mbtn:disabled{opacity:.35;cursor:default}
@@ -122,7 +132,18 @@ button{font-family:inherit}
 #story{position:relative;z-index:10;width:var(--story-w);
   margin-inline-start:var(--era-w);margin-inline-end:auto;padding:calc(var(--bar) + 14px) 16px 62vh}
 #story::before{content:'';position:absolute;top:0;bottom:0;inset-inline-end:12px;width:2px;background:var(--gold);opacity:.4}
-.ehead{position:sticky;top:calc(var(--bar) + 8px);z-index:12;margin:22px 0 10px;width:fit-content;max-width:100%;
+/* סינון הסוגים — צמוד לראש הרשימה שהוא מסנן */
+#filters{position:sticky;top:var(--bar);z-index:14;display:flex;gap:5px;flex-wrap:wrap;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 9px;margin:0 0 6px;
+  box-shadow:0 3px 10px rgb(60 40 0 / .12)}
+#filters .flab{font-size:10.5px;font-weight:700;color:var(--muted);margin-inline-end:2px}
+.fbtn{flex:none;display:inline-grid;place-items:center;width:29px;height:29px;border-radius:9px;font-size:14px;
+  line-height:1;cursor:pointer;background:color-mix(in srgb, var(--kc) 16%, transparent);
+  border:1px solid color-mix(in srgb, var(--kc) 50%, transparent);color:var(--kc);transition:opacity .15s,filter .15s}
+.fbtn[aria-pressed="false"]{opacity:.34;filter:grayscale(1)}
+.fbtn:hover{opacity:1}
+#filters .fcnt{margin-inline-start:auto;font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ehead{position:sticky;top:calc(var(--bar) + var(--filt-h, 44px) + 10px);z-index:12;margin:22px 0 10px;width:fit-content;max-width:100%;
   background:var(--navy);color:#f4ecd8;font-size:13.5px;font-weight:800;border-radius:12px;padding:6px 14px;
   box-shadow:0 5px 16px rgb(10 20 40/.3)}
 .ehead b{color:#d9b755}
@@ -215,20 +236,32 @@ button{font-family:inherit}
 
 /* ===================== מובייל ===================== */
 @media (max-width:980px){
-  :root{--story-w:100%;--era-w:0px;--erabar:44px;--maph:42vh}
-  #detail{display:none}
+  :root{--story-w:100%;--era-w:0px;--erabar:44px}
+  /* המפה אינה תופסת מקום קבוע: היא נפתחת כשכבה מלאה מתוך הכרטיס */
+  #mapPane{position:fixed;inset:0;top:0;left:0;width:100%;height:100%;z-index:60;display:none;
+    border:none;border-bottom:none}
+  body.map-open #mapPane{display:flex}
+  #mapClose{display:inline-flex}
+  /* הכרטיס נפתח כגיליון תחתון בלחיצה על פריט */
+  #detail{display:block;position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;max-height:82vh;
+    border-radius:16px 16px 0 0;border:none;border-top:4px solid var(--gold);z-index:45;
+    transform:translateY(103%);transition:transform .26s ease;box-shadow:0 -10px 30px rgb(40 25 0 / .32)}
+  body.sheet-open #detail{transform:none}
+  #sheetBack{display:none;position:fixed;inset:0;background:rgb(30 20 5 / .42);z-index:44}
+  body.sheet-open #sheetBack{display:block}
+  #sheetClose{display:block}
   /* התקופות חוזרות לרצועה אופקית מתחת לסרגל */
   #eras{top:var(--bar);bottom:auto;inset-inline-start:0;width:100%;height:var(--erabar);
     flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:6px 10px;gap:6px;
     border-inline-end:none;border-bottom:1px solid var(--line)}
   .echip{white-space:nowrap;padding:4px 11px;border-radius:14px}
-  #mapPane{left:0;width:100%;top:calc(var(--bar) + var(--erabar));height:var(--maph);bottom:auto;
-    border-inline-start:none;border-bottom:2px solid var(--gold)}
   #mapBody{display:block}
   #legend{display:none}
-  #story{margin-inline-start:0;padding-top:calc(var(--bar) + var(--erabar) + var(--maph) + 12px);padding-bottom:34vh}
-  .ehead{top:calc(var(--bar) + var(--erabar) + var(--maph) + 6px)}
-  .card.on .more{display:block}
+  /* הזרם האנכי תופס את כל המסך */
+  #story{margin-inline-start:0;padding-top:calc(var(--bar) + var(--erabar) + 12px);padding-bottom:18vh}
+  #filters{top:calc(var(--bar) + var(--erabar) + 4px)}
+  .ehead{top:calc(var(--bar) + var(--erabar) + var(--filt-h, 44px) + 10px)}
+  .card .more{display:none}
   #bar h1 span{display:none}
   #bar{padding:7px 10px;gap:7px}
   #pop{width:185px}
@@ -242,7 +275,6 @@ button{font-family:inherit}
   <h1>🗺️ אטלס הדורות <span>אב־טיפוס</span></h1>
   <span class="spacer"></span>
   <div id="tools">
-    <button class="tool" id="tLayers">🎚️ <span class="tl">שכבות</span></button>
     <button class="tool" id="tTree">👑 <span class="tl">אילן</span></button>
     <button class="tool" id="tIns">📊 <span class="tl">תובנות</span></button>
     <button class="tool" id="tShare">🔗 <span class="tl">שיתוף</span></button>
@@ -251,15 +283,21 @@ button{font-family:inherit}
 </header>
 
 <nav id="eras" aria-label="תקופות"></nav>
-<aside id="detail" aria-label="פרטי הפריט"></aside>
+<div id="sheetBack"></div>
+<aside id="detail" aria-label="פרטי הפריט">
+  <button id="sheetClose" aria-label="סגירה">✕</button>
+</aside>
 
 <div id="mapPane">
   <div id="mapHead">
     <h2 id="mapTitle">אטלס הדורות</h2>
-    <button class="mbtn play" id="bPlay">▶ הפעלת המסע</button>
-    <button class="mbtn" id="bPrev">הקודם</button>
-    <button class="mbtn" id="bNext">הבא</button>
-    <button class="mbtn" id="bAll" title="חזרה למבט על כל המסלול">סקירה כללית</button>
+    <div id="mapBtns">
+      <button class="mbtn play" id="bPlay">▶ הפעלת המסע</button>
+      <button class="mbtn" id="bPrev">הקודם</button>
+      <button class="mbtn" id="bNext">הבא</button>
+      <button class="mbtn" id="bAll" title="חזרה למבט על כל המסלול">סקירה כללית</button>
+      <button class="mbtn" id="mapClose">✕ סגירת המפה</button>
+    </div>
   </div>
   <div id="mapBody">
     <div id="mapBox">
@@ -283,13 +321,13 @@ button{font-family:inherit}
 const $ = (s) => document.querySelector(s);
 const IMG = 1254;
 const LAYERS = [
-  { key:'leaders', label:'אבות ומנהיגים', color:'var(--leader)' },
-  { key:'judges',  label:'שופטים',        color:'var(--judge)'  },
-  { key:'kings',   label:'מלכים',         color:'var(--judah)'  },
-  { key:'prophets',label:'נביאים',        color:'var(--prophet)'},
-  { key:'books',   label:'ספרי תנ״ך',     color:'var(--book)'   },
-  { key:'events',  label:'אירועים',       color:'var(--event)'  },
-  { key:'world',   label:'רקע עולמי',     color:'var(--world)'  },
+  { key:'leaders', label:'אבות ומנהיגים', color:'var(--leader)',  icon:'🏛️' },
+  { key:'judges',  label:'שופטים',        color:'var(--judge)',   icon:'⚖️' },
+  { key:'kings',   label:'מלכים',         color:'var(--judah)',   icon:'👑' },
+  { key:'prophets',label:'נביאים',        color:'var(--prophet)', icon:'📜' },
+  { key:'books',   label:'ספרי תנ״ך',     color:'var(--book)',    icon:'📖' },
+  { key:'events',  label:'אירועים',       color:'var(--event)',   icon:'◆'  },
+  { key:'world',   label:'רקע עולמי',     color:'var(--world)',   icon:'🌍' },
 ];
 const KIND_COLOR = { leader:'var(--leader)', judge:'var(--judge)', united:'var(--united)', judah:'var(--judah)',
   israel:'var(--israel)', prophet:'var(--prophet)', book:'var(--book)', event:'var(--event)', world:'var(--world)' };
@@ -331,15 +369,25 @@ async function build() {
   balanceColumns(); fitMap();
   addEventListener('scroll', pick, { passive: true });
   setInterval(pick, 300);
-  addEventListener('resize', () => { syncBar(); balanceColumns(); fitMap(); paint(); });
+  addEventListener('resize', () => { syncBar(); syncFilterHeight(); balanceColumns(); fitMap(); paint(); });
+  $('#mapClose').addEventListener('click', closeMap);
+  $('#sheetBack').addEventListener('click', closeSheet);
   addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') document.querySelectorAll('.ov').forEach(o => o.remove());
+    if (e.key !== 'Escape') return;
+    if (document.querySelector('.ov')) return document.querySelectorAll('.ov').forEach(o => o.remove());
+    if (document.body.classList.contains('map-open')) return closeMap();
+    closeSheet();
   });
 }
 
 function renderStory() {
   const html = [];
   let gi = 0;
+  // שורת הסינון — יושבת בראש רשימת השמות, לא בסרגל העליון
+  html.push(`<div id="filters"><span class="flab">הצג:</span>` +
+    LAYERS.map(l => `<button class="fbtn" data-l="${l.key}" style="--kc:${l.color}"
+      aria-pressed="${on[l.key]}" title="${l.label}">${l.icon}</button>`).join('') +
+    `<span class="fcnt" id="fcnt"></span></div>`);
   DATA.eras.forEach((era, ei) => {
     html.push(`<div class="ehead" id="eh-${ei}">✦ <b>${era.title}</b> · ${era.start}–${era.end}</div>`);
     era.items.forEach((it) => {
@@ -356,14 +404,47 @@ function renderStory() {
     });
   });
   $('#story').innerHTML = html.join('');
-  document.querySelectorAll('.card').forEach(el => el.addEventListener('click', () => centerCard(el)));
+  // בדסקטופ הלחיצה ממרכזת בציר; במובייל היא פותחת את הכרטיס כגיליון
+  document.querySelectorAll('.card').forEach(el => el.addEventListener('click', () => {
+    if (isNarrow()) openSheet(+el.dataset.i); else centerCard(el);
+  }));
+  $('#filters').querySelectorAll('.fbtn').forEach(b => b.addEventListener('click', () => {
+    on[b.dataset.l] = !on[b.dataset.l];
+    b.setAttribute('aria-pressed', on[b.dataset.l]);
+    applyFilters();
+  }));
+  applyFilters();
+}
+function applyFilters() {
+  document.querySelectorAll('.card').forEach(c => c.classList.toggle('hidden', !on[c.dataset.layer]));
+  try { localStorage.setItem('atlas_layers', JSON.stringify(on)); } catch {}
   refreshVisible();
+  const n = document.querySelectorAll('.card:not(.hidden)').length;
+  const f = $('#fcnt'); if (f) f.textContent = n + ' פריטים';
+  syncFilterHeight();
+}
+// גובה שורת הסינון נמדד — כותרות התקופה נצמדות מתחתיה ולא עליה
+function syncFilterHeight() {
+  const el = $('#filters'); if (!el) return;
+  document.documentElement.style.setProperty('--filt-h', Math.round(el.getBoundingClientRect().height) + 'px');
 }
 const refreshVisible = () => {
   visible = [...document.querySelectorAll('.card:not(.hidden)')];
   pick(true);
 };
-const focusLine = () => innerHeight * (matchMedia('(max-width:980px)').matches ? .74 : .45);
+const isNarrow = () => matchMedia('(max-width:980px)').matches;
+const focusLine = () => innerHeight * (isNarrow() ? .5 : .45);
+
+// ===== מובייל: גיליון הכרטיס ושכבת המפה =====
+function openSheet(i) {
+  active = -1;                       // מאלץ רינדור מחדש גם אם זה אותו פריט
+  document.querySelectorAll('.card').forEach(el => el.classList.toggle('on', +el.dataset.i === i));
+  active = i; render();
+  document.body.classList.add('sheet-open');
+}
+const closeSheet = () => document.body.classList.remove('sheet-open');
+const openMap = () => { document.body.classList.add('map-open'); fitMap(); paint(); };
+const closeMap = () => document.body.classList.remove('map-open');
 // גובה הסרגל נמדד בפועל (הוא נשבר לשתי שורות במובייל) — כך הפריסה לא מתפספסת
 function syncBar() {
   const h = Math.round($('#bar').getBoundingClientRect().height);
@@ -414,13 +495,7 @@ function centerCard(el) {
 // שוליים; מה שנותר אחרי המקרא, השמות והתקופות עובר לעמודת הפירוט.
 function balanceColumns() {
   const root = document.documentElement;
-  if (matchMedia('(max-width:980px)').matches) {
-    root.style.removeProperty('--detail-w'); root.style.removeProperty('--map-w');
-    const headH = $('#mapHead').getBoundingClientRect().height;
-    root.style.setProperty('--maph', Math.round(Math.min(innerWidth, innerHeight * .5) + headH) + 'px');
-    return;
-  }
-  root.style.removeProperty('--maph');
+  if (isNarrow()) { root.style.removeProperty('--detail-w'); root.style.removeProperty('--map-w'); return; }
   const boxH = $('#mapBody').getBoundingClientRect().height;
   const storyW = $('#story').getBoundingClientRect().width;
   // נקראים מהמשתנים ולא נמדדים: במצב רצועה אופקית סרגל התקופות תופס 100% רוחב
@@ -487,7 +562,7 @@ function zoomTo(i) {
     z.style.setProperty('--z', 1);
     return { Z: 1, tx: ox, ty: oy, offX, offY };
   }
-  const Z = matchMedia('(max-width:980px)').matches ? 1.7 : 2.1;
+  const Z = isNarrow() ? 1.7 : 2.1;
   const p = it.map.points[i];
   const tx = clamp(box.width / 2 - offX - p.X * s * Z, box.width - w * Z - offX, -offX);
   const ty = clamp(box.height / 2 - offY - p.Y * s * Z, box.height - w * Z - offY, -offY);
@@ -548,11 +623,13 @@ function renderDetail(it) {
   const prev = vi > 0 ? visible[vi-1] : null, next = vi >= 0 && vi < visible.length-1 ? visible[vi+1] : null;
   const nm = (el) => el ? items[+el.dataset.i].name : '';
   d.innerHTML =
-    `<span class="kind" style="background:${KIND_COLOR[it.kind]}">${it.kindLabel}</span>
+    `<button id="sheetClose" aria-label="סגירה">✕</button>
+     <span class="kind" style="background:${KIND_COLOR[it.kind]}">${it.kindLabel}</span>
      <h2>${it.name}</h2>
      <div class="yrs">${it.start}–${it.end}${it.approx ? ' <span class="approx">· ≈ משוער</span>' : ''}</div>` +
     (it.judgment ? `<div class="jud ${it.judgment}">${JUD[it.judgment]}</div>` : '') +
     (it.meta.length ? `<div class="meta">${it.meta.join(' · ')}</div>` : '') +
+    (it.map ? `<button id="dMap">🗺️ פתיחת מפת המסע</button>` : '') +
     (it.verse ? `<div class="verse"><p>„${it.verse}”</p>${it.vref?`<small>${it.vref}</small>`:''}</div>` : '') +
     (it.desc ? `<p class="desc">${it.desc}</p>` : '') +
     (it.src ? `<div class="src"><b>מקור:</b> ${it.src}</div>` : '') +
@@ -563,8 +640,11 @@ function renderDetail(it) {
        <button id="dNext" ${next?'':'disabled'} title="מאוחר יותר"><span>${nm(next)||'—'}</span>${CHEV_L}</button>
      </div>`;
   d.scrollTop = 0;
-  if (prev) $('#dPrev').addEventListener('click', () => centerCard(prev));
-  if (next) $('#dNext').addEventListener('click', () => centerCard(next));
+  const go = (el) => { if (isNarrow()) openSheet(+el.dataset.i); else centerCard(el); };
+  if (prev) $('#dPrev').addEventListener('click', () => go(prev));
+  if (next) $('#dNext').addEventListener('click', () => go(next));
+  $('#sheetClose')?.addEventListener('click', closeSheet);
+  $('#dMap')?.addEventListener('click', openMap);
 }
 
 // ==================== גלילה חד-ערכית ====================
@@ -609,25 +689,6 @@ const jumpToId = (id) => {
   centerCard(card);
   return true;
 };
-
-$('#tLayers').addEventListener('click', () => {
-  const counts = {};
-  items.forEach(it => counts[it.layer] = (counts[it.layer]||0)+1);
-  const el = overlay('🎚️ שכבות', 'בחרו אילו סוגי פריטים יופיעו בציר',
-    `<div class="lquick"><button class="tool" id="lAll">הכל</button><button class="tool" id="lNone">ניקוי</button></div>` +
-    LAYERS.map(l => `<label class="lrow"><input type="checkbox" data-l="${l.key}" ${on[l.key]?'checked':''}/>
-      <i style="background:${l.color}"></i>${l.label}<span class="cnt">${counts[l.key]||0}</span></label>`).join(''));
-  const apply = () => {
-    document.querySelectorAll('.card').forEach(c => c.classList.toggle('hidden', !on[c.dataset.layer]));
-    try { localStorage.setItem('atlas_layers', JSON.stringify(on)); } catch {}
-    refreshVisible();
-  };
-  el.querySelectorAll('input').forEach(inp => inp.addEventListener('change', () => { on[inp.dataset.l] = inp.checked; apply(); }));
-  el.querySelector('#lAll').addEventListener('click', () => { LAYERS.forEach(l => on[l.key]=true);
-    el.querySelectorAll('input').forEach(i=>i.checked=true); apply(); });
-  el.querySelector('#lNone').addEventListener('click', () => { LAYERS.forEach(l => on[l.key]=false);
-    el.querySelectorAll('input').forEach(i=>i.checked=false); apply(); });
-});
 
 $('#tTree').addEventListener('click', () => {
   const node = (n, cls) => `<button class="tnode ${cls}${n.id?' link':''}" ${n.id?`data-id="${n.id}"`:''}>
