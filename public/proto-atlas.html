@@ -137,9 +137,14 @@ body.sheet-open #dMap{display:flex}
   background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 9px;margin:0 0 6px;
   box-shadow:0 3px 10px rgb(60 40 0 / .12)}
 #filters .flab{font-size:10.5px;font-weight:700;color:var(--muted);margin-inline-end:2px}
-.fbtn{flex:none;display:inline-grid;place-items:center;width:29px;height:29px;border-radius:9px;font-size:14px;
-  line-height:1;cursor:pointer;background:color-mix(in srgb, var(--kc) 16%, transparent);
+.fbtn{flex:none;display:flex;align-items:center;justify-content:center;width:29px;height:29px;padding:0;
+  border-radius:9px;font-size:14px;cursor:pointer;background:color-mix(in srgb, var(--kc) 16%, transparent);
   border:1px solid color-mix(in srgb, var(--kc) 50%, transparent);color:var(--kc);transition:opacity .15s,filter .15s}
+/* אמוג'י ותווים גיאומטריים באים מגופנים שונים — עוטפים ב-span עם קופסה נקייה
+   כדי שכולם ימורכזו זהה, בלי הסטת קו-בסיס */
+.fbtn .gl,.kicon .gl{display:block;line-height:1;font-size:1em;
+  font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji','Segoe UI Symbol',sans-serif}
+.fbtn[data-l="events"] .gl,.kicon.k-event .gl{font-size:.82em;transform:translateY(.02em)}
 .fbtn[aria-pressed="false"]{opacity:.34;filter:grayscale(1)}
 .fbtn:hover{opacity:1}
 #filters .fcnt{margin-inline-start:auto;font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -154,8 +159,8 @@ body.sheet-open #dMap{display:flex}
 .card{display:flex;align-items:flex-start;gap:10px}
 .cbody{flex:1;min-width:0}
 /* אייקון הסוג — בצד ימין של הכרטיס (RTL: הילד הראשון) */
-.kicon{flex:none;display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;
-  font-size:15px;line-height:1;background:color-mix(in srgb, var(--kc) 15%, transparent);
+.kicon{flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;
+  font-size:15px;background:color-mix(in srgb, var(--kc) 15%, transparent);
   border:1px solid color-mix(in srgb, var(--kc) 45%, transparent);color:var(--kc)}
 .card h3{font-family:'Frank Ruhl Libre',serif;font-size:17px;font-weight:900;color:var(--navy);margin:0}
 .card .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
@@ -369,7 +374,10 @@ async function build() {
   balanceColumns(); fitMap();
   addEventListener('scroll', pick, { passive: true });
   setInterval(pick, 300);
-  addEventListener('resize', () => { syncBar(); syncFilterHeight(); balanceColumns(); fitMap(); paint(); });
+  addEventListener('resize', () => {
+    if (!isNarrow()) document.body.classList.remove('sheet-open', 'map-open');  // מצבי מובייל בלבד
+    syncBar(); syncFilterHeight(); balanceColumns(); fitMap(); paint();
+  });
   $('#mapClose').addEventListener('click', closeMap);
   $('#sheetBack').addEventListener('click', closeSheet);
   addEventListener('keydown', (e) => {
@@ -386,14 +394,15 @@ function renderStory() {
   // שורת הסינון — יושבת בראש רשימת השמות, לא בסרגל העליון
   html.push(`<div id="filters"><span class="flab">הצג:</span>` +
     LAYERS.map(l => `<button class="fbtn" data-l="${l.key}" style="--kc:${l.color}"
-      aria-pressed="${on[l.key]}" title="${l.label}">${l.icon}</button>`).join('') +
+      aria-pressed="${on[l.key]}" title="${l.label}"><span class="gl">${l.icon}</span></button>`).join('') +
     `<span class="fcnt" id="fcnt"></span></div>`);
   DATA.eras.forEach((era, ei) => {
     html.push(`<div class="ehead" id="eh-${ei}">✦ <b>${era.title}</b> · ${era.start}–${era.end}</div>`);
     era.items.forEach((it) => {
       const idx = items.indexOf(it);
       html.push(`<article class="card${on[it.layer] ? '' : ' hidden'}" data-i="${idx}" data-era="${ei}" data-layer="${it.layer}">
-        <span class="kicon" style="--kc:${KIND_COLOR[it.kind]}" title="${it.kindLabel}">${KIND_ICON[it.kind]}</span>
+        <span class="kicon${it.kind==='event'?' k-event':''}" style="--kc:${KIND_COLOR[it.kind]}"
+          title="${it.kindLabel}"><span class="gl">${KIND_ICON[it.kind]}</span></span>
         <div class="cbody">
           <h3>${it.name}</h3>
           <div class="sub">${it.kindLabel} · ${it.start}–${it.end}${it.approx ? ' ≈' : ''}</div>
@@ -437,9 +446,8 @@ const focusLine = () => innerHeight * (isNarrow() ? .5 : .45);
 
 // ===== מובייל: גיליון הכרטיס ושכבת המפה =====
 function openSheet(i) {
-  active = -1;                       // מאלץ רינדור מחדש גם אם זה אותו פריט
   document.querySelectorAll('.card').forEach(el => el.classList.toggle('on', +el.dataset.i === i));
-  active = i; render();
+  active = i; render(); markEra(i);
   document.body.classList.add('sheet-open');
 }
 const closeSheet = () => document.body.classList.remove('sheet-open');
@@ -648,6 +656,11 @@ function renderDetail(it) {
 }
 
 // ==================== גלילה חד-ערכית ====================
+const markEra = (idx) => {
+  const card = document.querySelector(`.card[data-i="${idx}"]`);
+  const ei = card ? +card.dataset.era : 0;
+  $('#eras').querySelectorAll('.echip').forEach(b => b.classList.toggle('on', +b.dataset.e === ei));
+};
 function pick(force) {
   if (!visible.length) return;
   const mid = focusLine();
@@ -657,15 +670,19 @@ function pick(force) {
     const d = Math.abs((b.top+b.bottom)/2 - mid);
     if (d < best) { best = d; cur = +el.dataset.i; }
   });
+  // במובייל הבחירה נעשית בהקשה ולא בגלילה — הגלילה רק מסמנת את התקופה,
+  // אחרת היא הייתה דורסת את הפריט שנפתח בגיליון. כשהגיליון פתוח, הסימון
+  // נשאר על תקופת הפריט שנפתח.
+  if (isNarrow()) {
+    if (!document.body.classList.contains('sheet-open')) markEra(cur);
+    return;
+  }
   if (pinned !== null) cur = pinned;            // בחירה נעוצה גוברת
   else if (scrollY <= 2) cur = +visible[0].dataset.i;  // בראש הדף — הפריט הראשון
   if (cur === active && !force) return;
   active = cur;
   document.querySelectorAll('.card').forEach(el => el.classList.toggle('on', +el.dataset.i === active));
-  // הדגשת התקופה הפעילה בסרגל — לפי המאפיין על הכרטיס עצמו
-  const card = document.querySelector(`.card[data-i="${active}"]`);
-  const ei = card ? +card.dataset.era : 0;
-  $('#eras').querySelectorAll('.echip').forEach(b => b.classList.toggle('on', +b.dataset.e === ei));
+  markEra(active);
   const f = $('#fit'); f.classList.add('fade');
   setTimeout(() => { render(); f.classList.remove('fade'); }, 170);
 }
