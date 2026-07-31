@@ -193,6 +193,18 @@ button{font-family:inherit}
   opacity:0;pointer-events:none;transition:opacity .3s}
 #toast.show{opacity:1}
 
+/* ===== מסכים בינוניים: מפנים מקום למפה — תקופות לרצועה עליונה, בלי מקרא צדי ===== */
+@media (max-width:1400px){
+  :root{--era-w:0px;--erabar:44px;--leg-w:0px}
+  #eras{top:var(--bar);bottom:auto;inset-inline-start:0;width:100%;height:var(--erabar);
+    flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:6px 10px;gap:6px;
+    border-inline-end:none;border-bottom:1px solid var(--line)}
+  .echip{white-space:nowrap;padding:4px 11px;border-radius:14px}
+  #legend{display:none}
+  #mapPane,#detail{top:calc(var(--bar) + var(--erabar))}
+  #story{margin-inline-start:0;padding-top:calc(var(--bar) + var(--erabar) + 14px)}
+}
+
 /* ===================== מובייל ===================== */
 @media (max-width:980px){
   :root{--story-w:100%;--era-w:0px;--erabar:44px;--maph:42vh}
@@ -276,6 +288,9 @@ const KIND_COLOR = { leader:'var(--leader)', judge:'var(--judge)', united:'var(-
 const JUD = { good:"עשה הישר בעיני ה'", bad:"עשה הרע בעיני ה'", mixed:'מעורב' };
 
 let DATA = null, items = [], visible = [], active = -1, step = -1, playT = null;
+// מרכז אזור התחנות בכל המסעות — נקודת העיגון הקבועה של חיתוך המפה, כך שגם
+// כשהחלון חותך, התחנות (ולא הים הריק) נשארות בפריים. אותו מבט לכל הפריטים.
+let ANCHOR = { x: IMG / 2, y: IMG / 2 };
 let on = Object.fromEntries(LAYERS.map(l => [l.key, true]));
 try { const s = JSON.parse(localStorage.getItem('atlas_layers')); if (s) on = { ...on, ...s }; } catch {}
 
@@ -283,6 +298,11 @@ try { const s = JSON.parse(localStorage.getItem('atlas_layers')); if (s) on = { 
 async function build() {
   DATA = await (await fetch('/proto-data.json')).json();
   DATA.eras.forEach(e => e.items.forEach(it => items.push(it)));
+  const P = items.filter(i => i.map).flatMap(i => i.map.points);
+  if (P.length) ANCHOR = {
+    x: (Math.min(...P.map(p => p.X)) + Math.max(...P.map(p => p.X))) / 2,
+    y: (Math.min(...P.map(p => p.Y)) + Math.max(...P.map(p => p.Y))) / 2,
+  };
   $('#eras').innerHTML = DATA.eras.map((e,i) => `<button class="echip" data-e="${i}">${e.title}</button>`).join('');
   // לחיצה על תקופה = מעבר לפריט הראשון שלה. (חישוב לפי כותרת התקופה אינו
   // אמין: היא sticky, ולכן ה-rect שלה הוא המיקום הנעוץ ולא המיקום בדף.)
@@ -384,9 +404,10 @@ function balanceColumns() {
   }
   root.style.removeProperty('--maph');
   const boxH = $('#mapBody').getBoundingClientRect().height;
-  const legW = $('#legend').getBoundingClientRect().width;
   const storyW = $('#story').getBoundingClientRect().width;
-  const erasW = $('#eras').getBoundingClientRect().width;
+  // נקראים מהמשתנים ולא נמדדים: במצב רצועה אופקית סרגל התקופות תופס 100% רוחב
+  const cssVar = (n) => parseFloat(getComputedStyle(root).getPropertyValue(n)) || 0;
+  const legW = cssVar('--leg-w'), erasW = cssVar('--era-w');
   // clientWidth ולא innerWidth — האחרון כולל את פס הגלילה וגורם לחפיפת עמודות
   const free = document.documentElement.clientWidth - storyW - erasW;
   let mapW = Math.min(boxH + legW, free - 320);        // חלון ריבועי, אך משאירים לפירוט
@@ -394,10 +415,11 @@ function balanceColumns() {
   root.style.setProperty('--map-w', Math.round(mapW) + 'px');
   root.style.setProperty('--detail-w', Math.round(free - mapW) + 'px');
 }
-// כל המפה נראית תמיד (contain) — אותו מבט לכל פריט, בלי תזוזות.
+// המפה ממלאת את החלון לגמרי (cover) — בלי שום רווח, גם ביחס מסך שונה.
+// העודף נחתך; החלון מכוון להיות ריבועי ולכן החיתוך זעיר.
 function fitMap() {
   const box = $('#mapBox').getBoundingClientRect();
-  const s = Math.min(box.width / IMG, box.height / IMG);
+  const s = Math.max(box.width / IMG, box.height / IMG);
   const f = $('#fit');
   f.style.width = IMG * s + 'px'; f.style.height = IMG * s + 'px'; f.dataset.s = s;
 }
@@ -438,13 +460,17 @@ function zoomTo(i) {
   const box = $('#mapBox').getBoundingClientRect();
   const w = IMG * s;
   const offX = (box.width - w) / 2, offY = (box.height - w) / 2;
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
   if (i < 0 || !it || !it.map) {
-    z.style.transform = ''; z.style.setProperty('--z', 1);
-    return { Z: 1, tx: 0, ty: 0, offX, offY };
+    // סקירה: מבט קבוע וזהה לכולם, מעוגן על מרכז אזור התחנות (לא על מרכז הקנבס)
+    const ox = clamp(box.width / 2 - offX - ANCHOR.x * s, box.width - w - offX, -offX);
+    const oy = clamp(box.height / 2 - offY - ANCHOR.y * s, box.height - w - offY, -offY);
+    z.style.transform = `translate(${ox}px, ${oy}px) scale(1)`;
+    z.style.setProperty('--z', 1);
+    return { Z: 1, tx: ox, ty: oy, offX, offY };
   }
   const Z = matchMedia('(max-width:980px)').matches ? 1.7 : 2.1;
   const p = it.map.points[i];
-  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
   const tx = clamp(box.width / 2 - offX - p.X * s * Z, box.width - w * Z - offX, -offX);
   const ty = clamp(box.height / 2 - offY - p.Y * s * Z, box.height - w * Z - offY, -offY);
   z.style.transform = `translate(${tx}px, ${ty}px) scale(${Z})`;
