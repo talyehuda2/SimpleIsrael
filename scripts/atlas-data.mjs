@@ -1,4 +1,4 @@
-// מחולל נתונים לאב-הטיפוס "אטלס הדורות" (public/proto-atlas.html).
+// מחולל נתונים לאב-הטיפוס "אטלס הדורות" (public/atlas.html).
 // מייצא את כל פריטי האתר מקובצים לפי תקופה, יחד עם אילן היוחסין ותובנות
 // מחושבות מראש - כדי שהאב-טיפוס יהיה עצמאי (vanilla JS, בלי React).
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -174,6 +174,6 @@ const insights = {
 };
 
 const data = { eras, genealogy, insights };
-writeFileSync(join(ROOT, 'public', 'proto-data.json'), JSON.stringify(data), 'utf8');
-console.log('proto-data.json:', eras.length, 'תקופות,', all.length, 'פריטים,',
+writeFileSync(join(ROOT, 'public', 'atlas-data.json'), JSON.stringify(data), 'utf8');
+console.log('atlas-data.json:', eras.length, 'תקופות,', all.length, 'פריטים,',
   all.filter((x) => x.map).length, 'עם מפה,', genealogy.length, 'דורות באילן');

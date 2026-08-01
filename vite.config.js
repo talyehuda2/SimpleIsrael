@@ -8,7 +8,7 @@ const atlasAlias = {
   configureServer(server) {
     server.middlewares.use((req, _res, next) => {
       const [path, qs] = req.url.split('?');
-      if (path === '/atlas' || path === '/atlas/') req.url = '/proto-atlas.html' + (qs ? `?${qs}` : '');
+      if (path === '/atlas' || path === '/atlas/') req.url = '/atlas.html' + (qs ? `?${qs}` : '');
       next();
     });
   },

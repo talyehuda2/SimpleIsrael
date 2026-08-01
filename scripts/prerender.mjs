@@ -112,6 +112,9 @@ h1{margin:0 0 6px;font-size:32px;color:var(--navy);font-weight:900}
 .src{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin-top:20px}
 .src a{color:var(--gold);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--gold)}
 .cta{display:inline-block;margin:22px 0 8px;background:var(--navy);color:#fff;text-decoration:none;border-radius:22px;padding:12px 22px;font-size:16px;font-weight:700}
+.ctas{display:flex;flex-wrap:wrap;gap:10px}
+.cta.ghost{background:transparent;color:var(--navy);border:2px solid var(--navy);padding:10px 20px}
+.cta.ghost:hover{background:var(--navy);color:#fff}
 nav.rel{display:flex;justify-content:space-between;gap:10px;margin-top:26px;border-top:1px solid var(--line);padding-top:16px;font-size:14px}
 nav.rel a{color:var(--navy);text-decoration:none;font-weight:600;max-width:46%}
 footer{margin-top:34px;font-size:13px;color:var(--muted)}
@@ -272,7 +275,10 @@ ${rows.join('\n')}
 <p class="desc">${esc(desc)}</p>
 ${verseHtml}
 ${srcHtml ? `<div class="src"><b>מקור:</b> ${srcHtml}</div>` : ''}
-<a class="cta" href="/?sel=${it.kind}:${it.id}">פתחו בציר הזמן האינטראקטיבי ←</a>
+<div class="ctas">
+  <a class="cta" href="/?sel=${it.kind}:${it.id}">📜 פתחו בציר הזמן ←</a>
+  <a class="cta ghost" href="/atlas?sel=${it.kind}:${it.id}">🗺️ צאו למסע הדורות ←</a>
+</div>
 ${contempHtml}
 ${placeHtml}
 ${rel}`;
@@ -293,7 +299,10 @@ function periodPage(p, i) {
 <h1>${esc(p.name)}</h1>
 <div class="dates">${esc(formatRange(p.start, p.end, 'tradition'))}</div>
 <p class="desc">${esc(`${list.length} דמויות, אירועים וספרים מתוארכים לתקופה זו.`)}</p>
-<a class="cta" href="/">פתחו בציר הזמן האינטראקטיבי ←</a>
+<div class="ctas">
+  <a class="cta" href="/">📜 פתחו בציר הזמן ←</a>
+  <a class="cta ghost" href="/atlas">🗺️ צאו למסע הדורות ←</a>
+</div>
 <div class="idx">
 ${Object.entries(groups).map(([g, arr]) => `<h2>${esc(g)}</h2>
 <ul>${arr.map((it) => `<li><a href="/p/${it.kind}/${it.id}">${esc(it.name)}</a></li>`).join('')}</ul>`).join('\n')}
@@ -450,9 +459,16 @@ writeFileSync(join(DIST, 'p', 'index.html'), shell({
   body: idxBody,
 }));
 
+// תמונת שיתוף למבט המסע (/atlas), שאינו נבנה כדף-נחיתה אלא כקובץ סטטי
+writeCard(DIST, join('og', 'atlas.jpg'), {
+  name: 'מסע הדורות',
+  kindLabel: 'המפה והסיפור',
+  dates: 'מהאבות ועד חורבן בית שני',
+});
+
 // sitemap.xml
 const urls = [
-  `${SITE}/`, `${SITE}/p`,
+  `${SITE}/`, `${SITE}/atlas`, `${SITE}/p`,
   ...sortedPeriods.map(periodUrl),
   ...collections.map((c) => `${SITE}/p/collection/${c.id}`),
   ...items.map(urlOf),
@@ -485,5 +501,34 @@ if (!html.includes('id="crawl-index"')) {
   html = html.replace('</body>', `<noscript><nav id="crawl-index"><a href="/p">מפת האתר - כל הדמויות והאירועים</a></nav></noscript>\n</body>`);
 }
 writeFileSync(indexPath, html);
+
+// מבט המסע (/atlas) נבנה כולו ב-JavaScript מתוך atlas-data.json. מזריקים לו
+// JSON-LD ותוכן noscript עם כל הדמויות, כך שגם זחלן שאינו מריץ JS רואה על מה
+// הדף מדבר ומקבל נתיב לכל 158 דפי הנחיתה.
+const atlasPath = join(DIST, 'atlas.html');
+let atlasHtml = readFileSync(atlasPath, 'utf8');
+const atlasLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'מסע הדורות',
+  url: `${SITE}/atlas`,
+  description: 'מסע לאורך תולדות עם ישראל - כל דמות עם סיפורה המלא ומפת מסעותיה בארץ ישראל.',
+  inLanguage: 'he',
+  isPartOf: { '@type': 'WebSite', name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
+};
+if (!atlasHtml.includes('application/ld+json')) {
+  atlasHtml = atlasHtml.replace('</head>', `<script type="application/ld+json">${JSON.stringify(atlasLd)}</script>\n</head>`);
+}
+if (!atlasHtml.includes('id="crawl-atlas"')) {
+  const byPeriod = sortedPeriods.map((p) => `<h2>${esc(p.name)} (${esc(formatRange(p.start, p.end, 'tradition'))})</h2>
+<ul>${itemsInPeriod(p).map((it) => `<li><a href="/p/${it.kind}/${it.id}">${esc(it.name)}</a></li>`).join('')}</ul>`).join('\n');
+  atlasHtml = atlasHtml.replace('</body>', `<noscript><nav id="crawl-atlas">
+<h1>מסע הדורות - תולדות עם ישראל מהאבות ועד חורבן בית שני</h1>
+<p>המסע האינטראקטיבי דורש JavaScript. עד אז, הנה כל הדמויות והאירועים לפי תקופה,
+כל אחד עם סיפורו המלא: <a href="/p">מפת האתר</a> · <a href="/">ציר הזמן</a>.</p>
+${byPeriod}
+</nav></noscript>\n</body>`);
+}
+writeFileSync(atlasPath, atlasHtml);
 
 console.log(`prerender: ${count} item pages + ${sortedPeriods.length} period pages + index + sitemap (${urls.length} urls) + robots`);
