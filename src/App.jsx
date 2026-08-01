@@ -227,9 +227,9 @@ export default function App() {
     try { localStorage.setItem('si_visible', JSON.stringify(visible)); } catch { /* מתעלמים */ }
   }, [visible]);
 
-  // הציר אנכי תמיד. מצב אופקי בוטל - הוא הכפיל את הפריסה בלי להוסיף מידע,
+  // הציר אופקי תמיד. מצב אנכי בוטל - הוא הכפיל את הפריסה בלי להוסיף מידע,
   // ושתי הדרכים להסתכל על הנתונים הן היום ציר הזמן מול מסע הדורות.
-  const vertical = true;
+  const vertical = false;
 
   // כניסה/יציאה ממצב ניהול דרך ?admin=1
   useEffect(() => { handleAdminParam(); }, []);
@@ -1100,9 +1100,7 @@ export default function App() {
       )}
 
       <footer>
-        {vertical
-          ? 'גללו מטה לאורך הדורות - מהאבות ועד בית שני'
-          : 'הזמן זורם מימין (עבר) לשמאל · Ctrl+גלגלת לזום'}
+        הזמן זורם מימין (עבר) לשמאל · Ctrl+גלגלת לזום
         {' · '}
         {isAcademic
           ? 'התאריכים לפי המחקר ההיסטורי המקובל'

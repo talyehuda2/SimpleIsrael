@@ -713,6 +713,7 @@ h1 {
 .vw-ln { fill: var(--muted); opacity: .3; }
 .vw-ln-t { fill: var(--navy); opacity: .6; }
 @keyframes vwGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+/* עמודת-הזמן נעה לרוחב הציר - "מי חי לצד מי" ברגע נתון */
 @keyframes vwScan { 0%, 100% { transform: translateX(52px); } 50% { transform: translateX(-52px); } }
 @keyframes vwDash { to { stroke-dashoffset: -16; } }
 @keyframes vwPop { 0%, 8% { r: 0; opacity: 0; } 16%, 70% { r: 4.5; opacity: 1; } 100% { r: 4.5; opacity: .35; } }

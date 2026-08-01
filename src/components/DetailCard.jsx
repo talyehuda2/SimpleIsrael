@@ -170,14 +170,14 @@ export default function DetailCard({
               className={`dc-hl${contemporariesOn ? ' on' : ''}`}
               onClick={onToggleContemporaries}
               aria-pressed={contemporariesOn}
-              title="הדגשת כל בני-הזמן על הציר"
+              title={contemporariesOn ? 'ביטול הדגשת בני-הזמן על הציר' : 'הדגשת כל בני-הזמן על הציר'}
             >
-              {contemporariesOn ? 'בטל הדגשה' : 'הדגש בציר'}
+              👥 בני-הזמן
             </button>
           </div>
           {coachContemp && (
             <div className="coach-tip">
-              💡 לחצו על שם כדי לקפוץ אליו, או על "הדגש בציר" כדי לראות את כל בני הדור
+              💡 לחצו על שם כדי לקפוץ אליו, או על "בני-הזמן" כדי לראות את כל בני הדור
               <button className="coach-x" onClick={dismissCoachContemp} aria-label="הבנתי">✕</button>
             </div>
           )}
