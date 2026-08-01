@@ -217,6 +217,15 @@ export default function DetailCard({
             <span>מפת מסע</span>
           </button>
         )}
+        {/* גשר למבט השני - אותה דמות, הפעם עם המפה והסיפור המלא לצדה */}
+        <a
+          className="card-action"
+          href={`/atlas?sel=${item.kind}:${item.id}`}
+          title={`${item.name} במסע הדורות - המפה והסיפור המלא`}
+        >
+          <span className="dc-cbig" aria-hidden="true">🧭</span>
+          <span>מסע הדורות</span>
+        </a>
         <button
           type="button"
           className={`card-action${showComments ? ' active' : ''}`}

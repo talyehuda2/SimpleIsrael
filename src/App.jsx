@@ -38,10 +38,13 @@ function parseUrl() {
     map: p.get('map'),
     step: step != null ? parseInt(step, 10) : null,
     tree: p.get('tree') === '1',
+    // ?contemp=1 - נחיתה עם בני-הזמן כבר מודגשים. כך "הצג על ציר הזמן"
+    // ממסע הדורות מגיע ישר לתשובה שהמבט הזה טוב בה: מי חי לצד מי.
+    contemp: p.get('contemp') === '1',
   };
 }
 
-function buildUrl({ sel, map, step, tree }) {
+function buildUrl({ sel, map, step, tree, contemp }) {
   const p = new URLSearchParams();
   if (sel) p.set('sel', sel);
   if (map) {
@@ -49,6 +52,7 @@ function buildUrl({ sel, map, step, tree }) {
     if (step != null && step >= 0) p.set('step', String(step));
   }
   if (tree) p.set('tree', '1');
+  if (contemp) p.set('contemp', '1');
   const qs = p.toString();
   return window.location.pathname + (qs ? `?${qs}` : '');
 }
@@ -147,7 +151,7 @@ export default function App() {
   const [mapStep, setMapStep] = useState(INITIAL.step != null ? INITIAL.step : -1);
   // הפריט שבני-הזמן שלו מודגשים - נשמר בנפרד מהבחירה, כדי שההדגשה תישאר
   // גם אחרי סגירת הכרטיס (חשוב במובייל, שם הכרטיס מסתיר את הציר).
-  const [contempItem, setContempItem] = useState(null);
+  const [contempItem, setContempItem] = useState(() => (INITIAL.contemp ? resolveKey(INITIAL.sel) : null));
   const [mapMin, setMapMin] = useState(false); // מפת המסע ממוזערת לרצועה? (דסקטופ)
   const [mapOpen, setMapOpen] = useState(false); // מפת המסע כשכבה מלאה (מובייל)
   // במובייל המפה אינה מעוגנת לצד הכרטיס (זה מחלק את המסך לשניים) אלא נפתחת לפי דרישה
@@ -193,10 +197,15 @@ export default function App() {
 
   // שיתוף התצוגה הנוכחית: שיתוף מקורי במובייל (וואטסאפ וכו'), אחרת העתקה ללוח
   // כפתור הכותרת משתף את האתר עצמו; שיתוף דמות נעשה מתוך הכרטיס שלה.
+  // שיתוף "מה שאני רואה": הקישור נושא את המבט (ציר הזמן) ואת הדמות הנבחרת,
+  // כך שהמקבל נוחת על אותה תמונה. שיתוף כרטיס בודד נשאר על דף הנחיתה,
+  // שיש לו תמונת שיתוף ייחודית ותוכן שנקרא בלי JavaScript.
   const shareView = async () => {
+    const contemp = !!(selected && contempItem && itemKey(contempItem) === itemKey(selected));
+    const path = buildUrl({ sel: selected ? itemKey(selected) : null, contemp });
     const res = await shareLink({
-      url: `${window.location.origin}/`,
-      title: 'ציר הזמן של עם ישראל',
+      url: window.location.origin + path,
+      title: selected ? `${selected.name} - ציר הזמן של עם ישראל` : 'ציר הזמן של עם ישראל',
     });
     if (res === 'copied') setShareMsg('הקישור הועתק ✓');
     else if (res === 'failed') setShareMsg('העתיקו מהכתובת שלמעלה');
@@ -479,13 +488,14 @@ export default function App() {
       return;
     }
     const map = mapItem ? itemKey(mapItem) : null;
-    const url = buildUrl({ sel: selected ? itemKey(selected) : null, map, step: mapStep, tree: treeOpen });
+    const contemp = !!(selected && contempItem && itemKey(contempItem) === itemKey(selected));
+    const url = buildUrl({ sel: selected ? itemKey(selected) : null, map, step: mapStep, tree: treeOpen, contemp });
     // פתיחת חלונית (מפה/אילן) דוחפת רשומת היסטוריה כדי ש"אחורה" יסגור אותה; שאר השינויים מחליפים בלבד
     const opened = (map && map !== prevOverlay.current.map) || (treeOpen && !prevOverlay.current.tree);
     if (opened) { window.history.pushState({}, '', url); overlayPushed.current += 1; }
     else window.history.replaceState({}, '', url);
     prevOverlay.current = { map, tree: treeOpen };
-  }, [selected, mapItem, mapStep, treeOpen]);
+  }, [selected, mapItem, mapStep, treeOpen, contempItem]);
 
   // כפתור "אחורה" של הדפדפן
   useEffect(() => {
