@@ -67,6 +67,28 @@ button{font-family:inherit}
 .tool:hover{border-color:var(--gold);background:var(--panel)}
 .tool.primary{background:var(--navy);border-color:var(--navy);color:#fff}
 #tools{display:flex;gap:6px;flex:none}
+/* ---- חיפוש ---- */
+#search{position:relative;flex:0 1 300px;min-width:0}
+#q{width:100%;font-family:inherit;font-size:13px;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:18px;padding:7px 32px 7px 12px;outline:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d5c42' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-size:14px;background-position:right 11px center}
+#q:focus{border-color:var(--gold);background-color:var(--panel)}
+#q::-webkit-search-cancel-button{cursor:pointer}
+#qtoggle{display:none;flex:none;font-size:15px;line-height:1;background:var(--bg);cursor:pointer;
+  border:1px solid var(--line);border-radius:16px;padding:6px 9px}
+#qres{position:absolute;top:calc(100% + 6px);inset-inline-start:0;inset-inline-end:0;max-height:60vh;
+  overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 12px 30px rgb(30 20 5 / .28);padding:5px;display:none;z-index:45}
+#qres.show{display:block}
+#qres .qgroup{font-size:10.5px;font-weight:700;color:var(--gold-ink);padding:6px 8px 3px}
+#qres button{display:flex;align-items:center;gap:7px;width:100%;text-align:right;font-family:inherit;
+  background:none;border:none;border-radius:8px;padding:6px 8px;cursor:pointer;color:var(--ink)}
+#qres button:hover,#qres button.sel{background:var(--bg)}
+#qres .qn{font-size:13.5px;font-weight:700;color:var(--navy)}
+#qres .qm{font-size:11px;color:var(--muted);margin-inline-start:auto;white-space:nowrap}
+#qres .qi{font-size:12px;flex:none;font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif}
+#qres .qempty{padding:10px 9px;font-size:12.5px;color:var(--muted)}
 
 /* ===================== שלוש עמודות ===================== */
 /* סדר מימין לשמאל: תקופות · שמות · פירוט · מפה */
@@ -95,6 +117,12 @@ button{font-family:inherit}
   box-shadow:0 12px 32px rgb(30 20 5 / .35)}
 .tour-box b{display:block;font-size:15px;color:var(--navy);margin-bottom:4px}
 .tour-box p{margin:0 0 10px;font-size:12.5px;line-height:1.65;color:var(--ink)}
+.tpick{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 11px}
+.tp{display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;
+  color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:14px;
+  padding:5px 9px;cursor:pointer;transition:background .12s,color .12s,border-color .12s}
+.tp[aria-pressed="true"]{background:var(--kc);border-color:var(--kc);color:#fff}
+.tp .gl{font-size:11px;line-height:1;font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif}
 .tour-nav{display:flex;align-items:center;gap:7px}
 .tour-nav span{font-size:11px;color:var(--muted);margin-inline-end:auto;font-variant-numeric:tabular-nums}
 .tour-nav button{font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;
@@ -337,6 +365,11 @@ body.sheet-open #dMap{display:flex}
   #brand span{display:none}
   #pop{width:185px}
   .tool span.tl{display:none}
+  /* אין מקום לתיבת חיפוש בסרגל צר: כפתור זכוכית פותח אותה על פני הסרגל */
+  #qtoggle{display:block}
+  #search{position:fixed;inset-inline:10px;top:8px;display:none;z-index:50}
+  #search.open{display:block}
+  #search.open ~ .spacer,body.qopen #tools,body.qopen #brand{display:none}
 }
 </style>
 </head>
@@ -347,6 +380,12 @@ body.sheet-open #dMap{display:flex}
     <h1>🗺️ מסע הדורות</h1>
     <span>ציר הזמן של עם ישראל</span>
   </a>
+  <div id="search">
+    <input id="q" type="search" autocomplete="off" placeholder="חיפוש דמות, אירוע או מקום…"
+      aria-label="חיפוש" aria-expanded="false" aria-controls="qres"/>
+    <div id="qres" role="listbox" aria-label="תוצאות חיפוש"></div>
+  </div>
+  <button id="qtoggle" aria-label="חיפוש" title="חיפוש">🔍</button>
   <span class="spacer"></span>
   <div id="tools">
     <button class="tool" id="tTree">👑 <span class="tl">בית דוד</span></button>
@@ -441,6 +480,7 @@ async function build() {
   syncBar();
   renderStory();
   balanceColumns(); fitMap();
+  initSearch();
   openFromUrl();
   if (new URLSearchParams(location.search).get('tour') === '1') setTimeout(startTour, 700);
   addEventListener('scroll', pick, { passive: true });
@@ -572,6 +612,90 @@ let pinned = null;
 
 // כניסה מציר הזמן או מקישור משותף: /atlas?sel=kind:id (גם id בלבד נתמך).
 // אם הפריט מסונן החוצה, מדליקים את השכבה שלו כדי שהוא באמת ייראה.
+// ==================== חיפוש ====================
+// שלוש קבוצות נפרדות, כמו בציר הזמן: התאמה ישירה בשם, מקום על מסלול המסע,
+// ואזכור בגוף הטקסט. הפרדה זו מונעת ערבוב של "דוד" הדמות עם "עיר דוד".
+const norm = (s) => (s || '').replace(/[״"׳'־]/g, '').trim();
+// התאמה בתחילת מילה בלבד. חיפוש תת-מחרוזת חופשי החזיר את "אשדוד" עבור
+// "דוד" ואת "מרים" עבור "רים" - רעש שמטשטש את התוצאה האמיתית.
+const hits = (hay, q) => {
+  const h = norm(hay);
+  if (!h) return false;
+  const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp('(^|[\\s\\-–(,./"׳״])' + esc).test(h);
+};
+function searchItems(raw) {
+  const q = norm(raw);
+  if (q.length < 2) return [];
+  const name = [], place = [], text = [];
+  items.forEach((it, i) => {
+    if (hits(it.name, q)) { name.push({ i, it, why: it.kindLabel }); return; }
+    const pt = it.map && it.map.points.find((p) => hits(p.name, q));
+    if (pt) { place.push({ i, it, why: pt.name }); return; }
+    if (hits(it.desc, q) || hits(it.verse, q)) text.push({ i, it, why: 'אזכור בתיאור' });
+  });
+  const cut = (a, n) => a.sort((x, y) => x.it.start - y.it.start).slice(0, n);
+  return [
+    { label: 'התאמה בשם', rows: cut(name, 8) },
+    { label: 'עבר במקום הזה', rows: cut(place, 6) },
+    { label: 'מוזכר בתיאור', rows: cut(text, 5) },
+  ].filter((g) => g.rows.length);
+}
+let qRows = [], qSel = -1;
+function renderResults(raw) {
+  const box = $('#qres'), groups = searchItems(raw);
+  qRows = groups.flatMap((g) => g.rows); qSel = -1;
+  if (norm(raw).length < 2) { box.classList.remove('show'); $('#q').setAttribute('aria-expanded', 'false'); return; }
+  if (!groups.length) {
+    box.innerHTML = `<div class="qempty">לא נמצאו תוצאות עבור "${raw}"</div>`;
+  } else {
+    let k = 0;
+    box.innerHTML = groups.map((g) =>
+      `<div class="qgroup">${g.label}</div>` + g.rows.map((r) =>
+        `<button data-k="${k++}" data-go="${r.i}" role="option">
+           <span class="qi" style="color:${KIND_COLOR[r.it.kind]}">${KIND_ICON[r.it.kind]}</span>
+           <span class="qn">${r.it.name}</span><span class="qm">${r.why} · ${r.it.start}–${r.it.end}</span>
+         </button>`).join('')).join('');
+    box.querySelectorAll('button').forEach((b) =>
+      b.addEventListener('mousedown', (e) => { e.preventDefault(); pickResult(+b.dataset.go); }));
+  }
+  box.classList.add('show'); $('#q').setAttribute('aria-expanded', 'true');
+}
+function pickResult(i) {
+  closeSearch();
+  goIndex(i);
+}
+function moveSel(d) {
+  if (!qRows.length) return;
+  qSel = (qSel + d + qRows.length) % qRows.length;
+  $('#qres').querySelectorAll('button').forEach((b, k) => b.classList.toggle('sel', k === qSel));
+  $('#qres').querySelector('button.sel')?.scrollIntoView({ block: 'nearest' });
+}
+function closeSearch() {
+  $('#qres').classList.remove('show');
+  $('#q').value = ''; $('#q').blur(); $('#q').setAttribute('aria-expanded', 'false');
+  $('#search').classList.remove('open'); document.body.classList.remove('qopen');
+  qRows = []; qSel = -1;
+}
+function initSearch() {
+  const q = $('#q');
+  q.addEventListener('input', () => renderResults(q.value));
+  q.addEventListener('focus', () => { if (q.value) renderResults(q.value); });
+  q.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveSel(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveSel(-1); }
+    else if (e.key === 'Enter') { const r = qRows[qSel >= 0 ? qSel : 0]; if (r) { e.preventDefault(); pickResult(r.i); } }
+    else if (e.key === 'Escape') { e.preventDefault(); closeSearch(); }
+  });
+  $('#qtoggle').addEventListener('click', () => {
+    $('#search').classList.add('open'); document.body.classList.add('qopen'); q.focus();
+  });
+  // סגירה בלחיצה בחוץ; mousedown על תוצאה כבר טופל לפני שה-blur מבטל אותה
+  addEventListener('mousedown', (e) => {
+    if (!e.target.closest('#search') && !e.target.closest('#qtoggle')) closeSearch();
+  });
+}
+
 // ==================== סיור קצר ====================
 // מגיעים לכאן מ-/atlas?tour=1, כשהמבקר ביקש הדרכה במסך הפתיחה. זרקור על
 // אזור אחד בכל פעם, במקום שקפים שמסתירים את המסך ומלמדים לפני שרואים.
@@ -580,14 +704,14 @@ let pinned = null;
 const TOUR_WIDE = [
   { sel: '#story', title: 'הסיפור נגלל', text: 'הדמויות והאירועים מסודרים לפי סדר הדורות. גללו, ולחצו על שם כדי לפתוח אותו.' },
   { sel: '#eras', title: 'קפיצה בין תקופות', text: 'סרגל התקופות. לחיצה מקפיצה לתחילת התקופה, ורווח במקלדת מדלג לבאה.' },
-  { sel: '#filters', title: 'מה להציג', text: 'הדליקו וכבו סוגים - מלכים, נביאים, ספרים, אירועים - כדי לנקות את הרשימה.' },
+  { sel: '#filters', title: 'מה להציג?', text: 'בחרו כאן ועכשיו מה יופיע ברשימה. תמיד אפשר לשנות בשורת הסינון.', picker: true },
   { sel: '#detail', title: 'הכרטיס המלא', text: 'הסיפור, הפסוק, המקורות, בני-הזמן, וקישור לאותה דמות על ציר הזמן.' },
   { sel: '#mapPane', title: 'המפה', text: 'למי שיש מסע - התחנות מסומנות על המפה, ואפשר להריץ אותו תחנה אחר תחנה.' },
 ];
 const TOUR_NARROW = [
   { sel: '#story', title: 'הסיפור נגלל', text: 'הדמויות והאירועים לפי סדר הדורות. הקישו על שם כדי לפתוח את הכרטיס המלא - ובתוכו גם כפתור לפתיחת המפה.' },
   { sel: '#eras', title: 'קפיצה בין תקופות', text: 'סרגל התקופות. הקשה מקפיצה לתחילת התקופה שבחרתם.' },
-  { sel: '#filters', title: 'מה להציג', text: 'הדליקו וכבו סוגים - מלכים, נביאים, ספרים, אירועים - כדי לנקות את הרשימה.' },
+  { sel: '#filters', title: 'מה להציג?', text: 'בחרו כאן ועכשיו מה יופיע ברשימה. תמיד אפשר לשנות בשורת הסינון.', picker: true },
 ];
 let TOUR = TOUR_WIDE, tourStep = 0;
 function startTour() { TOUR = isNarrow() ? TOUR_NARROW : TOUR_WIDE; tourStep = 0; showTourStep(); }
@@ -624,6 +748,9 @@ function showTourStep() {
        width:${b.width}px;height:${b.height}px"></div>
      <div class="tour-box">
        <b>${s.title}</b><p>${s.text}</p>
+       ${s.picker ? `<div class="tpick">${LAYERS.map(l =>
+         `<button class="tp" data-l="${l.key}" aria-pressed="${on[l.key]}" style="--kc:${l.color}">
+            <span class="gl">${l.icon}</span>${l.label}</button>`).join('')}</div>` : ''}
        <div class="tour-nav">
          <span>${tourStep + 1}/${TOUR.length}</span>
          <button class="tskip">דילוג</button>
@@ -631,6 +758,14 @@ function showTourStep() {
        </div>
      </div>`;
   document.body.appendChild(wrap);
+  // בחירת השכבות בתוך הסיור משנה מיד את הרשימה שמאחור, כדי שהמבקר יראה
+  // את התוצאה של הבחירה ולא רק ישמע עליה
+  wrap.querySelectorAll('.tp').forEach(b => b.addEventListener('click', () => {
+    on[b.dataset.l] = !on[b.dataset.l];
+    b.setAttribute('aria-pressed', on[b.dataset.l]);
+    $('#filters').querySelector(`.fbtn[data-l="${b.dataset.l}"]`)?.setAttribute('aria-pressed', on[b.dataset.l]);
+    applyFilters();
+  }));
   // התיבה יושבת בצד הפנוי הגדול יותר כדי שלא תכסה את מה שהיא מסבירה; אם אין
   // צד פנוי (המפה תופסת כמעט הכול) היא יורדת לתחתית האזור.
   const box = wrap.querySelector('.tour-box');

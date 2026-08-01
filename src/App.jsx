@@ -1119,6 +1119,9 @@ export default function App() {
           <button onClick={() => setTreeOpen(true)}><span aria-hidden="true">👑</span>אילן</button>
           <button onClick={() => dailyFigure && jumpToId(dailyFigure.id)}><span aria-hidden="true">🗓️</span>היום</button>
           <button onClick={() => setInsightsOpen(true)}><span aria-hidden="true">📊</span>תובנות</button>
+          {/* מתג המבטים. בדסקטופ הוא בשורת הכלים, שמוסתרת כאן - ובלעדיו לא
+              הייתה במובייל שום דרך להגיע למסע הדורות מלבד כרטיס פתוח. */}
+          <a href={atlasHref}><span aria-hidden="true">🗺️</span>מסע</a>
           <button onClick={() => setMoreOpen(true)} aria-haspopup="true" aria-expanded={moreOpen}><span aria-hidden="true">⋯</span>עוד</button>
         </nav>
       )}
