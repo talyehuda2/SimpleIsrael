@@ -60,7 +60,7 @@ export default function MapPanel({ item, onClose, initialStep = -1, onStep, dock
     if (onStepRef.current) onStepRef.current(step);
   }, [step]);
 
-  // מקש Esc לסגירה — רק במצב חלונית מלאה (במצב מעוגן הכרטיס מטפל ב-Esc)
+  // מקש Esc לסגירה - רק במצב חלונית מלאה (במצב מעוגן הכרטיס מטפל ב-Esc)
   useEffect(() => {
     if (docked) return undefined;
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -101,7 +101,7 @@ export default function MapPanel({ item, onClose, initialStep = -1, onStep, dock
 
   if (!data) return null;
 
-  // מצב מעוגן וממוזער — רצועה דקה לצד הכרטיס, לחיצה פותחת שוב
+  // מצב מעוגן וממוזער - רצועה דקה לצד הכרטיס, לחיצה פותחת שוב
   if (docked && minimized) {
     return (
       <button className="map-strip" onClick={onToggleMin} title="הצגת מפת המסע">
@@ -155,9 +155,9 @@ export default function MapPanel({ item, onClose, initialStep = -1, onStep, dock
           <svg viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`} className="map-svg" preserveAspectRatio="xMidYMid meet"
                role="img" aria-label={`מפת ארץ ישראל עם תחנות המסע${item ? ' של ' + item.name : ''}`}>
             <image href="/israel-map.jpg" x="0" y="0" width={IMG_W} height={IMG_H} />
-            {/* קו התכנון — כל המסלול, מקווקו וחלש */}
+            {/* קו התכנון - כל המסלול, מקווקו וחלש */}
             <polyline points={pathPts} className="journey" style={{ opacity: step < 0 ? 0.75 : 0.28 }} />
-            {/* קו ההתקדמות — נמתח בהדרגה עד התחנה הנוכחית */}
+            {/* קו ההתקדמות - נמתח בהדרגה עד התחנה הנוכחית */}
             <polyline points={pathPts} className="journey-progress" stroke={color}
               style={{ strokeDasharray: total, strokeDashoffset: progressOffset }} />
             {/* סמנים ממוספרים */}
@@ -200,7 +200,7 @@ export default function MapPanel({ item, onClose, initialStep = -1, onStep, dock
           {data.points.map((p, i) => (
             <li key={p.id} className={i === step ? 'active' : ''} onClick={() => { setPlaying(false); setStep(i); }}>
               <span className="map-legend-num" style={{ background: color }}>{p.order}</span>
-              <span><b>{p.name}</b> — {p.label}</span>
+              <span><b>{p.name}</b> - {p.label}</span>
             </li>
           ))}
         </ol>

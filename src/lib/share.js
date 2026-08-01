@@ -19,6 +19,6 @@ export async function shareLink({ url, title }) {
   }
 }
 
-// כתובת דף הפריט — היא זו שנושאת תמונת שיתוף ייחודית ותוכן שנקרא בלי JavaScript
+// כתובת דף הפריט - היא זו שנושאת תמונת שיתוף ייחודית ותוכן שנקרא בלי JavaScript
 export const itemPageUrl = (item) =>
   `${window.location.origin}/p/${item.kind}/${item.id}`;

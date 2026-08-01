@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { SUPABASE_URL, SUPABASE_KEY } from '../lib/supabaseConfig.js';
 
-// תיבת פניות למנהל — פרטית. ההערות נשמרות עם target_key='admin:notes',
+// תיבת פניות למנהל - פרטית. ההערות נשמרות עם target_key='admin:notes',
 // שכלל ה-RLS מסתיר מקריאה ציבורית. שליחה ב-fetch ישיר (בלי supabase-js)
 // כדי לא להכביד על החבילה הראשית. ההתראות (מייל/טלגרם) נשלחות ע"י אותו טריגר.
 const MAX = 1000;
@@ -55,7 +55,7 @@ export default function NotesBox({ open, onClose }) {
       hp: hp.current ? hp.current.value : '',
     });
     setSending(false);
-    if (!ok) { setErr('השליחה נכשלה — נסו שוב'); return; }
+    if (!ok) { setErr('השליחה נכשלה - נסו שוב'); return; }
     setName(''); setBody(''); setDone(true);
   };
 
@@ -66,14 +66,14 @@ export default function NotesBox({ open, onClose }) {
         {done ? (
           <div className="notes-done">
             <div className="notes-done-icon" aria-hidden="true">✓</div>
-            <h3>ההערה נשלחה — תודה!</h3>
+            <h3>ההערה נשלחה - תודה!</h3>
             <p>הפנייה הגיעה ישירות למנהל האתר. תודה שעזרתם לשפר.</p>
             <button className="notes-submit" onClick={onClose}>סגירה</button>
           </div>
         ) : (
           <>
             <h3 className="notes-title">✍️ הערה למנהל האתר</h3>
-            <p className="notes-sub">הערות, הארות, תיקונים או כל דבר אחר — יגיעו ישירות למנהל ולא יוצגו באתר.</p>
+            <p className="notes-sub">הערות, הארות, תיקונים או כל דבר אחר - יגיעו ישירות למנהל ולא יוצגו באתר.</p>
             <form onSubmit={submit}>
               <input
                 className="notes-name" type="text" placeholder="שם (אופציונלי)"

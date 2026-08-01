@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <meta name="robots" content="noindex"/>
-<title>אטלס הדורות — אב־טיפוס | ציר הזמן של עם ישראל</title>
+<title>אטלס הדורות - אב־טיפוס | ציר הזמן של עם ישראל</title>
 <style>
 @font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;font-display:swap;src:url('/fonts/frankruhllibre-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
 @font-face{font-family:'Heebo';font-weight:300 700;font-display:swap;src:url('/fonts/heebo-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
@@ -27,7 +27,7 @@ button{font-family:inherit}
 #bar h1{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:18px;color:var(--navy);margin:0;white-space:nowrap}
 #bar h1 span{font-size:11px;color:var(--gold-ink);font-weight:700;font-family:'Heebo',sans-serif}
 #bar .spacer{flex:1}
-/* סרגל התקופות — טור אנכי בקצה ימין, צמוד לרשימת השמות */
+/* סרגל התקופות - טור אנכי בקצה ימין, צמוד לרשימת השמות */
 #eras{position:fixed;top:var(--bar);bottom:0;inset-inline-start:0;width:var(--era-w);z-index:20;
   display:flex;flex-direction:column;gap:5px;padding:12px 9px;overflow-y:auto;scrollbar-width:none;
   background:var(--panel);border-inline-end:1px solid var(--line)}
@@ -112,7 +112,7 @@ body.sheet-open #dMap{display:flex}
   font-style:normal;font-size:10.5px;font-weight:800;flex:none}
 #pop .pl{font-size:11px;font-weight:700;color:var(--gold-ink);padding:6px 11px 0}
 #pop .pd{font-size:11.5px;line-height:1.6;padding:2px 11px 9px;margin:0}
-/* מקרא המקומות — טור אנכי בצד שמאל של המפה */
+/* מקרא המקומות - טור אנכי בצד שמאל של המפה */
 #legend{flex:none;width:var(--leg-w);display:flex;flex-direction:column;gap:5px;overflow-y:auto;
   padding:10px 9px;background:var(--panel);border-inline-end:1px solid var(--line);scrollbar-width:none}
 #legend::-webkit-scrollbar{display:none}
@@ -128,11 +128,11 @@ body.sheet-open #dMap{display:flex}
 #noMap span{background:var(--panel);border:1px dashed var(--gold);border-radius:12px;padding:10px 18px;font-size:13px;color:var(--muted)}
 
 /* ===================== טור הסיפור ===================== */
-/* RTL: inline-start = ימין — משאירים מקום לסרגל התקופות, וה-auto בצד השני דוחף ימינה */
+/* RTL: inline-start = ימין - משאירים מקום לסרגל התקופות, וה-auto בצד השני דוחף ימינה */
 #story{position:relative;z-index:10;width:var(--story-w);
   margin-inline-start:var(--era-w);margin-inline-end:auto;padding:calc(var(--bar) + 14px) 16px 62vh}
 #story::before{content:'';position:absolute;top:0;bottom:0;inset-inline-end:12px;width:2px;background:var(--gold);opacity:.4}
-/* סינון הסוגים — צמוד לראש הרשימה שהוא מסנן */
+/* סינון הסוגים - צמוד לראש הרשימה שהוא מסנן */
 #filters{position:sticky;top:var(--bar);z-index:14;display:flex;gap:5px;flex-wrap:wrap;align-items:center;
   background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 9px;margin:0 0 6px;
   box-shadow:0 3px 10px rgb(60 40 0 / .12)}
@@ -140,7 +140,7 @@ body.sheet-open #dMap{display:flex}
 .fbtn{flex:none;display:flex;align-items:center;justify-content:center;width:29px;height:29px;padding:0;
   border-radius:9px;font-size:14px;cursor:pointer;background:color-mix(in srgb, var(--kc) 16%, transparent);
   border:1px solid color-mix(in srgb, var(--kc) 50%, transparent);color:var(--kc);transition:opacity .15s,filter .15s}
-/* אמוג'י ותווים גיאומטריים באים מגופנים שונים — עוטפים ב-span עם קופסה נקייה
+/* אמוג'י ותווים גיאומטריים באים מגופנים שונים - עוטפים ב-span עם קופסה נקייה
    כדי שכולם ימורכזו זהה, בלי הסטת קו-בסיס */
 .fbtn .gl,.kicon .gl{display:block;line-height:1;font-size:1em;
   font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji','Segoe UI Symbol',sans-serif}
@@ -148,6 +148,10 @@ body.sheet-open #dMap{display:flex}
 .fbtn[aria-pressed="false"]{opacity:.34;filter:grayscale(1)}
 .fbtn:hover{opacity:1}
 #filters .fcnt{margin-inline-start:auto;font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+#filters .khint{flex:0 0 100%;font-size:10.5px;color:var(--muted);opacity:.8;margin-top:1px}
+#filters .khint kbd{font:inherit;background:rgba(0,0,0,.05);border:1px solid var(--line);
+  border-radius:4px;padding:0 4px;margin:0 1px}
+@media (max-width:980px){#filters .khint{display:none}}
 .ehead{position:sticky;top:calc(var(--bar) + var(--filt-h, 44px) + 10px);z-index:12;margin:22px 0 10px;width:fit-content;max-width:100%;
   background:var(--navy);color:#f4ecd8;font-size:13.5px;font-weight:800;border-radius:12px;padding:6px 14px;
   box-shadow:0 5px 16px rgb(10 20 40/.3)}
@@ -158,7 +162,7 @@ body.sheet-open #dMap{display:flex}
   background:var(--gold);border:2px solid var(--bg);transition:transform .25s,background .25s}
 .card{display:flex;align-items:flex-start;gap:10px}
 .cbody{flex:1;min-width:0}
-/* אייקון הסוג — בצד ימין של הכרטיס (RTL: הילד הראשון) */
+/* אייקון הסוג - בצד ימין של הכרטיס (RTL: הילד הראשון) */
 .kicon{flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;
   font-size:15px;background:color-mix(in srgb, var(--kc) 15%, transparent);
   border:1px solid color-mix(in srgb, var(--kc) 45%, transparent);color:var(--kc)}
@@ -227,7 +231,7 @@ body.sheet-open #dMap{display:flex}
   opacity:0;pointer-events:none;transition:opacity .3s}
 #toast.show{opacity:1}
 
-/* ===== מסכים בינוניים: מפנים מקום למפה — תקופות לרצועה עליונה, בלי מקרא צדי ===== */
+/* ===== מסכים בינוניים: מפנים מקום למפה - תקופות לרצועה עליונה, בלי מקרא צדי ===== */
 @media (max-width:1400px){
   :root{--era-w:0px;--erabar:44px;--leg-w:0px}
   #eras{top:var(--bar);bottom:auto;inset-inline-start:0;width:100%;height:var(--erabar);
@@ -351,7 +355,7 @@ const CHEV_R = chev('M9 4 L17 12 L9 20');
 const CHEV_L = chev('M15 4 L7 12 L15 20');
 
 let DATA = null, items = [], visible = [], active = -1, step = -1, playT = null;
-// מרכז אזור התחנות בכל המסעות — נקודת העיגון הקבועה של חיתוך המפה, כך שגם
+// מרכז אזור התחנות בכל המסעות - נקודת העיגון הקבועה של חיתוך המפה, כך שגם
 // כשהחלון חותך, התחנות (ולא הים הריק) נשארות בפריים. אותו מבט לכל הפריטים.
 let ANCHOR = { x: IMG / 2, y: IMG / 2 };
 let on = Object.fromEntries(LAYERS.map(l => [l.key, true]));
@@ -372,7 +376,7 @@ async function build() {
   $('#eras').querySelectorAll('.echip').forEach(b => b.addEventListener('click', () => {
     const first = document.querySelector(`.card:not(.hidden)[data-era="${b.dataset.e}"]`);
     if (first) centerCard(first);
-    else toast('אין פריטים גלויים בתקופה זו — בדקו את השכבות');
+    else toast('אין פריטים גלויים בתקופה זו - בדקו את השכבות');
   }));
   syncBar();
   renderStory();
@@ -386,21 +390,31 @@ async function build() {
   $('#mapClose').addEventListener('click', closeMap);
   $('#sheetBack').addEventListener('click', closeSheet);
   addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
-    if (document.querySelector('.ov')) return document.querySelectorAll('.ov').forEach(o => o.remove());
-    if (document.body.classList.contains('map-open')) return closeMap();
-    closeSheet();
+    if (e.key === 'Escape') {
+      if (document.querySelector('.ov')) return document.querySelectorAll('.ov').forEach(o => o.remove());
+      if (document.body.classList.contains('map-open')) return closeMap();
+      return closeSheet();
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+    if (inField(e.target) || document.querySelector('.ov')) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); navFigure(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); navFigure(-1); }
+    else if (e.key === ' ' || e.key === 'Spacebar') {
+      if (onControl(e.target)) return;                 // רווח מפעיל כפתור ממוקד
+      e.preventDefault(); navEra(e.shiftKey ? -1 : 1);
+    }
   });
 }
 
 function renderStory() {
   const html = [];
   let gi = 0;
-  // שורת הסינון — יושבת בראש רשימת השמות, לא בסרגל העליון
+  // שורת הסינון - יושבת בראש רשימת השמות, לא בסרגל העליון
   html.push(`<div id="filters"><span class="flab">הצג:</span>` +
     LAYERS.map(l => `<button class="fbtn" data-l="${l.key}" style="--kc:${l.color}"
       aria-pressed="${on[l.key]}" title="${l.label}"><span class="gl">${l.icon}</span></button>`).join('') +
-    `<span class="fcnt" id="fcnt"></span></div>`);
+    `<span class="fcnt" id="fcnt"></span>` +
+    `<span class="khint"><kbd>↑</kbd><kbd>↓</kbd> מעבר בין דמויות · <kbd>רווח</kbd> מעבר בין תקופות</span></div>`);
   DATA.eras.forEach((era, ei) => {
     html.push(`<div class="ehead" id="eh-${ei}">✦ <b>${era.title}</b> · ${era.start}–${era.end}</div>`);
     era.items.forEach((it) => {
@@ -437,7 +451,7 @@ function applyFilters() {
   const f = $('#fcnt'); if (f) f.textContent = n + ' פריטים';
   syncFilterHeight();
 }
-// גובה שורת הסינון נמדד — כותרות התקופה נצמדות מתחתיה ולא עליה
+// גובה שורת הסינון נמדד - כותרות התקופה נצמדות מתחתיה ולא עליה
 function syncFilterHeight() {
   const el = $('#filters'); if (!el) return;
   document.documentElement.style.setProperty('--filt-h', Math.round(el.getBoundingClientRect().height) + 'px');
@@ -449,21 +463,26 @@ const refreshVisible = () => {
 const isNarrow = () => matchMedia('(max-width:980px)').matches;
 const focusLine = () => innerHeight * (isNarrow() ? .5 : .45);
 
-// ===== מובייל: גיליון הכרטיס ושכבת המפה =====
-function openSheet(i) {
+// סימון הפריט הפעיל מיידית (בלי להמתין לסיום הגלילה) - כך ניווט המקלדת מגיב
+// בלחיצה עצמה, ולא רק כשהכרטיס מגיע לקו הבחירה.
+function markActive(i) {
   document.querySelectorAll('.card').forEach(el => el.classList.toggle('on', +el.dataset.i === i));
   active = i; render(); markEra(i);
+}
+// ===== מובייל: גיליון הכרטיס ושכבת המפה =====
+function openSheet(i) {
+  markActive(i);
   document.body.classList.add('sheet-open');
 }
 const closeSheet = () => document.body.classList.remove('sheet-open');
 const openMap = () => { document.body.classList.add('map-open'); fitMap(); paint(); };
 const closeMap = () => document.body.classList.remove('map-open');
-// גובה הסרגל נמדד בפועל (הוא נשבר לשתי שורות במובייל) — כך הפריסה לא מתפספסת
+// גובה הסרגל נמדד בפועל (הוא נשבר לשתי שורות במובייל) - כך הפריסה לא מתפספסת
 function syncBar() {
   const h = Math.round($('#bar').getBoundingClientRect().height);
   document.documentElement.style.setProperty('--bar', h + 'px');
 }
-// גלילה חלקה משלנו — scrollTo({behavior:'smooth'}) אינו אמין בכל הסביבות.
+// גלילה חלקה משלנו - scrollTo({behavior:'smooth'}) אינו אמין בכל הסביבות.
 // רשת ביטחון: אם rAF אינו רץ (למשל בלשונית שאינה מקומפזת), קופצים ליעד.
 let animT = null, safeT = null, animDone = true;
 function scrollToY(target) {
@@ -483,11 +502,49 @@ function scrollToY(target) {
   animT = requestAnimationFrame(tick);
   safeT = setTimeout(() => { if (!animDone) { cancelAnimationFrame(animT); scrollTo(0, to); animDone = true; pick(); } }, dur + 140);
 }
-// כרטיסים בקצוות הדף אינם יכולים להגיע לקו הבחירה (הגלילה נחסמת) — במקרה
+// כרטיסים בקצוות הדף אינם יכולים להגיע לקו הבחירה (הגלילה נחסמת) - במקרה
 // כזה "נועצים" את הבחירה עליהם, והנעיצה משתחררת ברגע שהמשתמש גולל בעצמו.
 let pinned = null;
 ['wheel', 'touchstart', 'keydown'].forEach((ev) =>
   addEventListener(ev, () => { pinned = null; }, { passive: true }));
+
+// ==================== ניווט במקלדת ====================
+// ↓/↑ = דמות אחת בכל לחיצה. רווח = התקופה הבאה, Shift+רווח = הקודמת.
+// navIdx מחזיק את היעד שנבחר זה עתה, כדי שלחיצות רצופות ימשיכו קדימה גם
+// בזמן שאנימציית הגלילה עדיין רצה (active מתעדכן רק בסופה).
+let navIdx = null;
+['wheel', 'touchstart'].forEach((ev) =>
+  addEventListener(ev, () => { navIdx = null; }, { passive: true }));
+
+function goCard(el) {
+  if (!el) return;
+  const i = +el.dataset.i;
+  if (isNarrow()) { openSheet(i); el.scrollIntoView({ block: 'center' }); }
+  else { markActive(i); centerCard(el); }
+}
+function navFigure(dir) {
+  if (!visible.length) return;
+  const at = navIdx !== null ? navIdx : visible.findIndex(el => +el.dataset.i === active);
+  const to = at < 0 ? (dir > 0 ? 0 : visible.length - 1)
+                    : Math.min(visible.length - 1, Math.max(0, at + dir));
+  navIdx = to;
+  goCard(visible[to]);
+}
+function navEra(dir) {
+  if (!visible.length) return;
+  const at = navIdx !== null ? navIdx : visible.findIndex(el => +el.dataset.i === active);
+  const ei = at >= 0 ? +visible[at].dataset.era : 0;
+  for (let e = ei + dir; e >= 0 && e < DATA.eras.length; e += dir) {
+    const first = visible.find(el => +el.dataset.era === e);   // תקופות ריקות מדולגות
+    if (first) { navIdx = visible.indexOf(first); return goCard(first); }
+  }
+  toast(dir > 0 ? 'זו התקופה האחרונה' : 'זו התקופה הראשונה');
+}
+const inField = (t) => !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+// רווח על כפתור ממוקד צריך להפעיל אותו (נגישות) - לכן מדלגים על פקדים. כדי
+// שקליק-עכבר לא ישאיר מיקוד תקוע על כפתור, מסירים אותו אחרי לחיצת עכבר בלבד.
+const onControl = (t) => !!t && !!t.closest?.('button,a,[role="button"]');
+addEventListener('mouseup', (e) => { const b = e.target.closest?.('button'); if (b) b.blur(); });
 
 function centerCard(el) {
   const b = el.getBoundingClientRect();
@@ -501,8 +558,8 @@ function centerCard(el) {
 
 // ==================== מפה ====================
 // המפה ריבועית, ולכן בחלון רחב-ונמוך נותרים שוליים ריקים בצדדים. מרחיבים את
-// עמודת הפירוט כדי לצמצם את חלון המפה לריבוע — כך המפה ממלאת את מלוא רוחבו.
-// מצמצמים את חלון המפה לריבוע (עד גבול סביר) כדי שהמפה הריבועית תמלא אותו —
+// עמודת הפירוט כדי לצמצם את חלון המפה לריבוע - כך המפה ממלאת את מלוא רוחבו.
+// מצמצמים את חלון המפה לריבוע (עד גבול סביר) כדי שהמפה הריבועית תמלא אותו -
 // העודף עובר לעמודת הפירוט, אך היא לא גדלה מעבר ל-430px.
 // חלון המפה מכוון להיות ריבועי (כגובהו) כדי שהמפה הריבועית תמלא אותו בלי
 // שוליים; מה שנותר אחרי המקרא, השמות והתקופות עובר לעמודת הפירוט.
@@ -514,14 +571,14 @@ function balanceColumns() {
   // נקראים מהמשתנים ולא נמדדים: במצב רצועה אופקית סרגל התקופות תופס 100% רוחב
   const cssVar = (n) => parseFloat(getComputedStyle(root).getPropertyValue(n)) || 0;
   const legW = cssVar('--leg-w'), erasW = cssVar('--era-w');
-  // clientWidth ולא innerWidth — האחרון כולל את פס הגלילה וגורם לחפיפת עמודות
+  // clientWidth ולא innerWidth - האחרון כולל את פס הגלילה וגורם לחפיפת עמודות
   const free = document.documentElement.clientWidth - storyW - erasW;
   let mapW = Math.min(boxH + legW, free - 320);        // חלון ריבועי, אך משאירים לפירוט
   mapW = Math.max(430, Math.min(mapW, free - 300));
   root.style.setProperty('--map-w', Math.round(mapW) + 'px');
   root.style.setProperty('--detail-w', Math.round(free - mapW) + 'px');
 }
-// המפה ממלאת את החלון לגמרי (cover) — בלי שום רווח, גם ביחס מסך שונה.
+// המפה ממלאת את החלון לגמרי (cover) - בלי שום רווח, גם ביחס מסך שונה.
 // העודף נחתך; החלון מכוון להיות ריבועי ולכן החיתוך זעיר.
 function fitMap() {
   const box = $('#mapBox').getBoundingClientRect();
@@ -539,7 +596,7 @@ function render() {
     $('#mapTitle').textContent = it ? it.name : 'אטלס הדורות';
     $('#noMap').classList.toggle('show', !!(it && !it.map));
     $('#pop').classList.remove('show');
-    fitMap(); zoomTo(-1);   // המקרא התרוקן — החלון גדל, מתאימים מחדש
+    fitMap(); zoomTo(-1);   // המקרא התרוקן - החלון גדל, מתאימים מחדש
     ['bPlay','bPrev','bNext','bAll'].forEach(id => $('#'+id).disabled = true);
     return;
   }
@@ -554,12 +611,12 @@ function render() {
   lg.innerHTML = pts.map((p,i) => `<button class="lg" data-p="${i}"><i>${p.n}</i>${p.name}</button>`).join('');
   ov.querySelectorAll('.pt').forEach(g => g.addEventListener('click', () => setStep(+g.dataset.p, true)));
   lg.querySelectorAll('.lg').forEach(b => b.addEventListener('click', () => setStep(+b.dataset.p, true)));
-  fitMap();   // המקרא נטען ושינה את גובה החלון — מתאימים אחריו
+  fitMap();   // המקרא נטען ושינה את גובה החלון - מתאימים אחריו
   step = -1; paint();
 }
 
 // סקירה = אותו מבט קבוע לכל פריט (כל המפה, בלי תזוזה). רק במסע מתקרבים
-// לתחנה — וההצמדה לשולי התמונה מבטיחה שלא ייחשף שטח שאין בו מפה: תחנה בפינה
+// לתחנה - וההצמדה לשולי התמונה מבטיחה שלא ייחשף שטח שאין בו מפה: תחנה בפינה
 // נשארת בפינה במקום להתמרכז ולגרור את המפה החוצה.
 function zoomTo(i) {
   const z = $('#zoom'), s = +$('#fit').dataset.s || 1, it = items[active];
@@ -653,11 +710,11 @@ function renderDetail(it) {
     (it.verse ? `<div class="verse"><p>„${it.verse}”</p>${it.vref?`<small>${it.vref}</small>`:''}</div>` : '') +
     (it.desc ? `<p class="desc">${it.desc}</p>` : '') +
     (it.src ? `<div class="src"><b>מקור:</b> ${it.src}</div>` : '') +
-    // חיצי SVG ולא תווי ‹ › — האחרונים ממוסכים ע"י ה-bidi ב-RTL ומתהפכים.
+    // חיצי SVG ולא תווי ‹ › - האחרונים ממוסכים ע"י ה-bidi ב-RTL ומתהפכים.
     // מוקדם יותר = ימינה (הזמן זורם ימין→שמאל), מאוחר יותר = שמאלה.
     `<div class="nav">
-       <button id="dPrev" ${prev?'':'disabled'} title="מוקדם יותר">${CHEV_R}<span>${nm(prev)||'—'}</span></button>
-       <button id="dNext" ${next?'':'disabled'} title="מאוחר יותר"><span>${nm(next)||'—'}</span>${CHEV_L}</button>
+       <button id="dPrev" ${prev?'':'disabled'} title="מוקדם יותר">${CHEV_R}<span>${nm(prev)||'-'}</span></button>
+       <button id="dNext" ${next?'':'disabled'} title="מאוחר יותר"><span>${nm(next)||'-'}</span>${CHEV_L}</button>
      </div>`;
   d.scrollTop = 0;
   const go = (el) => { if (isNarrow()) openSheet(+el.dataset.i); else centerCard(el); };
@@ -682,7 +739,7 @@ function pick(force) {
     const d = Math.abs((b.top+b.bottom)/2 - mid);
     if (d < best) { best = d; cur = +el.dataset.i; }
   });
-  // במובייל הבחירה נעשית בהקשה ולא בגלילה — הגלילה רק מסמנת את התקופה,
+  // במובייל הבחירה נעשית בהקשה ולא בגלילה - הגלילה רק מסמנת את התקופה,
   // אחרת היא הייתה דורסת את הפריט שנפתח בגיליון. כשהגיליון פתוח, הסימון
   // נשאר על תקופת הפריט שנפתח.
   if (isNarrow()) {
@@ -690,7 +747,7 @@ function pick(force) {
     return;
   }
   if (pinned !== null) cur = pinned;            // בחירה נעוצה גוברת
-  else if (scrollY <= 2) cur = +visible[0].dataset.i;  // בראש הדף — הפריט הראשון
+  else if (scrollY <= 2) cur = +visible[0].dataset.i;  // בראש הדף - הפריט הראשון
   if (cur === active && !force) return;
   active = cur;
   document.querySelectorAll('.card').forEach(el => el.classList.toggle('on', +el.dataset.i === active));
@@ -728,9 +785,9 @@ $('#tTree').addEventListener('click', () => {
     const sibs = g.siblings ? `<div class="tsibs">${g.siblings.map(s=>node(s,'sib')).join('')}</div><div class="tconn"></div>` : '';
     return `<div class="tgen">${i>0?'<div class="tconn"></div>':''}${sibs}${main}</div>`;
   }).join('') + '</div>';
-  const el = overlay('👑 אילן היוחסין של בית דוד', 'מאברהם אבינו עד מלכי יהודה — לחיצה על שם מודגש קופצת אליו', body);
+  const el = overlay('👑 אילן היוחסין של בית דוד', 'מאברהם אבינו עד מלכי יהודה - לחיצה על שם מודגש קופצת אליו', body);
   el.querySelectorAll('.tnode.link').forEach(b => b.addEventListener('click', () => {
-    if (!jumpToId(b.dataset.id)) toast('הפריט מוסתר — הפעילו את השכבה המתאימה');
+    if (!jumpToId(b.dataset.id)) toast('הפריט מוסתר - הפעילו את השכבה המתאימה');
   }));
 });
 
@@ -743,8 +800,8 @@ $('#tIns').addEventListener('click', () => {
   const rows = (arr, unit) => `<div class="ilist">${arr.map(x =>
     `<button class="ilrow" data-id="${x.id}"><b>${x.name}</b><span>${x.dur ?? x.span} ${unit}</span></button>`).join('')}</div>`;
   const body =
-    `<div class="icard"><h3>מלכים — הישר מול הרע</h3>${bar('יהודה', I.judah, I.avgJudah)}${bar('ישראל', I.israel, I.avgIsrael)}
-      <p class="ipunch">ביהודה ${I.judah.g} מלכים עשו הישר בעיני ה׳ מתוך ${I.judah.total}; בישראל — ${I.israel.g} מתוך ${I.israel.total}.</p></div>
+    `<div class="icard"><h3>מלכים - הישר מול הרע</h3>${bar('יהודה', I.judah, I.avgJudah)}${bar('ישראל', I.israel, I.avgIsrael)}
+      <p class="ipunch">ביהודה ${I.judah.g} מלכים עשו הישר בעיני ה׳ מתוך ${I.judah.total}; בישראל - ${I.israel.g} מתוך ${I.israel.total}.</p></div>
      <div class="icard"><h3>המלכויות הארוכות ביותר</h3>${rows(I.longest,'שנה')}</div>
      <div class="icard"><h3>צפיפות הנביאים לאורך הזמן</h3>
        <div class="idens">${I.density.map(d=>`<i style="height:${Math.round(d.n/I.maxDensity*100)}%" title="${d.y}: ${d.n}"></i>`).join('')}</div>
@@ -755,7 +812,7 @@ $('#tIns').addEventListener('click', () => {
        `<div class="icount"><b>${v}</b><span>${k}</span></div>`).join('')}</div></div>`;
   const el = overlay('📊 תובנות', 'כל המספרים מחושבים מהנתונים עצמם', body);
   el.querySelectorAll('.ilrow').forEach(b => b.addEventListener('click', () => {
-    if (!jumpToId(b.dataset.id)) toast('הפריט מוסתר — הפעילו את השכבה המתאימה');
+    if (!jumpToId(b.dataset.id)) toast('הפריט מוסתר - הפעילו את השכבה המתאימה');
   }));
 });
 
@@ -766,7 +823,7 @@ function toast(msg) {
 $('#tShare').addEventListener('click', async () => {
   const it = items[active];
   const url = location.origin + '/proto-atlas.html' + (it ? '#' + it.id : '');
-  const title = it ? `${it.name} — אטלס הדורות` : 'אטלס הדורות';
+  const title = it ? `${it.name} - אטלס הדורות` : 'אטלס הדורות';
   try {
     if (navigator.share) { await navigator.share({ title, url }); return; }
     await navigator.clipboard.writeText(url); toast('הקישור הועתק ✓');

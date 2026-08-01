@@ -10,7 +10,7 @@ function fmtDate(iso) {
   return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-// טופס כתיבה — משמש גם לתגובה חדשה וגם לתשובה בתוך שרשור
+// טופס כתיבה - משמש גם לתגובה חדשה וגם לתשובה בתוך שרשור
 function CommentForm({ targetKey, targetLabel, parentId = null, compact = false, onDone, onCancel }) {
   const [author, setAuthor] = useState('');
   const [body, setBody] = useState('');
@@ -49,7 +49,7 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
         className="comment-name" type="text" placeholder="שם (אופציונלי)"
         value={author} maxLength={MAX_NAME} onChange={(e) => setAuthor(e.target.value)}
       />
-      {/* honeypot — נסתר מבני-אדם, בוטים ממלאים אותו */}
+      {/* honeypot - נסתר מבני-אדם, בוטים ממלאים אותו */}
       <input ref={hp} className="comment-hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" />
       <textarea
         className="comment-body"
@@ -99,7 +99,7 @@ export default function Comments({ targetKey, targetLabel }) {
     setBusyId(id);
     const { error } = await supabase.rpc('admin_delete_comment', { p_id: id, p_token: adminToken });
     setBusyId(null);
-    if (error) { window.alert('המחיקה נכשלה — ייתכן שטוקן הניהול שגוי.'); return; }
+    if (error) { window.alert('המחיקה נכשלה - ייתכן שטוקן הניהול שגוי.'); return; }
     // מסירים גם את התשובות שהיו תלויות בתגובה שנמחקה
     setList((l) => l.filter((c) => c.id !== id && c.parent_id !== id));
   };
@@ -146,7 +146,7 @@ export default function Comments({ targetKey, targetLabel }) {
       {status === 'loading' && <div className="comments-empty">טוען תגובות…</div>}
       {status === 'error' && <div className="comments-empty">שגיאה בטעינת התגובות</div>}
       {status === 'ready' && list.length === 0 && (
-        <div className="comments-empty">אין עדיין תגובות — היו הראשונים להוסיף!</div>
+        <div className="comments-empty">אין עדיין תגובות - היו הראשונים להוסיף!</div>
       )}
 
       <ul className="comment-list">

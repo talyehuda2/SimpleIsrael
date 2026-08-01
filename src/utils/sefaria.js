@@ -41,7 +41,7 @@ const BOOKS = {
   'איכה': 'Lamentations',
 };
 
-// שמות ספרים ממוינים מהארוך לקצר — כדי ש"מלכים ב" יזוהה לפני "מלכים",
+// שמות ספרים ממוינים מהארוך לקצר - כדי ש"מלכים ב" יזוהה לפני "מלכים",
 // ו"דברי הימים ב" לפני "דברי הימים".
 const KEYS = Object.keys(BOOKS).sort((a, b) => b.length - a.length);
 
@@ -77,7 +77,7 @@ export function sourceSegments(source) {
   if (!source) return [];
   return source.split(/;\s*/).map((raw) => {
     const text = raw.trim();
-    // טווח בין-ספרי ("מלכים א י\"ז – מלכים ב ב'") — מקשרים לתחילתו
+    // טווח בין-ספרי ("מלכים א י\"ז – מלכים ב ב'") - מקשרים לתחילתו
     const refPart = text.split(/\s+[–-]\s+/)[0];
     const book = matchBook(refPart);
     if (!book) return { text };

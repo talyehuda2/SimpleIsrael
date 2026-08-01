@@ -4,11 +4,11 @@ import { shareLink, itemPageUrl } from '../lib/share.js';
 import { sourceSegments } from '../utils/sefaria.js';
 import maps from '../data/maps.json';
 
-// נטען רק כשנפתחות התגובות — כך ספריית Supabase לא מכבידה על טעינת הציר
+// נטען רק כשנפתחות התגובות - כך ספריית Supabase לא מכבידה על טעינת הציר
 const Comments = lazy(() => import('./Comments.jsx'));
 
 const KIND_LABELS = {
-  leader: 'מנהיג', judge: 'שופט', united: 'מלך — הממלכה המאוחדת',
+  leader: 'מנהיג', judge: 'שופט', united: 'מלך - הממלכה המאוחדת',
   judah: 'מלך יהודה', israel: 'מלך ישראל', prophet: 'נביא',
   book: 'ספר', event: 'אירוע', world: 'רקע עולמי', empire: 'מלכות עולמית',
 };
@@ -48,7 +48,7 @@ export default function DetailCard({
   useEffect(() => { setShareMsg(''); setExpanded(false); setShowComments(false); }, [item]);
 
   const doShare = async () => {
-    const res = await shareLink({ url: itemPageUrl(item), title: `${item.name} — ציר הזמן של עם ישראל` });
+    const res = await shareLink({ url: itemPageUrl(item), title: `${item.name} - ציר הזמן של עם ישראל` });
     if (res === 'copied') setShareMsg('הועתק ✓');
     else if (res === 'failed') setShareMsg('נכשל');
     if (res === 'copied' || res === 'failed') setTimeout(() => setShareMsg(''), 2000);
@@ -88,13 +88,13 @@ export default function DetailCard({
         {item.judgment && (
           <span className={`dc-judgment ${item.judgment}`}>{JUDGMENT_LABELS[item.judgment]}</span>
         )}
-        {/* שיוך לאוספים — פתח להרחבה מהקשר של הדמות */}
+        {/* שיוך לאוספים - פתח להרחבה מהקשר של הדמות */}
         {collections.map((c) => (
           <button
             key={c.id}
             className="dc-coll-chip"
             onClick={() => onOpenCollection?.(c)}
-            title={`${c.title} — ${c.subtitle}`}
+            title={`${c.title} - ${c.subtitle}`}
           >{c.icon} {c.title}</button>
         ))}
       </div>
@@ -120,18 +120,18 @@ export default function DetailCard({
         )}
       </div>
 
-      {/* מיני-ציר — הקשר כרונולוגי במבט אחד */}
+      {/* מיני-ציר - הקשר כרונולוגי במבט אחד */}
       <div className="dc-era" title="מיקום על ציר הזמן כולו">
         <div className="dc-era-track">
           <span className="dc-era-span" style={{ insetInlineStart: `${offPct}%`, width: `${wPct}%` }} />
           {/* סמן עגול תמיד-נראה במרכז הטווח (הזמן זורם ימין→שמאל) */}
           <span className="dc-era-dot" style={{ insetInlineStart: `calc(${offPct + wPct / 2}% - 7px)` }} />
         </div>
-        {/* המכולה RTL: הילד הראשון נדחף ימינה — והימין הוא העבר */}
+        {/* המכולה RTL: הילד הראשון נדחף ימינה - והימין הוא העבר */}
         <div className="dc-era-labels"><span>האבות</span><span>חורבן בית שני</span></div>
       </div>
 
-      {/* שורת מטא שקטה — טקסט מופרד בנקודות במקום ענן תגיות */}
+      {/* שורת מטא שקטה - טקסט מופרד בנקודות במקום ענן תגיות */}
       {tags.length > 0 && (
         <div className="dc-meta">
           {tags.map((t, i) => (
@@ -154,7 +154,7 @@ export default function DetailCard({
         </p>
       )}
 
-      {/* הפסוק המגדיר — ציטוט מוגבה שנותן את הנקודה בלשון המקרא עצמו */}
+      {/* הפסוק המגדיר - ציטוט מוגבה שנותן את הנקודה בלשון המקרא עצמו */}
       {item.verse && (
         <blockquote className="dc-verse">
           <span className="dc-verse-text">{item.verse}</span>
@@ -191,7 +191,7 @@ export default function DetailCard({
         </div>
       )}
 
-      {/* "אולי יעניין אותך" — מדור אחד, שורה נגללת אחת; 📍 מסמן קשר-מקום */}
+      {/* "אולי יעניין אותך" - מדור אחד, שורה נגללת אחת; 📍 מסמן קשר-מקום */}
       {(relatedPlace.length > 0 || relatedEra.length > 0) && (
         <div className="dc-related">
           <div className="dc-row-label">אולי יעניין אותך גם</div>

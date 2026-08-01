@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { genealogy } from '../data/genealogy.js';
 
-// אייקון "ציר זמן" — קו אופקי עם סמן, מסמן דמות שמקושרת לציר וניתן לקפוץ אליה
+// אייקון "ציר זמן" - קו אופקי עם סמן, מסמן דמות שמקושרת לציר וניתן לקפוץ אליה
 function TimelineMark() {
   return (
     <svg className="tn-link" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
@@ -53,7 +53,7 @@ export default function FamilyTree({ open, onClose, onJump }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
   if (!open) return null;
-  // onJump כבר סוגר את האילן בעצמו (סגירה ישירה, לא דרך "אחורה") — לכן לא קוראים כאן ל-onClose
+  // onJump כבר סוגר את האילן בעצמו (סגירה ישירה, לא דרך "אחורה") - לכן לא קוראים כאן ל-onClose
   const jump = (id) => onJump(id);
   return (
     <div className="tree-overlay" onClick={onClose}>

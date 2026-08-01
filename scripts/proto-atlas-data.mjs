@@ -1,6 +1,6 @@
 // מחולל נתונים לאב-הטיפוס "אטלס הדורות" (public/proto-atlas.html).
 // מייצא את כל פריטי האתר מקובצים לפי תקופה, יחד עם אילן היוחסין ותובנות
-// מחושבות מראש — כדי שהאב-טיפוס יהיה עצמאי (vanilla JS, בלי React).
+// מחושבות מראש - כדי שהאב-טיפוס יהיה עצמאי (vanilla JS, בלי React).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,7 +23,7 @@ const periods = read('periods.json');
 // הציור אינו עקבי-אפינית (הצפון "הוזז" אמנותית), לכן: affine בסיסי
 // מריבועים-פחותים + תיקון שאריות IDW שמדויק בכל 11 עוגני הערים שזוהו בתמונה.
 const ANCHORS = [
-  // [lon, lat, pxX, pxY] — נקודות הערים שזוהו על israel_map_square2.png
+  // [lon, lat, pxX, pxY] - נקודות הערים שזוהו על israel_map_square2.png
   [35.652, 33.249, 823.6, 68.0],   // דן
   [35.194, 33.270, 675.2, 197.1],  // צור
   [35.28, 32.21, 694.2, 473.0],    // שכם
@@ -80,7 +80,7 @@ const mapOf = (id) => {
 const KINDS = {
   leader: { label: 'מנהיג', layer: 'leaders' },
   judge: { label: 'שופט', layer: 'judges' },
-  united: { label: 'מלך — הממלכה המאוחדת', layer: 'kings' },
+  united: { label: 'מלך - הממלכה המאוחדת', layer: 'kings' },
   judah: { label: 'מלך יהודה', layer: 'kings' },
   israel: { label: 'מלך ישראל', layer: 'kings' },
   prophet: { label: 'נביא', layer: 'prophets' },
@@ -127,7 +127,7 @@ const periodOf = (it) =>
   || sortedPeriods.find((p) => it.start >= p.start && it.start <= p.end)
   || sortedPeriods[sortedPeriods.length - 1];
 
-// פסוק פותח לכל תקופה — מן הפריט הראשון בה שיש לו פסוק
+// פסוק פותח לכל תקופה - מן הפריט הראשון בה שיש לו פסוק
 const eras = sortedPeriods.map((p) => {
   const list = all.filter((it) => periodOf(it).id === p.id)
     .sort((a, b) => a.start - b.start || a.name.localeCompare(b.name, 'he'));

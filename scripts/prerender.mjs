@@ -60,7 +60,7 @@ const byKind = {};
 for (const it of items) (byKind[it.kind] ||= []).push(it);
 for (const k in byKind) byKind[k].sort((a, b) => a.start - b.start);
 
-// חפיפה בזמן — אותה הגדרה כמו "בני-הזמן" באפליקציה
+// חפיפה בזמן - אותה הגדרה כמו "בני-הזמן" באפליקציה
 function overlaps(a, b) {
   if (a.start === a.end) return a.start >= b.start && a.start <= b.end;
   if (b.start === b.end) return b.start >= a.start && b.start <= a.end;
@@ -185,7 +185,7 @@ ${body}
 function itemPage(it) {
   const km = KINDS[it.kind];
   const desc = clean(it.description || '');
-  const metaDesc = truncate(`${it.name} — ${km.label}. ${desc}`, 155);
+  const metaDesc = truncate(`${it.name} - ${km.label}. ${desc}`, 155);
   const dates = formatRange(it.start, it.end, 'tradition');
   const canonical = urlOf(it);
 
@@ -245,7 +245,7 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
   const places = relatedByPlace(it.id, placeIndex, byId);
   const placeHtml = places.length ? `
 <section class="related">
-  <h2>אולי יעניין אותך גם — אותו מקום</h2>
+  <h2>אולי יעניין אותך גם - אותו מקום</h2>
   <p class="related-sub">דמויות שקשורות לאותם מקומות כמו ${esc(it.name)}:</p>
   <ul class="chips">
     ${places.map((c) => `<li><a href="/p/${c.kind}/${c.id}"><span class="cl-name">${esc(c.name)}</span><span class="cl-kind">${esc(c.place)}</span></a></li>`).join('\n    ')}
@@ -268,17 +268,17 @@ ${contempHtml}
 ${placeHtml}
 ${rel}`;
 
-  return shell({ title: `${it.name} — ${km.label} | ציר הזמן של עם ישראל`, description: metaDesc, canonical, jsonld, body,
+  return shell({ title: `${it.name}: ${km.label} - ציר הזמן של עם ישראל`, description: metaDesc, canonical, jsonld, body,
     ogImage, crumbs });
 }
 
-// דף תקופה — מרכז את כל מי שחי/התרחש בה
+// דף תקופה - מרכז את כל מי שחי/התרחש בה
 function periodPage(p, i) {
   const list = itemsInPeriod(p);
   const groups = {};
   for (const it of list) (groups[KINDS[it.kind].group] ||= []).push(it);
   const prev = sortedPeriods[i - 1], next = sortedPeriods[i + 1];
-  const metaDesc = truncate(`${p.name} (${p.start}–${p.end}) — כל הדמויות, האירועים וספרי התנ״ך של התקופה: ${list.slice(0, 6).map((x) => x.name).join(', ')}`, 155);
+  const metaDesc = truncate(`${p.name} (${p.start}–${p.end}) - כל הדמויות, האירועים וספרי התנ״ך של התקופה: ${list.slice(0, 6).map((x) => x.name).join(', ')}`, 155);
   const body = `
 <div class="chip">תקופה</div>
 <h1>${esc(p.name)}</h1>
@@ -294,7 +294,7 @@ ${prev ? `<a href="/p/period/${prev.id}">← ${esc(prev.name)}</a>` : '<span></s
 ${next ? `<a href="/p/period/${next.id}">${esc(next.name)} →</a>` : '<span></span>'}
 </nav>`;
   return shell({
-    title: `${p.name} (${p.start}–${p.end}) | ציר הזמן של עם ישראל`,
+    title: `${p.name} (${p.start}–${p.end}) - ציר הזמן של עם ישראל`,
     description: metaDesc,
     canonical: periodUrl(p),
     jsonld: {
@@ -316,11 +316,11 @@ ${next ? `<a href="/p/period/${next.id}">${esc(next.name)} →</a>` : '<span></s
   });
 }
 
-// דף אוסף — קבוצת דמויות שקשורות ברעיון אחד
+// דף אוסף - קבוצת דמויות שקשורות ברעיון אחד
 function collectionPage(c) {
   const members = c.members.map((id) => items.find((x) => x.id === id)).filter(Boolean);
   const url = `${SITE}/p/collection/${c.id}`;
-  const metaDesc = truncate(`${c.title} — ${c.subtitle}. ${members.map((m) => m.name).join(', ')}`, 155);
+  const metaDesc = truncate(`${c.title} - ${c.subtitle}. ${members.map((m) => m.name).join(', ')}`, 155);
   const body = `
 <div class="chip">אוסף</div>
 <h1>${esc(c.icon)} ${esc(c.title)}</h1>
@@ -334,7 +334,7 @@ function collectionPage(c) {
 </section>
 <a class="cta" href="/">פתחו בציר הזמן האינטראקטיבי ←</a>`;
   return shell({
-    title: `${c.title} — ${c.subtitle} | ציר הזמן של עם ישראל`,
+    title: `${c.title}: ${c.subtitle} - ציר הזמן של עם ישראל`,
     description: metaDesc,
     canonical: url,
     jsonld: {
@@ -407,8 +407,8 @@ ${Object.entries(groups).map(([g, list]) => `<h2>${esc(g)}</h2>
 </div>`;
 mkdirSync(join(DIST, 'p'), { recursive: true });
 writeFileSync(join(DIST, 'p', 'index.html'), shell({
-  title: 'מפת האתר — כל הדמויות והאירועים | ציר הזמן של עם ישראל',
-  description: 'רשימת כל הדמויות, האירועים וספרי התנ״ך שעל ציר הזמן של עם ישראל — מהאבות ועד חורבן בית שני.',
+  title: 'מפת האתר: כל הדמויות והאירועים - ציר הזמן של עם ישראל',
+  description: 'רשימת כל הדמויות, האירועים וספרי התנ״ך שעל ציר הזמן של עם ישראל - מהאבות ועד חורבן בית שני.',
   canonical: `${SITE}/p`,
   jsonld: null,
   body: idxBody,
@@ -439,14 +439,14 @@ const siteLd = {
   '@type': 'WebSite',
   name: 'ציר הזמן של עם ישראל',
   url: SITE + '/',
-  description: 'ציר זמן אינטראקטיבי של תולדות עם ישראל — מהאבות ועד חורבן בית שני.',
+  description: 'ציר זמן אינטראקטיבי של תולדות עם ישראל - מהאבות ועד חורבן בית שני.',
   inLanguage: 'he',
 };
 if (!html.includes('application/ld+json')) {
   html = html.replace('</head>', `<script type="application/ld+json">${JSON.stringify(siteLd)}</script>\n</head>`);
 }
 if (!html.includes('id="crawl-index"')) {
-  html = html.replace('</body>', `<noscript><nav id="crawl-index"><a href="/p">מפת האתר — כל הדמויות והאירועים</a></nav></noscript>\n</body>`);
+  html = html.replace('</body>', `<noscript><nav id="crawl-index"><a href="/p">מפת האתר - כל הדמויות והאירועים</a></nav></noscript>\n</body>`);
 }
 writeFileSync(indexPath, html);
 

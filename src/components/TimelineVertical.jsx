@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { formatRange } from '../utils/dates.js';
 import maps from '../data/maps.json';
 
-// "זרם כרונולוגי" למובייל — כל פריט בשורה ברוחב מלא, בסדר כרונולוגי מדויק.
+// "זרם כרונולוגי" למובייל - כל פריט בשורה ברוחב מלא, בסדר כרונולוגי מדויק.
 // ויתרנו על אורך פרופורציונלי (בלתי אפשרי ברוחב טלפון: עד 14 פריטים חופפים
 // בו-זמנית), ובמקומו יש פס דק שמראה את משך הזמן היחסי.
 
@@ -48,7 +48,7 @@ export default function TimelineVertical({
   }, [leaders, judges, kings, prophets, books, world, events, visible]);
 
 
-  // חלוקה לקטעים לפי תקופה — כותרת דביקה שנותנת הקשר בזמן הגלילה
+  // חלוקה לקטעים לפי תקופה - כותרת דביקה שנותנת הקשר בזמן הגלילה
   const sections = useMemo(() => {
     const eras = (periods || []).filter((p) => p.end > startYear && p.start < endYear);
     const out = eras.map((p) => ({ era: p, list: [] }));
@@ -123,7 +123,7 @@ export default function TimelineVertical({
           })}
         </section>
       ))}
-      {!items.length && <p className="vstream-empty">לא נבחרו שכבות להצגה — פתחו את "אפשרויות" וסמנו שכבות.</p>}
+      {!items.length && <p className="vstream-empty">לא נבחרו שכבות להצגה - פתחו את "אפשרויות" וסמנו שכבות.</p>}
     </div>
   );
 }

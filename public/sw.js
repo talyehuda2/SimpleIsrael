@@ -28,10 +28,10 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
-  if (isBypass(url)) return;                       // תגובות/אנליטיקס — תמיד רשת חיה
-  if (url.origin !== self.location.origin) return; // משאבים חיצוניים (פונטים) — לדפדפן
+  if (isBypass(url)) return;                       // תגובות/אנליטיקס - תמיד רשת חיה
+  if (url.origin !== self.location.origin) return; // משאבים חיצוניים (פונטים) - לדפדפן
 
-  // ניווט/HTML: רשת קודם, ובנפילה — מהמטמון
+  // ניווט/HTML: רשת קודם, ובנפילה - מהמטמון
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)

@@ -8,7 +8,7 @@ import books from '../data/books.json';
 import world from '../data/world.json';
 import { toSecular } from '../utils/dates.js';
 
-// כל התובנות מחושבות מהנתונים עצמם — אין מספרים קבועים בקוד.
+// כל התובנות מחושבות מהנתונים עצמם - אין מספרים קבועים בקוד.
 function compute() {
   const realm = (arr) => {
     const g = arr.filter((k) => k.judgment === 'good').length;
@@ -108,11 +108,11 @@ export default function Insights({ open, onClose, onJump }) {
       <div className="ins-panel" onClick={(e) => e.stopPropagation()}>
         <button className="about-close" onClick={onClose} aria-label="סגירה">✕</button>
         <h2 className="ins-title">תובנות מציר הזמן</h2>
-        <p className="ins-sub">נתונים שחושבו מכלל הדמויות והאירועים — מבט-על שלא רואים בקריאה רגילה.</p>
+        <p className="ins-sub">נתונים שחושבו מכלל הדמויות והאירועים - מבט-על שלא רואים בקריאה רגילה.</p>
 
         {/* מלכים: הישר מול הרע */}
         <section className="ins-card">
-          <h3>המלכים — הישר מול הרע</h3>
+          <h3>המלכים - הישר מול הרע</h3>
           <JudgmentBar label="מלכי יהודה" data={s.judah} avg={s.avgJudah} />
           <JudgmentBar label="מלכי ישראל" data={s.israel} avg={s.avgIsrael} />
           <div className="ins-legend">
@@ -121,7 +121,7 @@ export default function Insights({ open, onClose, onJump }) {
             <span><i className="d bad" /> עשה הרע</span>
           </div>
           <p className="ins-punch">
-            אף אחד מ־{s.israel.total} מלכי ישראל לא נשפט כ״עשה הישר בעיני ה׳״ — לעומת {s.judah.g} מלכים ביהודה.
+            אף אחד מ־{s.israel.total} מלכי ישראל לא נשפט כ״עשה הישר בעיני ה׳״ - לעומת {s.judah.g} מלכים ביהודה.
           </p>
         </section>
 
@@ -138,7 +138,7 @@ export default function Insights({ open, onClose, onJump }) {
             </button>
           ))}
           <p className="ins-punch">
-            {s.longest[0].name} מלך {s.longest[0].dur} שנה — הארוך בהיסטוריה — ובכל זאת נשפט כ״עשה הרע״.
+            {s.longest[0].name} מלך {s.longest[0].dur} שנה - הארוך בהיסטוריה - ובכל זאת נשפט כ״עשה הרע״.
           </p>
         </section>
 
@@ -157,7 +157,7 @@ export default function Insights({ open, onClose, onJump }) {
           </div>
           <div className="ins-drange"><span>{toSecular(2820)}</span><span>{toSecular(3460)}</span></div>
           <p className="ins-punch">
-            השיא: {s.peak.n} נביאים פעילים בו-זמנית סביב שנת {s.peak.year} ({toSecular(s.peak.year)}) — ערב חורבן בית ראשון.
+            השיא: {s.peak.n} נביאים פעילים בו-זמנית סביב שנת {s.peak.year} ({toSecular(s.peak.year)}) - ערב חורבן בית ראשון.
           </p>
         </section>
 
@@ -174,7 +174,7 @@ export default function Insights({ open, onClose, onJump }) {
             </button>
           ))}
           <p className="ins-punch">
-            {s.longestBooks[0].name} פורש על פני {s.longestBooks[0].span} שנה — מבריאת העולם ועד שיבת ציון.
+            {s.longestBooks[0].name} פורש על פני {s.longestBooks[0].span} שנה - מבריאת העולם ועד שיבת ציון.
           </p>
         </section>
 

@@ -22,7 +22,7 @@ export const END_YEAR = 3850;
 // דביקה לימין המסך). הפריטים אינם נכנסים לרצועה זו, כדי שלא יוסתרו מאחורי התוויות.
 export const LABEL_GUTTER_PX = 210;
 
-// ריווח עליון בתוך כל רצועה — הפריטים לא נוגעים בקצה העליון של רצועת הרקע.
+// ריווח עליון בתוך כל רצועה - הפריטים לא נוגעים בקצה העליון של רצועת הרקע.
 export const LANE_TOP_PAD = 8;
 
 // גובה שורת רצועות-השליטה (מעצמות) בראש רצועת הרקע העולמי, שמתחתיה השליטים.
@@ -31,7 +31,7 @@ const EMPIRE_ROW_H = 30;
 // גובה רצועה ממוזערת (מציגה רק את התווית)
 const COLLAPSED_H = 26;
 
-// תווית שכבה לחיצה — לחיצה ממזערת/מרחיבה את הרצועה
+// תווית שכבה לחיצה - לחיצה ממזערת/מרחיבה את הרצועה
 function LaneLabel({ text, laneKey, collapsed, onToggle }) {
   const c = !!collapsed[laneKey];
   return (
@@ -66,7 +66,7 @@ function packRows(items) {
 }
 
 function tickStep(pxPerYear) {
-  // בוחר צעד כך שהמרווח בין תוויות לא יקטן מ-MIN_GAP פיקסלים — מונע חפיפת תאריכים
+  // בוחר צעד כך שהמרווח בין תוויות לא יקטן מ-MIN_GAP פיקסלים - מונע חפיפת תאריכים
   const MIN_GAP = 74;
   const steps = [10, 25, 50, 100, 200, 250, 500, 1000, 2000];
   for (const s of steps) if (s * pxPerYear >= MIN_GAP) return s;
@@ -118,9 +118,9 @@ export default function Timeline({
   const toX = (year) => (endYear - year) * pxPerYear;
 
   // מצב "בני-הזמן": מסמן כל פריט כחופף (contemporary) או לא-חופף (dimmed) לטווח הנבחר.
-  // אירוע נקודתי (s===e) נכלל אם הוא בתוך הטווח כולל הגבולות — כך פילוג המלוכה מסומן
+  // אירוע נקודתי (s===e) נכלל אם הוא בתוך הטווח כולל הגבולות - כך פילוג המלוכה מסומן
   // כשבוחרים את רחבעם/ירבעם שמלכותם מתחילה בדיוק באותה שנה. שני טווחים דורשים חפיפה
-  // אמיתית (אי-שוויון חמור) — כדי ששכן צמוד ברצף מלוכה שרק "נוגע" בגבול לא ייחשב בן-זמן.
+  // אמיתית (אי-שוויון חמור) - כדי ששכן צמוד ברצף מלוכה שרק "נוגע" בגבול לא ייחשב בן-זמן.
   const hlOf = (s, e) => {
     if (!highlightRange) return '';
     const { start, end } = highlightRange;
@@ -144,7 +144,7 @@ export default function Timeline({
   const packedBooks = useMemo(() => packRows(books), [books]);
   const packedWorld = useMemo(() => packRows(world || []), [world]);
   const packedEvents = useMemo(() => {
-    // אירועים נקודתיים — שיבוץ לפי מרחק תוויות כדי שלא יתנגשו, עם תקרת שורות.
+    // אירועים נקודתיים - שיבוץ לפי מרחק תוויות כדי שלא יתנגשו, עם תקרת שורות.
     // מובייל: תקרה נמוכה כדי שרצועת האירועים לא תבלע את המסך ותסתיר את האנשים בטעינה.
     const sorted = [...events].sort((a, b) => b.year - a.year);
     const labelYears = 150 / pxPerYear; // רוחב משוער של תווית בשנים
@@ -250,7 +250,7 @@ export default function Timeline({
       {visible.kings && (
         <>
           <div className={`lane lane-kings lane-kings-judah${cx('kings-judah')}`} style={{ height: laneH('kings-judah', undefined) }}>
-            <LaneLabel text="מלכים — הממלכה המאוחדת / יהודה" laneKey="kings-judah" collapsed={collapsed} onToggle={toggleLane} />
+            <LaneLabel text="מלכים - הממלכה המאוחדת / יהודה" laneKey="kings-judah" collapsed={collapsed} onToggle={toggleLane} />
             {!collapsed['kings-judah'] && kings.united.map((k) => (
               <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="united" mode={mode}
                 selected={isSel('united', k.id)} onSelect={onSelect} hl={hlOf(k.start, k.end)} />
@@ -261,7 +261,7 @@ export default function Timeline({
             ))}
           </div>
           <div className={`lane lane-kings lane-kings-israel${cx('kings-israel')}`} style={{ height: laneH('kings-israel', undefined) }}>
-            <LaneLabel text="מלכים — ממלכת ישראל" laneKey="kings-israel" collapsed={collapsed} onToggle={toggleLane} />
+            <LaneLabel text="מלכים - ממלכת ישראל" laneKey="kings-israel" collapsed={collapsed} onToggle={toggleLane} />
             {!collapsed['kings-israel'] && kings.israel.map((k) => (
               <Bar key={k.id} item={k} toX={toX} pxPerYear={pxPerYear} kind="israel" mode={mode}
                 selected={isSel('israel', k.id)} onSelect={onSelect} hl={hlOf(k.start, k.end)} />
@@ -292,7 +292,7 @@ export default function Timeline({
         </div>
       )}
 
-      {/* רקע עולמי — רצועות השליטה של המעצמות + מלכים זרים המוזכרים במקרא */}
+      {/* רקע עולמי - רצועות השליטה של המעצמות + מלכים זרים המוזכרים במקרא */}
       {visible.world && world.length > 0 && (
         <div className={`lane lane-world${cx('world')}`} style={{ height: laneH('world', EMPIRE_ROW_H + packedWorld.rows * 30 + 10 + LANE_TOP_PAD) }}>
           <LaneLabel text="רקע עולמי" laneKey="world" collapsed={collapsed} onToggle={toggleLane} />

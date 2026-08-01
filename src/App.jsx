@@ -96,14 +96,14 @@ const KIND_LABELS = {
   prophet: 'נביא', book: 'ספר תנ״ך', event: 'אירוע', world: 'דמות עולמית', empire: 'מלכות',
 };
 const SITE_TITLE = 'ציר הזמן של עם ישראל';
-const SITE_DESC = 'ציר זמן אינטראקטיבי של תולדות עם ישראל — מהאבות ועד חורבן בית שני.';
+const SITE_DESC = 'ציר זמן אינטראקטיבי של תולדות עם ישראל - מהאבות ועד חורבן בית שני.';
 function setMetaTag(sel, attr, content) {
   let el = document.head.querySelector(`meta[${attr}="${sel}"]`);
   if (!el) { el = document.createElement('meta'); el.setAttribute(attr, sel); document.head.appendChild(el); }
   el.setAttribute('content', content);
 }
 
-// כל הפריטים הניתנים-לקישור (מצב מסורת) — לפענוח "kind:id" מהכתובת בלי תלות ב-state
+// כל הפריטים הניתנים-לקישור (מצב מסורת) - לפענוח "kind:id" מהכתובת בלי תלות ב-state
 const ALL_ITEMS = [
   ...leaders.map((x) => ({ ...x, kind: 'leader' })),
   ...judges.map((x) => ({ ...x, kind: 'judge' })),
@@ -126,12 +126,12 @@ function resolveKey(key) {
 
 export default function App() {
   const scrollRef = useRef(null);
-  // מצב התחלתי מהכתובת (?sel=…&map=…&step=…&tree=1) — מאותחל ישירות ב-state כדי למנוע מרוץ
+  // מצב התחלתי מהכתובת (?sel=…&map=…&step=…&tree=1) - מאותחל ישירות ב-state כדי למנוע מרוץ
   const initUrl = useRef(null);
   if (initUrl.current === null) initUrl.current = parseUrl();
   const INITIAL = initUrl.current;
 
-  // זום התחלתי משוער לתקופת הפתיחה (האבות) — כך ה-commit הראשון כבר מצויר
+  // זום התחלתי משוער לתקופת הפתיחה (האבות) - כך ה-commit הראשון כבר מצויר
   // ברוחב הנכון, והגלילה-לקצה-הימני נוחתת בדיוק על התקופה. מדויק סופית באפקט הפתיחה.
   const [pxPerYear, setPxPerYear] = useState(() => {
     const first = PRESETS.tradition[1];
@@ -145,7 +145,7 @@ export default function App() {
   const [notesOpen, setNotesOpen] = useState(false);
   const [mapItem, setMapItem] = useState(() => resolveKey(INITIAL.map));
   const [mapStep, setMapStep] = useState(INITIAL.step != null ? INITIAL.step : -1);
-  // הפריט שבני-הזמן שלו מודגשים — נשמר בנפרד מהבחירה, כדי שההדגשה תישאר
+  // הפריט שבני-הזמן שלו מודגשים - נשמר בנפרד מהבחירה, כדי שההדגשה תישאר
   // גם אחרי סגירת הכרטיס (חשוב במובייל, שם הכרטיס מסתיר את הציר).
   const [contempItem, setContempItem] = useState(null);
   const [mapMin, setMapMin] = useState(false); // מפת המסע ממוזערת לרצועה? (דסקטופ)
@@ -157,17 +157,17 @@ export default function App() {
     const mq = window.matchMedia('(max-width: 680px)');
     const on = () => setIsMobile(mq.matches);
     mq.addEventListener('change', on);
-    window.addEventListener('resize', on); // גיבוי — לא כל דפדפן משגר change על שינוי גודל
+    window.addEventListener('resize', on); // גיבוי - לא כל דפדפן משגר change על שינוי גודל
     return () => { mq.removeEventListener('change', on); window.removeEventListener('resize', on); };
   }, []);
-  // במסע מודרך הגיליון נפתח חצי — כדי שהציר ושורת המסע יישארו גלויים
+  // במסע מודרך הגיליון נפתח חצי - כדי שהציר ושורת המסע יישארו גלויים
   useEffect(() => { setMapOpen(false); setSheetPos(tourActiveRef.current ? 'half' : 'full'); }, [selected]);
-  // מובייל: הכרטיס כ"גיליון תחתון" — נפתח מלא (אינטואיטיבי); גרירה מטה מקטינה/סוגרת
+  // מובייל: הכרטיס כ"גיליון תחתון" - נפתח מלא (אינטואיטיבי); גרירה מטה מקטינה/סוגרת
   const [sheetPos, setSheetPos] = useState('full');
   const [moreOpen, setMoreOpen] = useState(false);
   const sheetTouchY = useRef(null);
 
-  // מסע מודרך — סיור רציף דמות-אחר-דמות עם שורת הקשר מקשרת
+  // מסע מודרך - סיור רציף דמות-אחר-דמות עם שורת הקשר מקשרת
   const [tour, setTour] = useState(null); // { data, step }
   const [toursOpen, setToursOpen] = useState(false);
   const tourActiveRef = useRef(false);
@@ -179,7 +179,7 @@ export default function App() {
   const startTour = (data) => { setToursOpen(false); setMoreOpen(false); tourJump(data, 0); };
   const exitTour = () => { tourActiveRef.current = false; setTour(null); };
 
-  // אוספים תמטיים — קבוצות של דמויות/אירועים שקשורים ברעיון אחד
+  // אוספים תמטיים - קבוצות של דמויות/אירועים שקשורים ברעיון אחד
   const [collection, setCollection] = useState(null);
   // מזהה פריט → האוספים שהוא חבר בהם (לצ'יפ בכרטיס)
   const collectionsById = useMemo(() => {
@@ -219,7 +219,7 @@ export default function App() {
     try { localStorage.setItem('si_visible', JSON.stringify(visible)); } catch { /* מתעלמים */ }
   }, [visible]);
 
-  // ציר אנכי ("זרם כרונולוגי") — ברירת מחדל במובייל, ונשמר בין ביקורים
+  // ציר אנכי ("זרם כרונולוגי") - ברירת מחדל במובייל, ונשמר בין ביקורים
   const [vertical, setVertical] = useState(() => {
     try {
       const saved = localStorage.getItem('si_vertical');
@@ -235,7 +235,7 @@ export default function App() {
   // כניסה/יציאה ממצב ניהול דרך ?admin=1
   useEffect(() => { handleAdminParam(); }, []);
 
-  // מונה תגובות לכל פריט — כדי לסמן על הציר היכן כבר יש דיון
+  // מונה תגובות לכל פריט - כדי לסמן על הציר היכן כבר יש דיון
   const [commentCounts, setCommentCounts] = useState({});
   useEffect(() => {
     let alive = true;
@@ -243,7 +243,7 @@ export default function App() {
     return () => { alive = false; };
   }, []);
 
-  // מדריך היכרות — בביקור ראשון נפתח מסך-פתיחה קצר ("ברוכים הבאים");
+  // מדריך היכרות - בביקור ראשון נפתח מסך-פתיחה קצר ("ברוכים הבאים");
   // כפתור ה-? פותח את הסיור המלא. ההעדפה נשמרת ב-localStorage.
   const [introOpen, setIntroOpen] = useState(() => {
     try { return !localStorage.getItem('si_seen_intro'); } catch { return false; }
@@ -255,7 +255,7 @@ export default function App() {
   };
   const openTour = () => { setIntroMode('tour'); setIntroOpen(true); };
 
-  // תפריט המטא (⋯) בכותרת — נסגר בלחיצה מחוץ לו
+  // תפריט המטא (⋯) בכותרת - נסגר בלחיצה מחוץ לו
   const [metaOpen, setMetaOpen] = useState(false);
   useEffect(() => {
     if (!metaOpen) return undefined;
@@ -264,7 +264,7 @@ export default function App() {
     return () => document.removeEventListener('mousedown', onDoc);
   }, [metaOpen]);
 
-  // מצב ריק חכם: כשכלום לא נבחר — הזמנה עדינה לדמות היום (נסגרת לסשן)
+  // מצב ריק חכם: כשכלום לא נבחר - הזמנה עדינה לדמות היום (נסגרת לסשן)
   const [dailyHintHidden, setDailyHintHidden] = useState(() => {
     try { return !!sessionStorage.getItem('si_daily_hint_off'); } catch { return false; }
   });
@@ -273,7 +273,7 @@ export default function App() {
     try { sessionStorage.setItem('si_daily_hint_off', '1'); } catch { /* מתעלמים */ }
   };
 
-  // הדרכה קונטקסטואלית: אחרי הכרטיס השני — טיפ חד-פעמי על אילן היוחסין
+  // הדרכה קונטקסטואלית: אחרי הכרטיס השני - טיפ חד-פעמי על אילן היוחסין
   const [treeCoach, setTreeCoach] = useState(false);
 
   const axis = AXIS[chronology];
@@ -281,12 +281,12 @@ export default function App() {
     ? academicData
     : { leaders, judges, kings, prophets, books, events, periods, world };
 
-  // טווח ההדגשה למצב "בני-הזמן" — תקופת החיים/כהונה של פריט העוגן
+  // טווח ההדגשה למצב "בני-הזמן" - תקופת החיים/כהונה של פריט העוגן
   const highlightRange = contempItem
     ? { start: contempItem.start, end: contempItem.end }
     : null;
 
-  // "המשיכו מאיפה שעצרתם" — הדמות האחרונה שנצפתה, לצ'יפ של מבקר חוזר
+  // "המשיכו מאיפה שעצרתם" - הדמות האחרונה שנצפתה, לצ'יפ של מבקר חוזר
   const [lastVisited] = useState(() => {
     try {
       const raw = localStorage.getItem('si_last_sel');
@@ -300,7 +300,7 @@ export default function App() {
     try { localStorage.setItem('si_last_sel', `${itemKey(selected)}|${selected.name}`); } catch { /* מתעלמים */ }
   }, [selected]);
 
-  // ספירת פתיחות כרטיס — בפתיחה השנייה מציעים את האילן (פעם אחת בלבד)
+  // ספירת פתיחות כרטיס - בפתיחה השנייה מציעים את האילן (פעם אחת בלבד)
   useEffect(() => {
     if (!selected) return;
     try {
@@ -331,7 +331,7 @@ export default function App() {
     const canon = document.head.querySelector('link[rel="canonical"]');
     if (selected) {
       const label = KIND_LABELS[selected.kind];
-      const title = `${selected.name}${label ? ' — ' + label : ''} | ${SITE_TITLE}`;
+      const title = `${selected.name}${label ? ': ' + label : ''} - ${SITE_TITLE}`;
       const desc = String(selected.description || selected.name).replace(/\s+/g, ' ').trim().slice(0, 155);
       document.title = title;
       setMetaTag('description', 'name', desc);
@@ -350,7 +350,7 @@ export default function App() {
     }
   }, [selected]);
 
-  // אינדקס חיפוש — כל הפריטים הנבחרים מכל הרצועות (ללא תקופות שאינן נבחרות)
+  // אינדקס חיפוש - כל הפריטים הנבחרים מכל הרצועות (ללא תקופות שאינן נבחרות)
   const searchIndex = useMemo(() => {
     const idx = [];
     const add = (arr, kind) => (arr || []).forEach((it) => idx.push({ ...it, kind }));
@@ -376,10 +376,10 @@ export default function App() {
     return idx;
   }, [chronology]);
 
-  // בני-הזמן של הפריט הנבחר — לשבבי הניווט בכרטיס. רק דמויות (אנשים),
+  // בני-הזמן של הפריט הנבחר - לשבבי הניווט בכרטיס. רק דמויות (אנשים),
   // לא ספרים/אירועים/מעצמות, שאינם "בני-זמן" במובן הרגיל.
   const PERSON_KINDS = new Set(['leader', 'judge', 'united', 'judah', 'israel', 'prophet', 'world']);
-  // דמות היום — מתוך הדמויות (לא ספרים/אירועים), בחירה דטרמיניסטית לפי התאריך
+  // דמות היום - מתוך הדמויות (לא ספרים/אירועים), בחירה דטרמיניסטית לפי התאריך
   const dailyFigure = useMemo(
     () => figureOfDay(searchIndex.filter((x) => PERSON_KINDS.has(x.kind))),
     [searchIndex],
@@ -398,12 +398,12 @@ export default function App() {
       .sort((a, b) => a.start - b.start);
   }, [selected, searchIndex]);
 
-  // "אולי יעניין אותך גם" — קשרי תקופה ומקום (עמיד: מחושב פעם אחת)
+  // "אולי יעניין אותך גם" - קשרי תקופה ומקום (עמיד: מחושב פעם אחת)
   const placeIndex = useMemo(() => buildPlaceIndex(maps), []);
   const relatedEra = useMemo(() => {
     if (!selected) return [];
     const exclude = new Set(selectedContemporaries.map((c) => `${c.kind}:${c.id}`));
-    // רק דמויות (לא ספרים/אירועים) — כדי שהרשימה לא תהיה עמוסה
+    // רק דמויות (לא ספרים/אירועים) - כדי שהרשימה לא תהיה עמוסה
     const persons = searchIndex.filter((x) => PERSON_KINDS.has(x.kind));
     return relatedByEra(selected, persons, periods, exclude, 6);
   }, [selected, selectedContemporaries, searchIndex]);
@@ -428,11 +428,11 @@ export default function App() {
   };
 
   // קפיצה מאילן היוחסין: בחירה, הדלקת בני-הזמן, וזום-אין אל הדמות והקשרה.
-  // אב/דמות שקיימת רק במסורת — נעבור למצב מסורת.
+  // אב/דמות שקיימת רק במסורת - נעבור למצב מסורת.
   const jumpToId = (id) => {
     const item = searchIndex.find((x) => x.id === id);
     if (!item) { if (chronology === 'academic') setChronology('tradition'); return; }
-    // סגירת האילן ישירות (לא דרך "אחורה", שהיה מנקה את הבחירה) — אנחנו מנווטים לתצוגה חדשה
+    // סגירת האילן ישירות (לא דרך "אחורה", שהיה מנקה את הבחירה) - אנחנו מנווטים לתצוגה חדשה
     setTreeOpen(false);
     overlayPushed.current = Math.max(0, overlayPushed.current - 1);
     prevOverlay.current = { map: null, tree: false };
@@ -441,7 +441,7 @@ export default function App() {
     setSelected(item);
     setContempItem(item); // הדגשת בני-הזמן
     if (vertical) { scrollToItem(item); return; }
-    // זום-אין כך שתקופת החיים תתפוס כשליש מהרוחב — רואים את הדמות ואת מי שחי במקביל
+    // זום-אין כך שתקופת החיים תתפוס כשליש מהרוחב - רואים את הדמות ואת מי שחי במקביל
     const el = scrollRef.current;
     const span = Math.max(item.end - item.start, 20);
     const view = el ? (vertical ? el.clientHeight : el.clientWidth) - 40 : 800;
@@ -492,7 +492,7 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPop);
   });
 
-  // סגירת חלונית: אם דחפנו רשומה — נחזור אחורה (כדי לא לנפח היסטוריה); אחרת נסגור ישירות
+  // סגירת חלונית: אם דחפנו רשומה - נחזור אחורה (כדי לא לנפח היסטוריה); אחרת נסגור ישירות
   const closeOverlay = (fallback) => {
     if (overlayPushed.current > 0) window.history.back();
     else fallback();
@@ -530,17 +530,17 @@ export default function App() {
   // הזום המינימלי: כל הציר (כולל רצועת התוויות בימין) בדיוק ברוחב החלון
   const getMinPx = () => {
     const el = scrollRef.current;
-    // בציר האנכי הגלילה טבעית — אין צורך לדחוס את כל הטווח לגובה המסך
+    // בציר האנכי הגלילה טבעית - אין צורך לדחוס את כל הטווח לגובה המסך
     if (vertical) return MIN_PX;
     return el ? Math.max(MIN_PX, (el.clientWidth - 40 - gutter) / (axis.end - axis.start)) : MIN_PX;
   };
 
-  // זום פתיחה לכל מצב: אופקי — כל הציר על המסך; אנכי — צפיפות נוחה לגלילה
+  // זום פתיחה לכל מצב: אופקי - כל הציר על המסך; אנכי - צפיפות נוחה לגלילה
   const VERTICAL_DEFAULT_PX = 2.5;
   const openingPx = () => (vertical ? VERTICAL_DEFAULT_PX : getMinPx());
 
-  // תצוגת פתיחה; ובשינוי גודל חלון — לא להישאר קטן מהמסך.
-  // באופקי ללא קישור-עומק נפתחים מזוהמים אל התקופה הראשונה (האבות) — קריא
+  // תצוגת פתיחה; ובשינוי גודל חלון - לא להישאר קטן מהמסך.
+  // באופקי ללא קישור-עומק נפתחים מזוהמים אל התקופה הראשונה (האבות) - קריא
   // ומזמין במקום "קיר" של כל ההיסטוריה; הגלילה לקצה הימני מציבה אותנו בדיוק שם.
   useEffect(() => {
     const el = scrollRef.current;
@@ -549,9 +549,9 @@ export default function App() {
       ? Math.min(MAX_PX, Math.max(getMinPx(), (el.clientWidth - 40) / (first.end - first.start)))
       : null;
     const px = eraPx ?? openingPx();
-    // כשהאומדן ההתחלתי כבר קרוב — לא מרנדרים שוב (שומר על הגלילה לקצה הימני)
+    // כשהאומדן ההתחלתי כבר קרוב - לא מרנדרים שוב (שומר על הגלילה לקצה הימני)
     if (eraPx == null || Math.abs(eraPx - pxPerYear) / pxPerYear > 0.02) setPxPerYear(px);
-    // אם נטענו מכתובת משותפת עם דמות נבחרת — לגלול אליה במקום לקצה
+    // אם נטענו מכתובת משותפת עם דמות נבחרת - לגלול אליה במקום לקצה
     if (selected) {
       scrollRightPending.current = false;
       if (vertical) scrollToItem(selected);
@@ -562,7 +562,7 @@ export default function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // החלפת כיוון הציר — התאמת הזום ומיקום הגלילה למצב החדש
+  // החלפת כיוון הציר - התאמת הזום ומיקום הגלילה למצב החדש
   const prevVertical = useRef(vertical);
   useEffect(() => {
     if (prevVertical.current === vertical) return;
@@ -570,8 +570,8 @@ export default function App() {
     setPxPerYear(vertical ? VERTICAL_DEFAULT_PX : getMinPx());
   }, [vertical]);
 
-  // בהחלפת מצב כרונולוגיה בפועל — איפוס לתצוגה מלאה, פתיחה בצד ימין (העבר), וניקוי הבחירה.
-  // משווים לערך הקודם (ולא לדגל mount) כדי שלא ננקה מצב ששוחזר מכתובת — עמיד גם ל-StrictMode.
+  // בהחלפת מצב כרונולוגיה בפועל - איפוס לתצוגה מלאה, פתיחה בצד ימין (העבר), וניקוי הבחירה.
+  // משווים לערך הקודם (ולא לדגל mount) כדי שלא ננקה מצב ששוחזר מכתובת - עמיד גם ל-StrictMode.
   const prevChrono = useRef(chronology);
   useEffect(() => {
     if (prevChrono.current === chronology) return;
@@ -583,7 +583,7 @@ export default function App() {
 
   // גלילה ממתינה: מוחלת רק אחרי שהקנבס צויר מחדש ברוחב החדש (useLayoutEffect)
   const pendingScroll = useRef(null);
-  // בטעינה/החלפת מצב — לפתוח בקצה הימני (הזמן הקדום ביותר)
+  // בטעינה/החלפת מצב - לפתוח בקצה הימני (הזמן הקדום ביותר)
   const scrollRightPending = useRef(true);
 
   useLayoutEffect(() => {
@@ -606,7 +606,7 @@ export default function App() {
   // מרכז המסך בציר הרלוונטי (רוחב באופקי, גובה באנכי)
   const centerOffset = (el) => (el ? (vertical ? el.clientHeight : el.clientWidth) / 2 : 0);
 
-  // בזרם האנכי המיקום אינו פרופורציונלי לשנה — גוללים אל השורה עצמה
+  // בזרם האנכי המיקום אינו פרופורציונלי לשנה - גוללים אל השורה עצמה
   const scrollToItem = (it) => {
     const el = scrollRef.current;
     if (!el || !it) return;
@@ -643,7 +643,7 @@ export default function App() {
     scrollToYear(preset.end, 20, px);
   };
 
-  // התקופה שבמרכז התצוגה — מדליקה את הצ'יפ המתאים בפס התקופות
+  // התקופה שבמרכז התצוגה - מדליקה את הצ'יפ המתאים בפס התקופות
   const [activeEra, setActiveEra] = useState(null);
   useEffect(() => {
     const el = scrollRef.current;
@@ -654,7 +654,7 @@ export default function App() {
       const presets = PRESETS[chronology].filter((p) => p.name !== 'הכל');
       let year = null;
       if (vertical) {
-        // הזרם האנכי אינו פרופורציונלי — קוראים את שנת הכותרת האחרונה שנגללה
+        // הזרם האנכי אינו פרופורציונלי - קוראים את שנת הכותרת האחרונה שנגללה
         const heads = el.querySelectorAll('.vsec-head');
         for (const h of heads) {
           if (h.getBoundingClientRect().top > 260) break;
@@ -721,7 +721,7 @@ export default function App() {
     const onMove = (e) => {
       if (e.touches.length === 2 && pinch.current) {
         e.preventDefault();
-        // הגברת רגישות הצביטה — תנועת אצבעות קטנה נותנת שינוי זום גדול יותר
+        // הגברת רגישות הצביטה - תנועת אצבעות קטנה נותנת שינוי זום גדול יותר
         const scale = Math.pow(dist(e.touches) / pinch.current.startDist, 1.8);
         const px = Math.min(MAX_PX, Math.max(getMinPx(), pinch.current.startPx * scale));
         scrollToYear(pinch.current.yearAtAnchor, pinch.current.midX, px);
@@ -750,7 +750,7 @@ export default function App() {
           <div className="title-block">
             <div className="title-row">
               <h1>ציר הזמן של עם ישראל</h1>
-              {/* פעולות מטא מאוגדות בתפריט אחד — פחות רעש בכותרת */}
+              {/* פעולות מטא מאוגדות בתפריט אחד - פחות רעש בכותרת */}
               <span className="meta-wrap">
                 <button
                   className="about-btn meta-btn"
@@ -787,14 +787,14 @@ export default function App() {
           <button className="tree-btn" onClick={() => setInsightsOpen(true)} title="תובנות">
             <span aria-hidden="true">📊</span> <span className="btn-label">תובנות</span>
           </button>
-          <button className="tree-btn" onClick={() => setToursOpen(true)} title="מסעות מודרכים — סיור דמות-אחר-דמות">
+          <button className="tree-btn" onClick={() => setToursOpen(true)} title="מסעות מודרכים - סיור דמות-אחר-דמות">
             <span aria-hidden="true">🧭</span> <span className="btn-label">מסעות</span>
           </button>
           {dailyFigure && (
             <button
               className="tree-btn daily-btn"
               onClick={() => jumpToId(dailyFigure.id)}
-              title={`דמות היום: ${dailyFigure.name} — לחצו לצפייה`}
+              title={`דמות היום: ${dailyFigure.name} - לחצו לצפייה`}
             >
               <span aria-hidden="true">🗓️</span> <span className="btn-label">דמות היום</span>
               <span className="daily-name">· {dailyFigure.name}</span>
@@ -844,7 +844,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* פס תקופות קבוע — אוריינטציה ("איפה אני?") וניווט ("קח אותי") במחווה אחת */}
+      {/* פס תקופות קבוע - אוריינטציה ("איפה אני?") וניווט ("קח אותי") במחווה אחת */}
       <nav className="era-strip" aria-label="ניווט תקופות">
         {PRESETS[chronology].map((p) => (
           <button
@@ -877,7 +877,7 @@ export default function App() {
       {isAcademic && (
         <div className="academic-note">
           במצב זה מוצגות רק תקופות שלהן תיארוך מחקרי מבוסס (מהמלוכה ואילך, מלכים לפי כרונולוגיית Thiele).
-          תקופת האבות, יציאת מצרים והשופטים אינה מתוארכת בהסכמה מחקרית — ולכן אינה מוצגת כאן. ייתכנו הפרשים של שנים ספורות בין חוקרים.
+          תקופת האבות, יציאת מצרים והשופטים אינה מתוארכת בהסכמה מחקרית - ולכן אינה מוצגת כאן. ייתכנו הפרשים של שנים ספורות בין חוקרים.
         </div>
       )}
 
@@ -912,8 +912,8 @@ export default function App() {
         </div>
       )}
 
-      {/* מצב ריק: הזמנה לדמות היום — נקודת כניסה במקום מסך אילם */}
-      {/* שורת המסע המודרך — כותרת, הקשר, וניווט תחנות */}
+      {/* מצב ריק: הזמנה לדמות היום - נקודת כניסה במקום מסך אילם */}
+      {/* שורת המסע המודרך - כותרת, הקשר, וניווט תחנות */}
       {tour && (
         <div className="tour-bar" role="region" aria-label="מסע מודרך">
           <button className="tour-x" onClick={exitTour} aria-label="יציאה מהמסע">✕</button>
@@ -938,7 +938,7 @@ export default function App() {
           <div className="tours-panel" onClick={(e) => e.stopPropagation()}>
             <button className="about-close" onClick={() => setToursOpen(false)} aria-label="סגירה">✕</button>
             <h3 className="tours-title">🧭 מסעות מודרכים</h3>
-            <p className="tours-sub">סיור דמות-אחר-דמות עם ההקשר המחבר — מתקדמים בקצב שלכם</p>
+            <p className="tours-sub">סיור דמות-אחר-דמות עם ההקשר המחבר - מתקדמים בקצב שלכם</p>
             {/* מסע שיש לו אוסף מקביל מוצג רק שם, כדי לא לחזור על אותו שם פעמיים */}
             {tours.filter((t) => !collections.some((c) => c.tour === t.id)).map((t) => (
               <button key={t.id} className="tour-card" onClick={() => startTour(t)}>
@@ -950,7 +950,7 @@ export default function App() {
               </button>
             ))}
             <h3 className="tours-title tours-title-2">👭 אוספים</h3>
-            <p className="tours-sub">קבוצות שקשורות ברעיון אחד — הצצה לכולן במבט</p>
+            <p className="tours-sub">קבוצות שקשורות ברעיון אחד - הצצה לכולן במבט</p>
             {collections.map((c) => (
               <button key={c.id} className="tour-card" onClick={() => openCollection(c)}>
                 <span className="tour-card-icon" aria-hidden="true">{c.icon}</span>
@@ -964,7 +964,7 @@ export default function App() {
         </div>
       )}
 
-      {/* תצוגת אוסף — התיאור וכל החברים כרשימה לחיצה */}
+      {/* תצוגת אוסף - התיאור וכל החברים כרשימה לחיצה */}
       {collection && (
         <div className="tours-overlay" onClick={() => setCollection(null)}>
           <div className="tours-panel" onClick={(e) => e.stopPropagation()}>
@@ -1015,10 +1015,10 @@ export default function App() {
         </div>
       )}
 
-      {/* טיפ חד-פעמי אחרי הכרטיס השני — גילוי האילן */}
+      {/* טיפ חד-פעמי אחרי הכרטיס השני - גילוי האילן */}
       {treeCoach && (
         <div className="coach-toast" role="status">
-          💡 טיפ: כפתור <b>👑 אילן יוחסין</b> למעלה מציג את השושלת מאברהם עד המלכים — ולחיצה קופצת לדמות
+          💡 טיפ: כפתור <b>👑 אילן יוחסין</b> למעלה מציג את השושלת מאברהם עד המלכים - ולחיצה קופצת לדמות
           <button className="coach-x" onClick={() => setTreeCoach(false)} aria-label="סגירה">✕</button>
         </div>
       )}
@@ -1033,7 +1033,7 @@ export default function App() {
         </button>
       )}
 
-      {/* מובייל: רקע מוכהה מאחורי הגיליון — הקשה עליו סוגרת */}
+      {/* מובייל: רקע מוכהה מאחורי הגיליון - הקשה עליו סוגרת */}
       {isMobile && selected && <div className="sheet-backdrop" onClick={() => setSelected(null)} />}
       {selected && (
         <div className={`card-dock${!isMobile && maps[selected.id] && !mapMin ? ' with-map' : ''}${isMobile ? ` sheet ${sheetPos}` : ''}`}>
@@ -1089,7 +1089,7 @@ export default function App() {
 
       <FamilyTree open={treeOpen} onClose={() => closeOverlay(() => setTreeOpen(false))} onJump={jumpToId} />
 
-      {/* מובייל: סרגל פעולות תחתון — בגובה אגודל, במקום ערימת כפתורים בכותרת */}
+      {/* מובייל: סרגל פעולות תחתון - בגובה אגודל, במקום ערימת כפתורים בכותרת */}
       {isMobile && (
         <nav className="bottom-nav" aria-label="פעולות עיקריות">
           <button onClick={() => setTreeOpen(true)}><span aria-hidden="true">👑</span>אילן</button>
@@ -1117,7 +1117,7 @@ export default function App() {
 
       <footer>
         {vertical
-          ? 'גללו מטה לאורך הדורות — מהאבות ועד בית שני'
+          ? 'גללו מטה לאורך הדורות - מהאבות ועד בית שני'
           : 'הזמן זורם מימין (עבר) לשמאל · Ctrl+גלגלת לזום'}
         {' · '}
         {isAcademic
@@ -1137,7 +1137,7 @@ export default function App() {
             <p>
               הפרויקט נבנה באהבה בידי חובב תנ״ך, מתוך רצון לתרום לקהילה ולעזור לכולנו
               לעשות סדר בתולדות עם ישראל. ייתכנו אי-דיוקים בתאריכים, במפות, במיקומים
-              ובפרטים — ואשמח לכל תיקון והערה. שימוש נעים! 📖
+              ובפרטים - ואשמח לכל תיקון והערה. שימוש נעים! 📖
             </p>
             <a className="feedback-btn" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
               💬 משוב · דיווח על תקלה · הצעת תיקון

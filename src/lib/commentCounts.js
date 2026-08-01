@@ -13,6 +13,6 @@ export async function fetchCommentCounts() {
     for (const r of rows) counts[r.target_key] = (counts[r.target_key] || 0) + 1;
     return counts;
   } catch {
-    return {}; // בלי תגובות — פשוט לא מוצג מונה
+    return {}; // בלי תגובות - פשוט לא מוצג מונה
   }
 }

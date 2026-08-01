@@ -11,7 +11,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   </React.StrictMode>
 );
 
-// רישום ה-service worker (רק בייצור — בפיתוח הוא היה מפריע לרענון החם)
+// רישום ה-service worker (רק בייצור - בפיתוח הוא היה מפריע לרענון החם)
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => { /* לא קריטי */ });

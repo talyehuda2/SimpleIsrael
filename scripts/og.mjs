@@ -1,5 +1,5 @@
 // מייצר תמונת שיתוף (OG) 1200x630 לכל פריט ולכל תקופה, על גבי איור הקלף.
-// הטקסט מצויר בפונט Frank Ruhl Libre האמיתי — כך העברית תמיד תקינה,
+// הטקסט מצויר בפונט Frank Ruhl Libre האמיתי - כך העברית תמיד תקינה,
 // בניגוד לכיתוב שנוצר על ידי מחולל תמונות.
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

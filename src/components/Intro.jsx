@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-/* איורים מונפשים (SVG) — אחד לכל נושא. הצבעים מגיעים ממשתני ה-CSS של העיצוב. */
+/* איורים מונפשים (SVG) - אחד לכל נושא. הצבעים מגיעים ממשתני ה-CSS של העיצוב. */
 
 function IlloSearch() {
   // הקלדה בתיבת החיפוש: הטקסט "נכתב" מימין לשמאל בקפיצות (אות-אות)
@@ -18,7 +18,7 @@ function IlloSearch() {
   );
 }
 
-// "חומת אבנים" — פסים אופקיים בשורות מדורגות, בגדלים וברווחים לא-סימטריים.
+// "חומת אבנים" - פסים אופקיים בשורות מדורגות, בגדלים וברווחים לא-סימטריים.
 // r: 'a' עוגן שנבחר · 'c' בן-זמן (חופף בעמודת-הזמן) · 'o' אחר (מתעמעם).
 const STONES = [
   { x: 26, y: 15, w: 52, h: 14, r: 'o' }, { x: 92, y: 15, w: 40, h: 14, r: 'c' }, { x: 150, y: 15, w: 64, h: 14, r: 'o' },
@@ -104,7 +104,7 @@ function IlloNav() {
   );
 }
 
-// בחירת השכבות להצגה — מסך אחרון בסיור
+// בחירת השכבות להצגה - מסך אחרון בסיור
 export const LAYERS = [
   { key: 'leaders', icon: '🏛️', label: 'אבות ומנהיגים' },
   { key: 'judges', icon: '⚖️', label: 'שופטים' },
@@ -118,11 +118,11 @@ const ALL_ON = { leaders: true, judges: true, kings: true, prophets: true, books
 const ESSENTIALS = { leaders: true, judges: false, kings: true, prophets: true, books: false, events: true, world: false };
 
 const SLIDES = [
-  { key: 'search', title: 'חיפוש וקפיצה', text: 'הקלידו שם של דמות או אירוע בתיבת החיפוש — והציר יזנק ישר אליו.', Illo: IlloSearch },
-  { key: 'contemp', title: 'בני-הזמן', text: 'בכל כרטיס יש כפתור שמדגיש את כל מי שחי באותה תקופה — ומעמעם את השאר.', Illo: IlloContemp },
+  { key: 'search', title: 'חיפוש וקפיצה', text: 'הקלידו שם של דמות או אירוע בתיבת החיפוש - והציר יזנק ישר אליו.', Illo: IlloSearch },
+  { key: 'contemp', title: 'בני-הזמן', text: 'בכל כרטיס יש כפתור שמדגיש את כל מי שחי באותה תקופה - ומעמעם את השאר.', Illo: IlloContemp },
   { key: 'tree', title: 'אילן יוחסין', text: 'השושלת מאברהם ואילך. לחיצה על שם באילן קופצת אליו בציר הזמן.', Illo: IlloTree },
-  { key: 'map', title: 'מפת המסע', text: 'לדמויות נבחרות — מסע מודרך על מפת הארץ, תחנה אחר תחנה.', Illo: IlloMap },
-  { key: 'comments', title: 'תגובות הקהילה', text: 'אפשר להוסיף הערה, מקור או תיקון לכל אירוע ודמות — וכולם רואים.', Illo: IlloComments },
+  { key: 'map', title: 'מפת המסע', text: 'לדמויות נבחרות - מסע מודרך על מפת הארץ, תחנה אחר תחנה.', Illo: IlloMap },
+  { key: 'comments', title: 'תגובות הקהילה', text: 'אפשר להוסיף הערה, מקור או תיקון לכל אירוע ודמות - וכולם רואים.', Illo: IlloComments },
   { key: 'nav', title: 'ניווט בציר', text: 'הזמן זורם מימין (עבר) לשמאל · זום בצביטה או ב-Ctrl+גלגלת · לחיצה על שם שכבה מקטינה אותה.', Illo: IlloNav },
   { key: 'layers', title: 'מה להציג?', text: 'בחרו אילו שכבות יופיעו על הציר. תמיד אפשר לשנות זאת אחר כך בכפתור ☰ אפשרויות.', picker: true },
 ];
@@ -148,7 +148,7 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
 
   if (!open) return null;
 
-  // מסך פתיחה — משפט ערך אחד ופעולה אחת ברורה, בלי ללמד לפני שרואים
+  // מסך פתיחה - משפט ערך אחד ופעולה אחת ברורה, בלי ללמד לפני שרואים
   if (phase === 'welcome') {
     return (
       <div className="intro-overlay" onClick={onClose}>
@@ -157,7 +157,7 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
           <div className="intro-hero" aria-hidden="true">📖</div>
           <h2 className="intro-welcome-title">ציר הזמן של עם ישראל</h2>
           <p className="intro-value">
-            כל ההיסטוריה המקראית על ציר אחד — מהאבות ועד חורבן בית שני.
+            כל ההיסטוריה המקראית על ציר אחד - מהאבות ועד חורבן בית שני.
             דמויות, מלכים ונביאים, מפות מסע ואילן יוחסין.
           </p>
           <button
@@ -186,8 +186,8 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
     if (touchX.current == null) return;
     const dx = e.changedTouches[0].clientX - touchX.current;
     touchX.current = null;
-    if (dx < -45) next();            // החלקה שמאלה — הבא
-    else if (dx > 45) prev();        // החלקה ימינה — הקודם
+    if (dx < -45) next();            // החלקה שמאלה - הבא
+    else if (dx > 45) prev();        // החלקה ימינה - הקודם
   };
 
   return (
@@ -210,10 +210,10 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
 
           {s.picker && (
             <div className="intro-picker">
-              {/* הבחירה המהירה גם מסיימת — שלא ייתקעו בשקף האחרון בלי להבין איך יוצאים */}
+              {/* הבחירה המהירה גם מסיימת - שלא ייתקעו בשקף האחרון בלי להבין איך יוצאים */}
               <div className="picker-quick">
-                <button type="button" onClick={() => { setVisible({ ...ALL_ON }); onClose(); }}>הכל — מתחילים</button>
-                <button type="button" onClick={() => { setVisible({ ...ESSENTIALS }); onClose(); }}>העיקר בלבד — מתחילים</button>
+                <button type="button" onClick={() => { setVisible({ ...ALL_ON }); onClose(); }}>הכל - מתחילים</button>
+                <button type="button" onClick={() => { setVisible({ ...ESSENTIALS }); onClose(); }}>העיקר בלבד - מתחילים</button>
               </div>
               <div className="picker-grid">
                 {LAYERS.map((l) => {
