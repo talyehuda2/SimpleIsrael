@@ -25,7 +25,6 @@ import maps from './data/maps.json';
 import tours from './data/tours.json';
 import collections from './data/collections.json';
 import { buildPlaceIndex, relatedByEra, relatedByPlace } from './utils/related.js';
-import { figureOfDay } from './utils/daily.js';
 
 // ----- מצב באמצעות כתובת ה-URL: מאפשר שיתוף קישור, סימנייה, וכפתור "אחורה" -----
 const itemKey = (it) => `${it.kind}:${it.id}`;
@@ -228,18 +227,9 @@ export default function App() {
     try { localStorage.setItem('si_visible', JSON.stringify(visible)); } catch { /* מתעלמים */ }
   }, [visible]);
 
-  // ציר אנכי ("זרם כרונולוגי") - ברירת מחדל במובייל, ונשמר בין ביקורים
-  const [vertical, setVertical] = useState(() => {
-    try {
-      const saved = localStorage.getItem('si_vertical');
-      if (saved === '1') return true;
-      if (saved === '0') return false;
-    } catch { /* אין שמירה */ }
-    return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 680px)').matches;
-  });
-  useEffect(() => {
-    try { localStorage.setItem('si_vertical', vertical ? '1' : '0'); } catch { /* מתעלמים */ }
-  }, [vertical]);
+  // הציר אנכי תמיד. מצב אופקי בוטל - הוא הכפיל את הפריסה בלי להוסיף מידע,
+  // ושתי הדרכים להסתכל על הנתונים הן היום ציר הזמן מול מסע הדורות.
+  const vertical = true;
 
   // כניסה/יציאה ממצב ניהול דרך ?admin=1
   useEffect(() => { handleAdminParam(); }, []);
@@ -394,11 +384,6 @@ export default function App() {
   // בני-הזמן של הפריט הנבחר - לשבבי הניווט בכרטיס. רק דמויות (אנשים),
   // לא ספרים/אירועים/מעצמות, שאינם "בני-זמן" במובן הרגיל.
   const PERSON_KINDS = new Set(['leader', 'judge', 'united', 'judah', 'israel', 'prophet', 'world']);
-  // דמות היום - מתוך הדמויות (לא ספרים/אירועים), בחירה דטרמיניסטית לפי התאריך
-  const dailyFigure = useMemo(
-    () => figureOfDay(searchIndex.filter((x) => PERSON_KINDS.has(x.kind))),
-    [searchIndex],
-  );
   const selectedContemporaries = useMemo(() => {
     if (!selected) return [];
     const ov = (a, b) => {
@@ -789,6 +774,23 @@ export default function App() {
                 : 'מהאבות עד חורבן בית שני · לפי המסורת (סדר עולם)'}
             </span>
           </div>
+          {/* מתג המבטים בפינה הימנית העליונה, וכפתור השיתוף בשמאלית -
+              אותה חלוקה כמו בסרגל של מסע הדורות */}
+          <a
+            className="mode-btn"
+            href={atlasHref}
+            title="מבט מסע: דמות אחר דמות, עם המפה והסיפור לצדה"
+          >
+            <span aria-hidden="true">🗺️</span> <span className="btn-label">מסע הדורות</span>
+          </a>
+          <span className="header-gap" />
+          <button className="share-btn" onClick={shareView} title="שיתוף האתר">
+            <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+              <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
+            </svg>
+            <span className="btn-label">שיתוף</span>
+          </button>
+          {shareMsg && <span className="share-msg">{shareMsg}</span>}
           <button
             className="menu-btn"
             aria-expanded={menuOpen}
@@ -797,52 +799,15 @@ export default function App() {
         </div>
         <div className="search-row">
           <SearchBox index={searchIndex} onPick={jumpTo} />
-          <button className="tree-btn" onClick={() => setTreeOpen(true)} title="אילן יוחסין">
-            <span aria-hidden="true">👑</span> <span className="btn-label">אילן יוחסין</span>
+          <button className="tree-btn" onClick={() => setToursOpen(true)} title="מסעות מודרכים - סיור דמות-אחר-דמות">
+            <span aria-hidden="true">🧭</span> <span className="btn-label">מסעות</span>
           </button>
           <button className="tree-btn" onClick={() => setInsightsOpen(true)} title="תובנות">
             <span aria-hidden="true">📊</span> <span className="btn-label">תובנות</span>
           </button>
-          <button className="tree-btn" onClick={() => setToursOpen(true)} title="מסעות מודרכים - סיור דמות-אחר-דמות">
-            <span aria-hidden="true">🧭</span> <span className="btn-label">מסעות</span>
+          <button className="tree-btn" onClick={() => setTreeOpen(true)} title="בית דוד - אילן היוחסין">
+            <span aria-hidden="true">👑</span> <span className="btn-label">בית דוד</span>
           </button>
-          {/* מתג המבטים: אותם נתונים, תצוגה אחרת. הדמות הנבחרת עוברת איתנו */}
-          <a
-            className="tree-btn atlas-btn"
-            href={atlasHref}
-            title="מבט מסע: דמות אחר דמות, עם המפה והסיפור לצדה"
-          >
-            <span aria-hidden="true">🗺️</span> <span className="btn-label">מסע הדורות</span>
-          </a>
-          {dailyFigure && (
-            <button
-              className="tree-btn daily-btn"
-              onClick={() => jumpToId(dailyFigure.id)}
-              title={`דמות היום: ${dailyFigure.name} - לחצו לצפייה`}
-            >
-              <span aria-hidden="true">🗓️</span> <span className="btn-label">דמות היום</span>
-              <span className="daily-name">· {dailyFigure.name}</span>
-            </button>
-          )}
-          <button
-            className="share-btn"
-            onClick={shareView}
-            title="שיתוף האתר"
-          >
-            <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
-              <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
-            </svg>
-            <span className="btn-label">שיתוף</span>
-          </button>
-          <button
-            className="orient-btn"
-            onClick={() => { setVertical((v) => !v); scrollRightPending.current = true; }}
-            title={vertical ? 'מעבר לציר אופקי' : 'מעבר לציר אנכי (נוח לגלילה בטלפון)'}
-          >
-            <span aria-hidden="true">{vertical ? '↔' : '↕'}</span>
-            <span className="btn-label">{vertical ? 'ציר אופקי' : 'ציר אנכי'}</span>
-          </button>
-          {shareMsg && <span className="share-msg">{shareMsg}</span>}
         </div>
         <div className={`controls${menuOpen ? ' open' : ''}`}>
           <div className="ctrl-stack">
@@ -1019,22 +984,19 @@ export default function App() {
         </div>
       )}
 
-      {!selected && !introOpen && !contempItem && !tour && dailyFigure && !dailyHintHidden && (
+      {/* "דמות היום" הוסרה כדי לא לפזר את תשומת הלב בכניסה; ההצעה לחזור
+          למקום שבו הפסקתם נשארה, כי היא ממשיכה משהו שהמבקר כבר התחיל. */}
+      {!selected && !introOpen && !contempItem && !tour && lastVisited && !dailyHintHidden && (
         <div className="daily-hint">
-          <button className="daily-hint-go" onClick={() => jumpToId(dailyFigure.id)}>
-            ✨ דמות היום: <b>{dailyFigure.name}</b>
+          <button
+            className="daily-hint-go daily-hint-resume"
+            onClick={() => {
+              const it = searchIndex.find((x) => itemKey(x) === lastVisited.key);
+              if (it) jumpTo(it);
+            }}
+          >
+            ⏮ המשיכו: <b>{lastVisited.name}</b>
           </button>
-          {lastVisited && lastVisited.key !== itemKey(dailyFigure) && (
-            <button
-              className="daily-hint-go daily-hint-resume"
-              onClick={() => {
-                const it = searchIndex.find((x) => itemKey(x) === lastVisited.key);
-                if (it) jumpTo(it);
-              }}
-            >
-              ⏮ המשיכו: <b>{lastVisited.name}</b>
-            </button>
-          )}
           <button className="daily-hint-x" onClick={hideDailyHint} aria-label="סגירת ההצעה">✕</button>
         </div>
       )}
@@ -1116,12 +1078,10 @@ export default function App() {
       {/* מובייל: סרגל פעולות תחתון - בגובה אגודל, במקום ערימת כפתורים בכותרת */}
       {isMobile && (
         <nav className="bottom-nav" aria-label="פעולות עיקריות">
-          <button onClick={() => setTreeOpen(true)}><span aria-hidden="true">👑</span>אילן</button>
-          <button onClick={() => dailyFigure && jumpToId(dailyFigure.id)}><span aria-hidden="true">🗓️</span>היום</button>
+          {/* אותו סדר כמו בשורת הכלים בדסקטופ ובמסע הדורות */}
+          <button onClick={() => setToursOpen(true)}><span aria-hidden="true">🧭</span>מסעות</button>
           <button onClick={() => setInsightsOpen(true)}><span aria-hidden="true">📊</span>תובנות</button>
-          {/* מתג המבטים. בדסקטופ הוא בשורת הכלים, שמוסתרת כאן - ובלעדיו לא
-              הייתה במובייל שום דרך להגיע למסע הדורות מלבד כרטיס פתוח. */}
-          <a href={atlasHref}><span aria-hidden="true">🗺️</span>מסע</a>
+          <button onClick={() => setTreeOpen(true)}><span aria-hidden="true">👑</span>בית דוד</button>
           <button onClick={() => setMoreOpen(true)} aria-haspopup="true" aria-expanded={moreOpen}><span aria-hidden="true">⋯</span>עוד</button>
         </nav>
       )}
@@ -1129,11 +1089,8 @@ export default function App() {
         <div className="more-overlay" onClick={() => setMoreOpen(false)}>
           <div className="more-sheet" onClick={(e) => e.stopPropagation()}>
             <span className="sheet-grip" aria-hidden="true" />
-            <button className="more-item" onClick={() => { setMoreOpen(false); setToursOpen(true); }}>🧭 מסעות מודרכים</button>
+            <a className="more-item" href={atlasHref}>🗺️ מסע הדורות</a>
             <button className="more-item" onClick={() => { setMoreOpen(false); shareView(); }}>🔗 שיתוף האתר</button>
-            <button className="more-item" onClick={() => { setMoreOpen(false); setVertical((v) => !v); scrollRightPending.current = true; }}>
-              {vertical ? '↔ מעבר לציר אופקי' : '↕ מעבר לציר אנכי'}
-            </button>
             <button className="more-item" onClick={() => { setMoreOpen(false); setMenuOpen(true); }}>🎚️ שכבות ומקרא</button>
             <button className="more-item" onClick={() => { setMoreOpen(false); openTour(); }}>❓ מדריך היכרות</button>
             <button className="more-item" onClick={() => { setMoreOpen(false); setAboutOpen(true); }}>ℹ️ אודות הפרויקט</button>

@@ -1,108 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-
-/* איורים מונפשים (SVG) - אחד לכל נושא. הצבעים מגיעים ממשתני ה-CSS של העיצוב. */
-
-function IlloSearch() {
-  // הקלדה בתיבת החיפוש: הטקסט "נכתב" מימין לשמאל בקפיצות (אות-אות)
-  // עם סמן מהבהב שנע איתו, ואז שורת התוצאה נדלקת.
-  return (
-    <svg viewBox="0 0 240 130" className="illo" role="img" aria-label="חיפוש וקפיצה">
-      <rect x="30" y="18" width="180" height="30" rx="15" className="il-box" />
-      <circle cx="193" cy="33" r="6" className="il-stroke" fill="none" />
-      <line x1="188" y1="37" x2="182" y2="43" className="il-stroke" />
-      <rect x="60" y="27" width="112" height="12" rx="3" className="il-typed" />
-      <rect x="170" y="25" width="2.5" height="16" rx="1" className="il-caret" />
-      <rect x="40" y="66" width="160" height="16" rx="5" className="il-row" />
-      <rect x="40" y="90" width="160" height="16" rx="5" className="il-row il-hit" />
-    </svg>
-  );
-}
-
-// "חומת אבנים" - פסים אופקיים בשורות מדורגות, בגדלים וברווחים לא-סימטריים.
-// r: 'a' עוגן שנבחר · 'c' בן-זמן (חופף בעמודת-הזמן) · 'o' אחר (מתעמעם).
-const STONES = [
-  { x: 26, y: 15, w: 52, h: 14, r: 'o' }, { x: 92, y: 15, w: 40, h: 14, r: 'c' }, { x: 150, y: 15, w: 64, h: 14, r: 'o' },
-  { x: 40, y: 34, w: 34, h: 18, r: 'o' }, { x: 84, y: 34, w: 58, h: 18, r: 'c' }, { x: 172, y: 34, w: 42, h: 18, r: 'o' },
-  { x: 30, y: 57, w: 40, h: 16, r: 'o' }, { x: 94, y: 57, w: 44, h: 16, r: 'a' }, { x: 162, y: 57, w: 52, h: 16, r: 'o' },
-  { x: 48, y: 78, w: 30, h: 13, r: 'o' }, { x: 100, y: 78, w: 36, h: 13, r: 'c' }, { x: 156, y: 78, w: 58, h: 13, r: 'o' },
-  { x: 26, y: 96, w: 60, h: 17, r: 'o' }, { x: 104, y: 96, w: 46, h: 17, r: 'c' }, { x: 170, y: 96, w: 44, h: 17, r: 'o' },
-];
-const ROLE_CLS = { a: 'il-st-anchor', c: 'il-st-ctemp', o: 'il-st-other' };
-
-function IlloContemp() {
-  return (
-    <svg viewBox="0 0 240 130" className="illo" role="img" aria-label="בני-הזמן">
-      <rect x="88" y="8" width="54" height="116" rx="6" className="il-band2" />
-      {STONES.map((s, i) => (
-        <rect key={i} x={s.x} y={s.y} width={s.w} height={s.h} rx="3"
-          className={`il-stone ${ROLE_CLS[s.r]}`} />
-      ))}
-    </svg>
-  );
-}
-
-function IlloTree() {
-  // שרשרת דורות אנכית: ריבוע, קו שנמתח למטה, ריבוע נוסף, וכן הלאה.
-  return (
-    <svg viewBox="0 0 240 130" className="illo" role="img" aria-label="אילן יוחסין">
-      <line x1="120" y1="34" x2="120" y2="52" className="il-tline il-tline1" />
-      <line x1="120" y1="74" x2="120" y2="92" className="il-tline il-tline2" />
-      <rect x="96" y="12" width="48" height="22" rx="6" className="il-tnode il-troot il-tn0" />
-      <rect x="96" y="52" width="48" height="22" rx="6" className="il-tnode il-tn1" />
-      <rect x="96" y="92" width="48" height="22" rx="6" className="il-tnode il-tn2" />
-    </svg>
-  );
-}
-
-function IlloMap() {
-  const d = 'M30 100 Q70 30 120 70 T210 40';
-  return (
-    <svg viewBox="0 0 240 130" className="illo" role="img" aria-label="מפת המסע">
-      <path d={d} className="il-mpath" fill="none" />
-      <path d={d} className="il-mprogress" fill="none" />
-      <circle r="7" className="il-mdot">
-        <animateMotion dur="2.6s" repeatCount="indefinite" path={d} keyPoints="0;1;1" keyTimes="0;0.75;1" calcMode="linear" />
-      </circle>
-    </svg>
-  );
-}
-
-function IlloComments() {
-  return (
-    <svg viewBox="0 0 240 130" className="illo" role="img" aria-label="תגובות">
-      <rect x="40" y="24" width="160" height="82" rx="10" className="il-box" />
-      <rect x="54" y="40" width="80" height="10" rx="4" className="il-row" />
-      <g className="il-bubble">
-        <rect x="70" y="60" width="120" height="34" rx="10" className="il-bub" />
-        <circle cx="92" cy="77" r="3.2" className="il-dot il-dot1" />
-        <circle cx="104" cy="77" r="3.2" className="il-dot il-dot2" />
-        <circle cx="116" cy="77" r="3.2" className="il-dot il-dot3" />
-      </g>
-    </svg>
-  );
-}
-
-function IlloNav() {
-  // זום-אין: הזכוכית והריבועים גדלים, וריבועים חדשים מופיעים בין הקיימים.
-  const mains = [44, 82, 120, 158, 196];      // מרכזי הריבועים הקיימים
-  const between = [63, 101, 139, 177];        // מרכזי הריבועים החדשים (בין הקיימים)
-  return (
-    <svg viewBox="0 0 240 130" className="illo" role="img" aria-label="ניווט">
-      <g className="il-zoomwrap">
-        {mains.map((cx) => (
-          <rect key={`m${cx}`} x={cx - 11} y="52" width="22" height="22" rx="4" className="il-nbar" />
-        ))}
-        {between.map((cx) => (
-          <rect key={`b${cx}`} x={cx - 8} y="54" width="16" height="18" rx="3" className="il-nbetween" />
-        ))}
-      </g>
-      <g className="il-lens">
-        <circle cx="120" cy="63" r="20" className="il-stroke" fill="none" />
-        <line x1="135" y1="78" x2="147" y2="90" className="il-stroke" />
-      </g>
-    </svg>
-  );
-}
+import { useEffect, useState } from 'react';
+import SpotlightTour from './SpotlightTour.jsx';
 
 /* --- שני המבטים במסך הפתיחה. האיורים מונפשים (CSS) כדי שהבחירה תהיה
    ויזואלית: רואים מה כל מבט עושה במקום לקרוא עליו. --- */
@@ -146,47 +43,51 @@ function IlloViewAtlas() {
   );
 }
 
-// בחירת השכבות להצגה - מסך אחרון בסיור
+// שכבות התצוגה. הצבע משמש את הצ׳יפים בשלב "מה להציג" בסיור.
 export const LAYERS = [
-  { key: 'leaders', icon: '🏛️', label: 'אבות ומנהיגים' },
-  { key: 'judges', icon: '⚖️', label: 'שופטים' },
-  { key: 'kings', icon: '👑', label: 'מלכים' },
-  { key: 'prophets', icon: '📜', label: 'נביאים' },
-  { key: 'books', icon: '📖', label: 'ספרי תנ״ך' },
-  { key: 'events', icon: '◆', label: 'אירועים' },
-  { key: 'world', icon: '🌍', label: 'רקע עולמי' },
+  { key: 'leaders', icon: '🏛️', label: 'אבות ומנהיגים', color: 'var(--leader)' },
+  { key: 'judges', icon: '⚖️', label: 'שופטים', color: 'var(--judge)' },
+  { key: 'kings', icon: '👑', label: 'מלכים', color: 'var(--judah)' },
+  { key: 'prophets', icon: '📜', label: 'נביאים', color: 'var(--prophet)' },
+  { key: 'books', icon: '📖', label: 'ספרי תנ״ך', color: 'var(--book)' },
+  { key: 'events', icon: '◆', label: 'אירועים', color: 'var(--event)' },
+  { key: 'world', icon: '🌍', label: 'רקע עולמי', color: 'var(--world)' },
 ];
-const ALL_ON = { leaders: true, judges: true, kings: true, prophets: true, books: true, events: true, world: true };
-const ESSENTIALS = { leaders: true, judges: false, kings: true, prophets: true, books: false, events: true, world: false };
 
-const SLIDES = [
-  { key: 'search', title: 'חיפוש וקפיצה', text: 'הקלידו שם של דמות או אירוע בתיבת החיפוש - והציר יזנק ישר אליו.', Illo: IlloSearch },
-  { key: 'contemp', title: 'בני-הזמן', text: 'בכל כרטיס יש כפתור שמדגיש את כל מי שחי באותה תקופה - ומעמעם את השאר.', Illo: IlloContemp },
-  { key: 'tree', title: 'אילן יוחסין', text: 'השושלת מאברהם ואילך. לחיצה על שם באילן קופצת אליו בציר הזמן.', Illo: IlloTree },
-  { key: 'map', title: 'מפת המסע', text: 'לדמויות נבחרות - מסע מודרך על מפת הארץ, תחנה אחר תחנה.', Illo: IlloMap },
-  { key: 'comments', title: 'תגובות הקהילה', text: 'אפשר להוסיף הערה, מקור או תיקון לכל אירוע ודמות - וכולם רואים.', Illo: IlloComments },
-  { key: 'nav', title: 'ניווט בציר', text: 'הזמן זורם מימין (עבר) לשמאל · זום בצביטה או ב-Ctrl+גלגלת · לחיצה על שם שכבה מקטינה אותה.', Illo: IlloNav },
-  { key: 'layers', title: 'מה להציג?', text: 'בחרו אילו שכבות יופיעו על הציר. תמיד אפשר לשנות זאת אחר כך בכפתור ☰ אפשרויות.', picker: true },
+// שלבי הסיור: כל אחד מצביע על אזור אמיתי בממשק. before מכין את המסך -
+// הכרטיס והמפה קיימים רק אחרי שנבחרה דמות, ולכן פותחים אחת לפני השלב שלהם.
+const tourSteps = ({ onStartJourney }) => [
+  { sel: '.search-box', title: 'חיפוש וקפיצה',
+    text: 'הקלידו שם של דמות, אירוע או מקום - והציר יזנק ישר אליו.' },
+  { sel: '.vtl-wrap, .scroll-area', title: 'הציר עצמו',
+    text: 'הזמן זורם מלמעלה למטה, מהאבות ועד בית שני. גללו לאורך הדורות.' },
+  { sel: '.era-strip', title: 'קפיצה בין תקופות',
+    text: 'פס התקופות. לחיצה מזיזה את הציר לתחילת התקופה שבחרתם.' },
+  { sel: '.controls, .legend', title: 'מה להציג?', picker: true,
+    text: 'בחרו כאן ועכשיו אילו שכבות יופיעו על הציר. תמיד אפשר לשנות בהמשך.' },
+  { sel: '.detail-card', title: 'הכרטיס', before: onStartJourney,
+    text: 'הסיפור המלא, הפסוק, המקורות, בני-הזמן ותגובות - וכפתור לאותה דמות במסע הדורות.' },
+  { sel: '.dc-hl', title: 'בני-הזמן',
+    text: 'הכפתור הזה מדגיש את כל מי שחי באותה תקופה, ומעמעם את השאר.' },
+  { sel: '.mode-btn, .bottom-nav a', title: 'המבט השני',
+    text: 'מסע הדורות מציג את אותם נתונים דמות אחר דמות, עם המפה והסיפור לצדה.' },
 ];
+
 
 export default function Intro({ open, onClose, visible, setVisible, mode = 'tour', onStartJourney,
   atlasHref = '/atlas', onChooseView }) {
-  const [step, setStep] = useState(0);
   // בביקור ראשון מציגים מסך-פתיחה במקום סיור של 7 שקפים; הסיור המלא נשאר
   // זמין דרך כפתור ה-? בכותרת.
   const [phase, setPhase] = useState(mode);
   // מסך הפתיחה בנוי משתי שאלות נפרדות, כי ערבוב שלהן נתן ארבע אפשרויות
   // במסך אחד: קודם באיזו תצוגה להתחיל, ורק אחר כך אם רוצים הדרכה.
   const [chosen, setChosen] = useState(null);
-  const touchX = useRef(null);
 
-  useEffect(() => { if (open) { setStep(0); setPhase(mode); setChosen(null); } }, [open, mode]);
+  useEffect(() => { if (open) { setPhase(mode); setChosen(null); } }, [open, mode]);
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => {
       if (e.key === 'Escape') onClose();
-      else if (e.key === 'ArrowLeft') setStep((s) => Math.min(SLIDES.length - 1, s + 1));
-      else if (e.key === 'ArrowRight') setStep((s) => Math.max(0, s - 1));
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -258,87 +159,16 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
     );
   }
 
-  const last = step === SLIDES.length - 1;
-  const s = SLIDES[step];
-  const next = () => (last ? onClose() : setStep((v) => v + 1));
-  const prev = () => setStep((v) => Math.max(0, v - 1));
-
-  const onTouchStart = (e) => { touchX.current = e.touches[0].clientX; };
-  const onTouchEnd = (e) => {
-    if (touchX.current == null) return;
-    const dx = e.changedTouches[0].clientX - touchX.current;
-    touchX.current = null;
-    if (dx < -45) next();            // החלקה שמאלה - הבא
-    else if (dx > 45) prev();        // החלקה ימינה - הקודם
-  };
-
+  // ===== סיור =====
+  // עד כה היו כאן שבעה שקפים שהסבירו על ממשק שלא נראה מאחוריהם. כעת זה
+  // סיור על המסך עצמו: זרקור על אזור אמיתי, שלב אחר שלב.
   return (
-    <div className="intro-overlay" onClick={onClose}>
-      <div
-        className="intro-card"
-        onClick={(e) => e.stopPropagation()}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-      >
-        <button className="about-close" onClick={onClose} aria-label="דילוג וסגירה">✕</button>
-
-        {step === 0 && <div className="intro-welcome">ברוכים הבאים 📖</div>}
-
-        {/* התוכן ממופתח לפי step כדי שהאנימציה תתחיל מחדש בכל מעבר */}
-        <div className="intro-stage" key={s.key}>
-          {!s.picker && <div className="intro-illo-wrap">{<s.Illo />}</div>}
-          <h3 className="intro-slide-title">{s.title}</h3>
-          <p className="intro-slide-text">{s.text}</p>
-
-          {s.picker && (
-            <div className="intro-picker">
-              {/* הבחירה המהירה גם מסיימת - שלא ייתקעו בשקף האחרון בלי להבין איך יוצאים */}
-              <div className="picker-quick">
-                <button type="button" onClick={() => { setVisible({ ...ALL_ON }); onClose(); }}>הכל - מתחילים</button>
-                <button type="button" onClick={() => { setVisible({ ...ESSENTIALS }); onClose(); }}>העיקר בלבד - מתחילים</button>
-              </div>
-              <div className="picker-grid">
-                {LAYERS.map((l) => {
-                  const on = !!visible?.[l.key];
-                  return (
-                    <button
-                      key={l.key}
-                      type="button"
-                      className={`picker-item${on ? ' on' : ''}`}
-                      aria-pressed={on}
-                      onClick={() => setVisible((v) => ({ ...v, [l.key]: !v[l.key] }))}
-                    >
-                      <span className="picker-ico" aria-hidden="true">{l.icon}</span>
-                      <span className="picker-label">{l.label}</span>
-                      <span className="picker-check" aria-hidden="true">{on ? '✓' : ''}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="intro-dots" role="tablist" aria-label="התקדמות">
-          {SLIDES.map((sl, i) => (
-            <button
-              key={sl.key}
-              className={`intro-dot${i === step ? ' on' : ''}`}
-              aria-label={`מסך ${i + 1}`}
-              aria-selected={i === step}
-              onClick={() => setStep(i)}
-            />
-          ))}
-        </div>
-
-        <div className="intro-nav">
-          <button className="intro-btn ghost" onClick={prev} disabled={step === 0}>הקודם</button>
-          <span className="intro-count" dir="ltr">{step + 1} / {SLIDES.length}</span>
-          <button className="intro-btn primary" onClick={next}>
-            {last ? 'יאללה, מתחילים' : 'הבא'}
-          </button>
-        </div>
-      </div>
-    </div>
+    <SpotlightTour
+      steps={tourSteps({ onStartJourney })}
+      onDone={onClose}
+      layers={LAYERS}
+      visible={visible || {}}
+      setVisible={(v) => setVisible(v)}
+    />
   );
 }
