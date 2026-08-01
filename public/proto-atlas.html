@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <meta name="robots" content="noindex"/>
-<title>אטלס הדורות - אב־טיפוס | ציר הזמן של עם ישראל</title>
+<title>מסע הדורות - ציר הזמן של עם ישראל</title>
 <style>
 @font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;font-display:swap;src:url('/fonts/frankruhllibre-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
 @font-face{font-family:'Heebo';font-weight:300 700;font-display:swap;src:url('/fonts/heebo-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
@@ -286,13 +286,13 @@ body.sheet-open #dMap{display:flex}
 <body>
 
 <header id="bar">
-  <h1>🗺️ אטלס הדורות <span>אב־טיפוס</span></h1>
+  <h1>🗺️ מסע הדורות</h1>
   <span class="spacer"></span>
   <div id="tools">
     <button class="tool" id="tTree">👑 <span class="tl">בית דוד</span></button>
     <button class="tool" id="tIns">📊 <span class="tl">תובנות</span></button>
     <button class="tool" id="tShare">🔗 <span class="tl">שיתוף</span></button>
-    <a class="tool primary" href="/" title="מעבר לתצוגת ציר הזמן">↔ <span class="tl">ציר הזמן</span></a>
+    <a class="tool primary" id="toTimeline" href="/" title="מעבר לתצוגת ציר הזמן">📜 <span class="tl">ציר הזמן</span></a>
   </div>
 </header>
 
@@ -304,7 +304,7 @@ body.sheet-open #dMap{display:flex}
 
 <div id="mapPane">
   <div id="mapHead">
-    <h2 id="mapTitle">אטלס הדורות</h2>
+    <h2 id="mapTitle">מסע הדורות</h2>
     <div id="mapBtns">
       <button class="mbtn play" id="bPlay">▶ הפעלת המסע</button>
       <button class="mbtn" id="bPrev">הקודם</button>
@@ -381,6 +381,7 @@ async function build() {
   syncBar();
   renderStory();
   balanceColumns(); fitMap();
+  openFromUrl();
   addEventListener('scroll', pick, { passive: true });
   setInterval(pick, 300);
   addEventListener('resize', () => {
@@ -508,6 +509,37 @@ let pinned = null;
 ['wheel', 'touchstart', 'keydown'].forEach((ev) =>
   addEventListener(ev, () => { pinned = null; }, { passive: true }));
 
+// כניסה מציר הזמן או מקישור משותף: /atlas?sel=kind:id (גם id בלבד נתמך).
+// אם הפריט מסונן החוצה, מדליקים את השכבה שלו כדי שהוא באמת ייראה.
+function openFromUrl() {
+  const sel = new URLSearchParams(location.search).get('sel');
+  if (!sel) return;
+  const id = sel.includes(':') ? sel.split(':')[1] : sel;
+  const i = items.findIndex(x => x.id === id);
+  if (i < 0) return;
+  if (!on[items[i].layer]) {
+    on[items[i].layer] = true;
+    $('#filters').querySelector(`.fbtn[data-l="${items[i].layer}"]`)?.setAttribute('aria-pressed', 'true');
+    applyFilters();
+  }
+  // הפריסה ממשיכה לזוז אחרי הטעינה (פונטים, גובה המפה), ולכן יעד שחושב מוקדם
+  // מדי נוחת על כרטיס שכן. קופצים אחרי שהפונטים מוכנים, ומיישרים שוב ברגע
+  // שהפריסה נרגעה - כל עוד המשתמש לא גלל בעצמו בינתיים.
+  const jump = () => {
+    const el = document.querySelector(`.card[data-i="${i}"]`);
+    if (el) goCard(el);
+  };
+  let moved = false;
+  const mark = () => { moved = true; };
+  ['wheel', 'touchstart', 'keydown'].forEach(ev => addEventListener(ev, mark, { passive: true }));
+  const ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  ready.then(() => setTimeout(jump, 60));
+  setTimeout(() => {
+    if (!moved) jump();
+    ['wheel', 'touchstart', 'keydown'].forEach(ev => removeEventListener(ev, mark));
+  }, 700);
+}
+
 // ==================== ניווט במקלדת ====================
 // ↓/↑ = דמות אחת בכל לחיצה. רווח = התקופה הבאה, Shift+רווח = הקודמת.
 // navIdx מחזיק את היעד שנבחר זה עתה, כדי שלחיצות רצופות ימשיכו קדימה גם
@@ -588,12 +620,26 @@ function fitMap() {
 }
 const line = (pts) => pts.length < 2 ? '' : 'M ' + pts.map(p => `${p.X} ${p.Y}`).join(' L ');
 
+// המבט הנוכחי והפריט הנבחר נשמרים בכתובת, כדי שמעבר לציר הזמן (ושיתוף)
+// ינחתו על אותה דמות ולא בראש הדף.
+function syncViewLink() {
+  const it = items[active];
+  const q = it ? `?sel=${it.kind}:${it.id}` : '';
+  const a = $('#toTimeline');
+  if (a) {
+    a.href = '/' + q;
+    a.title = it ? `הצגת ${it.name} על ציר הזמן` : 'מעבר לתצוגת ציר הזמן';
+  }
+  try { history.replaceState({}, '', '/atlas' + q); } catch {}
+}
+
 function render() {
   const it = items[active], ov = $('#ov'), lg = $('#legend');
+  syncViewLink();
   stopPlay(); renderDetail(it);
   if (!it || !it.map) {
     ov.innerHTML = ''; lg.innerHTML = '';
-    $('#mapTitle').textContent = it ? it.name : 'אטלס הדורות';
+    $('#mapTitle').textContent = it ? it.name : 'מסע הדורות';
     $('#noMap').classList.toggle('show', !!(it && !it.map));
     $('#pop').classList.remove('show');
     fitMap(); zoomTo(-1);   // המקרא התרוקן - החלון גדל, מתאימים מחדש
@@ -822,8 +868,8 @@ function toast(msg) {
 }
 $('#tShare').addEventListener('click', async () => {
   const it = items[active];
-  const url = location.origin + '/proto-atlas.html' + (it ? '#' + it.id : '');
-  const title = it ? `${it.name} - אטלס הדורות` : 'אטלס הדורות';
+  const url = location.origin + '/atlas' + (it ? `?sel=${it.kind}:${it.id}` : '');
+  const title = it ? `${it.name} - מסע הדורות` : 'מסע הדורות';
   try {
     if (navigator.share) { await navigator.share({ title, url }); return; }
     await navigator.clipboard.writeText(url); toast('הקישור הועתק ✓');

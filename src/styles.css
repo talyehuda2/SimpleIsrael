@@ -181,6 +181,12 @@ header {
 .daily-btn { background: var(--gold); color: #3a2c08; }
 .daily-btn:hover { background: #c99a2f; }
 .daily-name { font-weight: 700; margin-inline-start: 5px; }
+/* מתג המבטים - קו מתאר במקום מילוי, כדי שייקרא כמעבר-תצוגה ולא ככלי נוסף */
+a.atlas-btn {
+  background: transparent; color: var(--navy); text-decoration: none;
+  border: 1.5px solid var(--navy);
+}
+a.atlas-btn:hover { background: var(--navy); color: #fff; }
 
 .share-btn {
   display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
@@ -624,6 +630,48 @@ h1 {
   color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
 }
 .intro-link:hover { color: var(--navy); }
+
+/* ----- בחירת מבט במסך הפתיחה ----- */
+.view-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 4px 0 2px; }
+.view-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer;
+  padding: 12px 12px 15px; border: 1px solid var(--line); border-radius: 14px;
+  background: var(--panel); font-family: inherit; text-align: center;
+  text-decoration: none; color: inherit; transition: border-color .16s, transform .16s, box-shadow .16s;
+}
+.view-card:hover, .view-card:focus-visible {
+  border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(22, 58, 87, .12);
+}
+.vw-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.view-card b { color: var(--navy); font-size: 16px; }
+.view-card span { color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+.view-card .vw-illo { width: 100%; height: auto; max-height: 96px; }
+/* האנימציות רצות רק כשהכרטיס בפוקוס-ריחוף או בטעינה - שני איורים קטנים בלבד */
+.vw-life { fill: var(--navy); opacity: .28; transform-origin: right center;
+  animation: vwGrow .5s ease-out both; }
+.vw-scan { fill: var(--gold); opacity: .16; animation: vwScan 4.5s ease-in-out 0.6s infinite; }
+.vw-axis, .vw-tick { stroke: var(--muted); stroke-width: 1.5; opacity: .5; }
+.vw-map { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+.vw-coast { stroke: var(--muted); stroke-width: 1.5; opacity: .45; }
+.vw-route { stroke: var(--gold); stroke-width: 2.5; stroke-dasharray: 4 4; stroke-linecap: round;
+  animation: vwDash 1.6s linear infinite; }
+.vw-pin { fill: var(--gold); animation: vwPop 4.5s ease-out infinite both; }
+.vw-card { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+.vw-ln { fill: var(--muted); opacity: .3; }
+.vw-ln-t { fill: var(--navy); opacity: .6; }
+@keyframes vwGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes vwScan { 0%, 100% { transform: translateX(52px); } 50% { transform: translateX(-52px); } }
+@keyframes vwDash { to { stroke-dashoffset: -16; } }
+@keyframes vwPop { 0%, 8% { r: 0; opacity: 0; } 16%, 70% { r: 4.5; opacity: 1; } 100% { r: 4.5; opacity: .35; } }
+@media (prefers-reduced-motion: reduce) {
+  .vw-life, .vw-scan, .vw-route, .vw-pin { animation: none; }
+  .vw-life { transform: none; }
+}
+@media (max-width: 460px) {
+  .view-pick { grid-template-columns: 1fr; gap: 9px; }
+  .view-card { flex-direction: row; text-align: right; gap: 11px; padding: 9px 10px; }
+  .view-card .vw-illo { width: 84px; flex: 0 0 84px; max-height: 56px; }
+}
 
 /* ----- מצב ריק: הזמנה לדמות היום ----- */
 .daily-hint {

@@ -254,6 +254,12 @@ export default function App() {
     try { localStorage.setItem('si_seen_intro', '1'); } catch { /* מתעלמים */ }
   };
   const openTour = () => { setIntroMode('tour'); setIntroOpen(true); };
+  // מבט המסע (/atlas) מקבל את הדמות הנבחרת, כדי שהמעבר בין המבטים ימשיך
+  // מאותה נקודה במקום לחזור לראש הציר.
+  const atlasHref = `/atlas${selected ? `?sel=${itemKey(selected)}` : ''}`;
+  const chooseView = (view) => {
+    try { localStorage.setItem('si_view', view); } catch { /* מתעלמים */ }
+  };
 
   // תפריט המטא (⋯) בכותרת - נסגר בלחיצה מחוץ לו
   const [metaOpen, setMetaOpen] = useState(false);
@@ -790,6 +796,14 @@ export default function App() {
           <button className="tree-btn" onClick={() => setToursOpen(true)} title="מסעות מודרכים - סיור דמות-אחר-דמות">
             <span aria-hidden="true">🧭</span> <span className="btn-label">מסעות</span>
           </button>
+          {/* מתג המבטים: אותם נתונים, תצוגה אחרת. הדמות הנבחרת עוברת איתנו */}
+          <a
+            className="tree-btn atlas-btn"
+            href={atlasHref}
+            title="מבט מסע: דמות אחר דמות, עם המפה והסיפור לצדה"
+          >
+            <span aria-hidden="true">🗺️</span> <span className="btn-label">מסע הדורות</span>
+          </a>
           {dailyFigure && (
             <button
               className="tree-btn daily-btn"
@@ -1149,6 +1163,7 @@ export default function App() {
       <Intro
         open={introOpen} onClose={closeIntro} visible={visible} setVisible={setVisible}
         mode={introMode} onStartJourney={() => jumpToId('avraham')}
+        atlasHref={atlasHref} onChooseView={chooseView}
       />
       <Insights
         open={insightsOpen}

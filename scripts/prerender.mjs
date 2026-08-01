@@ -129,6 +129,15 @@ footer a{color:var(--gold)}
 .chips a:hover{border-color:var(--gold)}
 .cl-name{color:var(--navy);font-size:14.5px;font-weight:700}
 .cl-kind{color:var(--muted);font-size:11px}
+.mlist{list-style:none;padding:0;margin:14px 0 0;counter-reset:m}
+.mlist li{counter-increment:m;position:relative;padding:12px 40px 12px 0;border-top:1px solid var(--line)}
+.mlist li::before{content:counter(m);position:absolute;right:0;top:13px;width:26px;height:26px;
+  border-radius:50%;background:var(--panel);border:1px solid var(--line);color:var(--gold);
+  font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.mlist a{color:var(--navy);text-decoration:none;font-size:17px}
+.mlist a:hover b{color:var(--gold)}
+.mlist .dim{margin-inline-start:8px}
+.mlist p{margin:4px 0 0;font-size:15px;line-height:1.75;color:var(--muted)}
 `;
 
 function shell({ title, description, canonical, jsonld, body, ogImage, crumbs }) {
@@ -316,23 +325,50 @@ ${next ? `<a href="/p/period/${next.id}">${esc(next.name)} →</a>` : '<span></s
   });
 }
 
-// דף אוסף - קבוצת דמויות שקשורות ברעיון אחד
+// דף אוסף - קבוצת דמויות שקשורות ברעיון אחד.
+// כל חבר מוצג עם משפט פותח משלו ולא רק כשם: אחרת הדף הוא רשימת קישורים
+// (~160 מילים) שגוגל מסווג כתוכן דק ואינו מאנדקס.
+const firstSentence = (s = '', max = 165) => {
+  const t = clean(s);
+  const m = t.match(/^[^.!?]{25,}?[.!?]/);          // משפט שלם, אם הוא לא קצר מדי
+  const out = m ? m[0] : t;
+  return truncate(out, max);
+};
 function collectionPage(c) {
   const members = c.members.map((id) => items.find((x) => x.id === id)).filter(Boolean);
   const url = `${SITE}/p/collection/${c.id}`;
   const metaDesc = truncate(`${c.title} - ${c.subtitle}. ${members.map((m) => m.name).join(', ')}`, 155);
+  const others = collections.filter((o) => o.id !== c.id);
+  const span = members.length
+    ? formatRange(Math.min(...members.map((m) => m.start)), Math.max(...members.map((m) => m.end)), 'tradition')
+    : '';
+  // התקופות שהאוסף פרושׂ עליהן - נותן הקשר כרונולוגי וקישור פנימי לדפי התקופה
+  const eras = [...new Set(members.map((m) => periodOf(m)).filter(Boolean).map((p) => p.id))]
+    .map((id) => sortedPeriods.find((p) => p.id === id));
   const body = `
 <div class="chip">אוסף</div>
 <h1>${esc(c.icon)} ${esc(c.title)}</h1>
-<div class="dates">${esc(c.subtitle)} · ${members.length} דמויות</div>
+<div class="dates">${esc(c.subtitle)} · ${members.length} דמויות${span ? ` · ${esc(span)}` : ''}</div>
 <p class="desc">${esc(c.description)}</p>
+${eras.length ? `<div class="row"><b>תקופות:</b> ${eras.map((p) => `<a href="/p/period/${p.id}">${esc(p.name)}</a>`).join(' · ')}</div>` : ''}
 <section class="related">
   <h2>הדמויות באוסף</h2>
-  <ul class="chips">
-    ${members.map((m) => `<li><a href="/p/${m.kind}/${m.id}"><span class="cl-name">${esc(m.name)}</span><span class="cl-kind">${esc(formatRange(m.start, m.end, 'tradition'))}</span></a></li>`).join('\n    ')}
-  </ul>
+  <p class="related-sub">לחצו על שם כדי לקרוא את הסיפור המלא, המקורות והמפה.</p>
+  <ol class="mlist">
+    ${members.map((m) => `<li>
+      <a href="/p/${m.kind}/${m.id}"><b>${esc(m.name)}</b></a>
+      <span class="dim">${esc(KINDS[m.kind].label)} · ${esc(formatRange(m.start, m.end, 'tradition'))}</span>
+      <p>${esc(firstSentence(m.description))}</p>
+    </li>`).join('\n    ')}
+  </ol>
 </section>
-<a class="cta" href="/">פתחו בציר הזמן האינטראקטיבי ←</a>`;
+<a class="cta" href="/">פתחו בציר הזמן האינטראקטיבי ←</a>
+<section class="related">
+  <h2>אוספים נוספים</h2>
+  <ul class="chips">
+    ${others.map((o) => `<li><a href="/p/collection/${o.id}"><span class="cl-name">${esc(o.icon)} ${esc(o.title)}</span><span class="cl-kind">${esc(o.subtitle)}</span></a></li>`).join('\n    ')}
+  </ul>
+</section>`;
   return shell({
     title: `${c.title}: ${c.subtitle} - ציר הזמן של עם ישראל`,
     description: metaDesc,
