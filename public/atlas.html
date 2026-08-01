@@ -86,6 +86,22 @@ button{font-family:inherit}
 #detail .desc{font-size:13.5px;line-height:1.8;margin:0 0 12px}
 #detail .src{font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:9px;margin-bottom:12px}
 #detail .src b{color:var(--navy)}
+/* סיור קצר - זרקור על אזור אחד בכל פעם */
+.tour-wrap{position:fixed;inset:0;z-index:80;background:rgb(30 20 5 / .55)}
+.tour-ring{position:absolute;border:2.5px solid var(--gold);border-radius:12px;
+  box-shadow:0 0 0 9999px rgb(30 20 5 / .55);background:transparent;pointer-events:none}
+.tour-box{position:absolute;width:270px;max-width:calc(100vw - 24px);background:var(--panel);
+  border:1px solid var(--line);border-top:4px solid var(--gold);border-radius:12px;padding:13px 15px;
+  box-shadow:0 12px 32px rgb(30 20 5 / .35)}
+.tour-box b{display:block;font-size:15px;color:var(--navy);margin-bottom:4px}
+.tour-box p{margin:0 0 10px;font-size:12.5px;line-height:1.65;color:var(--ink)}
+.tour-nav{display:flex;align-items:center;gap:7px}
+.tour-nav span{font-size:11px;color:var(--muted);margin-inline-end:auto;font-variant-numeric:tabular-nums}
+.tour-nav button{font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;
+  border-radius:16px;padding:6px 13px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.tour-nav button.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+.tour-nav button:hover{border-color:var(--gold)}
+
 /* גשר לציר הזמן ולדף המידע - שני המבטים על אותה דמות */
 .bridge{border-top:1px solid var(--line);padding-top:10px;margin-bottom:12px}
 .bridge h3{margin:0 0 7px;font-size:12px;color:var(--navy);font-weight:800}
@@ -426,6 +442,7 @@ async function build() {
   renderStory();
   balanceColumns(); fitMap();
   openFromUrl();
+  if (new URLSearchParams(location.search).get('tour') === '1') setTimeout(startTour, 700);
   addEventListener('scroll', pick, { passive: true });
   setInterval(pick, 300);
   addEventListener('resize', () => {
@@ -555,6 +572,82 @@ let pinned = null;
 
 // כניסה מציר הזמן או מקישור משותף: /atlas?sel=kind:id (גם id בלבד נתמך).
 // אם הפריט מסונן החוצה, מדליקים את השכבה שלו כדי שהוא באמת ייראה.
+// ==================== סיור קצר ====================
+// מגיעים לכאן מ-/atlas?tour=1, כשהמבקר ביקש הדרכה במסך הפתיחה. זרקור על
+// אזור אחד בכל פעם, במקום שקפים שמסתירים את המסך ומלמדים לפני שרואים.
+// במסך צר הכרטיס והמפה נפתחים רק בהקשה, ולכן אין טעם להצביע עליהם - הם
+// יושבים מתחת לקצה המסך. שם מסבירים אותם בתוך שלב הרשימה.
+const TOUR_WIDE = [
+  { sel: '#story', title: 'הסיפור נגלל', text: 'הדמויות והאירועים מסודרים לפי סדר הדורות. גללו, ולחצו על שם כדי לפתוח אותו.' },
+  { sel: '#eras', title: 'קפיצה בין תקופות', text: 'סרגל התקופות. לחיצה מקפיצה לתחילת התקופה, ורווח במקלדת מדלג לבאה.' },
+  { sel: '#filters', title: 'מה להציג', text: 'הדליקו וכבו סוגים - מלכים, נביאים, ספרים, אירועים - כדי לנקות את הרשימה.' },
+  { sel: '#detail', title: 'הכרטיס המלא', text: 'הסיפור, הפסוק, המקורות, בני-הזמן, וקישור לאותה דמות על ציר הזמן.' },
+  { sel: '#mapPane', title: 'המפה', text: 'למי שיש מסע - התחנות מסומנות על המפה, ואפשר להריץ אותו תחנה אחר תחנה.' },
+];
+const TOUR_NARROW = [
+  { sel: '#story', title: 'הסיפור נגלל', text: 'הדמויות והאירועים לפי סדר הדורות. הקישו על שם כדי לפתוח את הכרטיס המלא - ובתוכו גם כפתור לפתיחת המפה.' },
+  { sel: '#eras', title: 'קפיצה בין תקופות', text: 'סרגל התקופות. הקשה מקפיצה לתחילת התקופה שבחרתם.' },
+  { sel: '#filters', title: 'מה להציג', text: 'הדליקו וכבו סוגים - מלכים, נביאים, ספרים, אירועים - כדי לנקות את הרשימה.' },
+];
+let TOUR = TOUR_WIDE, tourStep = 0;
+function startTour() { TOUR = isNarrow() ? TOUR_NARROW : TOUR_WIDE; tourStep = 0; showTourStep(); }
+function endTour() {
+  document.querySelector('.tour-wrap')?.remove();
+  history.replaceState({}, '', location.pathname + location.search.replace(/[?&]tour=1/, '').replace(/^&/, '?'));
+}
+function showTourStep() {
+  document.querySelector('.tour-wrap')?.remove();
+  const s = TOUR[tourStep];
+  if (!s) return endTour();
+  const el = document.querySelector(s.sel);
+  if (!el) { tourStep++; return showTourStep(); }        // אזור שאינו מוצג במסך הזה
+  const r0 = el.getBoundingClientRect();
+  if (r0.width < 8 || r0.height < 8) { tourStep++; return showTourStep(); }
+  // חותכים לגבולות החלון: אזורים רחבים (המפה) גולשים החוצה, והטבעת נראית קטועה.
+  // clientWidth ולא innerWidth - האחרון כולל את פס הגלילה, והשכבה (inset:0) לא.
+  const VW = document.documentElement.clientWidth, VH = document.documentElement.clientHeight;
+  // יעד שנמצא מחוץ למסך (למשל גיליון סגור) - מדלגים, אחרת החיתוך שלמטה היה
+  // מצייר טבעת סביב שטח ריק.
+  if (r0.bottom < 24 || r0.top > VH - 24 || r0.right < 24 || r0.left > VW - 24) {
+    tourStep++; return showTourStep();
+  }
+  const pad = 6, M = 4;
+  const b = {
+    left: Math.max(M, r0.left - pad), right: Math.min(VW - M, r0.right + pad),
+    top: Math.max(M, r0.top - pad), bottom: Math.min(VH - M, r0.bottom + pad),
+  };
+  b.width = b.right - b.left; b.height = b.bottom - b.top;
+  const wrap = document.createElement('div');
+  wrap.className = 'tour-wrap';
+  wrap.innerHTML =
+    `<div class="tour-ring" style="top:${b.top}px;right:${VW - b.right}px;
+       width:${b.width}px;height:${b.height}px"></div>
+     <div class="tour-box">
+       <b>${s.title}</b><p>${s.text}</p>
+       <div class="tour-nav">
+         <span>${tourStep + 1}/${TOUR.length}</span>
+         <button class="tskip">דילוג</button>
+         <button class="tnext primary">${tourStep === TOUR.length - 1 ? 'סיום' : 'הבא'}</button>
+       </div>
+     </div>`;
+  document.body.appendChild(wrap);
+  // התיבה יושבת בצד הפנוי הגדול יותר כדי שלא תכסה את מה שהיא מסבירה; אם אין
+  // צד פנוי (המפה תופסת כמעט הכול) היא יורדת לתחתית האזור.
+  const box = wrap.querySelector('.tour-box');
+  const bw = box.offsetWidth, bh = box.offsetHeight;
+  const clampTop = (v) => Math.min(Math.max(12, v), VH - bh - 12);
+  const freeR = VW - b.right, freeL = b.left;
+  if (freeR >= freeL && freeR > bw + 20) { box.style.right = (freeR + 14) + 'px'; box.style.top = clampTop(b.top) + 'px'; }
+  else if (freeL > bw + 20) { box.style.right = (VW - b.left + 14) + 'px'; box.style.top = clampTop(b.top) + 'px'; }
+  else {
+    box.style.right = Math.max(12, VW - b.right + (b.width - bw) / 2) + 'px';
+    box.style.top = clampTop(b.bottom - bh - 14) + 'px';
+  }
+  wrap.querySelector('.tnext').addEventListener('click', () => { tourStep++; showTourStep(); });
+  wrap.querySelector('.tskip').addEventListener('click', endTour);
+  wrap.addEventListener('click', (e) => { if (e.target === wrap) endTour(); });
+}
+
 // מעבר לפריט לפי אינדקס, גם אם השכבה שלו מסוננת כרגע - אחרת הקישור "נבלע"
 function goIndex(i) {
   if (i < 0 || !items[i]) return;

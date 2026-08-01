@@ -172,12 +172,15 @@ const SLIDES = [
 export default function Intro({ open, onClose, visible, setVisible, mode = 'tour', onStartJourney,
   atlasHref = '/atlas', onChooseView }) {
   const [step, setStep] = useState(0);
-  // בביקור ראשון מציגים מסך-פתיחה יחיד ("ברוכים הבאים") במקום סיור של 7 שקפים;
-  // הסיור המלא נשאר זמין דרך "סיור קצר בכלים" וכפתור ה-? בכותרת.
+  // בביקור ראשון מציגים מסך-פתיחה במקום סיור של 7 שקפים; הסיור המלא נשאר
+  // זמין דרך כפתור ה-? בכותרת.
   const [phase, setPhase] = useState(mode);
+  // מסך הפתיחה בנוי משתי שאלות נפרדות, כי ערבוב שלהן נתן ארבע אפשרויות
+  // במסך אחד: קודם באיזו תצוגה להתחיל, ורק אחר כך אם רוצים הדרכה.
+  const [chosen, setChosen] = useState(null);
   const touchX = useRef(null);
 
-  useEffect(() => { if (open) { setStep(0); setPhase(mode); } }, [open, mode]);
+  useEffect(() => { if (open) { setStep(0); setPhase(mode); setChosen(null); } }, [open, mode]);
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => {
@@ -191,46 +194,64 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
 
   if (!open) return null;
 
-  // מסך פתיחה - משפט ערך אחד ופעולה אחת ברורה, בלי ללמד לפני שרואים
-  if (phase === 'welcome') {
+  // ===== מסך פתיחה, שאלה ראשונה: באיזו תצוגה להתחיל =====
+  // המסך אטום ומחולק לשניים - הציר שמאחור הסיח והכביד על ההחלטה.
+  if (phase === 'welcome' && !chosen) {
     return (
-      <div className="intro-overlay" onClick={onClose}>
-        <div className="intro-card intro-welcome-card" onClick={(e) => e.stopPropagation()}>
-          <button className="about-close" onClick={onClose} aria-label="דילוג וסגירה">✕</button>
+      <div className="wsplit">
+        <button className="about-close wsplit-x" onClick={onClose} aria-label="דילוג וסגירה">✕</button>
+        <div className="wsplit-head">
           <div className="intro-hero" aria-hidden="true">📖</div>
           <h2 className="intro-welcome-title">ציר הזמן של עם ישראל</h2>
           <p className="intro-value">
             כל ההיסטוריה המקראית - מהאבות ועד חורבן בית שני.
             אותם נתונים, שני מבטים. במה נתחיל?
           </p>
-          {/* שתי הדרכים לצפות באותו סיפור - הבחירה ויזואלית, לא טקסטואלית */}
-          <div className="view-pick">
-            <button
-              className="view-card"
-              onClick={() => { onChooseView?.('timeline'); onClose(); onStartJourney?.(); }}
-            >
-              <IlloViewTimeline />
-              <div className="vw-txt">
-                <b>📜 ציר הזמן</b>
-                <span>מי חי מתי, ומי לצד מי - כל הדורות בתמונה אחת</span>
-              </div>
-            </button>
-            <a
-              className="view-card"
-              href={atlasHref}
-              onClick={() => onChooseView?.('atlas')}
-            >
-              <IlloViewAtlas />
-              <div className="vw-txt">
-                <b>🗺️ מסע הדורות</b>
-                <span>דמות אחר דמות, עם המפה והסיפור המלא לצדה</span>
-              </div>
-            </a>
+        </div>
+        <div className="wsplit-body">
+          <button className="wpane" onClick={() => setChosen('timeline')}>
+            <IlloViewTimeline />
+            <div className="vw-txt">
+              <b>📜 ציר הזמן</b>
+              <span>מי חי מתי, ומי לצד מי - כל הדורות בתמונה אחת</span>
+            </div>
+          </button>
+          <button className="wpane" onClick={() => setChosen('atlas')}>
+            <IlloViewAtlas />
+            <div className="vw-txt">
+              <b>🗺️ מסע הדורות</b>
+              <span>דמות אחר דמות, עם המפה והסיפור המלא לצדה</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== שאלה שנייה: הדרכה או ישר פנימה =====
+  if (phase === 'welcome') {
+    const atlas = chosen === 'atlas';
+    // מעבר לתצוגה שנבחרה. בציר נשארים באותו דף; במסע עוברים לכתובת, ולכן
+    // בקשת ההדרכה נשלחת אליו בכתובת (?tour=1).
+    const go = (tour) => {
+      onChooseView?.(chosen);
+      if (atlas) { window.location.href = atlasHref + (atlasHref.includes('?') ? '&' : '?') + (tour ? 'tour=1' : ''); return; }
+      if (tour) { setPhase('tour'); return; }
+      onClose(); onStartJourney?.();
+    };
+    return (
+      <div className="wsplit wsplit-ask">
+        <button className="about-close wsplit-x" onClick={onClose} aria-label="דילוג וסגירה">✕</button>
+        <div className="intro-card intro-welcome-card" onClick={(e) => e.stopPropagation()}>
+          <div className="intro-hero" aria-hidden="true">{atlas ? '🗺️' : '📜'}</div>
+          <h2 className="intro-welcome-title">{atlas ? 'מסע הדורות' : 'ציר הזמן'}</h2>
+          <p className="intro-value">רוצים סיור קצר שמראה מה אפשר לעשות כאן?</p>
+          <div className="wask">
+            <button className="intro-btn primary" onClick={() => go(true)}>✨ כן, סיור קצר</button>
+            <button className="intro-btn" onClick={() => go(false)}>לא, בואו נתחיל</button>
           </div>
           <div className="intro-welcome-links">
-            <button className="intro-link" onClick={() => setPhase('tour')}>סיור קצר בכלים</button>
-            <span aria-hidden="true">·</span>
-            <button className="intro-link" onClick={onClose}>אסתדר לבד</button>
+            <button className="intro-link" onClick={() => setChosen(null)}>בחירת תצוגה אחרת →</button>
           </div>
         </div>
       </div>
