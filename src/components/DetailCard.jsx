@@ -23,19 +23,11 @@ export default function DetailCard({
   item, mode, onClose, onOpenMap, contemporariesOn, onToggleContemporaries,
   prevItem, nextItem, onNav, axisStart, axisEnd, contemporaries = [],
   relatedEra = [], relatedPlace = [], commentCount = 0,
-  collections = [], onOpenCollection,
+  collections = [], onOpenCollection, openComments = false,
 }) {
   const [shareMsg, setShareMsg] = useState('');
   const [expanded, setExpanded] = useState(false);
-  const [showComments, setShowComments] = useState(false);
-  // טיפ חד-פעמי בכרטיס הראשון: מה עושים עם "חי במקביל"
-  const [coachContemp, setCoachContemp] = useState(() => {
-    try { return !localStorage.getItem('si_coach_contemp'); } catch { return false; }
-  });
-  const dismissCoachContemp = () => {
-    setCoachContemp(false);
-    try { localStorage.setItem('si_coach_contemp', '1'); } catch { /* מתעלמים */ }
-  };
+  const [showComments, setShowComments] = useState(openComments);
 
   useEffect(() => {
     if (!item) return undefined;
@@ -45,7 +37,7 @@ export default function DetailCard({
   }, [item, onClose]);
 
   // איפוס מצב הכרטיס במעבר בין פריטים
-  useEffect(() => { setShareMsg(''); setExpanded(false); setShowComments(false); }, [item]);
+  useEffect(() => { setShareMsg(''); setExpanded(false); setShowComments(openComments); }, [item, openComments]);
 
   const doShare = async () => {
     const res = await shareLink({ url: itemPageUrl(item), title: `${item.name} - ציר הזמן של עם ישראל` });
@@ -175,12 +167,6 @@ export default function DetailCard({
               👥 בני-הזמן
             </button>
           </div>
-          {coachContemp && (
-            <div className="coach-tip">
-              💡 לחצו על שם כדי לקפוץ אליו, או על "בני-הזמן" כדי לראות את כל בני הדור
-              <button className="coach-x" onClick={dismissCoachContemp} aria-label="הבנתי">✕</button>
-            </div>
-          )}
           <div className="dc-chips scroll">
             {contemporaries.slice(0, 20).map((c) => (
               <button key={`${c.kind}:${c.id}`} className="dc-chip" onClick={() => onNav(c)} title={`${c.name} · ${c.start}–${c.end}`}>

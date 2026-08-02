@@ -40,6 +40,9 @@ function parseUrl() {
     // ?contemp=1 - נחיתה עם בני-הזמן כבר מודגשים. כך "הצג על ציר הזמן"
     // ממסע הדורות מגיע ישר לתשובה שהמבט הזה טוב בה: מי חי לצד מי.
     contemp: p.get('contemp') === '1',
+    // ?comments=1 - נחיתה עם התגובות פתוחות. מסע הדורות אינו טוען את
+    // Supabase, ולכן כפתור התגובות שם מקשר לכאן.
+    comments: p.get('comments') === '1',
   };
 }
 
@@ -167,7 +170,6 @@ export default function App() {
   useEffect(() => { setMapOpen(false); setSheetPos(tourActiveRef.current ? 'half' : 'full'); }, [selected]);
   // מובייל: הכרטיס כ"גיליון תחתון" - נפתח מלא (אינטואיטיבי); גרירה מטה מקטינה/סוגרת
   const [sheetPos, setSheetPos] = useState('full');
-  const [moreOpen, setMoreOpen] = useState(false);
   const sheetTouchY = useRef(null);
 
   // מסע מודרך - סיור רציף דמות-אחר-דמות עם שורת הקשר מקשרת
@@ -179,7 +181,7 @@ export default function App() {
     setTour({ data, step });
     jumpToId(data.stops[step].ref);
   };
-  const startTour = (data) => { setToursOpen(false); setMoreOpen(false); tourJump(data, 0); };
+  const startTour = (data) => { setToursOpen(false); tourJump(data, 0); };
   const exitTour = () => { tourActiveRef.current = false; setTour(null); };
 
   // אוספים תמטיים - קבוצות של דמויות/אירועים שקשורים ברעיון אחד
@@ -190,7 +192,7 @@ export default function App() {
     for (const c of collections) for (const id of c.members) (m[id] ||= []).push(c);
     return m;
   }, []);
-  const openCollection = (c) => { setToursOpen(false); setMoreOpen(false); setCollection(c); };
+  const openCollection = (c) => { setToursOpen(false); setCollection(c); };
   const [treeOpen, setTreeOpen] = useState(INITIAL.tree);
   const [shareMsg, setShareMsg] = useState('');
 
@@ -279,7 +281,6 @@ export default function App() {
   };
 
   // הדרכה קונטקסטואלית: אחרי הכרטיס השני - טיפ חד-פעמי על אילן היוחסין
-  const [treeCoach, setTreeCoach] = useState(false);
 
   const axis = AXIS[chronology];
   const data = chronology === 'academic'
@@ -305,24 +306,6 @@ export default function App() {
     try { localStorage.setItem('si_last_sel', `${itemKey(selected)}|${selected.name}`); } catch { /* מתעלמים */ }
   }, [selected]);
 
-  // ספירת פתיחות כרטיס - בפתיחה השנייה מציעים את האילן (פעם אחת בלבד)
-  useEffect(() => {
-    if (!selected) return;
-    try {
-      const n = parseInt(localStorage.getItem('si_card_opens') || '0', 10) + 1;
-      localStorage.setItem('si_card_opens', String(n));
-      if (n === 2 && !localStorage.getItem('si_coach_tree')) {
-        setTreeCoach(true);
-        localStorage.setItem('si_coach_tree', '1');
-      }
-    } catch { /* מתעלמים */ }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected && itemKey(selected)]);
-  useEffect(() => {
-    if (!treeCoach) return undefined;
-    const t = setTimeout(() => setTreeCoach(false), 9000);
-    return () => clearTimeout(t);
-  }, [treeCoach]);
 
   // בחירת פריט אחר מבטלת הדגשת בני-זמן קודמת; סגירת הכרטיס (selected=null) לא.
   useEffect(() => {
@@ -761,6 +744,7 @@ export default function App() {
                 >⋯</button>
                 {metaOpen && (
                   <span className="meta-menu" onClick={() => setMetaOpen(false)}>
+                    <button onClick={() => setMenuOpen(true)}>🎚️ שכבות ומקרא</button>
                     <button onClick={() => setAboutOpen(true)}>ℹ️ אודות הפרויקט</button>
                     <button onClick={openTour}>❓ מדריך היכרות</button>
                     <button onClick={() => setNotesOpen(true)}>✉️ הערה למנהל</button>
@@ -784,6 +768,12 @@ export default function App() {
             <span aria-hidden="true">🗺️</span> <span className="btn-label">מסע הדורות</span>
           </a>
           <span className="header-gap" />
+          {/* הערה למנהל הייתה קבורה בתפריט ⋯ ברוחב 22px, ובמובייל הוסתרה
+              לגמרי. כאן היא כפתור משלה, גלוי בשני הגדלים. */}
+          <button className="share-btn note-btn" onClick={() => setNotesOpen(true)} title="הערה, תיקון או מקור למנהל האתר">
+            <span aria-hidden="true">✉️</span>
+            <span className="btn-label">הערה למנהל</span>
+          </button>
           <button className="share-btn" onClick={shareView} title="שיתוף האתר">
             <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
               <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
@@ -1002,13 +992,6 @@ export default function App() {
       )}
 
       {/* טיפ חד-פעמי אחרי הכרטיס השני - גילוי האילן */}
-      {treeCoach && (
-        <div className="coach-toast" role="status">
-          💡 טיפ: כפתור <b>👑 אילן יוחסין</b> למעלה מציג את השושלת מאברהם עד המלכים - ולחיצה קופצת לדמות
-          <button className="coach-x" onClick={() => setTreeCoach(false)} aria-label="סגירה">✕</button>
-        </div>
-      )}
-
       {contempItem && !selected && (
         <button className="contemp-clear" onClick={() => setContempItem(null)}>
           <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
@@ -1057,6 +1040,7 @@ export default function App() {
             collections={collectionsById[selected.id] || []}
             onOpenCollection={openCollection}
             commentCount={selected ? (commentCounts[itemKey(selected)] || 0) : 0}
+            openComments={INITIAL.comments}
           />
           {!isMobile && maps[selected.id] && (
             <MapPanel
@@ -1075,28 +1059,18 @@ export default function App() {
 
       <FamilyTree open={treeOpen} onClose={() => closeOverlay(() => setTreeOpen(false))} onJump={jumpToId} />
 
-      {/* מובייל: סרגל פעולות תחתון - בגובה אגודל, במקום ערימת כפתורים בכותרת */}
+      {/* מובייל: הסרגל התחתון הוא מתג המצבים ולא מגירת כלים. המעבר בין שני
+          המבטים היה הפעולה הכי פחות מובנת למבקר חדש, והוא זה שראוי למקום
+          הקבוע והנוח ביותר; הכלים עלו לשורה העליונה. */}
       {isMobile && (
-        <nav className="bottom-nav" aria-label="פעולות עיקריות">
-          {/* אותו סדר כמו בשורת הכלים בדסקטופ ובמסע הדורות */}
-          <button onClick={() => setToursOpen(true)}><span aria-hidden="true">🧭</span>מסעות</button>
-          <button onClick={() => setInsightsOpen(true)}><span aria-hidden="true">📊</span>תובנות</button>
-          <button onClick={() => setTreeOpen(true)}><span aria-hidden="true">👑</span>בית דוד</button>
-          <button onClick={() => setMoreOpen(true)} aria-haspopup="true" aria-expanded={moreOpen}><span aria-hidden="true">⋯</span>עוד</button>
+        <nav className="bottom-nav mode-nav" aria-label="מצבי תצוגה">
+          <span className="mn-tab on" aria-current="page">
+            <span aria-hidden="true">📜</span>ציר הזמן
+          </span>
+          <a className="mn-tab" href={atlasHref}>
+            <span aria-hidden="true">🗺️</span>מסע הדורות
+          </a>
         </nav>
-      )}
-      {isMobile && moreOpen && (
-        <div className="more-overlay" onClick={() => setMoreOpen(false)}>
-          <div className="more-sheet" onClick={(e) => e.stopPropagation()}>
-            <span className="sheet-grip" aria-hidden="true" />
-            <a className="more-item" href={atlasHref}>🗺️ מסע הדורות</a>
-            <button className="more-item" onClick={() => { setMoreOpen(false); shareView(); }}>🔗 שיתוף האתר</button>
-            <button className="more-item" onClick={() => { setMoreOpen(false); setMenuOpen(true); }}>🎚️ שכבות ומקרא</button>
-            <button className="more-item" onClick={() => { setMoreOpen(false); openTour(); }}>❓ מדריך היכרות</button>
-            <button className="more-item" onClick={() => { setMoreOpen(false); setAboutOpen(true); }}>ℹ️ אודות הפרויקט</button>
-            <button className="more-item" onClick={() => { setMoreOpen(false); setNotesOpen(true); }}>✉️ הערה למנהל</button>
-          </div>
-        </div>
       )}
 
       <footer>

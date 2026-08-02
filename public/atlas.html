@@ -216,7 +216,8 @@ body.sheet-open #dMap{display:flex}
 /* RTL: inline-start = ימין - משאירים מקום לסרגל התקופות, וה-auto בצד השני דוחף ימינה */
 #story{position:relative;z-index:10;width:var(--story-w);
   margin-inline-start:var(--era-w);margin-inline-end:auto;padding:calc(var(--bar) + 14px) 16px 62vh}
-#story::before{content:'';position:absolute;top:0;bottom:0;inset-inline-end:12px;width:2px;background:var(--gold);opacity:.4}
+/* הציר בצד ימין של הרשימה - כיוון הקריאה בעברית */
+#story::before{content:'';position:absolute;top:0;bottom:0;inset-inline-start:12px;width:2px;background:var(--gold);opacity:.4}
 /* סינון הסוגים - צמוד לראש הרשימה שהוא מסנן */
 #filters{position:sticky;top:var(--bar);z-index:14;display:flex;gap:5px;flex-wrap:wrap;align-items:center;
   background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 9px;margin:0 0 6px;
@@ -246,7 +247,7 @@ body.sheet-open #dMap{display:flex}
 .card{position:relative;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;
   margin:0 0 10px;cursor:pointer;transition:border-color .2s,box-shadow .2s,background .2s,transform .12s}
 .card:hover{border-color:color-mix(in srgb, var(--gold) 55%, var(--line));transform:translateY(-1px)}
-.card::after{content:'';position:absolute;top:17px;inset-inline-end:-10.5px;width:8px;height:8px;border-radius:50%;
+.card::after{content:'';position:absolute;top:50%;margin-top:-6px;inset-inline-start:-10.5px;width:8px;height:8px;border-radius:50%;
   background:var(--gold);border:2px solid var(--bg);transition:transform .25s,background .25s}
 .card{display:flex;align-items:flex-start;gap:10px}
 .cbody{flex:1;min-width:0}
@@ -334,6 +335,20 @@ body.sheet-open #dMap{display:flex}
   #story{margin-inline-start:0;padding-top:calc(var(--bar) + var(--erabar) + 14px)}
 }
 
+/* לשוניות המצבים - במובייל בלבד, במקום הכי נוח לאגודל. המעבר בין שני
+   המבטים הוא הפעולה שהכי פחות ברורה למבקר חדש. */
+#modeNav{display:none}
+@media (max-width:980px){
+  #modeNav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:55;gap:4px;
+    background:var(--panel);border-top:1.5px solid var(--gold);padding:3px 6px calc(3px + env(safe-area-inset-bottom));
+    box-shadow:0 -4px 18px rgb(40 25 0 / .12)}
+  .mn-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;
+    font-family:inherit;font-size:13.5px;font-weight:800;color:var(--muted);padding:9px 0 8px;border-radius:12px}
+  .mn-tab.on{background:var(--navy);color:#fff}
+  body.map-open #modeNav,body.sheet-open #modeNav{display:none}
+  #story{padding-bottom:calc(18vh + 54px)}
+}
+
 /* ===================== מובייל ===================== */
 @media (max-width:980px){
   :root{--story-w:100%;--era-w:0px;--erabar:44px}
@@ -405,6 +420,10 @@ body.sheet-open #dMap{display:flex}
 
 <nav id="eras" aria-label="תקופות"></nav>
 <div id="sheetBack"></div>
+<nav id="modeNav" aria-label="מצבי תצוגה">
+  <a class="mn-tab" id="mnTimeline" href="/">📜 ציר הזמן</a>
+  <span class="mn-tab on" aria-current="page">🗺️ מסע הדורות</span>
+</nav>
 <aside id="detail" aria-label="פרטי הפריט">
   <button id="sheetClose" aria-label="סגירה">✕</button>
 </aside>
@@ -461,7 +480,7 @@ const chev = (d) => `<svg viewBox="0 0 24 24" width="11" height="11" aria-hidden
 const CHEV_R = chev('M9 4 L17 12 L9 20');
 const CHEV_L = chev('M15 4 L7 12 L15 20');
 
-let DATA = null, items = [], visible = [], active = -1, step = -1, playT = null;
+let DATA = null, items = [], visible = [], active = -1, step = -1, playT = null, cumLen = [0];
 // מרכז אזור התחנות בכל המסעות - נקודת העיגון הקבועה של חיתוך המפה, כך שגם
 // כשהחלון חותך, התחנות (ולא הים הריק) נשארות בפריים. אותו מבט לכל הפריטים.
 let ANCHOR = { x: IMG / 2, y: IMG / 2 };
@@ -966,6 +985,12 @@ function render() {
     pts.map((p,i) => `<g class="pt" data-p="${i}" transform="translate(${p.X} ${p.Y})"><circle/><text>${p.n}</text></g>`).join('');
   const done = ov.querySelector('.route-done');
   const len = done.getTotalLength(); done.style.setProperty('--len', len); done.dataset.len = len;
+  // אורך מצטבר עד כל תחנה. בלעדיו ההתקדמות חושבה לפי מספר התחנות בלבד,
+  // והקו המלא חצה את העיר שאליה הוא אמור להגיע כשהמקטעים אינם שווים באורכם.
+  cumLen = [0];
+  for (let i = 1; i < pts.length; i++) {
+    cumLen[i] = cumLen[i - 1] + Math.hypot(pts[i].X - pts[i - 1].X, pts[i].Y - pts[i - 1].Y);
+  }
   lg.innerHTML = pts.map((p,i) => `<button class="lg" data-p="${i}"><i>${p.n}</i>${p.name}</button>`).join('');
   ov.querySelectorAll('.pt').forEach(g => g.addEventListener('click', () => setStep(+g.dataset.p, true)));
   lg.querySelectorAll('.lg').forEach(b => b.addEventListener('click', () => setStep(+b.dataset.p, true)));
@@ -1016,7 +1041,8 @@ function paint() {
   });
   $('#legend').querySelectorAll('.lg').forEach(b => b.classList.toggle('now', +b.dataset.p === step));
   const done = ov.querySelector('.route-done'), len = +done.dataset.len || 0;
-  done.style.strokeDashoffset = step <= 0 ? len : len * (1 - step/(pts.length-1));
+  const upto = cumLen[step] || 0;
+  done.style.strokeDashoffset = step <= 0 ? len : Math.max(0, len - upto);
   $('#bAll').disabled = step < 0; $('#bPrev').disabled = step < 0; $('#bNext').disabled = step >= pts.length-1;
   const cam = zoomTo(step);
   const pop = $('#pop');
@@ -1070,6 +1096,7 @@ function bridgeHtml(it) {
       `<button class="bchip" data-go="${items.indexOf(o)}" title="${o.kindLabel} · ${o.start}–${o.end}">
          <i style="color:${KIND_COLOR[o.kind]}">${KIND_ICON[o.kind]}</i>${o.name}</button>`).join('')}</div>` : ''}
     <a class="blink" href="/?sel=${it.kind}:${it.id}&contemp=1">📜 ${shown.length ? 'הצגת כולם על ציר הזמן' : 'הצגה על ציר הזמן'} ←</a>
+    <a class="blink" href="/?sel=${it.kind}:${it.id}&comments=1">💬 תגובות הקהילה ←</a>
     <a class="blink ghost" href="/p/${it.kind}/${it.id}">📖 דף המידע המלא של ${it.name} ←</a>
   </div>`;
 }
