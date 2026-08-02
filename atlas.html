@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>מסע הדורות: המפה והסיפור, דור אחר דור - ציר הזמן של עם ישראל</title>
+<meta name="description" content="מסע לאורך תולדות עם ישראל - מהאבות ועד חורבן בית שני. כל דמות עם סיפורה המלא, המקורות ומפת מסעותיה בארץ ישראל."/>
+<!-- הקובץ יושב ב-/atlas.html אך הכתובת הרשמית היא /atlas (rewrite ב-vercel.json) -->
+<link rel="canonical" href="https://simpleisrael.co.il/atlas"/>
+
+<link rel="manifest" href="/manifest.webmanifest"/>
+<meta name="theme-color" content="#163a57"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png"/>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/frankruhllibre-hebrew.woff2" crossorigin/>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/heebo-hebrew.woff2" crossorigin/>
+
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="ציר הזמן של עם ישראל"/>
+<meta property="og:title" content="מסע הדורות - המפה והסיפור, דור אחר דור"/>
+<meta property="og:description" content="מהאבות ועד חורבן בית שני: כל דמות עם סיפורה המלא ומפת מסעותיה בארץ ישראל."/>
+<meta property="og:url" content="https://simpleisrael.co.il/atlas"/>
+<meta property="og:image" content="https://simpleisrael.co.il/og/atlas.jpg"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:locale" content="he_IL"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="מסע הדורות - המפה והסיפור, דור אחר דור"/>
+<meta name="twitter:description" content="מהאבות ועד חורבן בית שני: כל דמות עם סיפורה המלא ומפת מסעותיה בארץ ישראל."/>
+<meta name="twitter:image" content="https://simpleisrael.co.il/og/atlas.jpg"/>
+<link rel="stylesheet" href="/src/atlas/atlas.css"/>
+</head>
+<body>
+
+<header id="bar">
+  <a id="brand" href="/" title="ציר הזמן של עם ישראל - לדף הבית">
+    <h1>🗺️ מסע הדורות</h1>
+    <span>ציר הזמן של עם ישראל</span>
+  </a>
+  <a class="tool primary" id="toTimeline" href="/" title="מעבר לתצוגת ציר הזמן">📜 <span class="tl">ציר הזמן</span></a>
+  <div id="search">
+    <input id="q" type="search" autocomplete="off" placeholder="חיפוש דמות, אירוע או מקום…"
+      aria-label="חיפוש" aria-expanded="false" aria-controls="qres"/>
+    <div id="qres" role="listbox" aria-label="תוצאות חיפוש"></div>
+  </div>
+  <button id="qtoggle" aria-label="חיפוש" title="חיפוש">🔍</button>
+  <span class="spacer"></span>
+  <div id="tools">
+    <button class="tool" id="tIns">📊 <span class="tl">תובנות</span></button>
+    <button class="tool" id="tTree">👑 <span class="tl">בית דוד</span></button>
+    <button class="tool" id="tShare">🔗 <span class="tl">שיתוף</span></button>
+  </div>
+</header>
+
+<nav id="eras" aria-label="תקופות"></nav>
+<div id="sheetBack"></div>
+<nav id="modeNav" aria-label="מצבי תצוגה">
+  <a class="mn-tab" id="mnTimeline" href="/">📜 ציר הזמן</a>
+  <span class="mn-tab on" aria-current="page">🗺️ מסע הדורות</span>
+</nav>
+<aside id="detail" aria-label="פרטי הפריט">
+  <div id="dcHost"></div>
+</aside>
+
+<div id="mapPane">
+  <div id="mapHead">
+    <h2 id="mapTitle">מסע הדורות</h2>
+    <div id="mapBtns">
+      <button class="mbtn play" id="bPlay"><svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path d="M16 4 L6 12 L16 20 Z" fill="currentColor"/></svg> הפעלת המסע</button>
+      <button class="mbtn" id="bPrev">הקודם</button>
+      <button class="mbtn" id="bNext">הבא</button>
+      <button class="mbtn" id="bAll" title="חזרה למבט על כל המסלול">סקירה כללית</button>
+      <button class="mbtn" id="mapClose">✕ סגירת המפה</button>
+    </div>
+  </div>
+  <div id="mapBody">
+    <div id="mapBox">
+      <div id="fit">
+        <div id="zoom">
+          <img src="/israel_map_square2.png" alt="מפת ארץ ישראל והמרחב"/>
+          <svg id="ov" viewBox="0 0 1254 1254" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        <div id="pop"></div>
+      </div>
+      <div id="noMap"><span>לפריט זה אין מפת מסע</span></div>
+    </div>
+    <div id="legend"></div>
+  </div>
+</div>
+
+<main id="story"></main>
+<div id="toast"></div>
+
+<script type="module" src="/src/atlas/main.js"></script>
+</body>
+</html>

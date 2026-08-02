@@ -1,7 +1,8 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { formatRange } from '../utils/dates.js';
+import { formatRange, formatRangeAM, formatRangeSecular } from '../utils/dates.js';
 import { shareLink, itemPageUrl } from '../lib/share.js';
 import { sourceSegments } from '../utils/sefaria.js';
+import { periodOf } from '../data/items.js';
 import maps from '../data/maps.json';
 
 // נטען רק כשנפתחות התגובות - כך ספריית Supabase לא מכבידה על טעינת הציר
@@ -17,27 +18,29 @@ const JUDGMENT_LABELS = {
   bad: 'עשה הרע בעיני ה\'',
   mixed: 'מעורב',
 };
-const DESC_LIMIT = 165;
 
+/* כרטיס הפריט - רכיב אחד לשני המסכים.
+   variant='timeline': כפתור סגירה, כפתור מפה, והחיצים מנווטים בציר.
+   variant='atlas':    אין סגירה בדסקטופ (הפאנל קבוע), ואין כפתור מפה
+                       כי המפה ממילא פרושׂה לצדו. */
 export default function DetailCard({
-  item, mode, onClose, onOpenMap, contemporariesOn, onToggleContemporaries,
+  item, mode = 'tradition', variant = 'timeline',
+  onClose, onOpenMap, contemporariesOn, onToggleContemporaries,
   prevItem, nextItem, onNav, axisStart, axisEnd, contemporaries = [],
-  relatedEra = [], relatedPlace = [], commentCount = 0,
-  collections = [], onOpenCollection, openComments = false,
+  commentCount = 0, collections = [], onOpenCollection,
+  switchHref, switchLabel, openComments = false,
 }) {
   const [shareMsg, setShareMsg] = useState('');
-  const [expanded, setExpanded] = useState(false);
   const [showComments, setShowComments] = useState(openComments);
 
   useEffect(() => {
-    if (!item) return undefined;
+    if (!item || !onClose) return undefined;
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [item, onClose]);
 
-  // איפוס מצב הכרטיס במעבר בין פריטים
-  useEffect(() => { setShareMsg(''); setExpanded(false); setShowComments(openComments); }, [item, openComments]);
+  useEffect(() => { setShareMsg(''); setShowComments(openComments); }, [item, openComments]);
 
   const doShare = async () => {
     const res = await shareLink({ url: itemPageUrl(item), title: `${item.name} - ציר הזמן של עם ישראל` });
@@ -47,10 +50,7 @@ export default function DetailCard({
   };
 
   if (!item) return null;
-  const hasMap = !!maps[item.id];
-  const desc = item.description || '';
-  const isLong = desc.length > DESC_LIMIT;
-  const shown = !isLong || expanded ? desc : desc.slice(0, DESC_LIMIT).trim() + '…';
+  const period = periodOf(item);
 
   // מיני-ציר: איפה הפריט יושב על כל ההיסטוריה (הזמן זורם מימין לשמאל)
   const span = Math.max(1, axisEnd - axisStart);
@@ -65,65 +65,86 @@ export default function DetailCard({
   if (item.empire) tags.push({ icon: '🌍', text: item.empire });
 
   return (
-    <aside className="detail-card">
-      <button className="close-btn" onClick={onClose} aria-label="סגירה">✕</button>
+    <aside className={`detail-card dc-${variant}`}>
+      {/* 1. ניווט לפריט הקודם/הבא, עם השמות */}
+      {(prevItem || nextItem) && (
+        <nav className="dc-steps" aria-label="ניווט בין פריטים">
+          <button
+            className="dc-step" disabled={!prevItem}
+            onClick={() => prevItem && onNav(prevItem)}
+            title={prevItem ? `מוקדם יותר: ${prevItem.name}` : 'אין מוקדם יותר'}
+          >
+            <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M9 4 L17 12 L9 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <span>{prevItem ? prevItem.name : '—'}</span>
+          </button>
+          <button
+            className="dc-step" disabled={!nextItem}
+            onClick={() => nextItem && onNav(nextItem)}
+            title={nextItem ? `מאוחר יותר: ${nextItem.name}` : 'אין מאוחר יותר'}
+          >
+            <span>{nextItem ? nextItem.name : '—'}</span>
+            <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M15 4 L7 12 L15 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </button>
+        </nav>
+      )}
+
+      {/* 2. סוג, שיפוט ותגיות האוספים */}
+      <div className="dc-chiprow">
+        <div className={`kind-chip ${item.kind}`}>{KIND_LABELS[item.kind]}</div>
+        {item.judgment && (
+          <span className={`dc-judgment ${item.judgment}`}>{JUDGMENT_LABELS[item.judgment]}</span>
+        )}
+        {collections.map((c) => (
+          <button
+            key={c.id} className="dc-coll-chip"
+            onClick={() => onOpenCollection?.(c)}
+            title={`${c.title} - ${c.subtitle}`}
+          >{c.icon} {c.title}</button>
+        ))}
+      </div>
+
+      {/* 3. שיתוף, וסגירה רק היכן שיש מה לסגור */}
       <button className="card-share" onClick={doShare} title={`שיתוף הדף של ${item.name}`} aria-label={`שיתוף הדף של ${item.name}`}>
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
           <path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z" />
         </svg>
         {shareMsg && <span className="card-share-msg">{shareMsg}</span>}
       </button>
+      {onClose && <button className="close-btn" onClick={onClose} aria-label="סגירה">✕</button>}
 
-      {/* גיבור: תגית+שיפוט בשורה, שם עם חיצי ניווט, תאריכים עם "משוער" מוטמע */}
-      <div className="dc-chiprow">
-        <div className={`kind-chip ${item.kind}`}>{KIND_LABELS[item.kind]}</div>
-        {item.judgment && (
-          <span className={`dc-judgment ${item.judgment}`}>{JUDGMENT_LABELS[item.judgment]}</span>
-        )}
-        {/* שיוך לאוספים - פתח להרחבה מהקשר של הדמות */}
-        {collections.map((c) => (
-          <button
-            key={c.id}
-            className="dc-coll-chip"
-            onClick={() => onOpenCollection?.(c)}
-            title={`${c.title} - ${c.subtitle}`}
-          >{c.icon} {c.title}</button>
-        ))}
-      </div>
-      <div className="dc-titlerow">
-        <h2>{item.name}</h2>
-        <span className="dc-navpair">
-          {prevItem && (
-            <button className="dc-navbtn" onClick={() => onNav(prevItem)} title={`מוקדם יותר: ${prevItem.name}`} aria-label={`מוקדם יותר: ${prevItem.name}`}>
-              <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M9 4 L17 12 L9 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </button>
-          )}
-          {nextItem && (
-            <button className="dc-navbtn" onClick={() => onNav(nextItem)} title={`מאוחר יותר: ${nextItem.name}`} aria-label={`מאוחר יותר: ${nextItem.name}`}>
-              <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M15 4 L7 12 L15 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </button>
-          )}
-        </span>
-      </div>
+      {/* 4. שם */}
+      <h2 className="dc-name">{item.name}</h2>
+
+      {/* 5. תאריכים - מבריאת העולם, ומתחת לפי הספירה */}
       <div className="detail-years">
-        {formatRange(item.start, item.end, mode)}
+        {mode === 'academic' ? formatRange(item.start, item.end, mode) : formatRangeAM(item.start, item.end)}
         {item.approxDates && (
           <span className="detail-approx-inline" title="התורה אינה מפרטת את שנות חייה; התאריכים משוערים לפי בעלהּ ולפי אירועים מתוארכים בסמוך"> · ≈ משוער</span>
         )}
       </div>
+      {mode !== 'academic' && (
+        <div className="detail-years-sec">{formatRangeSecular(item.start, item.end)}</div>
+      )}
 
-      {/* מיני-ציר - הקשר כרונולוגי במבט אחד */}
+      {/* 6. מיני-ציר - הקשר כרונולוגי במבט אחד */}
       <div className="dc-era" title="מיקום על ציר הזמן כולו">
         <div className="dc-era-track">
           <span className="dc-era-span" style={{ insetInlineStart: `${offPct}%`, width: `${wPct}%` }} />
-          {/* סמן עגול תמיד-נראה במרכז הטווח (הזמן זורם ימין→שמאל) */}
           <span className="dc-era-dot" style={{ insetInlineStart: `calc(${offPct + wPct / 2}% - 7px)` }} />
         </div>
-        {/* המכולה RTL: הילד הראשון נדחף ימינה - והימין הוא העבר */}
         <div className="dc-era-labels"><span>האבות</span><span>חורבן בית שני</span></div>
       </div>
 
-      {/* שורת מטא שקטה - טקסט מופרד בנקודות במקום ענן תגיות */}
+      {/* 7. התקופה */}
+      {period && (
+        <div className="dc-period">
+          <span aria-hidden="true">✦</span>
+          <a href={`/p/period/${period.id}`}>{period.name}</a>
+          <span className="dc-period-yrs">{period.start}–{period.end}</span>
+        </div>
+      )}
+
+      {/* שורת מטא שקטה */}
       {tags.length > 0 && (
         <div className="dc-meta">
           {tags.map((t, i) => (
@@ -135,18 +156,10 @@ export default function DetailCard({
         </div>
       )}
 
-      {desc && (
-        <p className="detail-desc">
-          {shown}
-          {isLong && (
-            <button className="dc-more" onClick={() => setExpanded((v) => !v)}>
-              {expanded ? 'פחות' : 'עוד'}
-            </button>
-          )}
-        </p>
-      )}
+      {/* 8. הפירוט המלא - בלי קיצור; הכרטיס נגלל ממילא */}
+      {item.description && <p className="detail-desc">{item.description}</p>}
 
-      {/* הפסוק המגדיר - ציטוט מוגבה שנותן את הנקודה בלשון המקרא עצמו */}
+      {/* 9. הפסוק המגדיר */}
       {item.verse && (
         <blockquote className="dc-verse">
           <span className="dc-verse-text">{item.verse}</span>
@@ -154,75 +167,7 @@ export default function DetailCard({
         </blockquote>
       )}
 
-      {contemporaries.length > 0 && (
-        <div className="dc-contemp">
-          <div className="dc-contemp-head">
-            <span>חי במקביל</span>
-            <button
-              className={`dc-hl${contemporariesOn ? ' on' : ''}`}
-              onClick={onToggleContemporaries}
-              aria-pressed={contemporariesOn}
-              title={contemporariesOn ? 'ביטול הדגשת בני-הזמן על הציר' : 'הדגשת כל בני-הזמן על הציר'}
-            >
-              👥 בני-הזמן
-            </button>
-          </div>
-          <div className="dc-chips scroll">
-            {contemporaries.slice(0, 20).map((c) => (
-              <button key={`${c.kind}:${c.id}`} className="dc-chip" onClick={() => onNav(c)} title={`${c.name} · ${c.start}–${c.end}`}>
-                {c.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* "אולי יעניין אותך" - מדור אחד, שורה נגללת אחת; 📍 מסמן קשר-מקום */}
-      {(relatedPlace.length > 0 || relatedEra.length > 0) && (
-        <div className="dc-related">
-          <div className="dc-row-label">אולי יעניין אותך גם</div>
-          <div className="dc-chips scroll">
-            {relatedPlace.map((r) => (
-              <button key={`p-${r.kind}:${r.id}`} className="dc-chip" onClick={() => onNav(r)} title={`${r.name} · ${r.place}`}>
-                📍 {r.name}<span className="dc-chip-sub"> · {r.place}</span>
-              </button>
-            ))}
-            {relatedEra
-              .filter((r) => !relatedPlace.some((p) => p.kind === r.kind && p.id === r.id))
-              .map((r) => (
-                <button key={`e-${r.kind}:${r.id}`} className="dc-chip" onClick={() => onNav(r)}>{r.name}</button>
-              ))}
-          </div>
-        </div>
-      )}
-
-      <div className="card-actions">
-        {onOpenMap && (
-          <button type="button" className="card-action" onClick={onOpenMap} title={`מפת המסע של ${item.name}`}>
-            <span className="dc-cbig" aria-hidden="true">🗺️</span>
-            <span>מפת מסע</span>
-          </button>
-        )}
-        {/* גשר למבט השני - אותה דמות, הפעם עם המפה והסיפור המלא לצדה */}
-        <a
-          className="card-action"
-          href={`/atlas?sel=${item.kind}:${item.id}`}
-          title={`${item.name} במסע הדורות - המפה והסיפור המלא`}
-        >
-          <span className="dc-cbig" aria-hidden="true">🧭</span>
-          <span>מסע הדורות</span>
-        </a>
-        <button
-          type="button"
-          className={`card-action${showComments ? ' active' : ''}`}
-          onClick={() => setShowComments((v) => !v)}
-          aria-expanded={showComments}
-        >
-          <span className="dc-cbig" aria-hidden="true">💬</span>
-          <span>{commentCount > 0 ? `תגובות · ${commentCount}` : 'תגובות'}</span>
-        </button>
-      </div>
-
+      {/* 10. מקור, מקושר לספריא */}
       {item.source && (
         <div className="detail-source">
           <b>מקור:</b>{' '}
@@ -236,6 +181,61 @@ export default function DetailCard({
           ))}
         </div>
       )}
+
+      {/* 11. בני-הזמן */}
+      {contemporaries.length > 0 && (
+        <div className="dc-contemp">
+          <div className="dc-contemp-head">
+            <span>חי במקביל</span>
+            {onToggleContemporaries && (
+              <button
+                className={`dc-hl${contemporariesOn ? ' on' : ''}`}
+                onClick={onToggleContemporaries}
+                aria-pressed={contemporariesOn}
+                title={contemporariesOn ? 'ביטול הדגשת בני-הזמן על הציר' : 'הדגשת כל בני-הזמן על הציר'}
+              >
+                👥 בני-הזמן
+              </button>
+            )}
+          </div>
+          <div className="dc-chips scroll">
+            {contemporaries.slice(0, 20).map((c) => (
+              <button key={`${c.kind}:${c.id}`} className="dc-chip" onClick={() => onNav(c)} title={`${c.name} · ${c.start}–${c.end}`}>
+                {c.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 12-14. פעולות: מעבר למבט השני, מפה (בציר בלבד), דף מלא, תגובות */}
+      <div className="card-actions">
+        {switchHref && (
+          <a className="card-action" href={switchHref} title={`${item.name} ב${switchLabel}`}>
+            <span className="dc-cbig" aria-hidden="true">{variant === 'timeline' ? '🗺️' : '📜'}</span>
+            <span>{switchLabel}</span>
+          </a>
+        )}
+        {onOpenMap && maps[item.id] && (
+          <button type="button" className="card-action" onClick={onOpenMap} title={`מפת המסע של ${item.name}`}>
+            <span className="dc-cbig" aria-hidden="true">🧭</span>
+            <span>מפת מסע</span>
+          </button>
+        )}
+        <a className="card-action" href={`/p/${item.kind}/${item.id}`} title={`דף המידע המלא של ${item.name}`}>
+          <span className="dc-cbig" aria-hidden="true">📖</span>
+          <span>דף מלא</span>
+        </a>
+        <button
+          type="button"
+          className={`card-action${showComments ? ' active' : ''}`}
+          onClick={() => setShowComments((v) => !v)}
+          aria-expanded={showComments}
+        >
+          <span className="dc-cbig" aria-hidden="true">💬</span>
+          <span>{commentCount > 0 ? `תגובות · ${commentCount}` : 'תגובות'}</span>
+        </button>
+      </div>
 
       {showComments && (
         <Suspense fallback={<div className="comments-loading">טוען תגובות…</div>}>

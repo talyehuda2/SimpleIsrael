@@ -36,6 +36,16 @@ export function formatYear(year, mode) {
   return `${hebrewYearLetters(year)} (${year}) · ${toSecular(year)}`;
 }
 
+// שנים מבריאת העולם בלבד - הכרטיס מציג את שנות הספירה בשורה נפרדת מתחת,
+// ולכן צירופן כאן היה מכפיל אותן.
+export function formatRangeAM(start, end) {
+  if (start === end) return `${hebrewYearLetters(start)} (${start})`;
+  return `${hebrewYearLetters(start)}–${hebrewYearLetters(end)} (${start}–${end})`;
+}
+export function formatRangeSecular(start, end) {
+  return start === end ? toSecular(start) : `${toSecular(start)} עד ${toSecular(end)}`;
+}
+
 export function formatRange(start, end, mode) {
   if (start === end) return formatYear(start, mode);
   if (mode === 'academic') return `${toSecular(start)} עד ${toSecular(end)}`;

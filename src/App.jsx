@@ -1036,7 +1036,7 @@ export default function App() {
             prevItem={prevItem} nextItem={nextItem} onNav={jumpTo}
             axisStart={axis.start} axisEnd={axis.end}
             contemporaries={selectedContemporaries}
-            relatedEra={relatedEra} relatedPlace={relatedPlace}
+            switchHref={`/atlas?sel=${itemKey(selected)}`} switchLabel="מסע הדורות"
             collections={collectionsById[selected.id] || []}
             onOpenCollection={openCollection}
             commentCount={selected ? (commentCounts[itemKey(selected)] || 0) : 0}

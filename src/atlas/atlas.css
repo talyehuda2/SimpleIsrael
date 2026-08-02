@@ -1,0 +1,364 @@
+@font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;font-display:swap;src:url('/fonts/frankruhllibre-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
+@font-face{font-family:'Heebo';font-weight:300 700;font-display:swap;src:url('/fonts/heebo-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
+:root{
+  --bg:#efe4cb; --panel:#fbf5e7; --ink:#33281a; --muted:#6d5c42;
+  --navy:#163a57; --navy2:#1d4b70; --gold:#b28a2b; --gold-ink:#7a5b16; --line:#dcc9a3;
+  --wine:#9c2b50;
+  --leader:#9c2b50; --judge:#bd7038; --united:#6a3ca0; --judah:#245c93; --israel:#4f7a33;
+  --prophet:#b3781a; --book:#157a70; --event:#b0392c; --world:#8a7250;
+  --bar:56px; --detail-w:340px; --story-w:340px; --era-w:126px; --erabar:0px;
+  --map-w:700px; --leg-w:150px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo','Segoe UI',Arial,sans-serif}
+button{font-family:inherit}
+
+/* ===================== סרגל עליון ===================== */
+#bar{position:fixed;top:0;left:0;right:0;height:var(--bar);z-index:40;display:flex;align-items:center;gap:10px;
+  padding:0 14px;background:var(--panel);border-bottom:2px solid var(--gold);box-shadow:0 2px 10px rgb(60 40 0 / .12)}
+#brand{display:flex;flex-direction:column;gap:1px;text-decoration:none;flex:none}
+#bar h1{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:18px;color:var(--navy);margin:0;white-space:nowrap}
+#brand span{font-size:10.5px;color:var(--gold-ink);font-weight:700;font-family:'Heebo',sans-serif;white-space:nowrap}
+#brand:hover h1{color:var(--gold-ink)}
+#bar .spacer{flex:1}
+/* סרגל התקופות - טור אנכי בקצה ימין, צמוד לרשימת השמות */
+#eras{position:fixed;top:var(--bar);bottom:0;inset-inline-start:0;width:var(--era-w);z-index:20;
+  display:flex;flex-direction:column;gap:5px;padding:12px 9px;overflow-y:auto;scrollbar-width:none;
+  background:var(--panel);border-inline-end:1px solid var(--line)}
+#eras::-webkit-scrollbar{display:none}
+.echip{flex:none;font-size:11.5px;font-weight:600;color:var(--ink);background:var(--bg);border:1px solid var(--line);
+  border-radius:11px;padding:6px 8px;cursor:pointer;white-space:normal;text-align:center;line-height:1.35;
+  transition:background .15s,color .15s,border-color .15s}
+.echip:hover{border-color:var(--gold)}
+.echip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.tool{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;
+  border:1px solid var(--line);background:var(--bg);color:var(--navy);border-radius:14px;padding:6px 12px;cursor:pointer}
+.tool:hover{border-color:var(--gold);background:var(--panel)}
+.tool.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+#tools{display:flex;gap:6px;flex:none}
+/* ---- חיפוש ---- */
+#search{position:relative;flex:0 1 300px;min-width:0}
+#q{width:100%;font-family:inherit;font-size:13px;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:18px;padding:7px 32px 7px 12px;outline:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d5c42' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-size:14px;background-position:right 11px center}
+#q:focus{border-color:var(--gold);background-color:var(--panel)}
+#q::-webkit-search-cancel-button{cursor:pointer}
+#qtoggle{display:none;flex:none;font-size:15px;line-height:1;background:var(--bg);cursor:pointer;
+  border:1px solid var(--line);border-radius:16px;padding:6px 9px}
+#qres{position:absolute;top:calc(100% + 6px);inset-inline-start:0;inset-inline-end:0;max-height:60vh;
+  overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 12px 30px rgb(30 20 5 / .28);padding:5px;display:none;z-index:45}
+#qres.show{display:block}
+#qres .qgroup{font-size:10.5px;font-weight:700;color:var(--gold-ink);padding:6px 8px 3px}
+#qres button{display:flex;align-items:center;gap:7px;width:100%;text-align:right;font-family:inherit;
+  background:none;border:none;border-radius:8px;padding:6px 8px;cursor:pointer;color:var(--ink)}
+#qres button:hover,#qres button.sel{background:var(--bg)}
+#qres .qn{font-size:13.5px;font-weight:700;color:var(--navy)}
+#qres .qm{font-size:11px;color:var(--muted);margin-inline-start:auto;white-space:nowrap}
+#qres .qi{font-size:12px;flex:none;font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif}
+#qres .qempty{padding:10px 9px;font-size:12.5px;color:var(--muted)}
+
+/* ===================== שלוש עמודות ===================== */
+/* סדר מימין לשמאל: תקופות · שמות · פירוט · מפה */
+#detail{position:fixed;top:var(--bar);bottom:0;left:var(--map-w);width:var(--detail-w);z-index:5;
+  background:var(--panel);border-inline-start:1px solid var(--line);padding:16px 18px 30px;overflow-y:auto;overscroll-behavior:contain}
+/* סיור קצר - זרקור על אזור אחד בכל פעם */
+.tour-wrap{position:fixed;inset:0;z-index:80;background:rgb(30 20 5 / .55)}
+.tour-ring{position:absolute;border:2.5px solid var(--gold);border-radius:12px;
+  box-shadow:0 0 0 9999px rgb(30 20 5 / .55);background:transparent;pointer-events:none}
+.tour-box{position:absolute;width:270px;max-width:calc(100vw - 24px);background:var(--panel);
+  border:1px solid var(--line);border-top:4px solid var(--gold);border-radius:12px;padding:13px 15px;
+  box-shadow:0 12px 32px rgb(30 20 5 / .35)}
+.tour-box b{display:block;font-size:15px;color:var(--navy);margin-bottom:4px}
+.tour-box p{margin:0 0 10px;font-size:12.5px;line-height:1.65;color:var(--ink)}
+.tpick{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 11px}
+.tp{display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;
+  color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:14px;
+  padding:5px 9px;cursor:pointer;transition:background .12s,color .12s,border-color .12s}
+.tp[aria-pressed="true"]{background:var(--kc);border-color:var(--kc);color:#fff}
+.tp .gl{font-size:11px;line-height:1;font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif}
+.tour-nav{display:flex;align-items:center;gap:7px}
+.tour-nav span{font-size:11px;color:var(--muted);margin-inline-end:auto;font-variant-numeric:tabular-nums}
+.tour-nav button{font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;
+  border-radius:16px;padding:6px 13px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.tour-nav button.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+.tour-nav button:hover{border-color:var(--gold)}
+
+/* תגובות בתוך המסע - אותה יכולת כמו בציר הזמן, בלי לעבור מסך */
+.cmt{margin:6px 0 8px}
+.cmt-empty{margin:6px 2px;font-size:11.5px;color:var(--muted)}
+.cmt-list{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:6px}
+.cmt-item{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:7px 9px}
+.cmt-item.reply{margin-inline-start:14px;background:transparent;border-style:dashed}
+.cmt-head{display:flex;gap:7px;align-items:baseline;margin-bottom:3px}
+.cmt-head b{font-size:12px;color:var(--navy)}
+.cmt-head span{font-size:10.5px;color:var(--muted)}
+.cmt-text{font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.cmt-reply{margin-top:4px;font-family:inherit;font-size:11px;font-weight:700;color:var(--gold-ink);
+  background:none;border:none;padding:0;cursor:pointer;text-decoration:underline}
+.cmt-form{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.cmt-form input,.cmt-form textarea{font-family:inherit;font-size:12px;color:var(--ink);background:var(--panel);
+  border:1px solid var(--line);border-radius:8px;padding:6px 8px;outline:none;resize:vertical}
+.cmt-form input:focus,.cmt-form textarea:focus{border-color:var(--gold)}
+.cmt-hp{position:absolute!important;width:1px;height:1px;opacity:0;pointer-events:none}
+.cmt-act{display:flex;gap:6px;justify-content:flex-end}
+.cmt-act button{font-family:inherit;font-size:11.5px;font-weight:700;border-radius:14px;padding:5px 12px;cursor:pointer}
+.cmt-send{background:var(--navy);border:1px solid var(--navy);color:#fff}
+.cmt-send:disabled{opacity:.5;cursor:default}
+.cmt-cancel{background:var(--bg);border:1px solid var(--line);color:var(--ink)}
+.cmt-err{font-size:11.5px;color:var(--wine)}
+button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
+
+/* גשר לציר הזמן ולדף המידע - שני המבטים על אותה דמות */
+.bridge{border-top:1px solid var(--line);padding-top:10px;margin-bottom:12px}
+.bridge h3{margin:0 0 7px;font-size:12px;color:var(--navy);font-weight:800}
+.bridge h3 span{font-size:10.5px;color:var(--gold-ink);font-weight:700}
+.bchips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:9px}
+.bchip{display:inline-flex;align-items:center;gap:4px;font-family:inherit;font-size:11px;font-weight:600;
+  color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:3px 7px;cursor:pointer}
+.bchip:hover{border-color:var(--gold);color:var(--navy)}
+.bchip i{font-style:normal;font-size:10px;line-height:1;flex:none;
+  font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif}
+.blink{display:block;font-size:11.5px;font-weight:700;color:var(--navy);text-decoration:none;
+  background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:7px 9px;margin-bottom:5px}
+.blink:hover{border-color:var(--gold);background:var(--panel)}
+.blink.ghost{color:var(--muted);font-weight:600}
+
+#mapPane{position:fixed;top:var(--bar);bottom:0;left:0;width:var(--map-w);
+  display:flex;flex-direction:column;background:linear-gradient(180deg,#f6edd8,var(--bg))}
+/* גוף המפה: החלון מימין, ומקרא המקומות כטור אנכי משמאלו */
+#mapBody{flex:1;min-height:0;display:flex}
+/* כותרת ממורכזת ושורת כפתורים ממורכזת מתחתיה */
+#mapHead{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 14px;
+  background:var(--panel);border-bottom:2px solid var(--gold)}
+#mapTitle{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:16px;color:var(--navy);margin:0;
+  max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+#mapBtns{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}
+.mbtn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;border-radius:15px;padding:5px 12px;cursor:pointer;border:1px solid var(--line);
+  background:var(--panel);color:var(--navy)}
+.mbtn:hover:not(:disabled){border-color:var(--gold)} .mbtn:disabled{opacity:.35;cursor:default}
+.mbtn.play{background:var(--navy);border-color:var(--navy);color:#fff}
+/* המיקום נקבע ב-fitMap ולא במרכוז של הדפדפן: פריט שגולש ממכל grid ב-RTL
+   נצמד לקצה במקום להתמרכז, והקוד שהניח מרכוז חשף רצועה ריקה. */
+#mapBox{position:relative;flex:1;min-width:0;overflow:hidden}
+#fit{position:absolute;transition:opacity .3s;overflow:hidden;border-radius:6px}
+#fit.fade{opacity:0}
+#zoom{position:absolute;inset:0;transform-origin:0 0;transition:transform .9s cubic-bezier(.25,.8,.25,1);--z:1}
+@media (prefers-reduced-motion:reduce){#zoom{transition:none}}
+#zoom img,#zoom svg{position:absolute;inset:0;width:100%;height:100%}
+.route{fill:none;stroke:var(--gold-ink);stroke-width:calc(4px/var(--z,1));stroke-dasharray:9 9;stroke-linecap:round;opacity:.6}
+.route-done{fill:none;stroke:var(--wine);stroke-width:calc(5px/var(--z,1));stroke-linecap:round;
+  stroke-dasharray:var(--len);stroke-dashoffset:var(--len)}
+.pt{cursor:pointer}
+.pt circle{fill:var(--wine);stroke:#fbf5e7;stroke-width:calc(3px/var(--z,1));r:calc(15px/var(--z,1))}
+.pt text{fill:#fff;font-size:calc(15px/var(--z,1));font-weight:800;text-anchor:middle;dominant-baseline:central}
+.pt.done circle{fill:var(--gold)}
+.pt.now circle{r:calc(19px/var(--z,1));stroke-width:calc(4px/var(--z,1))}
+#pop{position:absolute;z-index:6;width:225px;background:var(--panel);border:1.5px solid var(--gold);border-radius:12px;
+  box-shadow:0 10px 26px rgb(60 40 0/.3);overflow:hidden;opacity:0;pointer-events:none;transition:opacity .3s}
+#pop.show{opacity:1}
+#pop .ph{background:var(--wine);color:#fff;font-size:12.5px;font-weight:800;padding:6px 11px;display:flex;gap:7px;align-items:center}
+#pop .ph i{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff;color:var(--wine);
+  font-style:normal;font-size:10.5px;font-weight:800;flex:none}
+#pop .pl{font-size:11px;font-weight:700;color:var(--gold-ink);padding:6px 11px 0}
+#pop .pd{font-size:11.5px;line-height:1.6;padding:2px 11px 9px;margin:0}
+/* מקרא המקומות - טור אנכי בצד שמאל של המפה */
+#legend{flex:none;width:var(--leg-w);display:flex;flex-direction:column;gap:5px;overflow-y:auto;
+  padding:10px 9px;background:var(--panel);border-inline-end:1px solid var(--line);scrollbar-width:none}
+#legend::-webkit-scrollbar{display:none}
+.lg{flex:none;display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--ink);
+  background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:6px 9px;cursor:pointer;
+  text-align:start;line-height:1.35;font-family:inherit}
+.lg i{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:var(--wine);color:#fff;
+  font-style:normal;font-size:9.5px;font-weight:800;flex:none}
+.lg.now{border-color:var(--gold)} .lg.now i{background:var(--gold)}
+#noMap{position:absolute;inset:0;display:grid;place-items:center;z-index:4;background:rgb(239 228 203/.5);
+  opacity:0;pointer-events:none;transition:opacity .3s}
+#noMap.show{opacity:1}
+#noMap span{background:var(--panel);border:1px dashed var(--gold);border-radius:12px;padding:10px 18px;font-size:13px;color:var(--muted)}
+
+/* ===================== טור הסיפור ===================== */
+/* RTL: inline-start = ימין - משאירים מקום לסרגל התקופות, וה-auto בצד השני דוחף ימינה */
+#story{position:relative;z-index:10;width:var(--story-w);
+  margin-inline-start:var(--era-w);margin-inline-end:auto;padding:calc(var(--bar) + 14px) 16px 62vh;
+  /* מרווח נדיב בין הציר לכרטיסים - 12px לציר ועוד 20px אוויר */
+  padding-inline-start:34px}
+/* הציר בצד ימין של הרשימה - כיוון הקריאה בעברית */
+#story::before{content:'';position:absolute;top:0;bottom:0;inset-inline-start:12px;width:2px;background:var(--gold);opacity:.4}
+/* סינון הסוגים - צמוד לראש הרשימה שהוא מסנן */
+#filters{position:sticky;top:var(--bar);z-index:14;display:flex;gap:5px;flex-wrap:wrap;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 9px;margin:0 0 6px;
+  box-shadow:0 3px 10px rgb(60 40 0 / .12)}
+#filters .flab{font-size:10.5px;font-weight:700;color:var(--muted);margin-inline-end:2px}
+.fbtn{flex:none;display:flex;align-items:center;justify-content:center;width:29px;height:29px;padding:0;
+  border-radius:9px;font-size:14px;cursor:pointer;background:color-mix(in srgb, var(--kc) 16%, transparent);
+  border:1px solid color-mix(in srgb, var(--kc) 50%, transparent);color:var(--kc);transition:opacity .15s,filter .15s}
+/* אמוג'י ותווים גיאומטריים באים מגופנים שונים - עוטפים ב-span עם קופסה נקייה
+   כדי שכולם ימורכזו זהה, בלי הסטת קו-בסיס */
+.fbtn .gl,.kicon .gl{display:block;line-height:1;font-size:1em;
+  font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji','Segoe UI Symbol',sans-serif}
+.fbtn[data-l="events"] .gl,.kicon.k-event .gl{font-size:.82em;transform:translateY(.02em)}
+.fbtn[aria-pressed="false"]{opacity:.34;filter:grayscale(1)}
+.fbtn:hover{opacity:1}
+#filters .fcnt{margin-inline-start:auto;font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+#filters .khint{flex:0 0 100%;font-size:10.5px;color:var(--muted);opacity:.8;margin-top:1px}
+#filters .khint kbd{font:inherit;background:rgba(0,0,0,.05);border:1px solid var(--line);
+  border-radius:4px;padding:0 4px;margin:0 1px}
+@media (max-width:980px){#filters .khint{display:none}}
+.ehead{position:sticky;top:calc(var(--bar) + var(--filt-h, 44px) + 10px);z-index:12;margin:22px 0 10px;width:fit-content;max-width:100%;
+  background:var(--navy);color:#f4ecd8;font-size:13.5px;font-weight:800;border-radius:12px;padding:6px 14px;
+  box-shadow:0 5px 16px rgb(10 20 40/.3)}
+.ehead b{color:#d9b755}
+/* כל הכרטיסים בבהירות מלאה - עמעום נקרא כ'לא ניתן ללחיצה'. הנבחר מסומן
+   בגבול זהוב, פס צד ורקע בהיר, ולא בהבדל בהירות. */
+.card{position:relative;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;
+  margin:0 0 10px;cursor:pointer;transition:border-color .2s,box-shadow .2s,background .2s,transform .12s}
+.card:hover{border-color:color-mix(in srgb, var(--gold) 55%, var(--line));transform:translateY(-1px)}
+.card::after{content:'';position:absolute;top:50%;margin-top:-6px;inset-inline-start:-27px;width:8px;height:8px;border-radius:50%;
+  background:var(--gold);border:2px solid var(--bg);transition:transform .25s,background .25s}
+.card{display:flex;align-items:flex-start;gap:10px}
+.cbody{flex:1;min-width:0}
+/* אייקון הסוג - בצד ימין של הכרטיס (RTL: הילד הראשון) */
+.kicon{flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;
+  font-size:15px;background:color-mix(in srgb, var(--kc) 15%, transparent);
+  border:1px solid color-mix(in srgb, var(--kc) 45%, transparent);color:var(--kc)}
+.card h3{font-family:'Frank Ruhl Libre',serif;font-size:17px;font-weight:900;color:var(--navy);margin:0}
+.card .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.card.on{border-color:var(--gold);background:linear-gradient(90deg,#fffaee,var(--panel));
+  box-shadow:0 7px 22px rgb(60 40 0/.16)}
+.card.on::before{content:'';position:absolute;inset-inline-start:0;top:8px;bottom:8px;width:4px;
+  border-radius:0 3px 3px 0;background:var(--gold)}
+.card.on::after{background:var(--wine);transform:scale(1.5)}
+.card .more{display:none;font-size:12.5px;line-height:1.75;margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.hidden{display:none !important}
+
+/* ===================== שכבות-על ===================== */
+.ov{position:fixed;inset:0;z-index:60;background:rgb(30 20 5/.5);display:flex;align-items:center;justify-content:center;padding:20px}
+.ovpanel{background:var(--panel);border-radius:16px;border-top:4px solid var(--gold);max-width:min(680px,94vw);
+  max-height:88vh;overflow-y:auto;padding:22px 24px;box-shadow:0 18px 50px rgb(40 25 0/.4);position:relative;width:100%}
+.ovpanel h2{font-family:'Frank Ruhl Libre',serif;font-size:22px;color:var(--navy);margin:0 0 4px}
+.ovpanel .osub{font-size:12.5px;color:var(--muted);margin:0 0 16px}
+.ovclose{position:absolute;left:14px;top:12px;border:none;background:none;font-size:17px;color:var(--muted);cursor:pointer}
+.ovclose:hover{color:var(--ink)}
+/* שכבות */
+.lrow{display:flex;align-items:center;gap:9px;padding:9px 4px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+.lrow:last-child{border-bottom:none}
+.lrow input{width:17px;height:17px;accent-color:var(--navy);cursor:pointer}
+.lrow i{width:12px;height:12px;border-radius:3px;flex:none}
+.lrow .cnt{margin-inline-start:auto;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.lquick{display:flex;gap:7px;margin-bottom:12px}
+/* אילן */
+.tflow{display:flex;flex-direction:column;align-items:center}
+.tgen{display:flex;flex-direction:column;align-items:center;width:100%}
+.tconn{width:2px;height:15px;background:var(--gold);opacity:.5}
+.tnode{display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center;border-radius:9px;padding:5px 12px;
+  border:1.5px solid var(--line);background:var(--bg);cursor:default;font-family:inherit}
+.tnode .tn{font-weight:700;font-size:13.5px;color:var(--ink)}
+.tnode .tr{font-size:10px;color:var(--muted)}
+.tnode.link{cursor:pointer;border-color:var(--gold);background:linear-gradient(180deg,#fff9ec,#f2e4c4)}
+.tnode.link:hover{transform:translateY(-1px)}
+.tsp{display:flex;gap:5px;margin-top:5px}
+.tnode.sp{padding:4px 10px} .tnode.sp .tn{font-size:12px}
+.tsibs{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:7px 10px;border:1px dashed var(--line);
+  border-radius:10px;background:rgb(220 201 163/.15)}
+.tnode.sib{opacity:.6;padding:4px 9px} .tnode.sib .tn{font-size:12px}
+/* תובנות */
+.icard{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+.icard:first-of-type{border-top:none;padding-top:0;margin-top:0}
+.icard h3{font-size:15px;color:var(--navy);margin:0 0 9px}
+.jrow{margin-bottom:10px}
+.jhead{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.jbar{display:flex;height:22px;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.jbar span{display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff}
+.jbar .g{background:#4f7a33} .jbar .m{background:#b28a2b} .jbar .b{background:#b0392c}
+.ilist{display:flex;flex-direction:column;gap:4px}
+.ilrow{display:flex;align-items:center;gap:8px;font-size:12.5px;background:var(--bg);border:1px solid var(--line);
+  border-radius:9px;padding:5px 10px;cursor:pointer;text-align:start;font-family:inherit;width:100%}
+.ilrow:hover{border-color:var(--gold)}
+.ilrow b{color:var(--navy);flex:1;min-width:0}
+.ilrow span{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.icounts{display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));gap:7px}
+.icount{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 5px;text-align:center}
+.icount b{display:block;font-size:20px;color:var(--navy);font-weight:900}
+.icount span{font-size:10.5px;color:var(--muted)}
+.idens{display:flex;align-items:flex-end;gap:2px;height:60px}
+.idens i{flex:1;background:linear-gradient(180deg,var(--prophet),#d9b755);border-radius:2px 2px 0 0;min-height:2px}
+.ipunch{margin:10px 0 0;font-size:12.5px;line-height:1.6;background:linear-gradient(180deg,#fff9ec,#f4e8cc);
+  border-inline-start:3px solid var(--gold);border-radius:8px;padding:8px 11px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;background:var(--navy);color:#fff;
+  font-size:13px;font-weight:700;border-radius:20px;padding:10px 20px;box-shadow:0 8px 24px rgb(10 20 40/.35);
+  opacity:0;pointer-events:none;transition:opacity .3s}
+#toast.show{opacity:1}
+
+/* ===== מסכים בינוניים: מפנים מקום למפה - תקופות לרצועה עליונה, בלי מקרא צדי ===== */
+@media (max-width:1400px){
+  :root{--era-w:0px;--erabar:44px;--leg-w:0px}
+  #eras{top:var(--bar);bottom:auto;inset-inline-start:0;width:100%;height:var(--erabar);
+    flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:6px 10px;gap:6px;
+    border-inline-end:none;border-bottom:1px solid var(--line)}
+  .echip{white-space:nowrap;padding:4px 11px;border-radius:14px}
+  #legend{display:none}
+  #mapPane,#detail{top:calc(var(--bar) + var(--erabar))}
+  #story{margin-inline-start:0;padding-top:calc(var(--bar) + var(--erabar) + 14px)}
+}
+
+/* לשוניות המצבים - במובייל בלבד, במקום הכי נוח לאגודל. המעבר בין שני
+   המבטים הוא הפעולה שהכי פחות ברורה למבקר חדש. */
+#modeNav{display:none}
+@media (max-width:980px){
+  #modeNav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:55;gap:4px;
+    background:var(--panel);border-top:1.5px solid var(--gold);padding:3px 6px calc(3px + env(safe-area-inset-bottom));
+    box-shadow:0 -4px 18px rgb(40 25 0 / .12)}
+  .mn-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;
+    font-family:inherit;font-size:13.5px;font-weight:800;color:var(--muted);padding:9px 0 8px;border-radius:12px}
+  .mn-tab.on{background:var(--navy);color:#fff}
+  body.map-open #modeNav,body.sheet-open #modeNav{display:none}
+  #story{padding-bottom:calc(18vh + 54px)}
+}
+
+/* ===================== מובייל ===================== */
+@media (max-width:980px){
+  :root{--story-w:100%;--era-w:0px;--erabar:44px}
+  /* המפה אינה תופסת מקום קבוע: היא נפתחת כשכבה מלאה מתוך הכרטיס */
+  #mapPane{position:fixed;inset:0;top:0;left:0;width:100%;height:100%;z-index:60;display:none;
+    border:none;border-bottom:none}
+  body.map-open #mapPane{display:flex}
+  #mapClose{display:inline-flex}
+  /* הכרטיס נפתח כגיליון תחתון בלחיצה על פריט */
+  #detail{display:block;position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;max-height:82vh;
+    border-radius:16px 16px 0 0;border:none;border-top:4px solid var(--gold);z-index:45;
+    transform:translateY(103%);transition:transform .26s ease;box-shadow:0 -10px 30px rgb(40 25 0 / .32)}
+  body.sheet-open #detail{transform:none}
+  #sheetBack{display:none;position:fixed;inset:0;background:rgb(30 20 5 / .42);z-index:44}
+  body.sheet-open #sheetBack{display:block}
+  #sheetClose{display:block}
+  /* התקופות חוזרות לרצועה אופקית מתחת לסרגל */
+  #eras{top:var(--bar);bottom:auto;inset-inline-start:0;width:100%;height:var(--erabar);
+    flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:6px 10px;gap:6px;
+    border-inline-end:none;border-bottom:1px solid var(--line)}
+  .echip{white-space:nowrap;padding:4px 11px;border-radius:14px}
+  /* חלון המפה חייב למלא את מה שנותר מהמסך (ה-flex של הבסיס נשמר) */
+  #mapBody{display:flex}
+  #mapBox{flex:1;min-width:0}
+  #mapHead{padding:6px 10px;gap:5px}
+  #mapTitle{font-size:15px}
+  .mbtn{font-size:11.5px;padding:5px 10px}
+  #legend{display:none}
+  /* הזרם האנכי תופס את כל המסך */
+  #story{margin-inline-start:0;padding-top:calc(var(--bar) + var(--erabar) + 12px);padding-bottom:18vh}
+  #filters{top:calc(var(--bar) + var(--erabar) + 4px)}
+  .ehead{top:calc(var(--bar) + var(--erabar) + var(--filt-h, 44px) + 10px)}
+  .card .more{display:none}
+  #bar h1 span{display:none}
+  #bar{padding:7px 10px;gap:7px}
+  #bar h1{font-size:15.5px}
+  #brand span{display:none}
+  #pop{width:185px}
+  .tool span.tl{display:none}
+  /* אין מקום לתיבת חיפוש בסרגל צר: כפתור זכוכית פותח אותה על פני הסרגל */
+  #qtoggle{display:block}
+  #search{position:fixed;inset-inline:10px;top:8px;display:none;z-index:50}
+  #search.open{display:block}
+  #search.open ~ .spacer,body.qopen #tools,body.qopen #brand{display:none}
+}

@@ -1001,7 +1001,32 @@ h1 {
 .kind-chip.event { background: var(--event); }
 .kind-chip.world { background: var(--world); }
 .kind-chip.empire { background: var(--world); }
-.detail-years { font-size: 13px; color: #5a4a30; font-weight: 600; margin-bottom: 8px; }
+.detail-years { font-size: 13px; color: #5a4a30; font-weight: 600; }
+/* שורת השנים לפי הספירה - מתחת לשנים מבריאת העולם, שקטה יותר */
+.detail-years-sec { font-size: 11.5px; color: var(--muted); margin-bottom: 8px; }
+/* שם הפריט - שורה משלו, כי חיצי הניווט עלו לראש הכרטיס */
+.dc-name { margin: 0 0 2px; }
+/* ניווט לפריט הקודם/הבא, עם השמות עצמם */
+.dc-steps { display: flex; gap: 6px; margin: 0 0 10px; }
+.dc-step {
+  flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  font-family: inherit; font-size: 11.5px; font-weight: 700; color: var(--navy);
+  background: var(--bg-2); border: 1px solid var(--line); border-radius: 14px;
+  padding: 5px 9px; cursor: pointer; transition: border-color .12s, background .12s;
+}
+.dc-step span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dc-step svg { flex: none; color: var(--gold-ink); }
+.dc-step:hover:not(:disabled) { border-color: var(--gold); background: var(--panel); }
+.dc-step:disabled { opacity: .4; cursor: default; }
+/* התקופה שהפריט שייך אליה - קישור לדף התקופה */
+.dc-period { display: flex; align-items: center; gap: 6px; font-size: 12px; margin: 0 0 8px; }
+.dc-period span[aria-hidden] { color: var(--gold); }
+.dc-period a { color: var(--navy); font-weight: 700; text-decoration: none; border-bottom: 1px dotted var(--gold); }
+.dc-period a:hover { color: var(--gold-ink); }
+.dc-period-yrs { color: var(--muted); font-variant-numeric: tabular-nums; }
+/* במסע הדורות הכרטיס הוא העמודה עצמה: ללא מסגרת צפה וללא רוחב קבוע */
+.dc-atlas { flex: 1 1 auto; width: auto; max-height: none; overflow: visible;
+  background: transparent; border: none; border-radius: 0; box-shadow: none; padding: 0; }
 .detail-approx {
   display: inline-block; font-size: 11px; color: var(--muted); font-style: italic;
   margin: -4px 0 8px; cursor: help; border-bottom: 1px dotted var(--line);
