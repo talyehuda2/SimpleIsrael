@@ -22,6 +22,8 @@ const chev = (d) => `<svg viewBox="0 0 24 24" width="11" height="11" aria-hidden
 const CHEV_R = chev('M9 4 L17 12 L9 20');
 const CHEV_L = chev('M15 4 L7 12 L15 20');
 
+// שהייה בכל תחנה במסע. זהה לציר הזמן, וארוכה דיה כדי להספיק לקרוא.
+const PLAY_MS = 8000;
 let DATA = null, items = [], visible = [], active = -1, step = -1, playT = null, cumLen = [0];
 // מרכז אזור התחנות בכל המסעות - נקודת העיגון הקבועה של חיתוך המפה, כך שגם
 // כשהחלון חותך, התחנות (ולא הים הריק) נשארות בפריים. אותו מבט לכל הפריטים.
@@ -612,7 +614,7 @@ $('#bPlay').addEventListener('click', () => {
   const it = items[active]; if (!it || !it.map) return;
   if (step >= it.map.points.length-1) step = -1;
   setStep(step+1); $('#bPlay').innerHTML = PAUSE_SVG + ' השהיה';
-  playT = setInterval(() => { if (step >= it.map.points.length-1) return stopPlay(); setStep(step+1); }, 2600);
+  playT = setInterval(() => { if (step >= it.map.points.length-1) return stopPlay(); setStep(step+1); }, PLAY_MS);
 });
 $('#bNext').addEventListener('click', () => setStep(step+1, true));
 $('#bPrev').addEventListener('click', () => setStep(step-1, true));

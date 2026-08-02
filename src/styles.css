@@ -96,7 +96,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* ----- כותרת ובקרים ----- */
-header {
+.app > header {
   display: flex; flex-direction: column; gap: 9px;
   padding: 12px 20px 10px;
   background: linear-gradient(180deg, var(--panel), #f6eed9);
@@ -269,7 +269,7 @@ a.mode-btn:hover { background: var(--navy); color: #fff; transform: translateY(-
   border-radius: 22px; padding: 6px 14px; cursor: pointer;
 }
 .fab-zoom { display: none; }
-h1 {
+.app h1 {
   margin: 0; font-size: 25px; font-weight: 900; color: var(--navy);
   font-family: 'Frank Ruhl Libre', 'Heebo', serif; letter-spacing: .2px;
 }
@@ -967,7 +967,7 @@ h1 {
   overscroll-behavior: contain; touch-action: pan-y;
   border: 1px solid var(--line); border-top: 4px solid var(--gold);
   border-radius: 6px 6px 14px 14px; box-shadow: 0 12px 40px rgb(40 25 0 / .28);
-  padding: 18px 20px; direction: rtl;
+  padding: 40px 20px 18px; direction: rtl;
   animation: cardIn .18s ease-out;
 }
 @keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -1026,7 +1026,8 @@ h1 {
 .dc-period-yrs { color: var(--muted); font-variant-numeric: tabular-nums; }
 /* במסע הדורות הכרטיס הוא העמודה עצמה: ללא מסגרת צפה וללא רוחב קבוע */
 .dc-atlas { flex: 1 1 auto; width: auto; max-height: none; overflow: visible;
-  background: transparent; border: none; border-radius: 0; box-shadow: none; padding: 0; }
+  background: transparent; border: none; border-radius: 0; box-shadow: none;
+  padding: 40px 0 0; animation: none; }
 .detail-approx {
   display: inline-block; font-size: 11px; color: var(--muted); font-style: italic;
   margin: -4px 0 8px; cursor: help; border-bottom: 1px dotted var(--line);
@@ -1051,7 +1052,7 @@ h1 {
 .source-link:hover { color: var(--navy); border-bottom-color: var(--navy); }
 
 /* ----- תחתית ----- */
-footer {
+.app footer {
   padding: 7px 20px; font-size: 12px; color: var(--muted);
   background: linear-gradient(0deg, var(--panel), #f6eed9);
   border-top: 1.5px solid var(--gold); text-align: center;
