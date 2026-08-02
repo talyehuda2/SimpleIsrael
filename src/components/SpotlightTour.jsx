@@ -8,9 +8,23 @@ const PAD = 6;
 const MARGIN = 4;
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 
+// בורר עם כמה חלופות מופרדות בפסיק נבדק אחת-אחת ולא ב-querySelector אחד:
+// זה מחזיר את הראשון בסדר המסמך, וגם אם הוא מוסתר (המקרא במובייל) - ואז
+// היינו מדלגים על השלב במקום ליפול לחלופה שכן מוצגת.
+function firstVisible(sel) {
+  if (typeof sel === 'function') return sel();
+  for (const part of sel.split(',')) {
+    for (const el of document.querySelectorAll(part.trim())) {
+      const r = el.getBoundingClientRect();
+      if (r.width >= 8 && r.height >= 8) return el;
+    }
+  }
+  return null;
+}
+
 // המלבן של היעד, חתוך לגבולות החלון. מחזיר null אם הוא כולו מחוץ למסך.
 function targetRect(sel) {
-  const el = typeof sel === 'function' ? sel() : document.querySelector(sel);
+  const el = firstVisible(sel);
   if (!el) return null;
   const r = el.getBoundingClientRect();
   if (r.width < 8 || r.height < 8) return null;
@@ -76,13 +90,19 @@ export default function SpotlightTour({ steps, onDone, layers, visible, setVisib
     // חסימה לגבולות החלון בשני הצירים - יעד קטן בקצה יכול לדחוף את התיבה החוצה
     const top = (v) => clamp(v, 12, Math.max(12, VH - bh - 12));
     const right = (v) => clamp(v, 12, Math.max(12, VW - bw - 12));
+    // right ב-CSS נמדד מקצה החלון הימני. כדי להצמיד את התיבה *מימין* ליעד,
+    // הקצה הימני שלה צריך לשבת ב-VW-rect.left; כדי להצמידה *משמאלו*,
+    // הקצה השמאלי שלה צריך לשבת ב-rect.right, כלומר right = freeR-bw-14.
     const freeR = VW - rect.right, freeL = rect.left;
-    if (freeR >= freeL && freeR > bw + 20) setBoxPos({ right: right(freeR + 14), top: top(rect.top) });
+    if (freeR >= freeL && freeR > bw + 20) setBoxPos({ right: right(freeR - bw - 14), top: top(rect.top) });
     else if (freeL > bw + 20) setBoxPos({ right: right(VW - rect.left + 14), top: top(rect.top) });
-    else setBoxPos({
-      right: right(VW - rect.right + (rect.width - bw) / 2),
-      top: top(rect.bottom - bh - 14),
-    });
+    else {
+      // אין צד פנוי (מסך צר). ליעד קטן מציבים מתחתיו או מעליו כדי לא לכסות
+      // אותו; ליעד שממלא את המסך אין ברירה והתיבה נכנסת לתוכו, בתחתיתו.
+      const below = rect.bottom + 12, above = rect.top - bh - 12;
+      const y = below + bh + 12 <= VH ? below : (above >= 12 ? above : rect.bottom - bh - 14);
+      setBoxPos({ right: right(VW - rect.right + (rect.width - bw) / 2), top: top(y) });
+    }
   }, [ready, rect]);
 
   useEffect(() => {

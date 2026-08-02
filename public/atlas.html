@@ -169,12 +169,14 @@ body.sheet-open #dMap{display:flex}
 #mapTitle{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:16px;color:var(--navy);margin:0;
   max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 #mapBtns{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}
-.mbtn{font-size:12px;font-weight:700;border-radius:15px;padding:5px 12px;cursor:pointer;border:1px solid var(--line);
+.mbtn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;border-radius:15px;padding:5px 12px;cursor:pointer;border:1px solid var(--line);
   background:var(--panel);color:var(--navy)}
 .mbtn:hover:not(:disabled){border-color:var(--gold)} .mbtn:disabled{opacity:.35;cursor:default}
 .mbtn.play{background:var(--navy);border-color:var(--navy);color:#fff}
-#mapBox{position:relative;flex:1;min-width:0;display:grid;place-items:center;overflow:hidden}
-#fit{position:relative;transition:opacity .3s;overflow:hidden;border-radius:6px}
+/* המיקום נקבע ב-fitMap ולא במרכוז של הדפדפן: פריט שגולש ממכל grid ב-RTL
+   נצמד לקצה במקום להתמרכז, והקוד שהניח מרכוז חשף רצועה ריקה. */
+#mapBox{position:relative;flex:1;min-width:0;overflow:hidden}
+#fit{position:absolute;transition:opacity .3s;overflow:hidden;border-radius:6px}
 #fit.fade{opacity:0}
 #zoom{position:absolute;inset:0;transform-origin:0 0;transition:transform .9s cubic-bezier(.25,.8,.25,1);--z:1}
 @media (prefers-reduced-motion:reduce){#zoom{transition:none}}
@@ -239,8 +241,11 @@ body.sheet-open #dMap{display:flex}
   background:var(--navy);color:#f4ecd8;font-size:13.5px;font-weight:800;border-radius:12px;padding:6px 14px;
   box-shadow:0 5px 16px rgb(10 20 40/.3)}
 .ehead b{color:#d9b755}
+/* כל הכרטיסים בבהירות מלאה - עמעום נקרא כ'לא ניתן ללחיצה'. הנבחר מסומן
+   בגבול זהוב, פס צד ורקע בהיר, ולא בהבדל בהירות. */
 .card{position:relative;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;
-  margin:0 0 10px;cursor:pointer;opacity:.55;transition:opacity .25s,border-color .25s,box-shadow .25s}
+  margin:0 0 10px;cursor:pointer;transition:border-color .2s,box-shadow .2s,background .2s,transform .12s}
+.card:hover{border-color:color-mix(in srgb, var(--gold) 55%, var(--line));transform:translateY(-1px)}
 .card::after{content:'';position:absolute;top:17px;inset-inline-end:-10.5px;width:8px;height:8px;border-radius:50%;
   background:var(--gold);border:2px solid var(--bg);transition:transform .25s,background .25s}
 .card{display:flex;align-items:flex-start;gap:10px}
@@ -251,7 +256,10 @@ body.sheet-open #dMap{display:flex}
   border:1px solid color-mix(in srgb, var(--kc) 45%, transparent);color:var(--kc)}
 .card h3{font-family:'Frank Ruhl Libre',serif;font-size:17px;font-weight:900;color:var(--navy);margin:0}
 .card .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
-.card.on{opacity:1;border-color:var(--gold);box-shadow:0 7px 22px rgb(60 40 0/.16)}
+.card.on{border-color:var(--gold);background:linear-gradient(90deg,#fffaee,var(--panel));
+  box-shadow:0 7px 22px rgb(60 40 0/.16)}
+.card.on::before{content:'';position:absolute;inset-inline-start:0;top:8px;bottom:8px;width:4px;
+  border-radius:0 3px 3px 0;background:var(--gold)}
 .card.on::after{background:var(--wine);transform:scale(1.5)}
 .card .more{display:none;font-size:12.5px;line-height:1.75;margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
 .hidden{display:none !important}
@@ -405,7 +413,7 @@ body.sheet-open #dMap{display:flex}
   <div id="mapHead">
     <h2 id="mapTitle">מסע הדורות</h2>
     <div id="mapBtns">
-      <button class="mbtn play" id="bPlay">▶ הפעלת המסע</button>
+      <button class="mbtn play" id="bPlay"><svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path d="M16 4 L6 12 L16 20 Z" fill="currentColor"/></svg> הפעלת המסע</button>
       <button class="mbtn" id="bPrev">הקודם</button>
       <button class="mbtn" id="bNext">הבא</button>
       <button class="mbtn" id="bAll" title="חזרה למבט על כל המסלול">סקירה כללית</button>
@@ -481,6 +489,11 @@ async function build() {
   renderStory();
   balanceColumns(); fitMap();
   initSearch();
+  // חלון המפה משנה גודל כשהפאנל נפתח במובייל, כשהסרגל נשבר לשתי שורות
+  // וכשהמכשיר מסתובב. מדידה חד-פעמית בפתיחה תפסה גודל ישן והשאירה רצועה ריקה.
+  if (typeof ResizeObserver === 'function') {
+    new ResizeObserver(() => { fitMap(); zoomTo(step); paint(); }).observe($('#mapBox'));
+  }
   openFromUrl();
   if (new URLSearchParams(location.search).get('tour') === '1') setTimeout(startTour, 700);
   addEventListener('scroll', pick, { passive: true });
@@ -771,12 +784,19 @@ function showTourStep() {
   const box = wrap.querySelector('.tour-box');
   const bw = box.offsetWidth, bh = box.offsetHeight;
   const clampTop = (v) => Math.min(Math.max(12, v), VH - bh - 12);
+  // right נמדד מקצה החלון הימני: להצמדה משמאל ליעד הקצה השמאלי של התיבה
+  // צריך לשבת ב-b.right, כלומר right = freeR-bw-14. חישוב שגוי כאן גרם
+  // לתיבה לכסות בדיוק את מה שהיא מסבירה.
   const freeR = VW - b.right, freeL = b.left;
-  if (freeR >= freeL && freeR > bw + 20) { box.style.right = (freeR + 14) + 'px'; box.style.top = clampTop(b.top) + 'px'; }
+  if (freeR >= freeL && freeR > bw + 20) { box.style.right = Math.max(12, freeR - bw - 14) + 'px'; box.style.top = clampTop(b.top) + 'px'; }
   else if (freeL > bw + 20) { box.style.right = (VW - b.left + 14) + 'px'; box.style.top = clampTop(b.top) + 'px'; }
   else {
+    // אין צד פנוי (מסך צר): ליעד קטן מציבים מתחתיו או מעליו, ליעד שממלא
+    // את המסך נכנסים לתוכו בתחתיתו
+    const below = b.bottom + 12, above = b.top - bh - 12;
+    const y = below + bh + 12 <= VH ? below : (above >= 12 ? above : b.bottom - bh - 14);
     box.style.right = Math.max(12, VW - b.right + (b.width - bw) / 2) + 'px';
-    box.style.top = clampTop(b.bottom - bh - 14) + 'px';
+    box.style.top = clampTop(y) + 'px';
   }
   wrap.querySelector('.tnext').addEventListener('click', () => { tourStep++; showTourStep(); });
   wrap.querySelector('.tskip').addEventListener('click', endTour);
@@ -898,10 +918,18 @@ function balanceColumns() {
 // העודף נחתך; החלון מכוון להיות ריבועי ולכן החיתוך זעיר.
 function fitMap() {
   const box = $('#mapBox').getBoundingClientRect();
+  if (!box.width || !box.height) return;              // הפאנל עדיין מוסתר
   const s = Math.max(box.width / IMG, box.height / IMG);
+  const w = IMG * s;
   const f = $('#fit');
-  f.style.width = IMG * s + 'px'; f.style.height = IMG * s + 'px'; f.dataset.s = s;
+  f.style.width = w + 'px'; f.style.height = w + 'px'; f.dataset.s = s;
+  // אותו offX/offY שבו משתמש zoomTo - כך החישוב והפריסה מסכימים
+  f.style.left = ((box.width - w) / 2) + 'px';
+  f.style.top = ((box.height - w) / 2) + 'px';
 }
+// משולש ההפעלה כ-SVG: ▶ פונה ימינה ונקרא בעברית כמו "אחורה"
+const PLAY_SVG = '<svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path d="M16 4 L6 12 L16 20 Z" fill="currentColor"/></svg>';
+const PAUSE_SVG = '<svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/></svg>';
 const line = (pts) => pts.length < 2 ? '' : 'M ' + pts.map(p => `${p.X} ${p.Y}`).join(' L ');
 
 // המבט הנוכחי והפריט הנבחר נשמרים בכתובת, כדי שמעבר לציר הזמן (ושיתוף)
@@ -1010,12 +1038,12 @@ function setStep(i, manual) {
   const it = items[active]; if (!it || !it.map) return;
   step = Math.max(-1, Math.min(it.map.points.length-1, i)); paint();
 }
-function stopPlay(){ if (playT) { clearInterval(playT); playT = null; $('#bPlay').textContent = '▶ הפעלת המסע'; } }
+function stopPlay(){ if (playT) { clearInterval(playT); playT = null; $('#bPlay').innerHTML = PLAY_SVG + ' הפעלת המסע'; } }
 $('#bPlay').addEventListener('click', () => {
   if (playT) return stopPlay();
   const it = items[active]; if (!it || !it.map) return;
   if (step >= it.map.points.length-1) step = -1;
-  setStep(step+1); $('#bPlay').textContent = '⏸ השהיה';
+  setStep(step+1); $('#bPlay').innerHTML = PAUSE_SVG + ' השהיה';
   playT = setInterval(() => { if (step >= it.map.points.length-1) return stopPlay(); setStep(step+1); }, 2600);
 });
 $('#bNext').addEventListener('click', () => setStep(step+1, true));

@@ -6,6 +6,17 @@ const KIND_COLOR = {
   israel: '#4f7a33', prophet: '#b3781a', book: '#157a70', event: '#b0392c',
 };
 
+/* אייקונים כ-SVG ולא כתווים: ‹ › מתהפכים ע"י ה-bidi ב-RTL, ומשולש ▶ נראה
+   כמו "אחורה" בעברית. כאן הכיוון קבוע ולא תלוי בכיוון הכתיבה.
+   המסע מתקדם ימין→שמאל, ולכן "הפעלה" ו"הבא" פונים שמאלה. */
+const svg = (children) => (
+  <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">{children}</svg>
+);
+const PLAY_ICON = svg(<path d="M16 4 L6 12 L16 20 Z" fill="currentColor" />);
+const PAUSE_ICON = svg(<path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor" />);
+const CHEV_R = svg(<path d="M9 4 L17 12 L9 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />);
+const CHEV_L = svg(<path d="M15 4 L7 12 L15 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />);
+
 // ממדי תמונת המפה (מוקטנת מ-1684x2528)
 const IMG_W = 820;
 const IMG_H = 1231;
@@ -139,13 +150,14 @@ export default function MapPanel({ item, onClose, initialStep = -1, onStep, dock
 
         <div className="journey-controls">
           <button className="jc-btn jc-play" onClick={togglePlay}>
-            {playing ? '⏸ השהיה' : step < 0 ? 'הפעלת המסע' : 'המשך'}
+            <span className="jc-ico" aria-hidden="true">{playing ? PAUSE_ICON : PLAY_ICON}</span>
+            {playing ? 'השהיה' : step < 0 ? 'הפעלת המסע' : 'המשך'}
           </button>
           <button className="jc-btn jc-nav" onClick={prev} disabled={step < 0}>
-            <span className="jc-ar" aria-hidden="true">‹</span>הקודם
+            <span className="jc-ico" aria-hidden="true">{CHEV_R}</span>הקודם
           </button>
           <button className="jc-btn jc-nav" onClick={next} disabled={step >= pts.length - 1}>
-            הבא<span className="jc-ar" aria-hidden="true">›</span>
+            הבא<span className="jc-ico" aria-hidden="true">{CHEV_L}</span>
           </button>
           {step >= 0 && <button className="jc-btn jc-all" onClick={overview}>הצג הכל</button>}
           <span className="jc-progress">{step < 0 ? 'סקירה כללית' : `תחנה ${step + 1} מתוך ${pts.length}`}</span>

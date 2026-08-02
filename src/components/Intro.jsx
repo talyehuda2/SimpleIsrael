@@ -63,13 +63,13 @@ const tourSteps = ({ onStartJourney }) => [
     text: 'הזמן זורם מימין (עבר) לשמאל. גללו לצדדים, וזמו בצביטה או ב-Ctrl+גלגלת.' },
   { sel: '.era-strip', title: 'קפיצה בין תקופות',
     text: 'פס התקופות. לחיצה מזיזה את הציר לתחילת התקופה שבחרתם.' },
-  { sel: '.legend, .controls', title: 'מה להציג?', picker: true,
+  { sel: '.legend, .controls, .bottom-nav button:last-child', title: 'מה להציג?', picker: true,
     text: 'בחרו כאן ועכשיו אילו שכבות יופיעו על הציר. תמיד אפשר לשנות בהמשך.' },
   { sel: '.detail-card', title: 'הכרטיס', before: onStartJourney,
     text: 'הסיפור המלא, הפסוק, המקורות, בני-הזמן ותגובות - וכפתור לאותה דמות במסע הדורות.' },
   { sel: '.dc-hl', title: 'בני-הזמן',
     text: 'הכפתור "בני-הזמן" מדגיש על הציר את כל מי שחי באותה תקופה, ומעמעם את השאר.' },
-  { sel: '.mode-btn, .bottom-nav a', title: 'המבט השני',
+  { sel: '.mode-btn', title: 'המבט השני',
     text: 'מסע הדורות מציג את אותם נתונים דמות אחר דמות, עם המפה והסיפור לצדה.' },
 ];
 
@@ -120,6 +120,9 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
           <button className="wpane" onClick={() => setChosen('atlas')}>
             <IlloViewAtlas />
             <div className="vw-txt">
+              {/* במסך צר המסע מוצג ראשון ומסומן כמומלץ - הציר האופקי דורש
+                  רוחב, והמסע נבנה כרשימה נגללת שמתאימה לטלפון */}
+              <span className="wrec">מומלץ בטלפון</span>
               <b>🗺️ מסע הדורות</b>
               <span>דמות אחר דמות, עם המפה והסיפור המלא לצדה</span>
             </div>

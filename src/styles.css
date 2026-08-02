@@ -721,7 +721,15 @@ h1 {
   .vw-life, .vw-scan, .vw-route, .vw-pin { animation: none; }
   .vw-life { transform: none; }
 }
+.wrec { display: none; }
 @media (max-width: 620px) {
+  /* בטלפון המסע מוצג ראשון: הציר האופקי צריך רוחב, והמסע הוא רשימה נגללת */
+  .wsplit-body .wpane:nth-child(1) { order: 2; }
+  .wsplit-body .wpane:nth-child(2) { order: 1; border-color: var(--gold); }
+  .wrec {
+    display: inline-block; align-self: flex-start; font-size: 10.5px; font-weight: 700;
+    color: #fff; background: var(--gold); border-radius: 9px; padding: 2px 7px; margin-bottom: 2px;
+  }
   .wsplit { gap: 12px; padding: 18px 14px; justify-content: flex-start; }
   .wsplit-head .intro-hero { font-size: 34px; }
   .wsplit-head .intro-welcome-title { font-size: 21px; }
@@ -1324,9 +1332,9 @@ a.card-action { text-decoration: none; }
 .jc-play { background: var(--navy); color: #fff; border-color: var(--navy); }
 .jc-play:hover:not(:disabled) { background: var(--navy-2); }
 .jc-all { border-color: var(--gold); color: var(--gold-ink); }
-/* חצי הניווט (RTL טבעי): 'הקודם' עם חץ ימינה מימין, 'הבא' עם חץ שמאלה משמאל */
-.jc-nav { display: inline-flex; align-items: center; gap: 5px; }
-.jc-ar { font-size: 17px; font-weight: 700; line-height: 1; }
+/* חצי הניווט: 'הקודם' עם חץ ימינה, 'הבא' עם חץ שמאלה - הזמן זורם ימין→שמאל */
+.jc-nav, .jc-play { display: inline-flex; align-items: center; gap: 5px; }
+.jc-ico { display: inline-flex; line-height: 0; }
 .jc-progress { font-size: 12.5px; font-weight: 700; color: var(--gold-ink); margin-inline-start: auto; }
 
 .map-popup {
