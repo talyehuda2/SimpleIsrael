@@ -32,9 +32,11 @@ const KINDS = {
   judah: { label: 'מלך יהודה', schema: 'Person', group: 'מלכים' },
   israel: { label: 'מלך ישראל', schema: 'Person', group: 'מלכים' },
   prophet: { label: 'נביא', schema: 'Person', group: 'נביאים' },
-  book: { label: 'ספר תנ״ך', schema: 'Book', group: 'ספרי תנ״ך' },
+  // CreativeWork ולא Book, ו-Thing ולא Event: שני האחרונים נבדקים ע"י גוגל
+  // לתוצאות עשירות ודורשים שדות שאין לתוכן מקראי (ISBN, startDate, location)
+  book: { label: 'ספר תנ״ך', schema: 'CreativeWork', group: 'ספרי תנ״ך' },
   world: { label: 'דמות עולמית', schema: 'Person', group: 'רקע עולמי' },
-  event: { label: 'אירוע', schema: 'Event', group: 'אירועים' },
+  event: { label: 'אירוע', schema: 'Thing', group: 'אירועים' },
 };
 
 const items = [
@@ -227,15 +229,21 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
 </nav>`;
 
   const ogImage = `${SITE}/og/${it.kind}/${it.id}.jpg`;
+  // הדף מוצהר כ-WebPage, והנושא שלו יושב ב-about. קודם הצהרנו על דפי
+  // האירועים כ-Event, ו-Search Console פסל את כולם: סכימת Event של גוגל
+  // דורשת startDate ו-location, והיא מיועדת לאירועים שאפשר להשתתף בהם -
+  // לא לאירוע היסטורי מלפני שלושת אלפים שנה שאין לו תאריך ISO. גם Book
+  // הוחלף ב-CreativeWork, שדורש ISBN ו-workExample שאין לספרי התנ״ך.
   const jsonld = {
     '@context': 'https://schema.org',
-    '@type': km.schema,
+    '@type': 'WebPage',
     name: it.name,
     description: desc,
     url: canonical,
     image: ogImage,
-    mainEntityOfPage: canonical,
+    inLanguage: 'he',
     isPartOf: { '@type': 'WebSite', name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
+    about: { '@type': km.schema, name: it.name, description: truncate(clean(desc), 300) },
   };
   // פירורי לחם: בית ← התקופה ← הדמות (התקופה מקושרת לדף-התקופה שלה)
   const crumbs = [
