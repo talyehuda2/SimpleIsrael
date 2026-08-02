@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Timeline, { LABEL_GUTTER_PX } from './components/Timeline.jsx';
 import TimelineVertical from './components/TimelineVertical.jsx';
 import DetailCard from './components/DetailCard.jsx';
-import MapPanel from './components/MapPanel.jsx';
+import JourneyMap from './components/JourneyMap.jsx';
 import SearchBox from './components/SearchBox.jsx';
 import FamilyTree from './components/FamilyTree.jsx';
 import Intro from './components/Intro.jsx';
@@ -1043,7 +1043,7 @@ export default function App() {
             openComments={INITIAL.comments}
           />
           {!isMobile && maps[selected.id] && (
-            <MapPanel
+            <JourneyMap
               docked item={selected}
               minimized={mapMin}
               onToggleMin={() => setMapMin((m) => !m)}
@@ -1054,7 +1054,7 @@ export default function App() {
 
       {/* מובייל: מפת המסע נפתחת כשכבה מלאה לפי דרישה, לא מחולקת עם הכרטיס */}
       {isMobile && mapOpen && selected && maps[selected.id] && (
-        <MapPanel item={selected} onClose={() => setMapOpen(false)} />
+        <JourneyMap item={selected} onClose={() => setMapOpen(false)} />
       )}
 
       <FamilyTree open={treeOpen} onClose={() => closeOverlay(() => setTreeOpen(false))} onJump={jumpToId} />

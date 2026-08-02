@@ -125,61 +125,23 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
 .blink:hover{border-color:var(--gold);background:var(--panel)}
 .blink.ghost{color:var(--muted);font-weight:600}
 
-#mapPane{position:fixed;top:var(--bar);bottom:0;left:0;width:var(--map-w);
-  display:flex;flex-direction:column;background:linear-gradient(180deg,#f6edd8,var(--bg))}
+/* עמודת המפה - מארחת עכשיו את רכיב JourneyMap המשותף */
+#mapPane{position:fixed;top:var(--bar);bottom:0;inset-inline-end:auto;left:0;width:var(--map-w);z-index:4;
+  background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+#jmHost{flex:1;min-height:0;display:flex}
+.jm-atlas{flex:1;min-width:0;display:flex;flex-direction:column;background:transparent;border:none;
+  border-radius:0;box-shadow:none;max-height:none;width:auto;padding:12px 14px 8px}
+/* המפה ממלאת את מלוא החלון בלי פסים ריקים: החלון גמיש, ה-SVG נמתח אליו
+   ו-preserveAspectRatio=slice חותך את העודף במקום להשאיר שוליים. */
+.jm-atlas .map-wrap{flex:1;min-height:0;display:flex}
+.jm-atlas .map-svg{width:100%;height:100%;flex:1;min-height:0;border-radius:8px}
+.jm-atlas .map-legend{flex:none;max-height:22vh;overflow-y:auto;margin-top:8px}
+.jm-atlas .map-title{margin:0 0 2px}
+.jm-atlas .map-sub{margin:0 0 8px}
+.jm-none{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  color:var(--muted);font-size:13px;text-align:center;padding:20px}
+.jm-none span{font-size:30px;opacity:.5}
 /* גוף המפה: החלון מימין, ומקרא המקומות כטור אנכי משמאלו */
-#mapBody{flex:1;min-height:0;display:flex}
-/* כותרת ממורכזת ושורת כפתורים ממורכזת מתחתיה */
-#mapHead{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 14px;
-  background:var(--panel);border-bottom:2px solid var(--gold)}
-#mapTitle{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:16px;color:var(--navy);margin:0;
-  max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
-#mapBtns{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}
-.mbtn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;border-radius:15px;padding:5px 12px;cursor:pointer;border:1px solid var(--line);
-  background:var(--panel);color:var(--navy)}
-.mbtn:hover:not(:disabled){border-color:var(--gold)} .mbtn:disabled{opacity:.35;cursor:default}
-.mbtn.play{background:var(--navy);border-color:var(--navy);color:#fff}
-/* המיקום נקבע ב-fitMap ולא במרכוז של הדפדפן: פריט שגולש ממכל grid ב-RTL
-   נצמד לקצה במקום להתמרכז, והקוד שהניח מרכוז חשף רצועה ריקה. */
-#mapBox{position:relative;flex:1;min-width:0;overflow:hidden}
-#fit{position:absolute;transition:opacity .3s;overflow:hidden;border-radius:6px}
-#fit.fade{opacity:0}
-#zoom{position:absolute;inset:0;transform-origin:0 0;transition:transform .9s cubic-bezier(.25,.8,.25,1);--z:1}
-@media (prefers-reduced-motion:reduce){#zoom{transition:none}}
-#zoom img,#zoom svg{position:absolute;inset:0;width:100%;height:100%}
-.route{fill:none;stroke:var(--gold-ink);stroke-width:calc(4px/var(--z,1));stroke-dasharray:9 9;stroke-linecap:round;opacity:.6}
-.route-done{fill:none;stroke:var(--wine);stroke-width:calc(5px/var(--z,1));stroke-linecap:round;
-  stroke-dasharray:var(--len);stroke-dashoffset:var(--len)}
-.pt{cursor:pointer}
-.pt circle{fill:var(--wine);stroke:#fbf5e7;stroke-width:calc(3px/var(--z,1));r:calc(15px/var(--z,1))}
-.pt text{fill:#fff;font-size:calc(15px/var(--z,1));font-weight:800;text-anchor:middle;dominant-baseline:central}
-.pt.done circle{fill:var(--gold)}
-.pt.now circle{r:calc(19px/var(--z,1));stroke-width:calc(4px/var(--z,1))}
-#pop{position:absolute;z-index:6;width:225px;background:var(--panel);border:1.5px solid var(--gold);border-radius:12px;
-  box-shadow:0 10px 26px rgb(60 40 0/.3);overflow:hidden;opacity:0;pointer-events:none;transition:opacity .3s}
-#pop.show{opacity:1}
-#pop .ph{background:var(--wine);color:#fff;font-size:12.5px;font-weight:800;padding:6px 11px;display:flex;gap:7px;align-items:center}
-#pop .ph i{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff;color:var(--wine);
-  font-style:normal;font-size:10.5px;font-weight:800;flex:none}
-#pop .pl{font-size:11px;font-weight:700;color:var(--gold-ink);padding:6px 11px 0}
-#pop .pd{font-size:11.5px;line-height:1.6;padding:2px 11px 9px;margin:0}
-/* מקרא המקומות - טור אנכי בצד שמאל של המפה */
-#legend{flex:none;width:var(--leg-w);display:flex;flex-direction:column;gap:5px;overflow-y:auto;
-  padding:10px 9px;background:var(--panel);border-inline-end:1px solid var(--line);scrollbar-width:none}
-#legend::-webkit-scrollbar{display:none}
-.lg{flex:none;display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--ink);
-  background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:6px 9px;cursor:pointer;
-  text-align:start;line-height:1.35;font-family:inherit}
-.lg i{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:var(--wine);color:#fff;
-  font-style:normal;font-size:9.5px;font-weight:800;flex:none}
-.lg.now{border-color:var(--gold)} .lg.now i{background:var(--gold)}
-#noMap{position:absolute;inset:0;display:grid;place-items:center;z-index:4;background:rgb(239 228 203/.5);
-  opacity:0;pointer-events:none;transition:opacity .3s}
-#noMap.show{opacity:1}
-#noMap span{background:var(--panel);border:1px dashed var(--gold);border-radius:12px;padding:10px 18px;font-size:13px;color:var(--muted)}
-
-/* ===================== טור הסיפור ===================== */
-/* RTL: inline-start = ימין - משאירים מקום לסרגל התקופות, וה-auto בצד השני דוחף ימינה */
 #story{position:relative;z-index:10;width:var(--story-w);
   margin-inline-start:var(--era-w);margin-inline-end:auto;padding:calc(var(--bar) + 14px) 16px 62vh;
   /* מרווח נדיב בין הציר לכרטיסים - 12px לציר ועוד 20px אוויר */
@@ -298,7 +260,6 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
     flex-direction:row;overflow-x:auto;overflow-y:hidden;padding:6px 10px;gap:6px;
     border-inline-end:none;border-bottom:1px solid var(--line)}
   .echip{white-space:nowrap;padding:4px 11px;border-radius:14px}
-  #legend{display:none}
   #mapPane,#detail{top:calc(var(--bar) + var(--erabar))}
   #story{margin-inline-start:0;padding-top:calc(var(--bar) + var(--erabar) + 14px)}
 }
@@ -339,12 +300,7 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
     border-inline-end:none;border-bottom:1px solid var(--line)}
   .echip{white-space:nowrap;padding:4px 11px;border-radius:14px}
   /* חלון המפה חייב למלא את מה שנותר מהמסך (ה-flex של הבסיס נשמר) */
-  #mapBody{display:flex}
-  #mapBox{flex:1;min-width:0}
-  #mapHead{padding:6px 10px;gap:5px}
   #mapTitle{font-size:15px}
-  .mbtn{font-size:11.5px;padding:5px 10px}
-  #legend{display:none}
   /* הזרם האנכי תופס את כל המסך */
   #story{margin-inline-start:0;padding-top:calc(var(--bar) + var(--erabar) + 12px);padding-bottom:18vh}
   #filters{top:calc(var(--bar) + var(--erabar) + 4px)}
@@ -354,7 +310,6 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   #bar{padding:7px 10px;gap:7px}
   #bar h1{font-size:15.5px}
   #brand span{display:none}
-  #pop{width:185px}
   .tool span.tl{display:none}
   /* אין מקום לתיבת חיפוש בסרגל צר: כפתור זכוכית פותח אותה על פני הסרגל */
   #qtoggle{display:block}

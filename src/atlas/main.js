@@ -1,7 +1,7 @@
 import { renderCard, clearCard } from './card.jsx';
+import { renderMap } from './map.jsx';
 import { ALL_ITEMS } from '../data/items.js';
 const $ = (s) => document.querySelector(s);
-const IMG = 1254;
 const LAYERS = [
   { key:'leaders', label:'אבות ומנהיגים', color:'var(--leader)',  icon:'🏛️' },
   { key:'judges',  label:'שופטים',        color:'var(--judge)',   icon:'⚖️' },
@@ -22,12 +22,7 @@ const chev = (d) => `<svg viewBox="0 0 24 24" width="11" height="11" aria-hidden
 const CHEV_R = chev('M9 4 L17 12 L9 20');
 const CHEV_L = chev('M15 4 L7 12 L15 20');
 
-// שהייה בכל תחנה במסע. זהה לציר הזמן, וארוכה דיה כדי להספיק לקרוא.
-const PLAY_MS = 8000;
-let DATA = null, items = [], visible = [], active = -1, step = -1, playT = null, cumLen = [0];
-// מרכז אזור התחנות בכל המסעות - נקודת העיגון הקבועה של חיתוך המפה, כך שגם
-// כשהחלון חותך, התחנות (ולא הים הריק) נשארות בפריים. אותו מבט לכל הפריטים.
-let ANCHOR = { x: IMG / 2, y: IMG / 2 };
+let DATA = null, items = [], visible = [], active = -1, renderT = null;
 let on = Object.fromEntries(LAYERS.map(l => [l.key, true]));
 try { const s = JSON.parse(localStorage.getItem('atlas_layers')); if (s) on = { ...on, ...s }; } catch {}
 
@@ -35,11 +30,6 @@ try { const s = JSON.parse(localStorage.getItem('atlas_layers')); if (s) on = { 
 async function build() {
   DATA = await (await fetch('/atlas-data.json')).json();
   DATA.eras.forEach(e => e.items.forEach(it => items.push(it)));
-  const P = items.filter(i => i.map).flatMap(i => i.map.points);
-  if (P.length) ANCHOR = {
-    x: (Math.min(...P.map(p => p.X)) + Math.max(...P.map(p => p.X))) / 2,
-    y: (Math.min(...P.map(p => p.Y)) + Math.max(...P.map(p => p.Y))) / 2,
-  };
   $('#eras').innerHTML = DATA.eras.map((e,i) => `<button class="echip" data-e="${i}">${e.title}</button>`).join('');
   // לחיצה על תקופה = מעבר לפריט הראשון שלה. (חישוב לפי כותרת התקופה אינו
   // אמין: היא sticky, ולכן ה-rect שלה הוא המיקום הנעוץ ולא המיקום בדף.)
@@ -50,22 +40,16 @@ async function build() {
   }));
   syncBar();
   renderStory();
-  balanceColumns(); fitMap();
+  balanceColumns();
   initSearch();
-  // חלון המפה משנה גודל כשהפאנל נפתח במובייל, כשהסרגל נשבר לשתי שורות
-  // וכשהמכשיר מסתובב. מדידה חד-פעמית בפתיחה תפסה גודל ישן והשאירה רצועה ריקה.
-  if (typeof ResizeObserver === 'function') {
-    new ResizeObserver(() => { fitMap(); zoomTo(step); paint(); }).observe($('#mapBox'));
-  }
   openFromUrl();
   if (new URLSearchParams(location.search).get('tour') === '1') setTimeout(startTour, 700);
   addEventListener('scroll', pick, { passive: true });
   setInterval(pick, 300);
   addEventListener('resize', () => {
     if (!isNarrow()) document.body.classList.remove('sheet-open', 'map-open');  // מצבי מובייל בלבד
-    syncBar(); syncFilterHeight(); balanceColumns(); fitMap(); paint();
+    syncBar(); syncFilterHeight(); balanceColumns();
   });
-  $('#mapClose').addEventListener('click', closeMap);
   $('#sheetBack').addEventListener('click', closeSheet);
   addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
@@ -153,7 +137,7 @@ function openSheet(i) {
   document.body.classList.add('sheet-open');
 }
 const closeSheet = () => document.body.classList.remove('sheet-open');
-const openMap = () => { document.body.classList.add('map-open'); fitMap(); paint(); };
+const openMap = () => document.body.classList.add('map-open');
 const closeMap = () => document.body.classList.remove('map-open');
 // גובה הסרגל נמדד בפועל (הוא נשבר לשתי שורות במובייל) - כך הפריסה לא מתפספסת
 function syncBar() {
@@ -465,160 +449,42 @@ function centerCard(el) {
 function balanceColumns() {
   const root = document.documentElement;
   if (isNarrow()) { root.style.removeProperty('--detail-w'); root.style.removeProperty('--map-w'); return; }
-  const boxH = $('#mapBody').getBoundingClientRect().height;
+  const pane = $('#mapPane');
+  if (!pane) return;
+  const boxH = pane.getBoundingClientRect().height;
   const storyW = $('#story').getBoundingClientRect().width;
-  // נקראים מהמשתנים ולא נמדדים: במצב רצועה אופקית סרגל התקופות תופס 100% רוחב
-  const cssVar = (n) => parseFloat(getComputedStyle(root).getPropertyValue(n)) || 0;
-  const legW = cssVar('--leg-w'), erasW = cssVar('--era-w');
   // clientWidth ולא innerWidth - האחרון כולל את פס הגלילה וגורם לחפיפת עמודות
-  const free = document.documentElement.clientWidth - storyW - erasW;
-  let mapW = Math.min(boxH + legW, free - 320);        // חלון ריבועי, אך משאירים לפירוט
+  const cssVar = (n) => parseFloat(getComputedStyle(root).getPropertyValue(n)) || 0;
+  const free = document.documentElement.clientWidth - storyW - cssVar('--era-w');
+  // חלון כמעט-ריבועי למפה הריבועית, אך משאירים מקום קריא לעמודת הפירוט
+  let mapW = Math.min(boxH, free - 320);
   mapW = Math.max(430, Math.min(mapW, free - 300));
   root.style.setProperty('--map-w', Math.round(mapW) + 'px');
   root.style.setProperty('--detail-w', Math.round(free - mapW) + 'px');
 }
-// המפה ממלאת את החלון לגמרי (cover) - בלי שום רווח, גם ביחס מסך שונה.
-// העודף נחתך; החלון מכוון להיות ריבועי ולכן החיתוך זעיר.
-function fitMap() {
-  const box = $('#mapBox').getBoundingClientRect();
-  if (!box.width || !box.height) return;              // הפאנל עדיין מוסתר
-  const s = Math.max(box.width / IMG, box.height / IMG);
-  const w = IMG * s;
-  const f = $('#fit');
-  f.style.width = w + 'px'; f.style.height = w + 'px'; f.dataset.s = s;
-  // אותו offX/offY שבו משתמש zoomTo - כך החישוב והפריסה מסכימים
-  f.style.left = ((box.width - w) / 2) + 'px';
-  f.style.top = ((box.height - w) / 2) + 'px';
-}
-// משולש ההפעלה כ-SVG: ▶ פונה ימינה ונקרא בעברית כמו "אחורה"
-const PLAY_SVG = '<svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path d="M16 4 L6 12 L16 20 Z" fill="currentColor"/></svg>';
-const PAUSE_SVG = '<svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/></svg>';
-const line = (pts) => pts.length < 2 ? '' : 'M ' + pts.map(p => `${p.X} ${p.Y}`).join(' L ');
-
+// המפה מרונדרת ע"י אותו רכיב React של ציר הזמן (JourneyMap); כאן נשארה רק
+// חלוקת הרוחב בין העמודות. ה-viewBox של ה-SVG הוא המצלמה, ו-slice מבטיח
+// שהתמונה מכסה את החלון בלי פסים ריקים - מה שקודם חושב ידנית ב-fitMap.
 // המבט הנוכחי והפריט הנבחר נשמרים בכתובת, כדי שמעבר לציר הזמן (ושיתוף)
 // ינחתו על אותה דמות ולא בראש הדף.
 function syncViewLink() {
   const it = items[active];
-  const q = it ? `?sel=${it.kind}:${it.id}` : '';
+  const q = it ? '?sel=' + it.kind + ':' + it.id : '';
   const a = $('#toTimeline');
   if (a) {
     a.href = '/' + q;
-    a.title = it ? `הצגת ${it.name} על ציר הזמן` : 'מעבר לתצוגת ציר הזמן';
+    a.title = it ? 'הצגת ' + it.name + ' על ציר הזמן' : 'מעבר לתצוגת ציר הזמן';
   }
   try { history.replaceState({}, '', '/atlas' + q); } catch {}
 }
 
+// המפה והכרטיס מרונדרים ע"י אותם רכיבי React של ציר הזמן.
 function render() {
-  const it = items[active], ov = $('#ov'), lg = $('#legend');
+  const it = items[active];
   syncViewLink();
-  stopPlay(); renderDetail(it);
-  if (!it || !it.map) {
-    ov.innerHTML = ''; lg.innerHTML = '';
-    $('#mapTitle').textContent = it ? it.name : 'מסע הדורות';
-    $('#noMap').classList.toggle('show', !!(it && !it.map));
-    $('#pop').classList.remove('show');
-    fitMap(); zoomTo(-1);   // המקרא התרוקן - החלון גדל, מתאימים מחדש
-    ['bPlay','bPrev','bNext','bAll'].forEach(id => $('#'+id).disabled = true);
-    return;
-  }
-  $('#noMap').classList.remove('show');
-  $('#bPlay').disabled = false;
-  $('#mapTitle').textContent = it.map.title;
-  const pts = it.map.points;
-  ov.innerHTML = `<path class="route" d="${line(pts)}"/><path class="route-done" d="${line(pts)}"/>` +
-    pts.map((p,i) => `<g class="pt" data-p="${i}" transform="translate(${p.X} ${p.Y})"><circle/><text>${p.n}</text></g>`).join('');
-  const done = ov.querySelector('.route-done');
-  const len = done.getTotalLength(); done.style.setProperty('--len', len); done.dataset.len = len;
-  // אורך מצטבר עד כל תחנה. בלעדיו ההתקדמות חושבה לפי מספר התחנות בלבד,
-  // והקו המלא חצה את העיר שאליה הוא אמור להגיע כשהמקטעים אינם שווים באורכם.
-  cumLen = [0];
-  for (let i = 1; i < pts.length; i++) {
-    cumLen[i] = cumLen[i - 1] + Math.hypot(pts[i].X - pts[i - 1].X, pts[i].Y - pts[i - 1].Y);
-  }
-  lg.innerHTML = pts.map((p,i) => `<button class="lg" data-p="${i}"><i>${p.n}</i>${p.name}</button>`).join('');
-  ov.querySelectorAll('.pt').forEach(g => g.addEventListener('click', () => setStep(+g.dataset.p, true)));
-  lg.querySelectorAll('.lg').forEach(b => b.addEventListener('click', () => setStep(+b.dataset.p, true)));
-  fitMap();   // המקרא נטען ושינה את גובה החלון - מתאימים אחריו
-  step = -1; paint();
+  renderDetail(it);
+  renderMap(it ? it.kind + ':' + it.id : null, { onClose: isNarrow() ? closeMap : undefined });
 }
-
-// סקירה = אותו מבט קבוע לכל פריט (כל המפה, בלי תזוזה). רק במסע מתקרבים
-// לתחנה - וההצמדה לשולי התמונה מבטיחה שלא ייחשף שטח שאין בו מפה: תחנה בפינה
-// נשארת בפינה במקום להתמרכז ולגרור את המפה החוצה.
-function zoomTo(i) {
-  const z = $('#zoom'), s = +$('#fit').dataset.s || 1, it = items[active];
-  const box = $('#mapBox').getBoundingClientRect();
-  const w = IMG * s;
-  const offX = (box.width - w) / 2, offY = (box.height - w) / 2;
-  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-  if (i < 0 || !it || !it.map) {
-    // סקירה: בדסקטופ מבט קבוע לכולם (מעוגן על מרכז אזור התחנות הכללי).
-    // במובייל המפה נפתחת עבור פריט מסוים ובחיתוך צר, ולכן ממסגרים את מסעו.
-    let ax = ANCHOR.x, ay = ANCHOR.y;
-    if (isNarrow() && it && it.map) {
-      const xs = it.map.points.map(p => p.X), ys = it.map.points.map(p => p.Y);
-      ax = (Math.min(...xs) + Math.max(...xs)) / 2;
-      ay = (Math.min(...ys) + Math.max(...ys)) / 2;
-    }
-    const ox = clamp(box.width / 2 - offX - ax * s, box.width - w - offX, -offX);
-    const oy = clamp(box.height / 2 - offY - ay * s, box.height - w - offY, -offY);
-    z.style.transform = `translate(${ox}px, ${oy}px) scale(1)`;
-    z.style.setProperty('--z', 1);
-    return { Z: 1, tx: ox, ty: oy, offX, offY };
-  }
-  const Z = isNarrow() ? 1.7 : 2.1;
-  const p = it.map.points[i];
-  const tx = clamp(box.width / 2 - offX - p.X * s * Z, box.width - w * Z - offX, -offX);
-  const ty = clamp(box.height / 2 - offY - p.Y * s * Z, box.height - w * Z - offY, -offY);
-  z.style.transform = `translate(${tx}px, ${ty}px) scale(${Z})`;
-  z.style.setProperty('--z', Z);
-  return { Z, tx, ty, offX, offY };
-}
-
-function paint() {
-  const it = items[active]; if (!it || !it.map) return;
-  const pts = it.map.points, ov = $('#ov');
-  ov.querySelectorAll('.pt').forEach(g => {
-    const i = +g.dataset.p;
-    g.classList.toggle('done', step >= 0 && i < step);
-    g.classList.toggle('now', i === step);
-  });
-  $('#legend').querySelectorAll('.lg').forEach(b => b.classList.toggle('now', +b.dataset.p === step));
-  const done = ov.querySelector('.route-done'), len = +done.dataset.len || 0;
-  const upto = cumLen[step] || 0;
-  done.style.strokeDashoffset = step <= 0 ? len : Math.max(0, len - upto);
-  $('#bAll').disabled = step < 0; $('#bPrev').disabled = step < 0; $('#bNext').disabled = step >= pts.length-1;
-  const cam = zoomTo(step);
-  const pop = $('#pop');
-  if (step < 0) { pop.classList.remove('show'); return; }
-  const p = pts[step], s = +$('#fit').dataset.s || 1;
-  pop.innerHTML = `<div class="ph"><i>${p.n}</i>${p.name}</div><div class="pl">${p.label||''}</div>
-    <p class="pd">${(p.desc||'').slice(0,150)}${(p.desc||'').length>150?'…':''}</p>`;
-  // מיקום התחנה בקואורדינטות ה-fit, ותיחום לאזור הנראה בפועל (התמונה חתוכה)
-  const box = $('#mapBox').getBoundingClientRect();
-  const fx = cam.Z*(p.X*s)+cam.tx, fy = cam.Z*(p.Y*s)+cam.ty;
-  const visL = -cam.offX, visT = -cam.offY;
-  const cl = (v,lo,hi) => Math.min(hi, Math.max(lo, v));
-  pop.style.left = cl(fx-112, visL+6, visL+box.width-231) + 'px';
-  pop.style.top  = cl(fy > visT+box.height*.55 ? fy-150 : fy+30, visT+6, visT+box.height-155) + 'px';
-  pop.classList.add('show');
-}
-function setStep(i, manual) {
-  if (manual) stopPlay();
-  const it = items[active]; if (!it || !it.map) return;
-  step = Math.max(-1, Math.min(it.map.points.length-1, i)); paint();
-}
-function stopPlay(){ if (playT) { clearInterval(playT); playT = null; $('#bPlay').innerHTML = PLAY_SVG + ' הפעלת המסע'; } }
-$('#bPlay').addEventListener('click', () => {
-  if (playT) return stopPlay();
-  const it = items[active]; if (!it || !it.map) return;
-  if (step >= it.map.points.length-1) step = -1;
-  setStep(step+1); $('#bPlay').innerHTML = PAUSE_SVG + ' השהיה';
-  playT = setInterval(() => { if (step >= it.map.points.length-1) return stopPlay(); setStep(step+1); }, PLAY_MS);
-});
-$('#bNext').addEventListener('click', () => setStep(step+1, true));
-$('#bPrev').addEventListener('click', () => setStep(step-1, true));
-$('#bAll').addEventListener('click', () => setStep(-1, true));
 
 // ==================== פאנל הפירוט ====================
 // כרטיס הפריט מרונדר ע"י אותו רכיב React של ציר הזמן (src/atlas/card.jsx).
@@ -671,8 +537,10 @@ function pick(force) {
   active = cur;
   document.querySelectorAll('.card').forEach(el => el.classList.toggle('on', +el.dataset.i === active));
   markEra(active);
-  const f = $('#fit'); f.classList.add('fade');
-  setTimeout(() => { render(); f.classList.remove('fade'); }, 170);
+  // ההשהיה נועדה בעבר להנפשת ה-fade של המפה הישנה; היא נשארה כדי לא לרנדר
+  // מחדש בכל פריים בזמן גלילה מהירה.
+  clearTimeout(renderT);
+  renderT = setTimeout(render, 120);
 }
 
 // ==================== שכבות-על ====================
