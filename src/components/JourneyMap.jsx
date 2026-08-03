@@ -219,5 +219,8 @@ export default function JourneyMap({
     </aside>
   );
 
-  return onClose && !docked ? <div className="map-overlay" onClick={onClose}>{panel}</div> : panel;
+  // רק בציר הזמן המפה צפה מעל הדף וזקוקה להחשכה מאחוריה. במסע הדורות
+  // חלון המפה כבר תופס את המסך כולו, ושכבה נוספת רק החשיכה אותו.
+  const needsScrim = variant === 'timeline' && onClose && !docked;
+  return needsScrim ? <div className="map-overlay" onClick={onClose}>{panel}</div> : panel;
 }
