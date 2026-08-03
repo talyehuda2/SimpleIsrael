@@ -1931,3 +1931,15 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
   margin-inline-start: auto; font-size: 11.5px; font-weight: 700;
   opacity: .82; white-space: nowrap;
 }
+
+/* טיימר המסע - טבעת שמתרוקנת סביב התחנה הפעילה בהשמעה אוטומטית */
+.jm-timer-track { fill: none; stroke: rgb(255 255 255 / .55); stroke-width: 4; }
+.jm-timer-arc {
+  fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round;
+  color: #fff; animation: jmTimer linear forwards;
+}
+@keyframes jmTimer { from { stroke-dashoffset: 0; } to { stroke-dashoffset: var(--ring-c, 151); } }
+/* מי שביקש פחות תנועה מקבל טבעת מלאה וסטטית, בלי ספירה מתמדת על המסך */
+@media (prefers-reduced-motion: reduce) {
+  .jm-timer-arc { animation: none; stroke-dashoffset: 0; }
+}

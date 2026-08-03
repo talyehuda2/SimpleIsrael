@@ -28,6 +28,10 @@ const CHEV_L = svg(<path d="M15 4 L7 12 L15 20" fill="none" stroke="currentColor
 const FULL_VB = { x: 0, y: 0, w: MAP_SIZE, h: MAP_SIZE };
 const ZOOM = 2.1;          // מידת ההתקרבות בעת "טיסה" לתחנה
 export const PLAY_MS = 8000; // שהייה בכל תחנה - ארוכה דיה כדי להספיק לקרוא
+// טבעת הספירה יושבת מחוץ לסמן (r=16) ומצוירת ביחידות המפה, ולכן היא
+// מתקרבת ומתרחקת יחד איתו בזום.
+const RING_R = 24;
+const RING_C = 2 * Math.PI * RING_R;
 
 // חלון תצוגה ממורכז סביב תחנה, חסום לגבולות המפה
 export function windowFor(p) {
@@ -45,6 +49,8 @@ export default function JourneyMap({
 }) {
   const [step, setStep] = useState(initialStep);   // -1 = מבט-על; 0..N-1 = תחנה
   const [playing, setPlaying] = useState(false);
+  // טבעת הספירה מוצגת רק כשהמסע רץ אוטומטית (או מושהה באמצעו)
+  const [timerOn, setTimerOn] = useState(false);
   const [vb, setVb] = useState(FULL_VB);
   const vbRef = useRef(FULL_VB);
   const rafRef = useRef(0);
@@ -60,7 +66,7 @@ export default function JourneyMap({
   const pathPts = pts.map((p) => `${p.x},${p.y}`).join(' ');
 
   useEffect(() => {
-    setStep(initialStepRef.current); setPlaying(false); setVb(FULL_VB); vbRef.current = FULL_VB;
+    setStep(initialStepRef.current); setPlaying(false); setTimerOn(false); setVb(FULL_VB); vbRef.current = FULL_VB;
   }, [item]);
 
   useEffect(() => { if (onStepRef.current) onStepRef.current(step); }, [step]);
@@ -103,7 +109,7 @@ export default function JourneyMap({
 
   useEffect(() => {
     if (!playing) return undefined;
-    if (step >= pts.length - 1) { setPlaying(false); return undefined; }
+    if (step >= pts.length - 1) { setPlaying(false); setTimerOn(false); return undefined; }
     const id = setTimeout(() => setStep((s) => s + 1), PLAY_MS);
     return () => clearTimeout(id);
   }, [playing, step, pts.length]);
@@ -123,13 +129,17 @@ export default function JourneyMap({
   // ההתקדמות נמדדת באורך המסלול ולא במספר התחנות; אחרת הקו חוצה את היעד
   const progressOffset = step < 0 ? total : total - pts[step].cum;
 
-  const next = () => { setPlaying(false); setStep((s) => Math.min(pts.length - 1, s < 0 ? 0 : s + 1)); };
-  const prev = () => { setPlaying(false); setStep((s) => (s <= 0 ? -1 : s - 1)); };
-  const overview = () => { setPlaying(false); setStep(-1); };
+  // מעבר ידני מכבה את הטיימר (אין ספירה), אבל "השהיה" משאיר את הטבעת
+  // קפואה במקומה - כדי שיהיה ברור שהמסע ממתין ולא נגמר.
+  const goManual = (fn) => { setPlaying(false); setTimerOn(false); fn(); };
+  const next = () => goManual(() => setStep((s) => Math.min(pts.length - 1, s < 0 ? 0 : s + 1)));
+  const prev = () => goManual(() => setStep((s) => (s <= 0 ? -1 : s - 1)));
+  const overview = () => goManual(() => setStep(-1));
+  const pickStation = (i) => goManual(() => setStep(i));
   const togglePlay = () => {
-    if (playing) { setPlaying(false); return; }
+    if (playing) { setPlaying(false); return; }   // השהיה - הטבעת נשארת ונעצרת
     if (step < 0 || step >= pts.length - 1) setStep(0);
-    setPlaying(true);
+    setPlaying(true); setTimerOn(true);
   };
 
   const panel = (
@@ -174,12 +184,30 @@ export default function JourneyMap({
           <polyline points={pathPts} className="journey" style={{ opacity: step < 0 ? 0.75 : 0.28 }} />
           <polyline points={pathPts} className="journey-progress" stroke={color}
             style={{ strokeDasharray: total, strokeDashoffset: progressOffset }} />
+          {/* טבעת הספירה סביב התחנה הפעילה: מתרוקנת לאורך 8 השניות ומראה
+              כמה נשאר עד הקפיצה הבאה. key={step} מאתחל אותה בכל תחנה,
+              והיא קופאת בהשהיה במקום להיעלם. */}
+          {timerOn && active && (
+            <g className="jm-timer" aria-hidden="true">
+              <circle className="jm-timer-track" cx={active.x} cy={active.y} r={RING_R} />
+              <circle
+                key={step} className="jm-timer-arc"
+                cx={active.x} cy={active.y} r={RING_R}
+                transform={`rotate(-90 ${active.x} ${active.y})`}
+                style={{
+                  strokeDasharray: RING_C, '--ring-c': RING_C,
+                  animationDuration: `${PLAY_MS}ms`,
+                  animationPlayState: playing ? 'running' : 'paused',
+                }}
+              />
+            </g>
+          )}
           {pts.map((p, i) => {
             const isActive = step >= 0 && i === step;
             const isFuture = step >= 0 && i > step;
             return (
               <g key={p.id} className={`marker ${isActive ? 'active' : ''} ${isFuture ? 'future' : ''}`}
-                onClick={() => { setPlaying(false); setStep(i); }} style={{ cursor: 'pointer' }}>
+                onClick={() => pickStation(i)} style={{ cursor: 'pointer' }}>
                 <circle cx={p.x} cy={p.y} r="16"
                   fill={isFuture ? '#fbf5e7' : color}
                   stroke={isActive ? undefined : isFuture ? color : '#fff'}
@@ -210,7 +238,7 @@ export default function JourneyMap({
 
       <ol className="map-legend">
         {pts.map((p, i) => (
-          <li key={p.id} className={i === step ? 'active' : ''} onClick={() => { setPlaying(false); setStep(i); }}>
+          <li key={p.id} className={i === step ? 'active' : ''} onClick={() => pickStation(i)}>
             <span className="map-legend-num" style={{ background: color }}>{p.order}</span>
             <span><b>{p.name}</b> - {p.label}</span>
           </li>
