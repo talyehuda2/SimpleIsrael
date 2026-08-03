@@ -1716,7 +1716,9 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
     border-top: 4px solid var(--gold); touch-action: none;
   }
   /* מעבר חד בין המדרגות (snap) - אנימציית max-height אינה אמינה בין יחידות viewport */
-  .card-dock.sheet .detail-card { border-radius: 0; border-top: none; margin: 0; }
+  .card-dock.sheet .detail-card { border-radius: 0; border-top: none; margin: 0;
+    /* מתחת לכרטיס יושב סרגל המצבים; בלי הריפוד הזה שורת הכפתורים נחבאת מאחוריו */
+    padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
   .card-dock.sheet.half .detail-card { max-height: 46dvh; }
   .card-dock.sheet.full .detail-card { max-height: 96dvh; }
 
@@ -1911,4 +1913,19 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
   .tour-bar { top: 142px; bottom: auto; right: 50%; transform: translateX(50%); }
   .tours-overlay { align-items: flex-end; }
   .tours-panel { width: 100%; border-radius: 16px 16px 0 0; padding-bottom: calc(16px + env(safe-area-inset-bottom)); animation: sheetUp .22s ease-out; }
+}
+
+/* קריאה-לפעולה למפה - הדבר הייחודי בכרטיס, בראשו ולא בתחתיתו */
+.dc-map-cta {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  margin: 10px 0 12px; padding: 11px 14px; cursor: pointer;
+  background: var(--navy); color: #fff; border: none; border-radius: 12px;
+  font-family: inherit; font-size: 14.5px; font-weight: 800;
+  box-shadow: 0 4px 14px rgb(22 58 87 / .22); transition: background .12s, transform .1s;
+}
+.dc-map-cta:hover { background: var(--navy-2); transform: translateY(-1px); }
+.dc-map-cta > span:first-child { font-size: 18px; line-height: 1; }
+.dc-map-cta-sub {
+  margin-inline-start: auto; font-size: 11.5px; font-weight: 700;
+  opacity: .82; white-space: nowrap;
 }

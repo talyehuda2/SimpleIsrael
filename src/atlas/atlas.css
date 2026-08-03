@@ -287,7 +287,13 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   body.map-open #mapPane{display:flex}
   #mapClose{display:inline-flex}
   /* הכרטיס נפתח כגיליון תחתון בלחיצה על פריט */
-  #detail{display:block;position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;max-height:82vh;
+  /* הגיליון נפתח כמעט למסך מלא, כמו בציר הזמן. קודם היו כאן top:auto+bottom:0
+     בלי גובה מפורש, ולכן הדפדפן גזר את הגובה מהמיקום הסטטי של האלמנט
+     (347px) והגיליון נפתח בחצי מסך. הריפוד התחתון מרחיק את הכפתורים מקצה
+     המסך ומכבד את סרגל המחוות. */
+  #detail{display:block;position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;
+    height:92dvh;max-height:none;
+    padding-bottom:calc(26px + env(safe-area-inset-bottom));
     border-radius:16px 16px 0 0;border:none;border-top:4px solid var(--gold);z-index:45;
     transform:translateY(103%);transition:transform .26s ease;box-shadow:0 -10px 30px rgb(40 25 0 / .32)}
   body.sheet-open #detail{transform:none}

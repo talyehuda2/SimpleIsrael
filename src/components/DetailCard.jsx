@@ -135,6 +135,16 @@ export default function DetailCard({
         <div className="dc-era-labels"><span>האבות</span><span>חורבן בית שני</span></div>
       </div>
 
+      {/* המפה היא הדבר הייחודי בכרטיס, והיא הייתה קבורה בשורת הכפתורים
+          שבתחתיתו - מעבר לגלילה. כאן היא כפתור ראשי מיד מתחת לכותרת. */}
+      {onOpenMap && maps[item.id] && (
+        <button type="button" className="dc-map-cta" onClick={onOpenMap}>
+          <span aria-hidden="true">🗺️</span>
+          פתיחת מפת המסע
+          <span className="dc-map-cta-sub">{maps[item.id].points.length} תחנות</span>
+        </button>
+      )}
+
       {/* 7. התקופה */}
       {period && (
         <div className="dc-period">
@@ -216,12 +226,7 @@ export default function DetailCard({
             <span>{switchLabel}</span>
           </a>
         )}
-        {onOpenMap && maps[item.id] && (
-          <button type="button" className="card-action" onClick={onOpenMap} title={`מפת המסע של ${item.name}`}>
-            <span className="dc-cbig" aria-hidden="true">🧭</span>
-            <span>מפת מסע</span>
-          </button>
-        )}
+        {/* המפה עלתה לכפתור ראשי בראש הכרטיס, ולכן אינה חוזרת כאן */}
         <a className="card-action" href={`/p/${item.kind}/${item.id}`} title={`דף המידע המלא של ${item.name}`}>
           <span className="dc-cbig" aria-hidden="true">📖</span>
           <span>דף מלא</span>
