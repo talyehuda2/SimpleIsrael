@@ -134,7 +134,9 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   padding:12px 14px calc(14px + env(safe-area-inset-bottom))}
 /* המפה ממלאת את מלוא החלון בלי פסים ריקים: החלון גמיש, ה-SVG נמתח אליו
    ו-preserveAspectRatio=slice חותך את העודף במקום להשאיר שוליים. */
-.jm-atlas .map-wrap{flex:1;min-height:0;display:flex}
+/* ריבוע: הגובה נקבע מהמקום שנשאר, והרוחב נגזר ממנו (aspect-ratio).
+   width:100% היה מבטל את היחס והופך את החלון לרחב - ואז נחתכות תחנות. */
+.jm-atlas .map-wrap{flex:1;min-height:0;display:flex;width:auto;height:100%;margin-inline:auto}
 .jm-atlas .map-svg{width:100%;height:100%;flex:1;min-height:0;border-radius:8px}
 .jm-atlas .map-legend{flex:none;max-height:22vh;overflow-y:auto;margin-top:8px}
 .jm-atlas .map-title{margin:0 0 2px}

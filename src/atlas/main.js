@@ -22,7 +22,7 @@ const chev = (d) => `<svg viewBox="0 0 24 24" width="11" height="11" aria-hidden
 const CHEV_R = chev('M9 4 L17 12 L9 20');
 const CHEV_L = chev('M15 4 L7 12 L15 20');
 
-let DATA = null, items = [], visible = [], active = -1, renderT = null;
+let DATA = null, items = [], visible = [], active = -1, renderT = null, balanceT = null;
 let on = Object.fromEntries(LAYERS.map(l => [l.key, true]));
 try { const s = JSON.parse(localStorage.getItem('atlas_layers')); if (s) on = { ...on, ...s }; } catch {}
 
@@ -451,13 +451,16 @@ function balanceColumns() {
   if (isNarrow()) { root.style.removeProperty('--detail-w'); root.style.removeProperty('--map-w'); return; }
   const pane = $('#mapPane');
   if (!pane) return;
-  const boxH = pane.getBoundingClientRect().height;
+  // חלון המפה ריבועי, וגובהו נקבע ממה שנשאר אחרי הכותרת, הבקרות והמקרא.
+  // רוחב העמודה נגזר ממנו - אחרת נשאר לצדו שטח ריק, והפירוט מקבל פחות מקום.
+  const wrap = pane.querySelector('.map-wrap');
+  const boxH = wrap ? wrap.getBoundingClientRect().height : pane.getBoundingClientRect().height;
   const storyW = $('#story').getBoundingClientRect().width;
-  // clientWidth ולא innerWidth - האחרון כולל את פס הגלילה וגורם לחפיפת עמודות
   const cssVar = (n) => parseFloat(getComputedStyle(root).getPropertyValue(n)) || 0;
+  // clientWidth ולא innerWidth - האחרון כולל את פס הגלילה וגורם לחפיפת עמודות
   const free = document.documentElement.clientWidth - storyW - cssVar('--era-w');
-  // חלון כמעט-ריבועי למפה הריבועית, אך משאירים מקום קריא לעמודת הפירוט
-  let mapW = Math.min(boxH, free - 320);
+  const PANEL_PAD = 28;
+  let mapW = Math.min(boxH + PANEL_PAD, free - 320);
   mapW = Math.max(430, Math.min(mapW, free - 300));
   root.style.setProperty('--map-w', Math.round(mapW) + 'px');
   root.style.setProperty('--detail-w', Math.round(free - mapW) + 'px');
@@ -484,6 +487,9 @@ function render() {
   syncViewLink();
   renderDetail(it);
   renderMap(it ? it.kind + ':' + it.id : null, { onClose: isNarrow() ? closeMap : undefined });
+  // המפה נכנסה לעמודה ושינתה את גובה הריבוע - מאזנים שוב אחרי הציור
+  clearTimeout(balanceT);
+  balanceT = setTimeout(balanceColumns, 60);
 }
 
 // ==================== פאנל הפירוט ====================

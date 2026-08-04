@@ -25,7 +25,6 @@ const PAUSE_ICON = svg(<path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor" 
 const CHEV_R = svg(<path d="M9 4 L17 12 L9 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />);
 const CHEV_L = svg(<path d="M15 4 L7 12 L15 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />);
 
-const FULL_VB = { x: 0, y: 0, w: MAP_SIZE, h: MAP_SIZE };
 const ZOOM = 2.1;          // מידת ההתקרבות בעת "טיסה" לתחנה
 export const PLAY_MS = 8000; // שהייה בכל תחנה - ארוכה דיה כדי להספיק לקרוא
 // טבעת הספירה יושבת מחוץ לסמן (r=16) ומצוירת ביחידות המפה, ולכן היא
@@ -33,14 +32,41 @@ export const PLAY_MS = 8000; // שהייה בכל תחנה - ארוכה דיה �
 const RING_R = 24;
 const RING_C = 2 * Math.PI * RING_R;
 
-// חלון תצוגה ממורכז סביב תחנה, חסום לגבולות המפה
-export function windowFor(p) {
-  const w = MAP_SIZE / ZOOM, h = MAP_SIZE / ZOOM;
+const clampN = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+
+/* חלון תצוגה ביחס-הגובה-רוחב של המכל, ממורכז סביב נקודה וחסום לגבולות
+   התמונה. היחס חשוב: התמונה ריבועית, ואם ה-viewBox ריבועי בזמן שהמכל
+   רחב - preserveAspectRatio=slice חותך את החלק העליון והתחתון, ותחנות
+   בדרום פשוט נעלמות. כשהיחסים זהים, slice אינו חותך דבר מעבר ל-viewBox. */
+/* סריקה על כל 92 המסעות הראתה שמחוץ לתחום 0.72-1.1 מתחילות להיחתך תחנות
+   (חרן בצפון ומצרים בדרום אינם נכנסים יחד לחלון רחב). מעבר לגבול עדיף
+   לחתוך מעט מהים והמדבר בצדדים מאשר להעלים תחנה. */
+const AR_MIN = 0.72, AR_MAX = 1.1;
+
+function windowAt(cx, cy, span, arRaw) {
+  const ar = clampN(arRaw, AR_MIN, AR_MAX);
+  let w = span, h = span;
+  if (ar >= 1) h = span / ar; else w = span * ar;
+  w = Math.min(w, MAP_SIZE); h = Math.min(h, MAP_SIZE);
   return {
-    x: Math.max(0, Math.min(MAP_SIZE - w, p.x - w / 2)),
-    y: Math.max(0, Math.min(MAP_SIZE - h, p.y - h / 2)),
+    x: clampN(cx - w / 2, 0, MAP_SIZE - w),
+    y: clampN(cy - h / 2, 0, MAP_SIZE - h),
     w, h,
   };
+}
+
+// התקרבות לתחנה
+export const windowFor = (p, ar = 1) => windowAt(p.x, p.y, MAP_SIZE / ZOOM, ar);
+
+/* מבט-על: הזום המרבי (כל המפה) ביחס המכל, ממוקם כך שכל תחנות המסע
+   ייכללו בו. אין כאן מסגור לפי דמות - הזום זהה לכולם, רק ההיסט משתנה
+   כדי שלא ייחתכו תחנות. */
+export function overviewFor(pts, ar = 1) {
+  if (!pts.length) return windowAt(MAP_SIZE / 2, MAP_SIZE / 2, MAP_SIZE, ar);
+  const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  return windowAt(cx, cy, MAP_SIZE, ar);
 }
 
 export default function JourneyMap({
@@ -51,8 +77,12 @@ export default function JourneyMap({
   const [playing, setPlaying] = useState(false);
   // טבעת הספירה מוצגת רק כשהמסע רץ אוטומטית (או מושהה באמצעו)
   const [timerOn, setTimerOn] = useState(false);
-  const [vb, setVb] = useState(FULL_VB);
-  const vbRef = useRef(FULL_VB);
+  const [vb, setVb] = useState(() => overviewFor([], 1));
+  const vbRef = useRef(null);
+  // יחס הגובה-רוחב של חלון המפה. ה-viewBox נגזר ממנו, ולכן שינוי גודל
+  // חלון הדפדפן מחייב חישוב מחדש - אחרת נחתכות תחנות.
+  const wrapRef = useRef(null);
+  const [ar, setAr] = useState(1);
   const rafRef = useRef(0);
   const onStepRef = useRef(onStep);
   onStepRef.current = onStep;
@@ -64,9 +94,33 @@ export default function JourneyMap({
   const pts = data ? journeyStations(data) : [];
   const total = pts.length ? pts[pts.length - 1].cum : 0;
   const pathPts = pts.map((p) => `${p.x},${p.y}`).join(' ');
+  // ptsRef/arRef נקראים מתוך אפקטים שאינם תלויים בהם, כדי לא להריץ אותם
+  // מחדש בכל רינדור (המערך נבנה מחדש בכל פעם).
+  const ptsRef = useRef(pts); ptsRef.current = pts;
+  const arRef = useRef(ar); arRef.current = ar;
+
+  // מדידת יחס חלון המפה. בלעדיה ה-viewBox היה ריבועי בתוך מכל רחב,
+  // ו-slice היה חותך את צפון ודרום המפה יחד עם התחנות שבהם.
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return undefined;
+    const measure = () => {
+      const b = el.getBoundingClientRect();
+      if (b.width > 8 && b.height > 8) setAr(b.width / b.height);
+    };
+    measure();
+    if (typeof ResizeObserver !== 'function') {
+      addEventListener('resize', measure);
+      return () => removeEventListener('resize', measure);
+    }
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
-    setStep(initialStepRef.current); setPlaying(false); setTimerOn(false); setVb(FULL_VB); vbRef.current = FULL_VB;
+    const ov = overviewFor(ptsRef.current, arRef.current);
+    setStep(initialStepRef.current); setPlaying(false); setTimerOn(false); setVb(ov); vbRef.current = ov;
   }, [item]);
 
   useEffect(() => { if (onStepRef.current) onStepRef.current(step); }, [step]);
@@ -83,7 +137,7 @@ export default function JourneyMap({
   // והמצלמה הייתה נתקעת במבט-על בלי שאיש ישים לב. אם לא הגיע פריים -
   // קופצים ישר ליעד.
   useEffect(() => {
-    const target = step >= 0 && pts[step] ? windowFor(pts[step]) : FULL_VB;
+    const target = step >= 0 && pts[step] ? windowFor(pts[step], ar) : overviewFor(pts, ar);
     const start = vbRef.current;
     const t0 = performance.now();
     const dur = 550;
@@ -105,7 +159,7 @@ export default function JourneyMap({
     rafRef.current = requestAnimationFrame(tick);
     const safety = setTimeout(() => { if (!arrived) { cancelAnimationFrame(rafRef.current); land(target); } }, dur + 120);
     return () => { cancelAnimationFrame(rafRef.current); clearTimeout(safety); };
-  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [step, ar]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!playing) return undefined;
@@ -174,7 +228,7 @@ export default function JourneyMap({
         <span className="jc-progress">{step < 0 ? 'סקירה כללית' : `תחנה ${step + 1} מתוך ${pts.length}`}</span>
       </div>
 
-      <div className="map-wrap">
+      <div className="map-wrap" ref={wrapRef}>
         <svg
           viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`} className="map-svg"
           preserveAspectRatio="xMidYMid slice"
