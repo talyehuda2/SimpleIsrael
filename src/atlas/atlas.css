@@ -14,13 +14,17 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Heebo','Se
 button{font-family:inherit}
 
 /* ===================== סרגל עליון ===================== */
-#bar{position:fixed;top:0;left:0;right:0;height:var(--bar);z-index:40;display:flex;align-items:center;gap:10px;
+/* שלוש עמודות: מותג בימין, מתג המבטים במרכז ממש, חיפוש וכלים בשמאל.
+   1fr משני הצדדים = המתג יושב במרכז הבר ולא במרכז השארית שביניהם. */
+#bar{position:fixed;top:0;left:0;right:0;height:var(--bar);z-index:40;
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;
   padding:0 14px;background:var(--panel);border-bottom:2px solid var(--gold);box-shadow:0 2px 10px rgb(60 40 0 / .12)}
-#brand{display:flex;flex-direction:column;gap:1px;text-decoration:none;flex:none}
+#barEnd{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
+/* justify-self: אחרת הקישור נמתח על כל עמודת ה-1fr ואזור הלחיצה חורג מהטקסט */
+#brand{display:flex;flex-direction:column;gap:1px;text-decoration:none;flex:none;justify-self:start}
 #bar h1{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:18px;color:var(--navy);margin:0;white-space:nowrap}
 #brand span{font-size:10.5px;color:var(--gold-ink);font-weight:700;font-family:'Heebo',sans-serif;white-space:nowrap}
 #brand:hover h1{color:var(--gold-ink)}
-#bar .spacer{flex:1}
 /* סרגל התקופות - טור אנכי בקצה ימין, צמוד לרשימת השמות */
 #eras{position:fixed;top:var(--bar);bottom:0;inset-inline-start:0;width:var(--era-w);z-index:20;
   display:flex;flex-direction:column;gap:5px;padding:12px 9px;overflow-y:auto;scrollbar-width:none;
@@ -318,7 +322,10 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   .ehead{top:calc(var(--bar) + var(--erabar) + var(--filt-h, 44px) + 10px)}
   .card .more{display:none}
   #bar h1 span{display:none}
-  #bar{padding:7px 10px;gap:7px}
+  /* המתג יורד ל-#modeNav התחתון כאן, ולכן יורד מהבר ואין מה למרכז */
+  #bar{display:flex;padding:7px 10px;gap:7px}
+  #bar .mode-switch{display:none}
+  #barEnd{flex:1}
   #bar h1{font-size:15.5px}
   #brand span{display:none}
   .tool span.tl{display:none}
@@ -326,5 +333,5 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   #qtoggle{display:block}
   #search{position:fixed;inset-inline:10px;top:8px;display:none;z-index:50}
   #search.open{display:block}
-  #search.open ~ .spacer,body.qopen #tools,body.qopen #brand{display:none}
+  body.qopen #tools,body.qopen #brand{display:none}
 }

@@ -13,6 +13,11 @@ const KIND_LABELS = {
   judah: 'מלך יהודה', israel: 'מלך ישראל', prophet: 'נביא',
   book: 'ספר', event: 'אירוע', world: 'רקע עולמי', empire: 'מלכות עולמית',
 };
+/* כותרת רשימת בני-הזמן. "חי במקביל" מתאים לדמות, אבל לא לאירוע
+   (התרחש) ולא לספר (מתאר תקופה) - ולכן הניסוח משתנה לפי סוג הפריט. */
+const CONTEMP_HEADS = { event: 'התרחש במקביל', book: 'בני התקופה', empire: 'בני התקופה' };
+const contempHead = (kind) => CONTEMP_HEADS[kind] || 'חי במקביל';
+
 const JUDGMENT_LABELS = {
   good: 'עשה הישר בעיני ה\'',
   bad: 'עשה הרע בעיני ה\'',
@@ -196,7 +201,7 @@ export default function DetailCard({
       {contemporaries.length > 0 && (
         <div className="dc-contemp">
           <div className="dc-contemp-head">
-            <span>חי במקביל</span>
+            <span>{contempHead(item.kind)}</span>
             {onToggleContemporaries && (
               <button
                 className={`dc-hl${contemporariesOn ? ' on' : ''}`}

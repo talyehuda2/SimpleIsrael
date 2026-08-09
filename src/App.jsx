@@ -758,8 +758,8 @@ export default function App() {
                 : 'מהאבות עד חורבן בית שני · לפי המסורת (סדר עולם)'}
             </span>
           </div>
-          {/* מתג מפוצל: שתי האפשרויות גלויות תמיד והנוכחית מודגשת. כפתור
-              בודד ("מסע הדורות") נקרא כמו עוד כלי בסרגל, ולא כמעבר בין
+          {/* מתג מפוצל במרכז הבר: שתי האפשרויות גלויות תמיד והנוכחית מודגשת.
+              כפתור בודד ("מסע הדורות") נקרא כמו עוד כלי בסרגל, ולא כמעבר בין
               שני מצבים של אותה אפליקציה. */}
           <div className="mode-switch" role="group" aria-label="מצב תצוגה">
             <span className="ms-opt on" aria-current="page">
@@ -769,7 +769,7 @@ export default function App() {
               <span aria-hidden="true">🗺️</span> מסע הדורות
             </a>
           </div>
-          <span className="header-gap" />
+          <div className="header-actions">
           {/* הערה למנהל הייתה קבורה בתפריט ⋯ ברוחב 22px, ובמובייל הוסתרה
               לגמרי. כאן היא כפתור משלה, גלוי בשני הגדלים. */}
           <button className="share-btn note-btn" onClick={() => setNotesOpen(true)} title="הערה, תיקון או מקור למנהל האתר">
@@ -788,6 +788,7 @@ export default function App() {
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((o) => !o)}
           >{menuOpen ? '✕ סגירה' : '☰ אפשרויות'}</button>
+          </div>
         </div>
         <div className="search-row">
           <SearchBox index={searchIndex} onPick={jumpTo} />
