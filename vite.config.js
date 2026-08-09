@@ -5,28 +5,33 @@ import react from '@vitejs/plugin-react';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// /atlas הוא הכתובת הנקייה של מבט המסע. בפרודקשן ה-rewrite יושב ב-vercel.json;
-// כאן מספקים את אותו מיפוי לשרת הפיתוח כדי שהקישורים יעבדו בשני המקומות.
-const atlasAlias = {
-  name: 'atlas-alias',
+// /atlas ו-/places הן הכתובות הנקיות של שני המבטים הנוספים. בפרודקשן
+// ה-rewrite יושב ב-vercel.json; כאן מספקים את אותו מיפוי לשרת הפיתוח
+// כדי שהקישורים יעבדו בשני המקומות.
+const CLEAN_ROUTES = { '/atlas': '/atlas.html', '/places': '/places.html' };
+const cleanUrls = {
+  name: 'clean-urls',
   configureServer(server) {
     server.middlewares.use((req, _res, next) => {
       const [path, qs] = req.url.split('?');
-      if (path === '/atlas' || path === '/atlas/') req.url = '/atlas.html' + (qs ? `?${qs}` : '');
+      const hit = CLEAN_ROUTES[path.replace(/\/$/, '')];
+      if (hit) req.url = hit + (qs ? `?${qs}` : '');
       next();
     });
   },
 };
 
 export default defineConfig({
-  plugins: [react(), atlasAlias],
+  plugins: [react(), cleanUrls],
   build: {
-    // שני עמודי כניסה: ציר הזמן ומסע הדורות. כך שני המסכים חולקים את אותם
-    // רכיבי React (כרטיס הפריט, המפה, התגובות) במקום שני מימושים נפרדים.
+    // שלושה עמודי כניסה: ציר הזמן, מסע הדורות ומפת המקומות. שני הראשונים
+    // חולקים את אותם רכיבי React (כרטיס הפריט, המפה, התגובות) במקום שני
+    // מימושים נפרדים; מפת המקומות היא מסך עצמאי וקל.
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
         atlas: resolve(__dirname, 'atlas.html'),
+        places: resolve(__dirname, 'places.html'),
       },
     },
   },

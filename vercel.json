@@ -1,7 +1,8 @@
 {
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/atlas", "destination": "/atlas.html" }
+    { "source": "/atlas", "destination": "/atlas.html" },
+    { "source": "/places", "destination": "/places.html" }
   ],
   "redirects": [
     { "source": "/proto-atlas.html", "destination": "/atlas", "permanent": true }

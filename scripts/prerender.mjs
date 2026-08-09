@@ -24,6 +24,7 @@ const world = read('world.json');
 const events = read('events.json');
 const periods = read('periods.json');
 const collections = read('collections.json');
+const placesIndex = read('places.json');
 
 const KINDS = {
   leader: { label: 'מנהיג', schema: 'Person', group: 'אבות ומנהיגים' },
@@ -476,7 +477,7 @@ writeCard(DIST, join('og', 'atlas.jpg'), {
 
 // sitemap.xml
 const urls = [
-  `${SITE}/`, `${SITE}/atlas`, `${SITE}/p`,
+  `${SITE}/`, `${SITE}/atlas`, `${SITE}/places`, `${SITE}/p`,
   ...sortedPeriods.map(periodUrl),
   ...collections.map((c) => `${SITE}/p/collection/${c.id}`),
   ...items.map(urlOf),
@@ -538,5 +539,35 @@ ${byPeriod}
 </nav></noscript>\n</body>`);
 }
 writeFileSync(atlasPath, atlasHtml);
+
+// מפת המקומות (/places) נבנית אף היא ב-JavaScript מתוך places.json. אותו
+// טיפול: JSON-LD, ותוכן noscript שמפרט את המקומות העשירים ואת מי שעבר בהם -
+// כך יש לזחלן גם על מה לדבר וגם נתיב לדפי הנחיתה של הדמויות.
+const placesPath = join(DIST, 'places.html');
+let placesHtml = readFileSync(placesPath, 'utf8');
+const placesLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'מפת המקומות',
+  url: `${SITE}/places`,
+  description: 'לפי מקום ולא לפי זמן: מי עבר בכל מקום בארץ ישראל ומה קרה שם, מאברהם ועד שיבת ציון.',
+  inLanguage: 'he',
+  isPartOf: { '@type': 'WebSite', name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
+};
+if (!placesHtml.includes('application/ld+json')) {
+  placesHtml = placesHtml.replace('</head>', `<script type="application/ld+json">${JSON.stringify(placesLd)}</script>\n</head>`);
+}
+if (!placesHtml.includes('id="crawl-places"')) {
+  const rich = placesIndex.filter((p) => p.visits.length >= 3);
+  const body = rich.map((p) => `<h2>${esc(p.name)} (${p.visits.length} ביקורים)</h2>
+<ul>${p.visits.map((v) => `<li><a href="/p/${v.kind}/${v.id}">${esc(v.name)}</a>${v.label ? ` - ${esc(v.label)}` : ''}</li>`).join('')}</ul>`).join('\n');
+  placesHtml = placesHtml.replace('</body>', `<noscript><nav id="crawl-places">
+<h1>מפת המקומות - איפה קרתה ההיסטוריה של עם ישראל</h1>
+<p>המפה האינטראקטיבית דורשת JavaScript. עד אז, הנה המקומות המרכזיים ומי עבר בכל אחד מהם:
+<a href="/p">מפת האתר</a> · <a href="/">ציר הזמן</a> · <a href="/atlas">מסע הדורות</a>.</p>
+${body}
+</nav></noscript>\n</body>`);
+}
+writeFileSync(placesPath, placesHtml);
 
 console.log(`prerender: ${count} item pages + ${sortedPeriods.length} period pages + index + sitemap (${urls.length} urls) + robots`);

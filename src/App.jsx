@@ -770,6 +770,9 @@ export default function App() {
             <a className="ms-opt" href={atlasHref} title="דמות אחר דמות, עם המפה והסיפור לצדה">
               <span aria-hidden="true">🗺️</span> מסע הדורות
             </a>
+            <a className="ms-opt" href="/places" title="לפי מקום: מי עבר בכל מקום ומה קרה שם">
+              <span aria-hidden="true">📍</span> מקומות
+            </a>
           </div>
           <div className="header-actions">
           {/* הערה למנהל הייתה קבורה בתפריט ⋯ ברוחב 22px, ובמובייל הוסתרה
@@ -1074,6 +1077,9 @@ export default function App() {
           </span>
           <a className="mn-tab" href={atlasHref}>
             <span aria-hidden="true">🗺️</span>מסע הדורות
+          </a>
+          <a className="mn-tab" href="/places">
+            <span aria-hidden="true">📍</span>מקומות
           </a>
         </nav>
       )}

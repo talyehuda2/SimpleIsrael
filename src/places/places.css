@@ -1,0 +1,146 @@
+@font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;font-display:swap;src:url('/fonts/frankruhllibre-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
+@font-face{font-family:'Heebo';font-weight:300 700;font-display:swap;src:url('/fonts/heebo-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
+:root{
+  --bg:#efe4cb; --panel:#fbf5e7; --ink:#33281a; --muted:#6d5c42;
+  --navy:#163a57; --navy2:#1d4b70; --gold:#b28a2b; --gold-ink:#7a5b16; --line:#dcc9a3;
+  --leader:#9c2b50; --judge:#bd7038; --united:#6a3ca0; --judah:#245c93; --israel:#4f7a33;
+  --prophet:#b3781a; --book:#157a70; --event:#b0392c; --world:#8a7250;
+  --bar:56px; --side-w:360px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Heebo',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased}
+button{font-family:inherit}
+
+/* ===================== סרגל עליון ===================== */
+/* אותה חלוקה לשלוש עמודות של שני המסכים האחרים: הכותרת בימין, מתג
+   המבטים במרכז הבר ממש, והכלים בשמאל. */
+#bar{position:fixed;top:0;left:0;right:0;height:var(--bar);z-index:40;
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;
+  padding:0 14px;background:var(--panel);border-bottom:2px solid var(--gold);box-shadow:0 2px 10px rgb(60 40 0 / .12)}
+#brandWrap{display:flex;align-items:center;gap:8px;justify-self:start;height:100%}
+#brand{display:flex;align-items:center;text-decoration:none;height:100%}
+#bar h1{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:31px;line-height:1;
+  color:var(--navy);margin:0;white-space:nowrap}
+#brand:hover h1{color:var(--gold-ink)}
+#barEnd{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
+#tools{display:flex;gap:6px;flex:none;align-items:center}
+.tool{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;
+  border:1px solid var(--line);background:var(--bg);color:var(--navy);border-radius:14px;padding:6px 12px;cursor:pointer}
+.tool:hover{border-color:var(--gold);background:var(--panel)}
+/* מתג המבטים - שלוש אפשרויות, הנוכחית ממולאת */
+.mode-switch{display:inline-flex;gap:3px;padding:3px;flex:none;
+  background:rgb(30 20 5 / .05);border:1px solid var(--line);border-radius:22px}
+.ms-opt{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:6px 14px;border-radius:18px;
+  text-decoration:none;font-family:inherit;font-size:13px;font-weight:700;color:var(--muted);transition:background .14s,color .14s}
+.ms-opt.on{background:var(--navy);color:#fff;box-shadow:0 2px 6px rgb(22 58 87 / .25)}
+a.ms-opt:hover{background:var(--panel);color:var(--navy)}
+@media (max-width:1150px){.ms-opt{padding:6px 9px;font-size:12px}}
+
+/* ===================== פריסה ===================== */
+#wrap{display:flex;gap:0;padding-top:var(--bar);min-height:100vh}
+#mapCol{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;
+  padding:14px 16px 20px;gap:8px}
+/* ריבוע: המפה עצמה ריבועית, וכל חריגה מהיחס הייתה גוזרת מקומות בקצוות */
+#mapWrap{width:100%;max-width:min(78vh,900px);aspect-ratio:1/1;position:relative;
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#e6d8b8;
+  box-shadow:0 6px 22px rgb(60 40 0 / .16)}
+#map{display:block;width:100%;height:100%}
+#mapHint{margin:0;font-size:12px;color:var(--muted);text-align:center}
+
+/* ---- סימוני המפה ---- */
+.pm{cursor:pointer}
+.pm circle{fill:var(--navy);fill-opacity:.72;stroke:#fbf5e7;stroke-width:2;transition:fill-opacity .15s}
+.pm:hover circle{fill-opacity:.95}
+.pm text{font-family:'Heebo',sans-serif;font-weight:700;fill:#2b2113;paint-order:stroke;
+  stroke:#f6ecd6;stroke-width:4.5px;stroke-linejoin:round;pointer-events:none}
+.pm.off{opacity:.16;pointer-events:none}
+.pm.on circle{fill:var(--gold);fill-opacity:1;stroke:#3a2c10;stroke-width:3}
+.pm.on text{fill:#3a2c10}
+/* מרכז הכובד של התקופה - איפה ההיסטוריה מתרחשת ברגע הזה */
+#cog{pointer-events:none}
+#cog circle{fill:none;stroke:var(--leader);stroke-width:3;stroke-dasharray:9 7}
+#cog text{font-family:'Heebo',sans-serif;font-weight:800;fill:var(--leader);paint-order:stroke;
+  stroke:#f6ecd6;stroke-width:5px;stroke-linejoin:round}
+
+/* ===================== הטור הצדדי ===================== */
+#side{width:var(--side-w);flex:none;background:var(--panel);border-inline-end:1px solid var(--line);
+  display:flex;flex-direction:column;height:calc(100vh - var(--bar));position:sticky;top:var(--bar)}
+#sideHead{padding:12px 14px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:9px}
+#q{width:100%;font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:18px;padding:8px 34px 8px 12px;outline:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d5c42' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-size:14px;background-position:right 11px center}
+#q:focus{border-color:var(--gold);background-color:var(--panel)}
+#eras{display:flex;flex-wrap:wrap;gap:5px}
+.echip{font-size:11.5px;font-weight:700;color:var(--ink);background:var(--bg);border:1px solid var(--line);
+  border-radius:12px;padding:5px 9px;cursor:pointer;transition:background .14s,color .14s,border-color .14s}
+.echip:hover{border-color:var(--gold)}
+.echip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.echip.play{background:var(--gold);border-color:var(--gold);color:#fff}
+#stats{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+#list{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:8px 10px 22px}
+.prow{display:flex;align-items:center;gap:9px;width:100%;text-align:start;font-family:inherit;
+  background:none;border:1px solid transparent;border-radius:10px;padding:7px 9px;cursor:pointer;color:var(--ink)}
+.prow:hover{background:var(--bg);border-color:var(--line)}
+.prow.on{background:#f3e6c6;border-color:var(--gold)}
+.pn{font-size:14px;font-weight:700;color:var(--navy)}
+.pc{margin-inline-start:auto;font-size:11px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+/* פס יחסי - כמה "עמוס" המקום ביחס לירושלים */
+.pbar{flex:none;width:44px;height:5px;border-radius:3px;background:rgb(22 58 87 / .12);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--navy);border-radius:3px}
+.pempty{padding:16px 10px;font-size:13px;color:var(--muted);text-align:center}
+
+/* ---- פירוט מקום ---- */
+#detail{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:14px 14px 26px}
+#detail[hidden]{display:none}
+.dback{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--navy);
+  background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:5px 11px;cursor:pointer;margin-bottom:12px}
+.dback:hover{border-color:var(--gold)}
+#detail h2{font-family:'Frank Ruhl Libre',serif;font-size:25px;color:var(--navy);margin:0 0 3px}
+.dsub{font-size:12px;color:var(--muted);margin:0 0 4px}
+.daka{font-size:11.5px;color:var(--gold-ink);margin:0 0 14px}
+/* כרונולוגיה: ציר זהוב בצד ימין, וכל ביקור כתחנה עליו */
+.dvisits{position:relative;padding-inline-start:0;padding-inline-end:20px;margin:0;list-style:none}
+.dvisits::before{content:'';position:absolute;top:6px;bottom:6px;inset-inline-end:7px;width:2px;background:var(--gold);opacity:.45}
+.dv{position:relative;margin-bottom:14px}
+.dv::before{content:'';position:absolute;inset-inline-end:-17px;top:6px;width:12px;height:12px;border-radius:50%;
+  background:var(--kc,var(--navy));border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line)}
+.dvhead{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+.dvname{font-size:14.5px;font-weight:800;color:var(--kc,var(--navy));background:none;border:none;
+  font-family:inherit;padding:0;cursor:pointer;text-decoration:underline;text-decoration-color:rgb(0 0 0 / .18)}
+.dvname:hover{text-decoration-color:currentColor}
+.dvyear{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.dvlabel{font-size:13px;font-weight:700;color:var(--ink);margin:3px 0 0}
+.dvdesc{font-size:12.5px;line-height:1.75;color:var(--ink);margin:3px 0 0}
+.dvgo{display:inline-block;margin-top:4px;font-size:11.5px;font-weight:700;color:var(--gold-ink);text-decoration:none}
+.dvgo:hover{text-decoration:underline}
+
+/* ===================== סרגל תחתון (מסך צר) ===================== */
+#modeNav{display:none}
+#toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:70;
+  background:var(--navy);color:#f4ecd8;font-size:13px;padding:9px 16px;border-radius:20px;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}
+
+@media (max-width:980px){
+  #bar{display:flex;padding:7px 10px;gap:7px}
+  #bar h1{font-size:19px}
+  #bar .mode-switch{display:none}
+  #barEnd{flex:1}
+  .tool span.tl{display:none}
+  #wrap{flex-direction:column;padding-bottom:64px}
+  #mapCol{padding:10px 10px 4px}
+  #mapWrap{max-width:none}
+  /* במסך צר המפה קודמת לרשימה: היא הכותרת החזותית של המסך */
+  #mapCol{order:-1}
+  #side{width:100%;height:auto;position:static;border-inline-end:none;border-top:1px solid var(--line)}
+  #list,#detail{max-height:none;overflow:visible}
+  #modeNav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:55;gap:4px;
+    background:var(--panel);border-top:1.5px solid var(--gold);padding:4px 6px calc(4px + env(safe-area-inset-bottom))}
+  .mn-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;
+    font-size:12.5px;font-weight:700;color:var(--muted);background:var(--bg);border-radius:14px;padding:8px 4px}
+  .mn-tab.on{background:var(--navy);color:#fff}
+}
