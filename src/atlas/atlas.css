@@ -161,6 +161,8 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
 #filters{position:sticky;top:var(--bar);z-index:14;display:flex;gap:5px;flex-wrap:wrap;align-items:center;
   background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 9px;margin:0 0 6px;
   box-shadow:0 3px 10px rgb(60 40 0 / .12)}
+/* החיפוש יושב בשורה משלו בראש בלוק הסינון, מעל כפתורי הסוגים */
+#filters #search{flex:0 0 100%;margin-bottom:2px}
 #filters .flab{font-size:10.5px;font-weight:700;color:var(--muted);margin-inline-end:2px}
 .fbtn{flex:none;display:flex;align-items:center;justify-content:center;width:29px;height:29px;padding:0;
   border-radius:9px;font-size:14px;cursor:pointer;background:color-mix(in srgb, var(--kc) 16%, transparent);
@@ -308,6 +310,9 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   body.sheet-open #detail{transform:none}
   #sheetBack{display:none;position:fixed;inset:0;background:rgb(30 20 5 / .42);z-index:44}
   body.sheet-open #sheetBack{display:block}
+  /* תיבת החיפוש חיה בתוך #bar (z-index:40), ולכן ה-z-index שלה נמדד בתוך
+     ההקשר הזה והחשכת הגיליון (44) כיסתה אותה. בזמן חיפוש מסירים אותה. */
+  body.qopen #sheetBack{display:none}
   #sheetClose{display:block}
   /* התקופות חוזרות לרצועה אופקית מתחת לסרגל */
   #eras{top:var(--bar);bottom:auto;inset-inline-start:0;width:100%;height:var(--erabar);

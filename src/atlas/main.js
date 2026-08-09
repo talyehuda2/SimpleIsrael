@@ -48,7 +48,7 @@ async function build() {
   setInterval(pick, 300);
   addEventListener('resize', () => {
     if (!isNarrow()) document.body.classList.remove('sheet-open', 'map-open');  // מצבי מובייל בלבד
-    syncBar(); syncFilterHeight(); balanceColumns();
+    syncBar(); syncFilterHeight(); balanceColumns(); placeSearch();
   });
   $('#sheetBack').addEventListener('click', closeSheet);
   addEventListener('keydown', (e) => {
@@ -103,7 +103,17 @@ function renderStory() {
     b.setAttribute('aria-pressed', on[b.dataset.l]);
     applyFilters();
   }));
+  placeSearch();
   applyFilters();
+}
+/* החיפוש עובר לראש הרשימה שהוא מחפש בה, ולא לקצה השמאלי של הסרגל.
+   מזיזים את האלמנט הקיים (ולא בונים חדש) כדי לשמור את מאזיני האירועים.
+   במסך צר הוא נשאר בסרגל: שם הוא נפתח כשכבה position:fixed, ובתוך
+   #story - שהוא הקשר ערימה בפני עצמו - הוא היה נקבר מתחת לסרגל. */
+function placeSearch() {
+  const s = $('#search'); if (!s) return;
+  const host = isNarrow() ? $('#barEnd') : $('#filters');
+  if (host && s.parentElement !== host) host.insertBefore(s, host.firstChild);
 }
 function applyFilters() {
   document.querySelectorAll('.card').forEach(c => c.classList.toggle('hidden', !on[c.dataset.layer]));
@@ -254,6 +264,8 @@ function initSearch() {
   addEventListener('mousedown', (e) => {
     if (!e.target.closest('#search') && !e.target.closest('#qtoggle')) closeSearch();
   });
+  // חציית הרוחב 980 מחליפה את מקומו של החיפוש בין הרשימה לסרגל
+  matchMedia('(max-width:980px)').addEventListener('change', () => { closeSearch(); placeSearch(); });
 }
 
 // ==================== סיור קצר ====================
@@ -264,14 +276,14 @@ function initSearch() {
 const TOUR_WIDE = [
   { sel: '#story', title: 'הסיפור נגלל', text: 'הדמויות והאירועים מסודרים לפי סדר הדורות. גללו, ולחצו על שם כדי לפתוח אותו.' },
   { sel: '#eras', title: 'קפיצה בין תקופות', text: 'סרגל התקופות. לחיצה מקפיצה לתחילת התקופה, ורווח במקלדת מדלג לבאה.' },
-  { sel: '#filters', title: 'מה להציג?', text: 'בחרו כאן ועכשיו מה יופיע ברשימה. תמיד אפשר לשנות בשורת הסינון.', picker: true },
+  { sel: '#filters', title: 'חיפוש וסינון', text: 'כאן מחפשים דמות, אירוע או מקום - וכאן בוחרים מה יופיע ברשימה. השורה נשארת גלויה גם בגלילה.', picker: true },
   { sel: '#detail', title: 'הכרטיס המלא', text: 'הסיפור, הפסוק, המקורות, בני-הזמן, וקישור לאותה דמות על ציר הזמן.' },
   { sel: '#mapPane', title: 'המפה', text: 'למי שיש מסע - התחנות מסומנות על המפה, ואפשר להריץ אותו תחנה אחר תחנה.' },
 ];
 const TOUR_NARROW = [
   { sel: '#story', title: 'הסיפור נגלל', text: 'הדמויות והאירועים לפי סדר הדורות. הקישו על שם כדי לפתוח את הכרטיס המלא - ובתוכו גם כפתור לפתיחת המפה.' },
   { sel: '#eras', title: 'קפיצה בין תקופות', text: 'סרגל התקופות. הקשה מקפיצה לתחילת התקופה שבחרתם.' },
-  { sel: '#filters', title: 'מה להציג?', text: 'בחרו כאן ועכשיו מה יופיע ברשימה. תמיד אפשר לשנות בשורת הסינון.', picker: true },
+  { sel: '#filters', title: 'חיפוש וסינון', text: 'כאן מחפשים דמות, אירוע או מקום - וכאן בוחרים מה יופיע ברשימה. השורה נשארת גלויה גם בגלילה.', picker: true },
 ];
 let TOUR = TOUR_WIDE, tourStep = 0;
 function startTour() { TOUR = isNarrow() ? TOUR_NARROW : TOUR_WIDE; tourStep = 0; showTourStep(); }
