@@ -25,7 +25,6 @@ let era = null, sel = null, query = '', playT = null;
 
 // ==================== מפה ====================
 const RAD = (n) => 5 + 3.6 * Math.sqrt(n - 1);
-const LABEL_MIN = 4;
 
 function drawMap() {
   const marks = [...PLACES]
@@ -34,12 +33,12 @@ function drawMap() {
     .sort((a, b) => b.visits.length - a.visits.length)
     .map((p) => {
       const r = RAD(p.visits.length);
-      const label = p.visits.length >= LABEL_MIN
-        ? `<text x="${p.x}" y="${(p.y - r - 7).toFixed(1)}" text-anchor="middle" font-size="21">${esc(p.name)}</text>` : '';
-      return `<g class="pm" data-id="${esc(p.id)}" role="button" tabindex="0"
+      return `<g class="pm" data-id="${esc(p.id)}" data-r="${r.toFixed(1)}" data-y="${p.y}"
+        data-v="${p.visits.length}" role="button" tabindex="0"
         aria-label="${esc(p.name)} - ${p.visits.length} ביקורים">
         <title>${esc(p.name)} · ${p.visits.length} ביקורים</title>
-        <circle cx="${p.x}" cy="${p.y}" r="${r.toFixed(1)}"/>${label}</g>`;
+        <circle cx="${p.x}" cy="${p.y}" r="${r.toFixed(1)}"/>
+        <text x="${p.x}" y="${(p.y - r - 7).toFixed(1)}" text-anchor="middle" font-size="21">${esc(p.name)}</text></g>`;
     }).join('');
   $('#map').innerHTML =
     `<image href="${MAP_SRC}" x="0" y="0" width="${MAP_SIZE}" height="${MAP_SIZE}"/>
@@ -53,22 +52,116 @@ function drawMap() {
   });
 }
 
+/* ---------- מצלמה ----------
+   ה-viewBox הוא המצלמה. הוא מחושב תמיד מיחס הצדדים הנמדד של הקופסה,
+   ולכן התיבה המבוקשת נכנסת בשלמותה ושום מקום אינו נגזר בקצה. */
+let cam = { x: 0, y: 0, w: MAP_SIZE, h: MAP_SIZE }, camAF = null, camTO = null, wrapAR = 1;
+const BASE_H = 1300;                    // גובה מבט הבסיס, לכיול גודל הסמנים
+const bboxOf = (list) => ({
+  x0: Math.min(...list.map((p) => p.x)), x1: Math.max(...list.map((p) => p.x)),
+  y0: Math.min(...list.map((p) => p.y)), y1: Math.max(...list.map((p) => p.y)),
+});
+// תקרת זום: מתחת ל-300 יחידות תמונת המפה (1254 פיקסלים) נמתחת ומטשטשת,
+// ותקופה עם מקום יחיד הייתה קופצת לזום של פי חמישה
+const MIN_SPAN = 300;
+function fitBox(b, pad = 60) {
+  const bw = b.x1 - b.x0 + pad * 2, bh = b.y1 - b.y0 + pad * 2;
+  const cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+  let h = Math.max(bw, bh * wrapAR) / wrapAR;
+  if (h < MIN_SPAN) h = MIN_SPAN;
+  const w = h * wrapAR;
+  return { x: cx - w / 2, y: cy - h / 2, w, h };
+}
+/* מבט הבסיס אינו "כל המקומות": חרן, בבל, נינוה וסיני מותחים את מרחב
+   הנתונים על כמעט כל המפה, ותיבה שמכילה אותם משאירה את ארץ ישראל -
+   שבה 80% מהביקורים - זעירה. לכן הבסיס הוא תיבת האחוזונים 10-90 של
+   מיקומי הביקורים, והחריגים נגישים בבחירת מקום, בתקופה, או ב"מבט מלא". */
+const DENSE = (() => {
+  const xs = [], ys = [];
+  for (const p of PLACES) for (let i = 0; i < p.visits.length; i++) { xs.push(p.x); ys.push(p.y); }
+  const q = (a, f) => { const s = [...a].sort((m, n) => m - n); return s[Math.floor((s.length - 1) * f)]; };
+  return { x0: q(xs, .1), x1: q(xs, .9), y0: q(ys, .1), y1: q(ys, .9) };
+})();
+const baseCam = () => fitBox(DENSE, 90);
+const fullCam = () => fitBox(bboxOf(PLACES), 60);
+
+// התיבה שהמצלמה אמורה להראות: מקום נבחר, אחרת התקופה, אחרת מבט הבסיס
+function camTarget() {
+  if (sel) {
+    const p = PLACES.find((x) => x.id === sel);
+    if (p) return fitBox({ x0: p.x, x1: p.x, y0: p.y, y1: p.y }, 165);
+  }
+  if (era) {
+    const list = PLACES.filter((p) => inEra(p, era));
+    if (list.length) return fitBox(bboxOf(list), 80);
+  }
+  return baseCam();
+}
+const lerp = (a, b, k) => a + (b - a) * k;
+let camFree = false;                      // המשתמש ביקש מבט מלא ידנית
+function applyCam(v) {
+  cam = v;
+  $('#map').setAttribute('viewBox', `${v.x.toFixed(1)} ${v.y.toFixed(1)} ${v.w.toFixed(1)} ${v.h.toFixed(1)}`);
+  paintZoom();
+  const b = baseCam();
+  $('#reset').classList.toggle('show', Math.abs(v.w - b.w) > 20 || Math.abs(v.x - b.x) > 20 || Math.abs(v.y - b.y) > 20);
+}
+function setCam(to, animate = true) {
+  cancelAnimationFrame(camAF); clearTimeout(camTO);
+  if (!animate) return applyCam(to);
+  const from = { ...cam }, t0 = performance.now(), D = 420;
+  const tick = (now) => {
+    const k = Math.min(1, (now - t0) / D);
+    const e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    applyCam({ x: lerp(from.x, to.x, e), y: lerp(from.y, to.y, e), w: lerp(from.w, to.w, e), h: lerp(from.h, to.h, e) });
+    if (k < 1) camAF = requestAnimationFrame(tick);
+  };
+  camAF = requestAnimationFrame(tick);
+  // רשת ביטחון: בלשונית שאינה מציירת פריימים ה-rAF לא רץ, והמצלמה
+  // הייתה נתקעת באמצע. אחרי משך ההנפשה קובעים את היעד בכל מקרה.
+  camTO = setTimeout(() => { cancelAnimationFrame(camAF); applyCam(to); }, D + 120);
+}
+const moveCam = (animate = true) => { camFree = false; setCam(camTarget(), animate); };
+
+/* גודל הסמנים והתוויות נקבע ביחידות ה-viewBox, ולכן זום-אין היה מנפח
+   אותם. הכיול ההפוך משאיר אותם בערך באותו גודל על המסך, ותוויות
+   נוספות נחשפות ככל שמתקרבים - במבט הבסיס 14 שמות, בזום מלא כולם. */
+function paintZoom() {
+  const k = Math.max(0.4, cam.h / BASE_H);
+  const need = k > 0.75 ? 4 : k > 0.5 ? 3 : k > 0.3 ? 2 : 1;
+  $('#map').querySelectorAll('.pm').forEach((g) => {
+    const r = +g.dataset.r * k;
+    g.querySelector('circle').setAttribute('r', r.toFixed(1));
+    const t = g.querySelector('text');
+    t.setAttribute('font-size', (21 * k).toFixed(1));
+    t.setAttribute('y', (+g.dataset.y - r - 7 * k).toFixed(1));
+    t.style.display = (+g.dataset.v >= need || g.classList.contains('on')) ? '' : 'none';
+  });
+  const cg = $('#cog');
+  if (cg && cogAt) {
+    cg.querySelector('circle').setAttribute('r', (30 * k).toFixed(1));
+    cg.querySelector('text').setAttribute('font-size', (20 * k).toFixed(1));
+    cg.querySelector('text').setAttribute('y', (cogAt.cy - 40 * k).toFixed(1));
+  }
+}
+
 /* מרכז הכובד: ממוצע מיקומי הביקורים בתקופה. זו התשובה החזותית לשאלה
    "איפה ההיסטוריה מתרחשת עכשיו" - הוא נודד דרומה עם ירידת ממלכת ישראל. */
+let cogAt = null;
 function paintCog() {
   const g = $('#cog');
-  if (!era) { g.setAttribute('hidden', ''); return; }
+  if (!era) { g.setAttribute('hidden', ''); cogAt = null; return; }
   let sx = 0, sy = 0, n = 0;
   for (const p of PLACES) for (const v of p.visits) {
     if (v.year >= era.start && v.year < era.end) { sx += p.x; sy += p.y; n++; }
   }
-  if (!n) { g.setAttribute('hidden', ''); return; }
+  if (!n) { g.setAttribute('hidden', ''); cogAt = null; return; }
   const cx = sx / n, cy = sy / n;
+  cogAt = { cx, cy };
   g.removeAttribute('hidden');
   g.querySelector('circle').setAttribute('cx', cx.toFixed(1));
   g.querySelector('circle').setAttribute('cy', cy.toFixed(1));
   g.querySelector('text').setAttribute('x', cx.toFixed(1));
-  g.querySelector('text').setAttribute('y', (cy - 40).toFixed(1));
 }
 
 function paintMarks() {
@@ -127,7 +220,7 @@ function renderList() {
 
 function setEra(e) {
   era = e;
-  renderEras(); renderList(); paintMarks();
+  renderEras(); renderList(); paintMarks(); moveCam();
 }
 
 // ==================== פירוט מקום ====================
@@ -168,8 +261,10 @@ function select(id, replace = false) {
     $('#detail').hidden = true;
     $('#list').hidden = false;
   }
+  document.body.classList.toggle('has-sel', !!sel);
   renderList();
   paintMarks();
+  moveCam();
   const url = p ? `/places?p=${encodeURIComponent(p.id)}` : '/places';
   history[replace ? 'replaceState' : 'pushState']({}, '', url);
 }
@@ -210,7 +305,31 @@ function toast(msg) {
 drawMap();
 renderEras();
 renderList();
+/* יחס הצדדים של קופסת המפה נמדד ולא מונח: ממנו נגזר ה-viewBox, וכל
+   שינוי גודל חלון מחייב חישוב מחדש כדי שהתיבה תמשיך להיכנס בשלמותה.
+   המדידה נעשית ישירות ולא רק דרך ResizeObserver, כי בלשונית שאינה
+   מציירת פריימים ה-observer אינו נקרא כלל והמצלמה נשארת ביחס 1:1. */
+function measureWrap() {
+  const b = $('#mapWrap').getBoundingClientRect();
+  if (!b.width || !b.height) return false;
+  const ar = b.width / b.height;
+  if (Math.abs(ar - wrapAR) < 0.005) return false;
+  wrapAR = ar;
+  return true;
+}
+const refit = (animate = false) => setCam(camFree ? fullCam() : camTarget(), animate);
+measureWrap();
 openFromUrl();
+moveCam(false);
+new ResizeObserver(() => { if (measureWrap()) refit(false); }).observe($('#mapWrap'));
+addEventListener('resize', () => { if (measureWrap()) refit(false); });
+// הגופן העברי מחליף את גופן הגיבוי אחרי הציור הראשון ומשנה גבהים בטור
+document.fonts?.ready.then(() => { if (measureWrap()) refit(false); });
+
+$('#reset').addEventListener('click', () => {
+  camFree = true;
+  setCam(fullCam());
+});
 
 $('#q').addEventListener('input', (e) => {
   query = e.target.value;

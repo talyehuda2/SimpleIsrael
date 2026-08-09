@@ -39,28 +39,45 @@ a.ms-opt:hover{background:var(--panel);color:var(--navy)}
 @media (max-width:1150px){.ms-opt{padding:6px 9px;font-size:12px}}
 
 /* ===================== פריסה ===================== */
-#wrap{display:flex;gap:0;padding-top:var(--bar);min-height:100vh}
+#wrap{display:flex;gap:0;padding-top:var(--bar);height:100vh}
 #mapCol{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;
-  padding:14px 16px 20px;gap:8px}
-/* ריבוע: המפה עצמה ריבועית, וכל חריגה מהיחס הייתה גוזרת מקומות בקצוות */
-#mapWrap{width:100%;max-width:min(78vh,900px);aspect-ratio:1/1;position:relative;
-  border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#e6d8b8;
-  box-shadow:0 6px 22px rgb(60 40 0 / .16)}
+  padding:12px 16px 8px;gap:6px}
+/* המפה ממלאת את כל הגובה הפנוי. היא אינה נעולה ליחס קבוע: ה-viewBox
+   מחושב לפי היחס הנמדד של הקופסה, ולכן שום מקום אינו נגזר בקצוות.
+   התקרה ברוחב מונעת קופסה רחבה מדי, שבה מרחב הנתונים (גבוה פי 1.6
+   מרוחבו) היה משאיר ים ומדבר ריקים משני הצדדים. */
+#mapWrap{flex:1;width:100%;min-height:0;max-width:calc((100vh - var(--bar) - 46px) * 1.05);
+  position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  background:#e6d8b8;box-shadow:0 6px 22px rgb(60 40 0 / .16)}
 #map{display:block;width:100%;height:100%}
-#mapHint{margin:0;font-size:12px;color:var(--muted);text-align:center}
+#mapHint{margin:0;font-size:12px;color:var(--muted);text-align:center;flex:none}
+/* חזרה למבט המלא - צף בפינת המפה, מופיע רק כשהמצלמה אינה במבט הבסיס */
+#reset{position:absolute;top:10px;inset-inline-start:10px;z-index:2;display:none;
+  font-size:12px;font-weight:700;color:var(--navy);background:rgb(251 245 231 / .93);
+  border:1px solid var(--line);border-radius:14px;padding:6px 11px;cursor:pointer;
+  box-shadow:0 3px 10px rgb(60 40 0 / .2)}
+#reset.show{display:block}
+#reset:hover{border-color:var(--gold)}
 
 /* ---- סימוני המפה ---- */
-.pm{cursor:pointer}
-.pm circle{fill:var(--navy);fill-opacity:.72;stroke:#fbf5e7;stroke-width:2;transition:fill-opacity .15s}
+/* vector-effect: העוביים נמדדים בפיקסלים של המסך ולא ביחידות ה-viewBox,
+   אחרת כל זום-אין היה מעבה את המסגרות ואת הילת הטקסט */
+.pm{cursor:pointer;transition:opacity .2s}
+.pm circle{fill:var(--navy);fill-opacity:.72;stroke:#fbf5e7;stroke-width:2;
+  vector-effect:non-scaling-stroke;transition:fill-opacity .15s}
 .pm:hover circle{fill-opacity:.95}
 .pm text{font-family:'Heebo',sans-serif;font-weight:700;fill:#2b2113;paint-order:stroke;
-  stroke:#f6ecd6;stroke-width:4.5px;stroke-linejoin:round;pointer-events:none}
-.pm.off{opacity:.16;pointer-events:none}
+  stroke:#f6ecd6;stroke-width:4.5px;stroke-linejoin:round;vector-effect:non-scaling-stroke;
+  pointer-events:none}
+.pm.off{opacity:.1;pointer-events:none}
+/* מקום נבחר: השאר מתעמעמים כדי שהמבט יישאר עליו */
+body.has-sel .pm:not(.on){opacity:.2}
+body.has-sel .pm.off{opacity:.07}
 .pm.on circle{fill:var(--gold);fill-opacity:1;stroke:#3a2c10;stroke-width:3}
 .pm.on text{fill:#3a2c10}
 /* מרכז הכובד של התקופה - איפה ההיסטוריה מתרחשת ברגע הזה */
 #cog{pointer-events:none}
-#cog circle{fill:none;stroke:var(--leader);stroke-width:3;stroke-dasharray:9 7}
+#cog circle{fill:none;stroke:var(--leader);stroke-width:3;stroke-dasharray:9 7;vector-effect:non-scaling-stroke}
 #cog text{font-family:'Heebo',sans-serif;font-weight:800;fill:var(--leader);paint-order:stroke;
   stroke:#f6ecd6;stroke-width:5px;stroke-linejoin:round}
 
@@ -131,9 +148,9 @@ a.ms-opt:hover{background:var(--panel);color:var(--navy)}
   #bar .mode-switch{display:none}
   #barEnd{flex:1}
   .tool span.tl{display:none}
-  #wrap{flex-direction:column;padding-bottom:64px}
-  #mapCol{padding:10px 10px 4px}
-  #mapWrap{max-width:none}
+  #wrap{flex-direction:column;height:auto;padding-bottom:64px}
+  #mapCol{padding:10px 10px 4px;flex:none}
+  #mapWrap{flex:none;height:54vh;max-width:none}
   /* במסך צר המפה קודמת לרשימה: היא הכותרת החזותית של המסך */
   #mapCol{order:-1}
   #side{width:100%;height:auto;position:static;border-inline-end:none;border-top:1px solid var(--line)}
