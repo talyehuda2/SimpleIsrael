@@ -1765,6 +1765,9 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
   color: var(--ink); text-align: start; padding: 9px 12px; border-radius: 8px; cursor: pointer;
 }
 .meta-menu button:hover { background: var(--bg-2); }
+/* בדסקטופ בוררי השכבות והמקרא גלויים ממילא בכותרת - הפריט מיותר.
+   במסך צר הם מקופלים, ושם זו הדרך היחידה להגיע אליהם. */
+@media (min-width: 681px) { .meta-menu .mm-layers { display: none; } }
 
 /* נקודות צבע על בוררי השכבות - המקרא חי איפה שמדליקים ומכבים */
 .tg-dot {

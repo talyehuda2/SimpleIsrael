@@ -20,10 +20,11 @@ button{font-family:inherit}
   display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;
   padding:0 14px;background:var(--panel);border-bottom:2px solid var(--gold);box-shadow:0 2px 10px rgb(60 40 0 / .12)}
 #barEnd{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
-/* justify-self: אחרת הקישור נמתח על כל עמודת ה-1fr ואזור הלחיצה חורג מהטקסט */
-#brand{display:flex;flex-direction:column;gap:1px;text-decoration:none;flex:none;justify-self:start}
-#bar h1{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:18px;color:var(--navy);margin:0;white-space:nowrap}
-#brand span{font-size:10.5px;color:var(--gold-ink);font-weight:700;font-family:'Heebo',sans-serif;white-space:nowrap}
+/* justify-self: אחרת הקישור נמתח על כל עמודת ה-1fr ואזור הלחיצה חורג מהטקסט.
+   השם ממלא את גובה הבר - הוא זהות המסך, לא עוד פריט בסרגל. */
+#brand{display:flex;align-items:center;text-decoration:none;flex:none;justify-self:start;height:100%}
+#bar h1{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:31px;line-height:1;
+  color:var(--navy);margin:0;white-space:nowrap}
 #brand:hover h1{color:var(--gold-ink)}
 /* סרגל התקופות - טור אנכי בקצה ימין, צמוד לרשימת השמות */
 #eras{position:fixed;top:var(--bar);bottom:0;inset-inline-start:0;width:var(--era-w);z-index:20;
@@ -39,7 +40,11 @@ button{font-family:inherit}
   border:1px solid var(--line);background:var(--bg);color:var(--navy);border-radius:14px;padding:6px 12px;cursor:pointer}
 .tool:hover{border-color:var(--gold);background:var(--panel)}
 .tool.primary{background:var(--navy);border-color:var(--navy);color:#fff}
-#tools{display:flex;gap:6px;flex:none}
+#tools{display:flex;gap:6px;flex:none;align-items:center}
+/* .meta-menu מוגדר ב-styles.css עם display:flex, שגובר על תכונת hidden */
+.meta-menu[hidden]{display:none}
+/* ⋯ הוא הפריט השמאלי ביותר בסרגל: התפריט נפתח ימינה ממנו ולא אל מחוץ למסך */
+#tools .meta-menu{inset-inline-start:auto;inset-inline-end:0}
 /* מתג המבטים מוגדר ב-styles.css המשותף; כאן רק מכווצים אותו בסרגל צר */
 @media (max-width:1100px){.ms-opt{padding:6px 10px;font-size:12px}}
 /* ---- חיפוש ---- */
@@ -240,6 +245,7 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
 .icard{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
 .icard:first-of-type{border-top:none;padding-top:0;margin-top:0}
 .icard h3{font-size:15px;color:var(--navy);margin:0 0 9px}
+.oabout{margin:0;font-size:14px;line-height:1.85;color:var(--ink)}
 .jrow{margin-bottom:10px}
 .jhead{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
 .jbar{display:flex;height:22px;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
@@ -331,8 +337,7 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   #bar{display:flex;padding:7px 10px;gap:7px}
   #bar .mode-switch{display:none}
   #barEnd{flex:1}
-  #bar h1{font-size:15.5px}
-  #brand span{display:none}
+  #bar h1{font-size:19px}
   .tool span.tl{display:none}
   /* אין מקום לתיבת חיפוש בסרגל צר: כפתור זכוכית פותח אותה על פני הסרגל */
   #qtoggle{display:block}

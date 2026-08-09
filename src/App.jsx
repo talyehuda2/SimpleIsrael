@@ -740,14 +740,16 @@ export default function App() {
                   className="about-btn meta-btn"
                   onClick={() => setMetaOpen((o) => !o)}
                   aria-haspopup="true" aria-expanded={metaOpen}
-                  title="אודות · מדריך · הערה למנהל" aria-label="תפריט מידע"
+                  title="אודות · מדריך היכרות" aria-label="תפריט מידע"
                 >⋯</button>
+                {/* "הערה למנהל" ירדה - היא כפתור משלה בסרגל העליון.
+                    "שכבות ומקרא" נשארת רק במסך צר, שם הבקרים מקופלים;
+                    בדסקטופ הם ממילא פרושׂים מתחת לכותרת. */}
                 {metaOpen && (
                   <span className="meta-menu" onClick={() => setMetaOpen(false)}>
-                    <button onClick={() => setMenuOpen(true)}>🎚️ שכבות ומקרא</button>
+                    <button className="mm-layers" onClick={() => setMenuOpen(true)}>🎚️ שכבות ומקרא</button>
                     <button onClick={() => setAboutOpen(true)}>ℹ️ אודות הפרויקט</button>
                     <button onClick={openTour}>❓ מדריך היכרות</button>
-                    <button onClick={() => setNotesOpen(true)}>✉️ הערה למנהל</button>
                   </span>
                 )}
               </span>
