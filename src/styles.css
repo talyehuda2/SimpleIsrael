@@ -179,16 +179,20 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .tree-btn:hover { background: var(--navy-2); transform: translateY(-1px); }
 /* דמות היום - הדגשה זהובה עדינה, מזמינה לגלות */
-/* מתג המבטים בפינה הימנית של הכותרת - קו מתאר, שייקרא כמעבר-תצוגה
-   ולא ככלי נוסף בשורת הכלים */
-a.mode-btn {
-  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex: none;
-  background: transparent; color: var(--navy); text-decoration: none;
-  border: 1.5px solid var(--navy); border-radius: 20px; padding: 6px 14px;
-  font-family: inherit; font-size: 13px; font-weight: 700;
-  transition: background .12s, color .12s, transform .1s;
+/* מתג המבטים - פקד מפוצל. שתי האפשרויות גלויות תמיד, הנוכחית ממולאת
+   והשנייה מזמינה ללחיצה: כך רואים שיש בדיוק שני מצבים ואיפה אנחנו. */
+.mode-switch {
+  display: inline-flex; gap: 3px; padding: 3px; flex: none;
+  background: rgb(30 20 5 / .05); border: 1px solid var(--line); border-radius: 22px;
 }
-a.mode-btn:hover { background: var(--navy); color: #fff; transform: translateY(-1px); }
+.ms-opt {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  padding: 6px 14px; border-radius: 18px; text-decoration: none;
+  font-family: inherit; font-size: 13px; font-weight: 700; color: var(--muted);
+  transition: background .14s, color .14s;
+}
+.ms-opt.on { background: var(--navy); color: #fff; box-shadow: 0 2px 6px rgb(22 58 87 / .25); }
+a.ms-opt:hover { background: var(--panel); color: var(--navy); }
 .header-gap { flex: 1; }
 
 .share-btn {
@@ -1673,7 +1677,7 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 @media (max-width: 680px) {
   /* הכלים בשורה העליונה (אייקון בלבד), והסרגל התחתון שמור למתג המצבים */
   .menu-btn { display: none; }
-  a.mode-btn { display: none; }             /* המתג יושב בסרגל התחתון */
+  .mode-switch { display: none; }           /* המתג יושב בסרגל התחתון */
 
   /* סרגל פעולות תחתון - בהישג אגודל */
   .bottom-nav {

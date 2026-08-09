@@ -37,7 +37,11 @@
     <h1>🗺️ מסע הדורות</h1>
     <span>ציר הזמן של עם ישראל</span>
   </a>
-  <a class="tool primary" id="toTimeline" href="/" title="מעבר לתצוגת ציר הזמן">📜 <span class="tl">ציר הזמן</span></a>
+  <!-- אותו מתג מפוצל של ציר הזמן, כדי שהמעבר יהיה מובן משני הצדדים -->
+  <div class="mode-switch" role="group" aria-label="מצב תצוגה">
+    <a class="ms-opt" id="toTimeline" href="/" title="מי חי מתי, ומי לצד מי">📜 ציר הזמן</a>
+    <span class="ms-opt on" aria-current="page">🗺️ מסע הדורות</span>
+  </div>
   <div id="search">
     <input id="q" type="search" autocomplete="off" placeholder="חיפוש דמות, אירוע או מקום…"
       aria-label="חיפוש" aria-expanded="false" aria-controls="qres"/>

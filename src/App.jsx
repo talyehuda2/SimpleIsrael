@@ -758,15 +758,17 @@ export default function App() {
                 : 'מהאבות עד חורבן בית שני · לפי המסורת (סדר עולם)'}
             </span>
           </div>
-          {/* מתג המבטים בפינה הימנית העליונה, וכפתור השיתוף בשמאלית -
-              אותה חלוקה כמו בסרגל של מסע הדורות */}
-          <a
-            className="mode-btn"
-            href={atlasHref}
-            title="מבט מסע: דמות אחר דמות, עם המפה והסיפור לצדה"
-          >
-            <span aria-hidden="true">🗺️</span> <span className="btn-label">מסע הדורות</span>
-          </a>
+          {/* מתג מפוצל: שתי האפשרויות גלויות תמיד והנוכחית מודגשת. כפתור
+              בודד ("מסע הדורות") נקרא כמו עוד כלי בסרגל, ולא כמעבר בין
+              שני מצבים של אותה אפליקציה. */}
+          <div className="mode-switch" role="group" aria-label="מצב תצוגה">
+            <span className="ms-opt on" aria-current="page">
+              <span aria-hidden="true">📜</span> ציר הזמן
+            </span>
+            <a className="ms-opt" href={atlasHref} title="דמות אחר דמות, עם המפה והסיפור לצדה">
+              <span aria-hidden="true">🗺️</span> מסע הדורות
+            </a>
+          </div>
           <span className="header-gap" />
           {/* הערה למנהל הייתה קבורה בתפריט ⋯ ברוחב 22px, ובמובייל הוסתרה
               לגמרי. כאן היא כפתור משלה, גלוי בשני הגדלים. */}
