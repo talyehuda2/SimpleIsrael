@@ -33,9 +33,20 @@
 <body>
 
 <header id="bar">
-  <a id="brand" href="/" title="ציר הזמן של עם ישראל - לדף הבית">
-    <h1>🗺️ מסע הדורות</h1>
-  </a>
+  <!-- הכותרת ולצדה תפריט המטא, בדיוק כמו בציר הזמן -->
+  <div id="brandWrap">
+    <a id="brand" href="/" title="ציר הזמן של עם ישראל - לדף הבית">
+      <h1>🗺️ מסע הדורות</h1>
+    </a>
+    <span class="meta-wrap">
+      <button class="about-btn meta-btn" id="tMeta" aria-haspopup="true" aria-expanded="false"
+        title="אודות · מדריך היכרות" aria-label="תפריט מידע">⋯</button>
+      <span class="meta-menu" id="metaMenu" hidden>
+        <button id="mAbout">ℹ️ אודות הפרויקט</button>
+        <button id="mTour">❓ מדריך היכרות</button>
+      </span>
+    </span>
+  </div>
   <!-- אותו מתג מפוצל של ציר הזמן, כדי שהמעבר יהיה מובן משני הצדדים -->
   <div class="mode-switch" role="group" aria-label="מצב תצוגה">
     <a class="ms-opt" id="toTimeline" href="/" title="מי חי מתי, ומי לצד מי">📜 ציר הזמן</a>
@@ -52,15 +63,6 @@
       <button class="tool" id="tIns">📊 <span class="tl">תובנות</span></button>
       <button class="tool" id="tTree">👑 <span class="tl">בית דוד</span></button>
       <button class="tool" id="tShare">🔗 <span class="tl">שיתוף</span></button>
-      <!-- אודות ומדריך - פעולות מטא, מאוגדות בתפריט אחד כמו בציר הזמן -->
-      <span class="meta-wrap">
-        <button class="about-btn meta-btn" id="tMeta" aria-haspopup="true" aria-expanded="false"
-          title="אודות · מדריך היכרות" aria-label="תפריט מידע">⋯</button>
-        <span class="meta-menu" id="metaMenu" hidden>
-          <button id="mAbout">ℹ️ אודות הפרויקט</button>
-          <button id="mTour">❓ מדריך היכרות</button>
-        </span>
-      </span>
     </div>
   </div>
 </header>
