@@ -262,15 +262,6 @@ export default function App() {
     try { localStorage.setItem('si_view', view); } catch { /* מתעלמים */ }
   };
 
-  // תפריט המטא (⋯) בכותרת - נסגר בלחיצה מחוץ לו
-  const [metaOpen, setMetaOpen] = useState(false);
-  useEffect(() => {
-    if (!metaOpen) return undefined;
-    const onDoc = (e) => { if (!e.target.closest('.meta-wrap')) setMetaOpen(false); };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, [metaOpen]);
-
   // מצב ריק חכם: כשכלום לא נבחר - הזמנה עדינה לדמות היום (נסגרת לסשן)
   const [dailyHintHidden, setDailyHintHidden] = useState(() => {
     try { return !!sessionStorage.getItem('si_daily_hint_off'); } catch { return false; }
@@ -734,24 +725,16 @@ export default function App() {
           <div className="title-block">
             <div className="title-row">
               <h1>ציר הזמן של עם ישראל</h1>
-              {/* פעולות מטא מאוגדות בתפריט אחד - פחות רעש בכותרת */}
-              <span className="meta-wrap">
-                <button
-                  className="about-btn meta-btn"
-                  onClick={() => setMetaOpen((o) => !o)}
-                  aria-haspopup="true" aria-expanded={metaOpen}
-                  title="אודות · מדריך היכרות" aria-label="תפריט מידע"
-                >⋯</button>
-                {/* "הערה למנהל" ירדה - היא כפתור משלה בסרגל העליון.
-                    "שכבות ומקרא" נשארת רק במסך צר, שם הבקרים מקופלים;
-                    בדסקטופ הם ממילא פרושׂים מתחת לכותרת. */}
-                {metaOpen && (
-                  <span className="meta-menu" onClick={() => setMetaOpen(false)}>
-                    <button className="mm-layers" onClick={() => setMenuOpen(true)}>🎚️ שכבות ומקרא</button>
-                    <button onClick={() => setAboutOpen(true)}>ℹ️ אודות הפרויקט</button>
-                    <button onClick={openTour}>❓ מדריך היכרות</button>
-                  </span>
-                )}
+              {/* אודות ומדריך כאייקונים לצד שם המצב, במקום תפריט ⋯ שדרש
+                  לחיצה כדי לגלות מה יש בו. "שכבות ומקרא" מופיעה רק במסך
+                  צר, שם הבקרים מקופלים; בדסקטופ הם פרושׂים מתחת לכותרת. */}
+              <span className="title-icons">
+                <button className="title-ico" onClick={() => setAboutOpen(true)}
+                  title="אודות הפרויקט" aria-label="אודות הפרויקט">ℹ️</button>
+                <button className="title-ico" onClick={openTour}
+                  title="מדריך היכרות" aria-label="מדריך היכרות">❓</button>
+                <button className="title-ico ti-layers" onClick={() => setMenuOpen(true)}
+                  title="שכבות ומקרא" aria-label="שכבות ומקרא">🎚️</button>
               </span>
             </div>
             <span className="subtitle">

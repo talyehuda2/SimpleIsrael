@@ -42,8 +42,6 @@ button{font-family:inherit}
 .tool:hover{border-color:var(--gold);background:var(--panel)}
 .tool.primary{background:var(--navy);border-color:var(--navy);color:#fff}
 #tools{display:flex;gap:6px;flex:none;align-items:center}
-/* .meta-menu מוגדר ב-styles.css עם display:flex, שגובר על תכונת hidden */
-.meta-menu[hidden]{display:none}
 /* מתג המבטים מוגדר ב-styles.css המשותף; כאן רק מכווצים אותו בסרגל צר */
 @media (max-width:1100px){.ms-opt{padding:6px 10px;font-size:12px}}
 /* ---- חיפוש ---- */

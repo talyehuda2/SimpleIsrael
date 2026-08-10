@@ -340,6 +340,19 @@ addEventListener('popstate', () => openFromUrl(true));
 addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { stopPlay(); if (sel) select(null); }
 });
+$('#mAbout').addEventListener('click', () => {
+  const el = document.createElement('div');
+  el.className = 'ov';
+  el.innerHTML = `<div class="ovpanel"><button class="ovclose" aria-label="סגירה">✕</button>
+    <h2>ℹ️ אודות הפרויקט</h2><p class="osub">נבנה באהבה בידי חובב תנ״ך</p>
+    <p class="oabout">הפרויקט נבנה באהבה בידי חובב תנ״ך, מתוך רצון לתרום לקהילה ולעזור לכולנו
+    לעשות סדר בתולדות עם ישראל. ייתכנו אי-דיוקים בתאריכים, במפות, במיקומים ובפרטים -
+    ואשמח לכל תיקון והערה. שימוש נעים! 📖</p></div>`;
+  el.addEventListener('click', (e) => {
+    if (e.target === el || e.target.classList.contains('ovclose')) el.remove();
+  });
+  document.body.appendChild(el);
+});
 $('#tShare').addEventListener('click', async () => {
   const url = location.origin + '/places' + (sel ? `?p=${encodeURIComponent(sel)}` : '');
   const title = sel ? `${sel} - מפת המקומות` : 'מפת המקומות';

@@ -621,28 +621,14 @@ $('#tIns').addEventListener('click', () => {
   }));
 });
 
-// תפריט המטא: אודות ומדריך. אותה התנהגות כמו בציר הזמן - נפתח בלחיצה
-// ונסגר בבחירה, בלחיצה בחוץ או ב-Escape.
-const closeMeta = () => {
-  $('#metaMenu').hidden = true;
-  $('#tMeta').setAttribute('aria-expanded', 'false');
-};
-$('#tMeta').addEventListener('click', (e) => {
-  e.stopPropagation();
-  const m = $('#metaMenu');
-  m.hidden = !m.hidden;
-  $('#tMeta').setAttribute('aria-expanded', String(!m.hidden));
-});
-addEventListener('click', (e) => { if (!e.target.closest('.meta-wrap')) closeMeta(); });
-addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMeta(); });
+// אודות ומדריך - שני אייקונים לצד שם המצב, כמו בציר הזמן
 $('#mAbout').addEventListener('click', () => {
-  closeMeta();
   overlay('ℹ️ אודות הפרויקט', 'נבנה באהבה בידי חובב תנ״ך',
     `<div class="icard"><p class="oabout">הפרויקט נבנה באהבה בידי חובב תנ״ך, מתוך רצון לתרום לקהילה
       ולעזור לכולנו לעשות סדר בתולדות עם ישראל. ייתכנו אי-דיוקים בתאריכים, במפות, במיקומים
       ובפרטים - ואשמח לכל תיקון והערה. שימוש נעים! 📖</p></div>`);
 });
-$('#mTour').addEventListener('click', () => { closeMeta(); startTour(); });
+$('#mTour').addEventListener('click', () => startTour());
 
 function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');

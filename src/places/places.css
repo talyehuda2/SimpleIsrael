@@ -20,6 +20,12 @@ button{font-family:inherit}
   display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;
   padding:0 14px;background:var(--panel);border-bottom:2px solid var(--gold);box-shadow:0 2px 10px rgb(60 40 0 / .12)}
 #brandWrap{display:flex;align-items:center;gap:8px;justify-self:start;height:100%}
+/* אודות כאייקון לצד שם המצב, כמו בשני המסכים האחרים */
+.title-icons{display:inline-flex;align-items:center;gap:5px}
+.title-ico{width:25px;height:25px;border-radius:50%;flex-shrink:0;cursor:pointer;padding:0;
+  border:1.5px solid var(--line);background:var(--panel);font-size:12.5px;line-height:1;
+  display:flex;align-items:center;justify-content:center;transition:border-color .12s,background .12s,transform .1s}
+.title-ico:hover{border-color:var(--gold);background:var(--bg);transform:translateY(-1px)}
 #brand{display:flex;align-items:center;text-decoration:none;height:100%}
 #bar h1{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:31px;line-height:1;
   color:var(--navy);margin:0;white-space:nowrap}
@@ -137,6 +143,17 @@ body.has-sel .pm.off{opacity:.07}
 
 /* ===================== סרגל תחתון (מסך צר) ===================== */
 #modeNav{display:none}
+/* שכבת-על (אודות) - אותו מראה של שכבות-העל במסע הדורות */
+.ov{position:fixed;inset:0;z-index:60;background:rgb(30 20 5/.5);display:flex;align-items:center;
+  justify-content:center;padding:20px}
+.ovpanel{position:relative;background:var(--panel);border-radius:16px;border-top:4px solid var(--gold);
+  max-width:min(560px,94vw);padding:22px 24px 26px;box-shadow:0 20px 50px rgb(20 12 0 / .3)}
+.ovclose{position:absolute;top:12px;inset-inline-start:14px;border:none;background:none;
+  font-size:17px;color:var(--muted);cursor:pointer;line-height:1}
+.ovpanel h2{font-family:'Frank Ruhl Libre',serif;font-size:22px;color:var(--navy);margin:0 0 4px}
+.ovpanel .osub{font-size:12.5px;color:var(--muted);margin:0 0 16px}
+.oabout{margin:0;font-size:14px;line-height:1.85;color:var(--ink)}
+
 #toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:70;
   background:var(--navy);color:#f4ecd8;font-size:13px;padding:9px 16px;border-radius:20px;
   opacity:0;pointer-events:none;transition:opacity .2s}

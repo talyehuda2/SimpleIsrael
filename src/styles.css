@@ -1752,22 +1752,20 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 @keyframes sheetUp { from { transform: translateY(30%); opacity: .6; } to { transform: none; opacity: 1; } }
 
 /* ===== ליטוש דסקטופ: תפריט מטא, נקודות שכבה, מקרא רזה ===== */
-.meta-wrap { position: relative; display: inline-flex; }
-.meta-btn { font-size: 16px; letter-spacing: 1px; }
-.meta-menu {
-  position: absolute; top: calc(100% + 6px); inset-inline-start: 0; z-index: 50;
-  display: flex; flex-direction: column; min-width: 185px;
-  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-  box-shadow: 0 10px 30px rgb(40 25 0 / .22); padding: 5px; animation: hintIn .15s ease-out;
+/* אייקוני הכותרת - אודות, מדריך ושכבות. גלויים לצד שם המצב במקום
+   להסתתר מאחורי ⋯, שדרש לחיצה כדי לגלות מה בכלל יש בו. */
+.title-icons { display: inline-flex; align-items: center; gap: 5px; }
+.title-ico {
+  width: 25px; height: 25px; border-radius: 50%; flex-shrink: 0; cursor: pointer;
+  border: 1.5px solid var(--line); background: var(--panel);
+  font-size: 12.5px; line-height: 1; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .12s, background .12s, transform .1s;
 }
-.meta-menu button {
-  border: none; background: none; font-family: inherit; font-size: 13.5px; font-weight: 600;
-  color: var(--ink); text-align: start; padding: 9px 12px; border-radius: 8px; cursor: pointer;
-}
-.meta-menu button:hover { background: var(--bg-2); }
-/* בדסקטופ בוררי השכבות והמקרא גלויים ממילא בכותרת - הפריט מיותר.
-   במסך צר הם מקופלים, ושם זו הדרך היחידה להגיע אליהם. */
-@media (min-width: 681px) { .meta-menu .mm-layers { display: none; } }
+.title-ico:hover { border-color: var(--gold); background: var(--bg-2); transform: translateY(-1px); }
+/* בדסקטופ בוררי השכבות והמקרא פרושׂים ממילא מתחת לכותרת - האייקון
+   מיותר. במסך צר הם מקופלים, ושם זו הדרך היחידה להגיע אליהם. */
+@media (min-width: 681px) { .ti-layers { display: none; } }
 
 /* נקודות צבע על בוררי השכבות - המקרא חי איפה שמדליקים ומכבים */
 .tg-dot {
