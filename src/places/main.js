@@ -37,18 +37,44 @@ function drawMap() {
         data-v="${p.visits.length}" role="button" tabindex="0"
         aria-label="${esc(p.name)} - ${p.visits.length} ביקורים">
         <title>${esc(p.name)} · ${p.visits.length} ביקורים</title>
-        <circle cx="${p.x}" cy="${p.y}" r="${r.toFixed(1)}"/>
-        <text x="${p.x}" y="${(p.y - r - 7).toFixed(1)}" text-anchor="middle" font-size="21">${esc(p.name)}</text></g>`;
+        <circle class="dot" cx="${p.x}" cy="${p.y}" r="${r.toFixed(1)}"/>
+        <circle class="hit" cx="${p.x}" cy="${p.y}" r="${(r * 1.25).toFixed(1)}"/></g>`;
     }).join('');
+  /* השמות יושבים בשכבה נפרדת מעל כל הסמנים. כשהם היו בתוך קבוצת הסמן,
+     סמן זעיר שמצויר אחריה כיסה אותם, ולחיצה על "ירושלים" בחרה מקום אחר. */
+  const labels = PLACES.map((p) => {
+    const r = RAD(p.visits.length);
+    return `<text class="lb" data-id="${esc(p.id)}" data-v="${p.visits.length}" data-y="${p.y}"
+      x="${p.x}" y="${(p.y - r - 7).toFixed(1)}" text-anchor="middle" font-size="21">${esc(p.name)}</text>`;
+  }).join('');
   $('#map').innerHTML =
     `<image href="${MAP_SRC}" x="0" y="0" width="${MAP_SIZE}" height="${MAP_SIZE}"/>
-     ${marks}
+     ${marks}<g id="labels">${labels}</g>
      <g id="cog" hidden><circle cx="0" cy="0" r="30"/><text x="0" y="-40" text-anchor="middle" font-size="20">מרכז הכובד</text></g>`;
   $('#map').querySelectorAll('.pm').forEach((g) => {
-    g.addEventListener('click', () => select(g.dataset.id));
     g.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(g.dataset.id); }
     });
+  });
+  /* בחירה גאומטרית ולא לפי סדר הציור. הסמנים הגדולים מצוירים ראשונים
+     (אחרת שכנים קטנים היו נבלעים תחתם), ולכן בבדיקת הפגיעה של ה-DOM
+     סמן זעיר שמצויר אחרון "גנב" את הלחיצה מירושלים ואף כיסה את שמה.
+     כאן נבחר הסמן שהלחיצה עמוקה בתוכו ביותר - מרחק חלקי רדיוס. */
+  $('#map').addEventListener('click', (e) => {
+    if (e.target.classList && e.target.classList.contains('lb')) return select(e.target.dataset.id);
+    const svg = $('#map'), m = svg.getScreenCTM();
+    if (!m) return;
+    const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(m.inverse());
+    const k = Math.max(0.4, cam.h / BASE_H);
+    let best = null, bestScore = Infinity;
+    for (const g of svg.querySelectorAll('.pm:not(.off)')) {
+      const c = g.querySelector('.dot');
+      const r = Math.max(+g.dataset.r * k * 1.25, 9 * k);
+      const s = Math.hypot(p.x - +c.getAttribute('cx'), p.y - +c.getAttribute('cy')) / r;
+      if (s <= 1 && s < bestScore) { best = g; bestScore = s; }
+    }
+    if (best) select(best.dataset.id);
   });
 }
 
@@ -69,8 +95,14 @@ function fitBox(b, pad = 60) {
   const cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
   let h = Math.max(bw, bh * wrapAR) / wrapAR;
   if (h < MIN_SPAN) h = MIN_SPAN;
+  // תקרה: התיבה הגדולה ביותר שעדיין נמצאת כולה בתוך התמונה. בלעדיה
+  // "מבט מלא" ביקש 1335 יחידות על תמונה של 1254, והמסגרת התמלאה
+  // ברקע ריק משני צדי המפה.
+  const maxH = wrapAR >= 1 ? MAP_SIZE / wrapAR : MAP_SIZE;
+  if (h > maxH) h = maxH;
   const w = h * wrapAR;
-  return { x: cx - w / 2, y: cy - h / 2, w, h };
+  const clamp = (v, lo, hi) => (hi < lo ? (lo + hi) / 2 : Math.min(Math.max(v, lo), hi));
+  return { x: clamp(cx - w / 2, 0, MAP_SIZE - w), y: clamp(cy - h / 2, 0, MAP_SIZE - h), w, h };
 }
 /* מבט הבסיס אינו "כל המקומות": חרן, בבל, נינוה וסיני מותחים את מרחב
    הנתונים על כמעט כל המפה, ותיבה שמכילה אותם משאירה את ארץ ישראל -
@@ -130,12 +162,18 @@ function paintZoom() {
   const k = Math.max(0.4, cam.h / BASE_H);
   const need = k > 0.75 ? 4 : k > 0.5 ? 3 : k > 0.3 ? 2 : 1;
   $('#map').querySelectorAll('.pm').forEach((g) => {
-    const r = +g.dataset.r * k;
-    g.querySelector('circle').setAttribute('r', r.toFixed(1));
-    const t = g.querySelector('text');
-    t.setAttribute('font-size', (21 * k).toFixed(1));
-    t.setAttribute('y', (+g.dataset.y - r - 7 * k).toFixed(1));
-    t.style.display = (+g.dataset.v >= need || g.classList.contains('on')) ? '' : 'none';
+    const on = g.classList.contains('on');
+    const r = +g.dataset.r * k * (on ? 1.3 : 1);
+    g.querySelector('.dot').setAttribute('r', r.toFixed(1));
+    // הגדלה מתונה בלבד: אזור פגיעה נדיב של סמן קטן היה מכסה את שכנו
+    g.querySelector('.hit').setAttribute('r', Math.max(r * 1.25, 9 * k).toFixed(1));
+  });
+  $('#map').querySelectorAll('.lb').forEach((t) => {
+    const on = t.classList.contains('on');
+    const r = RAD(+t.dataset.v) * k * (on ? 1.3 : 1);
+    t.setAttribute('font-size', ((on ? 24 : 21) * k).toFixed(1));
+    t.setAttribute('y', (+t.dataset.y - r - 8 * k).toFixed(1));
+    t.style.display = (+t.dataset.v >= need || on) ? '' : 'none';
   });
   const cg = $('#cog');
   if (cg && cogAt) {
@@ -166,11 +204,18 @@ function paintCog() {
 
 function paintMarks() {
   const shown = new Set(filtered().map((p) => p.id));
-  $('#map').querySelectorAll('.pm').forEach((g) => {
-    g.classList.toggle('off', !shown.has(g.dataset.id));
-    g.classList.toggle('on', g.dataset.id === sel);
+  let topPin = null, topLabel = null;
+  $('#map').querySelectorAll('.pm, .lb').forEach((el) => {
+    el.classList.toggle('off', !shown.has(el.dataset.id));
+    el.classList.toggle('on', el.dataset.id === sel);
+    if (el.dataset.id === sel) { if (el.classList.contains('pm')) topPin = el; else topLabel = el; }
   });
+  // הנבחר עולה לסוף סדר הציור בשכבה שלו: הסמנים הגדולים מצוירים ראשונים
+  // ולכן יושבים מתחת, וירושלים הנבחרת הייתה מוסתרת חלקית תחת שכנותיה
+  if (topPin) topPin.parentNode.insertBefore(topPin, $('#labels'));
+  if (topLabel) topLabel.parentNode.appendChild(topLabel);
   paintCog();
+  paintZoom();
 }
 
 // ==================== סינון ורשימה ====================

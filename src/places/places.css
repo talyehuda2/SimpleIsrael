@@ -69,18 +69,23 @@ a.ms-opt:hover{background:var(--panel);color:var(--navy)}
 /* vector-effect: העוביים נמדדים בפיקסלים של המסך ולא ביחידות ה-viewBox,
    אחרת כל זום-אין היה מעבה את המסגרות ואת הילת הטקסט */
 .pm{cursor:pointer;transition:opacity .2s}
-.pm circle{fill:var(--navy);fill-opacity:.72;stroke:#fbf5e7;stroke-width:2;
+.pm .dot{fill:var(--navy);fill-opacity:.72;stroke:#fbf5e7;stroke-width:2;
   vector-effect:non-scaling-stroke;transition:fill-opacity .15s}
-.pm:hover circle{fill-opacity:.95}
-.pm text{font-family:'Heebo',sans-serif;font-weight:700;fill:#2b2113;paint-order:stroke;
+.pm .hit{fill:transparent;stroke:none}
+.pm:hover .dot{fill-opacity:.95}
+/* שכבת השמות - מעל כל הסמנים, ולחיצה עליהם בוחרת את המקום */
+.lb{font-family:'Heebo',sans-serif;font-weight:700;fill:#2b2113;paint-order:stroke;
   stroke:#f6ecd6;stroke-width:4.5px;stroke-linejoin:round;vector-effect:non-scaling-stroke;
-  pointer-events:none}
-.pm.off{opacity:.1;pointer-events:none}
+  cursor:pointer;transition:opacity .2s}
+.lb.on{fill:#3a2c10}
+.pm.off,.lb.off{opacity:.1;pointer-events:none}
+/* הנבחר: נקודה זהובה מלאה עם טבעת לבנה וצל רך - סימון שנקרא כ"כאן
+   אני", ולא כטבעת כהה סביב עיגול קטן שנראתה כמטרה */
+.pm.on .dot{fill:var(--gold);fill-opacity:1;stroke:#fff;stroke-width:2.5;
+  filter:drop-shadow(0 1px 3px rgb(40 25 0 / .55))}
 /* מקום נבחר: השאר מתעמעמים כדי שהמבט יישאר עליו */
-body.has-sel .pm:not(.on){opacity:.2}
-body.has-sel .pm.off{opacity:.07}
-.pm.on circle{fill:var(--gold);fill-opacity:1;stroke:#3a2c10;stroke-width:3}
-.pm.on text{fill:#3a2c10}
+body.has-sel .pm:not(.on),body.has-sel .lb:not(.on){opacity:.2}
+body.has-sel .pm.off,body.has-sel .lb.off{opacity:.07}
 /* מרכז הכובד של התקופה - איפה ההיסטוריה מתרחשת ברגע הזה */
 #cog{pointer-events:none}
 #cog circle{fill:none;stroke:var(--leader);stroke-width:3;stroke-dasharray:9 7;vector-effect:non-scaling-stroke}
