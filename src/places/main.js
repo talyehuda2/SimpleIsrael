@@ -264,6 +264,9 @@ function renderList() {
 }
 
 function setEra(e) {
+  // בחירת תקופה היא שאלה על כל המפה, לא על העיר הפתוחה: יוצאים ממנה
+  // חזרה לרשימה, אחרת המצלמה נשארה בזום של העיר והסמנים סביבה השתנו
+  if (sel) select(null);
   era = e;
   renderEras(); renderList(); paintMarks(); moveCam();
 }
