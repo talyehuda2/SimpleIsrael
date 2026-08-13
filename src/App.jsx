@@ -716,6 +716,30 @@ export default function App() {
   const toggle = (key) => setVisible((v) => ({ ...v, [key]: !v[key] }));
   const isAcademic = chronology === 'academic';
 
+  /* אותם כפתורים, שני מקומות: בדסקטופ הם יושבים בשורת החיפוש עם תוויות,
+     ובמסך צר עולים לשורה הראשונה כאייקונים - שם כל הכלים מרוכזים יחד
+     במקום להתפצל בין שתי שורות. */
+  const metaBtns = (
+    <>
+      <button className="title-ico" onClick={() => setAboutOpen(true)}
+        title="אודות הפרויקט" aria-label="אודות הפרויקט">ℹ️</button>
+      <button className="title-ico" onClick={openTour}
+        title="מדריך היכרות" aria-label="מדריך היכרות">❓</button>
+    </>
+  );
+  const toolBtns = (
+    <>
+      <button className="tree-btn" onClick={() => setToursOpen(true)} title="מסעות מודרכים - סיור דמות-אחר-דמות">
+        <span aria-hidden="true">🧭</span> <span className="btn-label">מסעות</span>
+      </button>
+      {/* "תובנות" הוסר לבקשת המשתמש - הסרגל היה עמוס מדי. הרכיב
+          Insights.jsx נשאר במקומו, כך שהחזרה היא כפתור אחד. */}
+      <button className="tree-btn" onClick={() => setTreeOpen(true)} title="בית דוד - אילן היוחסין">
+        <span aria-hidden="true">👑</span> <span className="btn-label">בית דוד</span>
+      </button>
+    </>
+  );
+
   return (
     <div className={`app${menuOpen ? ' menu-open' : ''}`}>
       <header>
@@ -726,14 +750,9 @@ export default function App() {
                   הכותרת לשורה שנייה, והסרגל התחתון ממילא חוזר עליו. */}
               <h1>ציר הזמן<span className="h1-rest"> של עם ישראל</span></h1>
               {/* אודות ומדריך כאייקונים לצד שם המצב, במקום תפריט ⋯ שדרש
-                  לחיצה כדי לגלות מה יש בו. "שכבות ומקרא" מופיעה רק במסך
-                  צר, שם הבקרים מקופלים; בדסקטופ הם פרושׂים מתחת לכותרת. */}
-              <span className="title-icons">
-                <button className="title-ico" onClick={() => setAboutOpen(true)}
-                  title="אודות הפרויקט" aria-label="אודות הפרויקט">ℹ️</button>
-                <button className="title-ico" onClick={openTour}
-                  title="מדריך היכרות" aria-label="מדריך היכרות">❓</button>
-              </span>
+                  לחיצה כדי לגלות מה יש בו. במסך צר הם עוברים לקבוצת
+                  הכלים שבצד השני של השורה. */}
+              {!isMobile && <span className="title-icons">{metaBtns}</span>}
             </div>
             <span className="subtitle">
               {isAcademic
@@ -756,6 +775,8 @@ export default function App() {
             </a>
           </div>
           <div className="header-actions">
+          {isMobile && toolBtns}
+          {isMobile && metaBtns}
           {/* הערה למנהל הייתה קבורה בתפריט ⋯ ברוחב 22px, ובמובייל הוסתרה
               לגמרי. כאן היא כפתור משלה, גלוי בשני הגדלים. */}
           <button className="share-btn note-btn" onClick={() => setNotesOpen(true)} title="הערה, תיקון או מקור למנהל האתר">
@@ -778,14 +799,7 @@ export default function App() {
         </div>
         <div className="search-row">
           <SearchBox index={searchIndex} onPick={jumpTo} />
-          <button className="tree-btn" onClick={() => setToursOpen(true)} title="מסעות מודרכים - סיור דמות-אחר-דמות">
-            <span aria-hidden="true">🧭</span> <span className="btn-label">מסעות</span>
-          </button>
-          {/* "תובנות" הוסר לבקשת המשתמש - הסרגל היה עמוס מדי. הרכיב
-              Insights.jsx נשאר במקומו, כך שהחזרה היא כפתור אחד. */}
-          <button className="tree-btn" onClick={() => setTreeOpen(true)} title="בית דוד - אילן היוחסין">
-            <span aria-hidden="true">👑</span> <span className="btn-label">בית דוד</span>
-          </button>
+          {!isMobile && toolBtns}
         </div>
         {/* במסך צר הבקרים מקופלים מאחורי שורה משלהם: המילה "שכבות" וחץ
             שמסתובב. כפתור אייקון בכותרת לא אמר מה הוא פותח, ולא היה בו

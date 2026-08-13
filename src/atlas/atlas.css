@@ -52,8 +52,6 @@ button{font-family:inherit}
   background-repeat:no-repeat;background-size:14px;background-position:right 11px center}
 #q:focus{border-color:var(--gold);background-color:var(--panel)}
 #q::-webkit-search-cancel-button{cursor:pointer}
-#qtoggle{display:none;flex:none;font-size:15px;line-height:1;background:var(--bg);cursor:pointer;
-  border:1px solid var(--line);border-radius:16px;padding:6px 9px}
 #qres{position:absolute;top:calc(100% + 6px);inset-inline-start:0;inset-inline-end:0;max-height:60vh;
   overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;
   box-shadow:0 12px 30px rgb(30 20 5 / .28);padding:5px;display:none;z-index:45}
@@ -92,6 +90,17 @@ button{font-family:inherit}
   border-radius:16px;padding:6px 13px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .tour-nav button.primary{background:var(--navy);border-color:var(--navy);color:#fff}
 .tour-nav button:hover{border-color:var(--gold)}
+/* שורת המסע המודרך - .tour-bar מוגדר ב-styles.css המשותף; כאן רק מחזירים
+   לכפתורים את המראה שלה (הכלל .tour-nav button שלמעלה גובר עליהם) */
+.jtour .tour-btn{border:1px solid rgb(255 255 255 / .35);background:none;color:#fff}
+.jtour .tour-btn:disabled{opacity:.35;cursor:default}
+.jtour .tour-next{background:var(--gold);border-color:var(--gold);color:#2c2107}
+/* במסך צר הכרטיס נפתח כגיליון שמכסה כמעט את כל המסך (z-index 45),
+   ולכן השורה עולה מעליו ולראש המסך. שתי מחלקות ולא אחת: הכלל המקביל
+   ב-styles.css נטען אחרי הגיליון הזה ובמפרט שווה היה גובר. */
+@media (max-width:980px){
+  .tour-bar.jtour{top:calc(var(--bar) + 6px);bottom:auto;right:50%;transform:translateX(50%);z-index:50}
+}
 
 /* תגובות בתוך המסע - אותה יכולת כמו בציר הזמן, בלי לעבור מסך */
 .cmt{margin:6px 0 8px}
@@ -315,9 +324,6 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   body.sheet-open #detail{transform:none}
   #sheetBack{display:none;position:fixed;inset:0;background:rgb(30 20 5 / .42);z-index:44}
   body.sheet-open #sheetBack{display:block}
-  /* תיבת החיפוש חיה בתוך #bar (z-index:40), ולכן ה-z-index שלה נמדד בתוך
-     ההקשר הזה והחשכת הגיליון (44) כיסתה אותה. בזמן חיפוש מסירים אותה. */
-  body.qopen #sheetBack{display:none}
   #sheetClose{display:block}
   /* התקופות חוזרות לרצועה אופקית מתחת לסרגל */
   #eras{top:var(--bar);bottom:auto;inset-inline-start:0;width:100%;height:var(--erabar);
@@ -337,10 +343,10 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   #bar .mode-switch{display:none}
   #barEnd{flex:1}
   #bar h1{font-size:19px}
+  /* ארבעה כלים במקום שניים - מכווצים אותם כדי שלא יתנגשו בכותרת */
   .tool span.tl{display:none}
-  /* אין מקום לתיבת חיפוש בסרגל צר: כפתור זכוכית פותח אותה על פני הסרגל */
-  #qtoggle{display:block}
-  #search{position:fixed;inset-inline:10px;top:8px;display:none;z-index:50}
-  #search.open{display:block}
-  body.qopen #tools,body.qopen #brand{display:none}
+  .tool{padding:6px 9px}
+  #tools{gap:4px}
+  /* החיפוש אינו כפתור-זכוכית שנפתח כשכבה אלא שורה קבועה בראש הרשימה,
+     כמו בציר הזמן: היעד הראשון של מבקר חדש לא צריך לחיצה כדי להתגלות. */
 }

@@ -1,6 +1,8 @@
 import { renderCard, clearCard } from './card.jsx';
 import { renderMap } from './map.jsx';
+import { openNotes } from './notes.jsx';
 import { ALL_ITEMS } from '../data/items.js';
+import TOURS from '../data/tours.json';
 const $ = (s) => document.querySelector(s);
 const LAYERS = [
   { key:'leaders', label:'אבות ומנהיגים', color:'var(--leader)',  icon:'🏛️' },
@@ -106,13 +108,12 @@ function renderStory() {
   placeSearch();
   applyFilters();
 }
-/* החיפוש עובר לראש הרשימה שהוא מחפש בה, ולא לקצה השמאלי של הסרגל.
-   מזיזים את האלמנט הקיים (ולא בונים חדש) כדי לשמור את מאזיני האירועים.
-   במסך צר הוא נשאר בסרגל: שם הוא נפתח כשכבה position:fixed, ובתוך
-   #story - שהוא הקשר ערימה בפני עצמו - הוא היה נקבר מתחת לסרגל. */
+/* החיפוש יושב תמיד בראש הרשימה שהוא מחפש בה - שורה משלו, בדיוק כמו
+   בציר הזמן. מזיזים את האלמנט הקיים (ולא בונים חדש) כדי לשמור את
+   מאזיני האירועים. */
 function placeSearch() {
   const s = $('#search'); if (!s) return;
-  const host = isNarrow() ? $('#barEnd') : $('#filters');
+  const host = $('#filters');
   if (host && s.parentElement !== host) host.insertBefore(s, host.firstChild);
 }
 function applyFilters() {
@@ -244,7 +245,6 @@ function moveSel(d) {
 function closeSearch() {
   $('#qres').classList.remove('show');
   $('#q').value = ''; $('#q').blur(); $('#q').setAttribute('aria-expanded', 'false');
-  $('#search').classList.remove('open'); document.body.classList.remove('qopen');
   qRows = []; qSel = -1;
 }
 function initSearch() {
@@ -257,15 +257,10 @@ function initSearch() {
     else if (e.key === 'Enter') { const r = qRows[qSel >= 0 ? qSel : 0]; if (r) { e.preventDefault(); pickResult(r.i); } }
     else if (e.key === 'Escape') { e.preventDefault(); closeSearch(); }
   });
-  $('#qtoggle').addEventListener('click', () => {
-    $('#search').classList.add('open'); document.body.classList.add('qopen'); q.focus();
-  });
   // סגירה בלחיצה בחוץ; mousedown על תוצאה כבר טופל לפני שה-blur מבטל אותה
   addEventListener('mousedown', (e) => {
-    if (!e.target.closest('#search') && !e.target.closest('#qtoggle')) closeSearch();
+    if (!e.target.closest('#search')) closeSearch();
   });
-  // חציית הרוחב 980 מחליפה את מקומו של החיפוש בין הרשימה לסרגל
-  matchMedia('(max-width:980px)').addEventListener('change', () => { closeSearch(); placeSearch(); });
 }
 
 // ==================== סיור קצר ====================
@@ -583,6 +578,67 @@ const jumpToId = (id) => {
   if (isNarrow()) { centerCard(card); openSheet(i); } else centerCard(card);
   return true;
 };
+
+/* מסע מודרך - סיור רציף דמות-אחר-דמות עם שורת הקשר, מאותו tours.json
+   של ציר הזמן. קודם הוא היה קיים רק שם, ומבקר שבחר במסע הדורות לא ידע
+   בכלל שיש מסעות מודרכים. */
+let jt = null;                       // { data, step }
+function tourBar() {
+  document.querySelector('.jtour')?.remove();
+  if (!jt) return;
+  const { data, step } = jt, last = step === data.stops.length - 1;
+  const el = document.createElement('div');
+  el.className = 'tour-bar jtour';
+  el.innerHTML = `<button class="tour-x" aria-label="יציאה מהמסע">✕</button>
+    <div class="tour-info">
+      <div class="tour-title">${data.icon} ${data.title} · <span dir="ltr">${step + 1}/${data.stops.length}</span></div>
+      <div class="tour-note">${data.stops[step].note}</div>
+    </div>
+    <div class="tour-nav">
+      <button class="tour-btn" data-d="-1"${step === 0 ? ' disabled' : ''}>הקודם</button>
+      <button class="tour-btn tour-next" data-d="${last ? 0 : 1}">${last ? 'סיום ✓' : 'הבא'}</button>
+    </div>`;
+  el.querySelector('.tour-x').addEventListener('click', endJourney);
+  el.querySelectorAll('.tour-btn').forEach((b) => b.addEventListener('click', () => {
+    const d = +b.dataset.d;
+    if (!d) return endJourney();
+    jumpStop(jt.data, jt.step + d);
+  }));
+  document.body.appendChild(el);
+}
+function jumpStop(data, step) {
+  jt = { data, step };
+  tourBar();
+  if (!jumpToId(data.stops[step].ref)) toast('התחנה מוסתרת - הפעילו את השכבה המתאימה');
+}
+function endJourney() { jt = null; tourBar(); }
+$('#tTours').addEventListener('click', () => {
+  const el = overlay('🧭 מסעות מודרכים', 'סיור דמות-אחר-דמות עם ההקשר המחבר - מתקדמים בקצב שלכם',
+    `<div class="ilist">${TOURS.map((t, i) => `<button class="ilrow" data-t="${i}">
+      <b>${t.icon} ${t.title}</b><span>${t.stops.length} תחנות</span></button>`).join('')}</div>`);
+  el.querySelectorAll('.ilrow').forEach((b) => b.addEventListener('click', () => {
+    el.remove();
+    jumpStop(TOURS[+b.dataset.t], 0);
+  }));
+});
+$('#tNote').addEventListener('click', openNotes);
+
+/* פתיחת אוסף תמטי מתגית שבכרטיס. בלי זה התגיות מוצגות אך אינן לחיצות,
+   וכל דבר שאפשר לעשות בציר הזמן צריך להיות אפשרי גם כאן. */
+function openCollection(c) {
+  const rows = c.members.map((id) => {
+    const it = items.find((x) => x.id === id);
+    if (!it) return '';
+    return `<button class="ilrow" data-id="${it.id}">
+      <b>${it.name}</b><span>${it.start === it.end ? it.start : `${it.start}–${it.end}`}</span></button>`;
+  }).join('');
+  const el = overlay(`${c.icon} ${c.title}`, c.subtitle,
+    `<div class="icard"><p class="oabout">${c.description}</p></div>
+     <div class="icard"><h3>הדמויות באוסף</h3><div class="ilist">${rows}</div></div>`);
+  el.querySelectorAll('.ilrow').forEach((b) => b.addEventListener('click', () => {
+    if (!jumpToId(b.dataset.id)) toast('הפריט מוסתר - הפעילו את השכבה המתאימה');
+  }));
+}
 
 $('#tTree').addEventListener('click', () => {
   const node = (n, cls) => `<button class="tnode ${cls}${n.id?' link':''}" ${n.id?`data-id="${n.id}"`:''}>
