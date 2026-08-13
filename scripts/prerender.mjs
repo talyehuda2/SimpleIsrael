@@ -273,6 +273,17 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
   </ul>
 </section>` : '';
 
+  // המקומות שהדמות עברה בהם, מקושרים לדפי המקום - הציר השלישי
+  const visited = placesIndex.filter((pl) => pl.visits.some((v) => v.id === it.id));
+  const visitedHtml = visited.length ? `
+<section class="related">
+  <h2>המקומות במסע</h2>
+  <p class="related-sub">איפה ${esc(it.name)} מופיע על המפה, ומי עוד עבר שם:</p>
+  <ul class="chips">
+    ${visited.map((pl) => `<li><a href="${placeHref(pl)}"><span class="cl-name">${esc(pl.name)}</span><span class="cl-kind">${evCount(pl.visits.length)}</span></a></li>`).join('\n    ')}
+  </ul>
+</section>` : '';
+
   const verseHtml = it.verse ? `
 <blockquote class="verse"><span class="vtext">${esc(it.verse)}</span>${it.verseRef ? `<cite>${esc(it.verseRef)}</cite>` : ''}</blockquote>` : '';
 
@@ -288,6 +299,7 @@ ${srcHtml ? `<div class="src"><b>מקור:</b> ${srcHtml}</div>` : ''}
   <a class="cta" href="/?sel=${it.kind}:${it.id}">📜 פתחו בציר הזמן ←</a>
   <a class="cta ghost" href="/atlas?sel=${it.kind}:${it.id}">🗺️ צאו למסע הדורות ←</a>
 </div>
+${visitedHtml}
 ${contempHtml}
 ${placeHtml}
 ${rel}`;
@@ -410,6 +422,107 @@ ${eras.length ? `<div class="row"><b>תקופות:</b> ${eras.map((p) => `<a hre
   });
 }
 
+/* דף מקום - הציר השלישי כדף נחיתה: לא "מי" ולא "מתי" אלא "איפה".
+   התוכן הייחודי של הדף הוא הכרונולוגיה עצמה - מה קרה במקום הזה,
+   לפי הסדר - ולכן גם למקום עם ביקור אחד יש כאן טקסט משלו ולא תבנית. */
+const evCount = (n) => (n === 1 ? 'אירוע אחד' : `${n} אירועים`);
+const placeUrl = (p) => `${SITE}/p/place/${encodeURIComponent(p.id)}`;
+const placeHref = (p) => `/p/place/${encodeURIComponent(p.id)}`;
+// מקומות בסביבה - קישור פנימי בין דפי המקומות. המרחק נמדד ביחידות
+// המפה ואינו מתורגם לקילומטרים: ההיטל אינו שומר-מרחקים.
+const nearbyOf = (p) => placesIndex
+  .filter((o) => o.id !== p.id)
+  .map((o) => ({ o, d: Math.hypot(o.x - p.x, o.y - p.y) }))
+  .sort((a, b) => a.d - b.d || b.o.visits.length - a.o.visits.length)
+  .slice(0, 6).map((x) => x.o);
+
+function placePage(p) {
+  const first = p.visits[0], last = p.visits[p.visits.length - 1];
+  const names = [...new Set(p.visits.map((v) => v.name))];
+  const span = p.from === p.to ? `שנת ${p.from} לבריאה` : `${p.from}–${p.to} לבריאה`;
+  const intro = p.visits.length === 1
+    ? `${p.name} מופיע בסיפורו של ${first.name}${first.label ? ` - ${first.label}` : ''}.`
+    : `${p.name} מופיע ב-${p.visits.length} תחנות במסעות הדמויות, מ${first.name} (${first.year}) ועד ${last.name} (${last.year}). `
+      + `עברו כאן ${names.length === 1 ? first.name : names.slice(0, 6).join(', ')}${names.length > 6 ? ' ועוד' : ''}.`;
+  /* מקום עם ביקור אחד או שניים הוא דף דק: התוכן הייחודי שלו הוא כמה
+     שורות. במקרים האלה מוסיפים הקשר אמיתי - משפט פותח על כל מי שעבר
+     כאן, ושאר תחנות המסע שלו - במקום להשאיר שלד של קישורים. */
+  const thin = p.visits.length <= 3;
+  const whoHtml = thin ? p.visits.map((v) => {
+    const it = byId(v.id);
+    return it && it.description
+      ? `<p class="desc">${esc(`${it.name}: ${firstSentence(it.description, 210)}`)}</p>` : '';
+  }).join('\n') : '';
+  const restOfJourney = thin
+    ? placesIndex.filter((o) => o.id !== p.id && o.visits.some((v) => v.id === first.id))
+    : [];
+  const metaDesc = truncate(`${p.name} - ${evCount(p.visits.length)} בין ${p.from} ל-${p.to} לבריאה. ${clean(first.desc || intro)}`, 155);
+  // התקופות שהמקום נוכח בהן - הקשר כרונולוגי וקישור פנימי לדפי התקופה
+  const eras = sortedPeriods.filter((e) => p.visits.some((v) => v.year >= e.start && v.year < e.end));
+  const nearby = nearbyOf(p);
+
+  const body = `
+<div class="chip">מקום</div>
+<h1>${esc(p.name)}</h1>
+<div class="dates">${evCount(p.visits.length)} · ${esc(span)}</div>
+${p.aka.length ? `<div class="row"><b>נקרא גם:</b> ${p.aka.map(esc).join(' · ')}</div>` : ''}
+${eras.length ? `<div class="row"><b>תקופות:</b> ${eras.map((e) => `<a href="/p/period/${e.id}">${esc(e.name)}</a>`).join(' · ')}</div>` : ''}
+<p class="desc">${esc(intro)}</p>
+<div class="ctas">
+  <a class="cta" href="/places?p=${encodeURIComponent(p.id)}">📍 פתחו במפת המקומות ←</a>
+  <a class="cta ghost" href="/atlas?sel=${first.kind}:${first.id}">🗺️ צאו למסע הדורות ←</a>
+</div>
+<section class="related">
+  <h2>מה קרה כאן, לפי הסדר</h2>
+  <p class="related-sub">כל מי שעבר ב${esc(p.name)} על ציר הזמן:</p>
+  <ol class="mlist">
+    ${p.visits.map((v) => `<li>
+      <a href="/p/${v.kind}/${v.id}"><b>${esc(v.name)}</b></a>
+      <span class="dim">${esc(KINDS[v.kind] ? KINDS[v.kind].label : '')} · שנת ${v.year}</span>
+      ${v.label ? `<p><b>${esc(v.label)}</b></p>` : ''}
+      ${v.desc ? `<p>${esc(clean(v.desc))}</p>` : ''}
+    </li>`).join('\n    ')}
+  </ol>
+</section>
+${whoHtml}
+${restOfJourney.length ? `<section class="related">
+  <h2>שאר המסע של ${esc(first.name)}</h2>
+  <p class="related-sub">התחנות הנוספות שבהן ${esc(first.name)} מופיע:</p>
+  <ul class="chips">
+    ${restOfJourney.map((o) => `<li><a href="${placeHref(o)}"><span class="cl-name">${esc(o.name)}</span><span class="cl-kind">${evCount(o.visits.length)}</span></a></li>`).join('\n    ')}
+  </ul>
+</section>` : ''}
+<section class="related">
+  <h2>מקומות בסביבה</h2>
+  <ul class="chips">
+    ${nearby.map((o) => `<li><a href="${placeHref(o)}"><span class="cl-name">${esc(o.name)}</span><span class="cl-kind">${evCount(o.visits.length)}</span></a></li>`).join('\n    ')}
+  </ul>
+</section>`;
+
+  return shell({
+    title: `${p.name}: מה קרה כאן - ציר הזמן של עם ישראל`,
+    description: metaDesc,
+    canonical: placeUrl(p),
+    jsonld: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: p.name,
+      description: metaDesc,
+      url: placeUrl(p),
+      inLanguage: 'he',
+      isPartOf: { '@type': 'WebSite', name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
+      about: { '@type': 'Place', name: p.name, alternateName: p.aka },
+    },
+    body,
+    ogImage: `${SITE}/og/place/${encodeURIComponent(p.id)}.jpg`,
+    crumbs: [
+      { name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
+      { name: 'מפת המקומות', url: `${SITE}/places` },
+      { name: p.name },
+    ],
+  });
+}
+
 // ---- כתיבה ----
 let count = 0;
 for (const it of items) {
@@ -433,6 +546,16 @@ sortedPeriods.forEach((p, i) => {
     dates: formatRange(p.start, p.end, 'tradition'),
   });
 });
+for (const p of placesIndex) {
+  const dir = join(DIST, 'p', 'place', p.id);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'index.html'), placePage(p));
+  writeCard(DIST, join('og', 'place', `${p.id}.jpg`), {
+    name: p.name,
+    kindLabel: 'מקום',
+    dates: p.from === p.to ? `שנת ${p.from}` : `${p.from}–${p.to} לבריאה`,
+  });
+}
 for (const c of collections) {
   const dir = join(DIST, 'p', 'collection', c.id);
   mkdirSync(dir, { recursive: true });
@@ -456,6 +579,8 @@ const idxBody = `<div class="chip">מפת האתר</div>
 <ul>${sortedPeriods.map((p) => `<li><a href="/p/period/${p.id}">${esc(p.name)}</a></li>`).join('')}</ul>
 <h2>אוספים</h2>
 <ul>${collections.map((c) => `<li><a href="/p/collection/${c.id}">${esc(c.icon)} ${esc(c.title)}</a></li>`).join('')}</ul>
+<h2>מקומות</h2>
+<ul>${placesIndex.map((p) => `<li><a href="${placeHref(p)}">${esc(p.name)}</a></li>`).join('')}</ul>
 ${Object.entries(groups).map(([g, list]) => `<h2>${esc(g)}</h2>
 <ul>${list.map((it) => `<li><a href="/p/${it.kind}/${it.id}">${esc(it.name)}</a></li>`).join('')}</ul>`).join('\n')}
 </div>`;
@@ -480,6 +605,7 @@ const urls = [
   `${SITE}/`, `${SITE}/atlas`, `${SITE}/places`, `${SITE}/p`,
   ...sortedPeriods.map(periodUrl),
   ...collections.map((c) => `${SITE}/p/collection/${c.id}`),
+  ...placesIndex.map(placeUrl),
   ...items.map(urlOf),
 ];
 const lastmod = new Date().toISOString().slice(0, 10);
