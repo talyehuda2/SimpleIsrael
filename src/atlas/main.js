@@ -599,57 +599,8 @@ $('#tTree').addEventListener('click', () => {
   }));
 });
 
-$('#tIns').addEventListener('click', () => {
-  const I = DATA.insights;
-  const bar = (lab, d, av) => `<div class="jrow"><div class="jhead"><b>${lab}</b>
-    <span>${d.total} מלכים · ${av} שנה בממוצע</span></div><div class="jbar">
-    ${d.g?`<span class="g" style="flex:${d.g}">${d.g}</span>`:''}${d.m?`<span class="m" style="flex:${d.m}">${d.m}</span>`:''}
-    ${d.b?`<span class="b" style="flex:${d.b}">${d.b}</span>`:''}</div></div>`;
-  const rows = (arr, unit) => `<div class="ilist">${arr.map(x =>
-    `<button class="ilrow" data-id="${x.id}"><b>${x.name}</b><span>${x.dur ?? x.span} ${unit}</span></button>`).join('')}</div>`;
-  const body =
-    `<div class="icard"><h3>מלכים - הישר מול הרע</h3>${bar('יהודה', I.judah, I.avgJudah)}${bar('ישראל', I.israel, I.avgIsrael)}
-      <p class="ipunch">ביהודה ${I.judah.g} מלכים עשו הישר בעיני ה׳ מתוך ${I.judah.total}; בישראל - ${I.israel.g} מתוך ${I.israel.total}.</p></div>
-     <div class="icard"><h3>המלכויות הארוכות ביותר</h3>${rows(I.longest,'שנה')}</div>
-     <div class="icard"><h3>צפיפות הנביאים לאורך הזמן</h3>
-       <div class="idens">${I.density.map(d=>`<i style="height:${Math.round(d.n/I.maxDensity*100)}%" title="${d.y}: ${d.n}"></i>`).join('')}</div>
-       <p class="ipunch">השיא: ${I.peak.n} נביאים במקביל סביב שנת ${I.peak.year}.</p></div>
-     <div class="icard"><h3>הנביאים עם הקריירה הארוכה</h3>${rows(I.longestProphets,'שנה')}</div>
-     <div class="icard"><h3>הספרים המשתרעים על הזמן הרב ביותר</h3>${rows(I.longestBooks,'שנה')}</div>
-     <div class="icard"><h3>במספרים</h3><div class="icounts">${Object.entries(I.counts).map(([k,v])=>
-       `<div class="icount"><b>${v}</b><span>${k}</span></div>`).join('')}</div></div>`;
-  const el = overlay('📊 תובנות', 'כל המספרים מחושבים מהנתונים עצמם', body);
-  el.querySelectorAll('.ilrow').forEach(b => b.addEventListener('click', () => {
-    if (!jumpToId(b.dataset.id)) toast('הפריט מוסתר - הפעילו את השכבה המתאימה');
-  }));
-});
-
-/* פתיחת אוסף תמטי מתגית שבכרטיס. קודם התגיות היו מוצגות אך לא לחיצות
-   כאן, כי onOpenCollection לא הועבר לכרטיס - וכל דבר שאפשר לעשות בציר
-   הזמן צריך להיות אפשרי גם כאן. */
-function openCollection(c) {
-  const rows = c.members.map((id) => {
-    const it = items.find((x) => x.id === id);
-    if (!it) return '';
-    return `<button class="ilrow" data-id="${it.id}">
-      <b>${it.name}</b><span>${it.start === it.end ? it.start : `${it.start}–${it.end}`}</span></button>`;
-  }).join('');
-  const el = overlay(`${c.icon} ${c.title}`, c.subtitle,
-    `<div class="icard"><p class="oabout">${c.description}</p></div>
-     <div class="icard"><h3>הדמויות באוסף</h3><div class="ilist">${rows}</div></div>`);
-  el.querySelectorAll('.ilrow').forEach((b) => b.addEventListener('click', () => {
-    if (!jumpToId(b.dataset.id)) toast('הפריט מוסתר - הפעילו את השכבה המתאימה');
-  }));
-}
-
-// אודות ומדריך - שני אייקונים לצד שם המצב, כמו בציר הזמן
-$('#mAbout').addEventListener('click', () => {
-  overlay('ℹ️ אודות הפרויקט', 'נבנה באהבה בידי חובב תנ״ך',
-    `<div class="icard"><p class="oabout">הפרויקט נבנה באהבה בידי חובב תנ״ך, מתוך רצון לתרום לקהילה
-      ולעזור לכולנו לעשות סדר בתולדות עם ישראל. ייתכנו אי-דיוקים בתאריכים, במפות, במיקומים
-      ובפרטים - ואשמח לכל תיקון והערה. שימוש נעים! 📖</p></div>`);
-});
-$('#mTour').addEventListener('click', () => startTour());
+/* מסך התובנות הוסר לבקשת המשתמש - הסרגל היה עמוס מדי. הנתונים
+   ממשיכים להיווצר ב-atlas-data.json, כך שההחזרה היא כפתור ומאזין. */
 
 function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');

@@ -6,7 +6,6 @@ import JourneyMap from './components/JourneyMap.jsx';
 import SearchBox from './components/SearchBox.jsx';
 import FamilyTree from './components/FamilyTree.jsx';
 import Intro from './components/Intro.jsx';
-import Insights from './components/Insights.jsx';
 import NotesBox from './components/NotesBox.jsx';
 import { fetchCommentCounts } from './lib/commentCounts.js';
 import { handleAdminParam } from './lib/admin.js';
@@ -147,7 +146,6 @@ export default function App() {
   const [chronology, setChronology] = useState('tradition');
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [insightsOpen, setInsightsOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const [mapItem, setMapItem] = useState(() => resolveKey(INITIAL.map));
   const [mapStep, setMapStep] = useState(INITIAL.step != null ? INITIAL.step : -1);
@@ -724,7 +722,9 @@ export default function App() {
         <div className="header-top">
           <div className="title-block">
             <div className="title-row">
-              <h1>ציר הזמן של עם ישראל</h1>
+              {/* במסך צר נשאר "ציר הזמן" בלבד: השם המלא דחף את אייקוני
+                  הכותרת לשורה שנייה, והסרגל התחתון ממילא חוזר עליו. */}
+              <h1>ציר הזמן<span className="h1-rest"> של עם ישראל</span></h1>
               {/* אודות ומדריך כאייקונים לצד שם המצב, במקום תפריט ⋯ שדרש
                   לחיצה כדי לגלות מה יש בו. "שכבות ומקרא" מופיעה רק במסך
                   צר, שם הבקרים מקופלים; בדסקטופ הם פרושׂים מתחת לכותרת. */}
@@ -733,8 +733,6 @@ export default function App() {
                   title="אודות הפרויקט" aria-label="אודות הפרויקט">ℹ️</button>
                 <button className="title-ico" onClick={openTour}
                   title="מדריך היכרות" aria-label="מדריך היכרות">❓</button>
-                <button className="title-ico ti-layers" onClick={() => setMenuOpen(true)}
-                  title="שכבות ומקרא" aria-label="שכבות ומקרא">🎚️</button>
               </span>
             </div>
             <span className="subtitle">
@@ -783,14 +781,26 @@ export default function App() {
           <button className="tree-btn" onClick={() => setToursOpen(true)} title="מסעות מודרכים - סיור דמות-אחר-דמות">
             <span aria-hidden="true">🧭</span> <span className="btn-label">מסעות</span>
           </button>
-          <button className="tree-btn" onClick={() => setInsightsOpen(true)} title="תובנות">
-            <span aria-hidden="true">📊</span> <span className="btn-label">תובנות</span>
-          </button>
+          {/* "תובנות" הוסר לבקשת המשתמש - הסרגל היה עמוס מדי. הרכיב
+              Insights.jsx נשאר במקומו, כך שהחזרה היא כפתור אחד. */}
           <button className="tree-btn" onClick={() => setTreeOpen(true)} title="בית דוד - אילן היוחסין">
             <span aria-hidden="true">👑</span> <span className="btn-label">בית דוד</span>
           </button>
         </div>
-        <div className={`controls${menuOpen ? ' open' : ''}`}>
+        {/* במסך צר הבקרים מקופלים מאחורי שורה משלהם: המילה "שכבות" וחץ
+            שמסתובב. כפתור אייקון בכותרת לא אמר מה הוא פותח, ולא היה בו
+            סימן אם התפריט פתוח או סגור. */}
+        <button
+          className={`layers-toggle${menuOpen ? ' open' : ''}`}
+          aria-expanded={menuOpen} aria-controls="ctrl-drawer"
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          <span>שכבות ומקרא</span>
+          <svg className="lt-caret" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+            <path d="M4 9 L12 17 L20 9" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <div id="ctrl-drawer" className={`controls${menuOpen ? ' open' : ''}`}>
           <div className="ctrl-stack">
             <div className="ctrl-group">
               <span className="ctrl-label">שכבות</span>
@@ -1100,11 +1110,6 @@ export default function App() {
         open={introOpen} onClose={closeIntro} visible={visible} setVisible={setVisible}
         mode={introMode} onStartJourney={() => jumpToId('avraham')}
         atlasHref={atlasHref} onChooseView={chooseView}
-      />
-      <Insights
-        open={insightsOpen}
-        onClose={() => setInsightsOpen(false)}
-        onJump={(id) => { setInsightsOpen(false); jumpToId(id); }}
       />
       <NotesBox open={notesOpen} onClose={() => setNotesOpen(false)} />
     </div>
