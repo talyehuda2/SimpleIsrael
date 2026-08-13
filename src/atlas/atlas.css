@@ -307,7 +307,9 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
      המסך ומכבד את סרגל המחוות. */
   #detail{display:block;position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;
     height:92dvh;max-height:none;
-    padding-bottom:calc(26px + env(safe-area-inset-bottom));
+    /* בציר הזמן סרגל המצבים מפריד בין שורת הכפתורים לקצה המסך; כאן הוא
+       מוסתר כשהגיליון פתוח, ולכן ההפרדה חייבת לבוא מהריפוד עצמו. */
+    padding-bottom:calc(70px + env(safe-area-inset-bottom));
     border-radius:16px 16px 0 0;border:none;border-top:4px solid var(--gold);z-index:45;
     transform:translateY(103%);transition:transform .26s ease;box-shadow:0 -10px 30px rgb(40 25 0 / .32)}
   body.sheet-open #detail{transform:none}

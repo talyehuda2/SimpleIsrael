@@ -523,6 +523,7 @@ function renderDetail(it) {
     // הכרטיס צריך גם כפתור מפה וגם כפתור סגירה.
     onClose: isNarrow() ? closeSheet : undefined,
     onOpenMap: isNarrow() ? openMap : undefined,
+    onOpenCollection: openCollection,
   });
   d.scrollTop = 0;
 }
@@ -577,7 +578,9 @@ const jumpToId = (id) => {
   const card = document.querySelector(`.card[data-i="${i}"]`);
   if (!card || card.classList.contains('hidden')) return false;
   document.querySelectorAll('.ov').forEach(o => o.remove());
-  centerCard(card);
+  // במסך צר הכרטיס הוא גיליון תחתון: מרכוז ברשימה שמאחוריו לא נראה כלל,
+  // ולכן פותחים ישירות את הגיליון של היעד
+  if (isNarrow()) { centerCard(card); openSheet(i); } else centerCard(card);
   return true;
 };
 
@@ -620,6 +623,24 @@ $('#tIns').addEventListener('click', () => {
     if (!jumpToId(b.dataset.id)) toast('הפריט מוסתר - הפעילו את השכבה המתאימה');
   }));
 });
+
+/* פתיחת אוסף תמטי מתגית שבכרטיס. קודם התגיות היו מוצגות אך לא לחיצות
+   כאן, כי onOpenCollection לא הועבר לכרטיס - וכל דבר שאפשר לעשות בציר
+   הזמן צריך להיות אפשרי גם כאן. */
+function openCollection(c) {
+  const rows = c.members.map((id) => {
+    const it = items.find((x) => x.id === id);
+    if (!it) return '';
+    return `<button class="ilrow" data-id="${it.id}">
+      <b>${it.name}</b><span>${it.start === it.end ? it.start : `${it.start}–${it.end}`}</span></button>`;
+  }).join('');
+  const el = overlay(`${c.icon} ${c.title}`, c.subtitle,
+    `<div class="icard"><p class="oabout">${c.description}</p></div>
+     <div class="icard"><h3>הדמויות באוסף</h3><div class="ilist">${rows}</div></div>`);
+  el.querySelectorAll('.ilrow').forEach((b) => b.addEventListener('click', () => {
+    if (!jumpToId(b.dataset.id)) toast('הפריט מוסתר - הפעילו את השכבה המתאימה');
+  }));
+}
 
 // אודות ומדריך - שני אייקונים לצד שם המצב, כמו בציר הזמן
 $('#mAbout').addEventListener('click', () => {

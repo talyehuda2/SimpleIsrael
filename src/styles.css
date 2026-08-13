@@ -1479,13 +1479,20 @@ a.card-action { text-decoration: none; }
     left: 8px; right: 8px; bottom: 8px; max-width: none;
     flex-direction: column-reverse; align-items: stretch; direction: rtl; gap: 6px;
   }
-  /* כרטיס פרטים כ"גיליון" בתחתית המסך */
+  /* כרטיס פרטים כ"גיליון" בתחתית המסך. הריפוד העליון גדול יותר מבדסקטופ:
+     ✕ והשיתוף יושבים במיקום מוחלט וגובהם 24px, ו-40px השאירו ביניהם
+     לבין שורת הניווט שישה פיקסלים בלבד. */
   .detail-card {
     flex: 0 1 auto; width: auto;
     max-height: 52vh; max-height: calc(52dvh);
     border-radius: 14px; border-top-width: 4px;
+    padding-top: 52px;
   }
   .card-dock:not(.with-map) .detail-card { max-height: calc(100dvh - 20px); }
+  /* במסע הדורות הגולל הוא #detail ולא הכרטיס. ה-max-height שלמעלה חל גם
+     כאן, והתוכן - שגבוה ממנו - גלש מחוץ לקופסה ועקף את הריפוד התחתון של
+     הגיליון, כך ששורת הכפתורים נדבקה לקצה המסך. */
+  .dc-atlas { max-height: none; }
   .map-panel.docked {
     width: auto; align-self: stretch; max-height: 40vh; max-height: 40dvh;
   }
@@ -1738,7 +1745,10 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
   .card-dock.sheet .detail-card { border-radius: 0; border-top: none; margin: 0;
     /* מתחת לכרטיס יושב סרגל המצבים; בלי הריפוד הזה שורת הכפתורים נחבאת מאחוריו */
     padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
-  .card-dock.sheet.half .detail-card { max-height: 46dvh; }
+  /* בזמן סיור מודרך הגיליון נפתח במדרגה הנמוכה כדי לא לכסות את בועת
+     ההסבר. 46dvh הסתירו כמעט את כל הכרטיס; 64dvh עדיין משאירים את
+     הבועה, שיושבת בשליש העליון, גלויה לגמרי. */
+  .card-dock.sheet.half .detail-card { max-height: 64dvh; }
   .card-dock.sheet.full .detail-card { max-height: 96dvh; }
 
   /* מרכיבים צפים - מעל הסרגל התחתון */

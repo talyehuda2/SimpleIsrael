@@ -33,6 +33,7 @@ function repaint() {
  * @param {object} o.next     הפריט הבא
  * @param {(item:object)=>void} o.onNav   ניווט לפריט אחר בתוך המסע
  * @param {()=>void} [o.onClose]          סגירת הגיליון (מובייל בלבד)
+ * @param {(c:object)=>void} [o.onOpenCollection]  פתיחת אוסף תמטי
  * @param {boolean} [o.openComments]
  */
 export function renderCard(o) {
@@ -53,6 +54,7 @@ export function renderCard(o) {
       axisStart={AXIS.start} axisEnd={AXIS.end}
       contemporaries={contemporariesOf(item)}
       collections={collectionsOf(item.id)}
+      onOpenCollection={o.onOpenCollection}
       commentCount={counts[o.key] || 0}
       switchHref={`/?sel=${o.key}`} switchLabel="ציר הזמן"
       openComments={o.openComments}
