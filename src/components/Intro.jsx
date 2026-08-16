@@ -56,27 +56,31 @@ export const LAYERS = [
 
 // שלבי הסיור: כל אחד מצביע על אזור אמיתי בממשק. before מכין את המסך -
 // הכרטיס והמפה קיימים רק אחרי שנבחרה דמות, ולכן פותחים אחת לפני השלב שלהם.
-const tourSteps = ({ onStartJourney }) => [
+const tourSteps = ({ onStartJourney, onCloseCard }) => [
   { sel: '.search-box', title: 'חיפוש וקפיצה',
     text: 'הקלידו שם של דמות, אירוע או מקום - והציר יזנק ישר אליו.' },
   { sel: '.scroll-area, .vtl-wrap', title: 'הציר עצמו',
     text: 'הזמן זורם מימין (עבר) לשמאל. גללו לצדדים, וזמו בצביטה או ב-Ctrl+גלגלת.' },
   { sel: '.era-strip', title: 'קפיצה בין תקופות',
     text: 'פס התקופות. לחיצה מזיזה את הציר לתחילת התקופה שבחרתם.' },
-  { sel: '.legend, .controls, .bottom-nav button:last-child', title: 'מה להציג?', picker: true,
+  /* במסך צר הבקרים מקופלים מאחורי שורת "שכבות ומקרא", ולכן היא היעד;
+     הבורר הקודם הצביע על .legend/.controls שמוסתרים שם, והשלב דולג. */
+  { sel: '.layers-toggle, .legend, .controls', title: 'מה להציג?', picker: true,
     text: 'בחרו כאן ועכשיו אילו שכבות יופיעו על הציר. תמיד אפשר לשנות בהמשך.' },
   { sel: '.detail-card', title: 'הכרטיס', before: onStartJourney,
     text: 'הסיפור המלא, הפסוק, המקורות, בני-הזמן ותגובות - וכפתור לאותה דמות במסע הדורות.' },
   { sel: '.dc-hl', title: 'בני-הזמן',
     text: 'הכפתור "בני-הזמן" מדגיש על הציר את כל מי שחי באותה תקופה, ומעמעם את השאר.' },
-  { sel: '.mode-btn', title: 'המבט השני',
+  /* שני השלבים האחרונים מצביעים על הכותרת ועל הסרגל התחתון, והכרטיס -
+     שנפתח בשלב "הכרטיס" - כיסה אותם במסך צר. לכן סוגרים אותו קודם. */
+  { sel: '.bottom-nav .mn-tab:not(.on), .ms-opt:not(.on)', title: 'המבט השני', before: onCloseCard,
     text: 'מסע הדורות מציג את אותם נתונים דמות אחר דמות, עם המפה והסיפור לצדה.' },
-  { sel: '.note-btn', title: 'מצאתם טעות?',
+  { sel: '.note-btn', title: 'מצאתם טעות?', before: onCloseCard,
     text: 'התאריכים והמקורות נאספו בקפידה, אבל תמיד יש מה לתקן. הכפתור הזה שולח הערה, תיקון או מקור ישירות אליי - ואני קורא הכל.' },
 ];
 
 
-export default function Intro({ open, onClose, visible, setVisible, mode = 'tour', onStartJourney,
+export default function Intro({ open, onClose, visible, setVisible, mode = 'tour', onStartJourney, onCloseCard,
   atlasHref = '/atlas', onChooseView }) {
   // בביקור ראשון מציגים מסך-פתיחה במקום סיור של 7 שקפים; הסיור המלא נשאר
   // זמין דרך כפתור ה-? בכותרת.
@@ -169,7 +173,7 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
   // סיור על המסך עצמו: זרקור על אזור אמיתי, שלב אחר שלב.
   return (
     <SpotlightTour
-      steps={tourSteps({ onStartJourney })}
+      steps={tourSteps({ onStartJourney, onCloseCard })}
       onDone={onClose}
       layers={LAYERS}
       visible={visible || {}}

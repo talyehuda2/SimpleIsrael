@@ -174,7 +174,21 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   box-shadow:0 3px 10px rgb(60 40 0 / .12)}
 /* החיפוש יושב בשורה משלו בראש בלוק הסינון, מעל כפתורי הסוגים */
 #filters #search{flex:0 0 100%;margin-bottom:2px}
-#filters .flab{font-size:10.5px;font-weight:700;color:var(--muted);margin-inline-end:2px}
+/* "הצג:" הוא כפתור שפותח את המקרא - במגע אין ריחוף, ולכן ה-title של
+   האייקונים לא היה נגיש והמשמעות שלהם נשארה נסתרת. */
+#filters .flab{display:inline-flex;align-items:center;gap:3px;font-family:inherit;font-size:10.5px;
+  font-weight:700;color:var(--muted);margin-inline-end:2px;background:none;border:none;padding:2px 0;cursor:pointer}
+#filters .flab:hover{color:var(--navy)}
+#filters .flab .lt-caret{transition:transform .18s ease}
+#filters .flab.open .lt-caret{transform:rotate(180deg)}
+.fnames{flex:0 0 100%;display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;
+  border-top:1px solid var(--line);padding-top:7px}
+.fnames[hidden]{display:none}
+.fname{display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;
+  color:var(--ink);background:color-mix(in srgb, var(--kc) 12%, transparent);
+  border:1px solid color-mix(in srgb, var(--kc) 45%, transparent);border-radius:13px;padding:4px 9px;cursor:pointer}
+.fname[aria-pressed="false"]{opacity:.4;filter:grayscale(1)}
+.fname .gl{font-size:11px;line-height:1;font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif}
 .fbtn{flex:none;display:flex;align-items:center;justify-content:center;width:29px;height:29px;padding:0;
   border-radius:9px;font-size:14px;cursor:pointer;background:color-mix(in srgb, var(--kc) 16%, transparent);
   border:1px solid color-mix(in srgb, var(--kc) 50%, transparent);color:var(--kc);transition:opacity .15s,filter .15s}

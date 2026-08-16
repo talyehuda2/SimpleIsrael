@@ -74,10 +74,18 @@ function renderStory() {
   const html = [];
   let gi = 0;
   // שורת הסינון - יושבת בראש רשימת השמות, לא בסרגל העליון
-  html.push(`<div id="filters"><span class="flab">הצג:</span>` +
+  // "הצג:" הוא כפתור פתיחה: במגע אין ריחוף, ולכן ה-title של כל אייקון
+  // לא נגיש כלל - בלי השורה הזו המבקר לא יודע מה כל סמל מסמן.
+  html.push(`<div id="filters">
+    <button class="flab" id="flegend" aria-expanded="false" aria-controls="fnames">הצג:
+      <svg class="lt-caret" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path d="M4 9 L12 17 L20 9"
+        fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>` +
     LAYERS.map(l => `<button class="fbtn" data-l="${l.key}" style="--kc:${l.color}"
       aria-pressed="${on[l.key]}" title="${l.label}"><span class="gl">${l.icon}</span></button>`).join('') +
-    `<span class="fcnt" id="fcnt"></span>` +
+    `<span class="fcnt" id="fcnt"></span>
+    <div class="fnames" id="fnames" hidden>${LAYERS.map(l => `<button class="fname" data-l="${l.key}"
+      style="--kc:${l.color}" aria-pressed="${on[l.key]}"><span class="gl">${l.icon}</span>${l.label}</button>`).join('')}</div>` +
     `<span class="khint"><kbd>↑</kbd><kbd>↓</kbd> מעבר בין דמויות · <kbd>רווח</kbd> מעבר בין תקופות</span></div>`);
   DATA.eras.forEach((era, ei) => {
     html.push(`<div class="ehead" id="eh-${ei}">✦ <b>${era.title}</b> · ${era.start}–${era.end}</div>`);
@@ -100,11 +108,19 @@ function renderStory() {
   document.querySelectorAll('.card').forEach(el => el.addEventListener('click', () => {
     if (isNarrow()) openSheet(+el.dataset.i); else centerCard(el);
   }));
-  $('#filters').querySelectorAll('.fbtn').forEach(b => b.addEventListener('click', () => {
-    on[b.dataset.l] = !on[b.dataset.l];
-    b.setAttribute('aria-pressed', on[b.dataset.l]);
+  $('#filters').querySelectorAll('.fbtn,.fname').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.l;
+    on[k] = !on[k];
+    $('#filters').querySelectorAll(`[data-l="${k}"]`).forEach(x => x.setAttribute('aria-pressed', on[k]));
     applyFilters();
   }));
+  $('#flegend').addEventListener('click', () => {
+    const box = $('#fnames'), open = box.hidden;
+    box.hidden = !open;
+    $('#flegend').setAttribute('aria-expanded', String(open));
+    $('#flegend').classList.toggle('open', open);
+    syncFilterHeight();                 // כותרות התקופה נצמדות לגובה החדש
+  });
   placeSearch();
   applyFilters();
 }

@@ -54,18 +54,25 @@ export default function SpotlightTour({ steps, onDone, layers, visible, setVisib
   stepsRef.current = steps;
   doneRef.current = onDone;
 
-  // מריצים את ההכנה של השלב (למשל פתיחת כרטיס) ואז מודדים
+  // מריצים את ההכנה של השלב (למשל פתיחת כרטיס), מגלגלים את היעד לאמצע
+  // ואז מודדים. בלי הגלילה שלב כמו "בני-הזמן", שיושב בתחתית כרטיס נגלל,
+  // קיבל טבעת בקצה המסך או דולג לגמרי.
   useEffect(() => {
     const st = stepsRef.current[i];
     if (!st) { doneRef.current(); return undefined; }
     setReady(false);
     st.before?.();
+    let t2 = null;
     const t = setTimeout(() => {
-      const r = targetRect(st.sel);
-      if (!r) { setI((v) => (v === i ? v + 1 : v)); return; }   // אזור שאינו מוצג במסך הזה
-      setRect(r); setReady(true);
+      const el = firstVisible(st.sel);
+      if (el) { try { el.scrollIntoView({ block: 'center', inline: 'nearest' }); } catch { /* דפדפן ישן */ } }
+      t2 = setTimeout(() => {
+        const r = targetRect(st.sel);
+        if (!r) { setI((v) => (v === i ? v + 1 : v)); return; }   // אזור שאינו מוצג במסך הזה
+        setRect(r); setReady(true);
+      }, 140);
     }, st.before ? 450 : 40);
-    return () => clearTimeout(t);
+    return () => { clearTimeout(t); clearTimeout(t2); };
   }, [i]);
 
   const reflow = useCallback(() => {

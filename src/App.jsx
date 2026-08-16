@@ -752,7 +752,7 @@ export default function App() {
               {/* אודות ומדריך כאייקונים לצד שם המצב, במקום תפריט ⋯ שדרש
                   לחיצה כדי לגלות מה יש בו. במסך צר הם עוברים לקבוצת
                   הכלים שבצד השני של השורה. */}
-              {!isMobile && <span className="title-icons">{metaBtns}</span>}
+              <span className="title-icons">{metaBtns}</span>
             </div>
             <span className="subtitle">
               {isAcademic
@@ -776,7 +776,6 @@ export default function App() {
           </div>
           <div className="header-actions">
           {isMobile && toolBtns}
-          {isMobile && metaBtns}
           {/* הערה למנהל הייתה קבורה בתפריט ⋯ ברוחב 22px, ובמובייל הוסתרה
               לגמרי. כאן היא כפתור משלה, גלוי בשני הגדלים. */}
           <button className="share-btn note-btn" onClick={() => setNotesOpen(true)} title="הערה, תיקון או מקור למנהל האתר">
@@ -1122,7 +1121,7 @@ export default function App() {
 
       <Intro
         open={introOpen} onClose={closeIntro} visible={visible} setVisible={setVisible}
-        mode={introMode} onStartJourney={() => jumpToId('avraham')}
+        mode={introMode} onStartJourney={() => jumpToId('avraham')} onCloseCard={() => setSelected(null)}
         atlasHref={atlasHref} onChooseView={chooseView}
       />
       <NotesBox open={notesOpen} onClose={() => setNotesOpen(false)} />
