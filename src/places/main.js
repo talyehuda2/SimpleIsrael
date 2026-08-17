@@ -272,14 +272,24 @@ function setEra(e) {
 }
 
 // ==================== פירוט מקום ====================
+/* כשתקופה מסומנת, הכרונולוגיה מוצגת מסוננת לפיה: אחרת בחירת "יהודה
+   וישראל" הביאה את ירושלים על כל 36 ביקוריה, מאברהם ואילך, ולא ענתה
+   על השאלה שנשאלה. שורת ההסבר מאפשרת לחזור לרשימה המלאה. */
+let showAll = false;
 function renderDetail(p) {
   const range = p.from === p.to ? `שנת ${p.from}` : `${p.from}–${p.to} לבריאה`;
+  const inEraV = (v) => v.year >= era.start && v.year < era.end;
+  const filtered = era && !showAll ? p.visits.filter(inEraV) : p.visits;
+  const hidden = p.visits.length - filtered.length;
   $('#detail').innerHTML = `
     <button class="dback" id="dBack">→ חזרה לרשימה</button>
     <h2>${esc(p.name)}</h2>
     <p class="dsub">${p.visits.length} ביקורים · ${esc(range)}</p>
     ${p.aka.length ? `<p class="daka">נקרא גם: ${p.aka.map(esc).join(' · ')}</p>` : ''}
-    <ul class="dvisits">${p.visits.map((v) => `
+    ${era && (hidden || showAll) ? `<button class="dfilter" id="dFilter">
+      ${showAll ? `מוצגים כל הביקורים · הצג רק את ${esc(era.name)}`
+        : `מוצגים ${filtered.length} מ-${p.visits.length} - ${esc(era.name)} בלבד · הצג הכל`}</button>` : ''}
+    <ul class="dvisits">${filtered.map((v) => `
       <li class="dv" style="--kc:${KIND_COLOR[v.kind] || 'var(--navy)'}">
         <div class="dvhead">
           <a class="dvname" href="/atlas?sel=${esc(v.kind)}:${esc(v.id)}">${esc(v.name)}</a>
@@ -288,13 +298,16 @@ function renderDetail(p) {
         ${v.label ? `<p class="dvlabel">${esc(v.label)}</p>` : ''}
         ${v.desc ? `<p class="dvdesc">${esc(v.desc)}</p>` : ''}
         <a class="dvgo" href="/atlas?sel=${esc(v.kind)}:${esc(v.id)}">למסע של ${esc(v.name)} ←</a>
-      </li>`).join('')}</ul>`;
+      </li>`).join('')}</ul>
+    ${filtered.length ? '' : '<p class="pempty">אין ביקורים במקום הזה בתקופה שנבחרה.</p>'}`;
   $('#dBack').addEventListener('click', () => select(null));
+  $('#dFilter')?.addEventListener('click', () => { showAll = !showAll; renderDetail(p); });
 }
 
 function select(id, replace = false) {
   sel = id && id !== sel ? id : (id || null);
   const p = sel ? PLACES.find((x) => x.id === sel) : null;
+  showAll = false;                    // כל פתיחה מתחילה מסוננת לתקופה
   if (p) {
     stopPlay();
     renderDetail(p);

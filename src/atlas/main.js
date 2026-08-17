@@ -131,6 +131,7 @@ function placeSearch() {
   const s = $('#search'); if (!s) return;
   const host = $('#filters');
   if (host && s.parentElement !== host) host.insertBefore(s, host.firstChild);
+  s.hidden = false;
 }
 function applyFilters() {
   document.querySelectorAll('.card').forEach(c => c.classList.toggle('hidden', !on[c.dataset.layer]));
@@ -673,6 +674,15 @@ $('#tTree').addEventListener('click', () => {
 
 /* מסך התובנות הוסר לבקשת המשתמש - הסרגל היה עמוס מדי. הנתונים
    ממשיכים להיווצר ב-atlas-data.json, כך שההחזרה היא כפתור ומאזין. */
+
+// אודות ומדריך - שני האייקונים שלצד שם המצב
+$('#mAbout').addEventListener('click', () => {
+  overlay('ℹ️ אודות הפרויקט', 'נבנה באהבה בידי חובב תנ״ך',
+    `<div class="icard"><p class="oabout">הפרויקט נבנה באהבה בידי חובב תנ״ך, מתוך רצון לתרום לקהילה
+      ולעזור לכולנו לעשות סדר בתולדות עם ישראל. ייתכנו אי-דיוקים בתאריכים, במפות, במיקומים
+      ובפרטים - ואשמח לכל תיקון והערה. שימוש נעים! 📖</p></div>`);
+});
+$('#mTour').addEventListener('click', () => startTour());
 
 function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');

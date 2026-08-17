@@ -37,9 +37,15 @@ button{font-family:inherit}
   transition:background .15s,color .15s,border-color .15s}
 .echip:hover{border-color:var(--gold)}
 .echip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
-.tool{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;
+.tool{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:12.5px;font-weight:700;
   border:1px solid var(--line);background:var(--bg);color:var(--navy);border-radius:14px;padding:6px 12px;cursor:pointer}
 .tool:hover{border-color:var(--gold);background:var(--panel)}
+/* אודות והמדריך הם כלים לכל דבר, ולכן אותה צורה ואותו גודל כמו השאר -
+   קודם הם היו עיגולים קטנים ו"השיתוף", שאין בו טקסט, יצא צר מכולם. */
+#brandWrap .title-ico,#bar .tool{width:38px;height:32px;padding:0;font-size:15px;border-radius:12px}
+#brandWrap .title-ico{border:1px solid var(--line);background:var(--bg);color:var(--navy)}
+#brandWrap .title-ico:hover{border-color:var(--gold);background:var(--panel)}
+#bar .tool .tl{display:none}         /* אייקון בלבד, בכל רוחב */
 .tool.primary{background:var(--navy);border-color:var(--navy);color:#fff}
 #tools{display:flex;gap:6px;flex:none;align-items:center}
 /* מתג המבטים מוגדר ב-styles.css המשותף; כאן רק מכווצים אותו בסרגל צר */
@@ -357,10 +363,10 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   #bar .mode-switch{display:none}
   #barEnd{flex:1}
   #bar h1{font-size:19px}
-  /* ארבעה כלים במקום שניים - מכווצים אותם כדי שלא יתנגשו בכותרת */
-  .tool span.tl{display:none}
-  .tool{padding:6px 9px}
+  /* ארבעה כלים ועוד שני אייקוני כותרת - מכווצים כדי שהכל ייכנס בשורה */
+  #brandWrap .title-ico,#bar .tool{width:34px;height:30px}
   #tools{gap:4px}
+  #brandWrap{gap:5px}
   /* החיפוש אינו כפתור-זכוכית שנפתח כשכבה אלא שורה קבועה בראש הרשימה,
      כמו בציר הזמן: היעד הראשון של מבקר חדש לא צריך לחיצה כדי להתגלות. */
 }

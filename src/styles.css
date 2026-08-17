@@ -1445,8 +1445,8 @@ a.card-action { text-decoration: none; }
   /* אותה חלוקה של מסע הדורות: אודות ומדריך כעיגולים קטנים לצד השם,
      ושאר הכלים כקבוצה בקצה השני - מלבנים מעוגלים באותו גודל. */
   .header-actions .tree-btn, .header-actions .share-btn {
-    width: 37px; height: 32px; min-width: 0; padding: 0; gap: 0;
-    border-radius: 14px; font-size: 15px; justify-content: center;
+    width: 34px; height: 30px; min-width: 0; padding: 0; gap: 0;
+    border-radius: 12px; font-size: 15px; justify-content: center;
     border: 1px solid var(--line); background: var(--bg-2);
   }
   .header-actions .note-btn { border-color: var(--gold); }
@@ -1780,10 +1780,12 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 /* אייקוני הכותרת - אודות, מדריך ושכבות. גלויים לצד שם המצב במקום
    להסתתר מאחורי ⋯, שדרש לחיצה כדי לגלות מה בכלל יש בו. */
 .title-icons { display: inline-flex; align-items: center; gap: 5px; }
+/* אותה צורה ואותו גודל של שאר הכלים בסרגל, ובשני המסכים: קודם אלה היו
+   עיגולים קטנים ליד מלבנים מעוגלים גדולים יותר. */
 .title-ico {
-  width: 25px; height: 25px; border-radius: 50%; flex-shrink: 0; cursor: pointer;
-  border: 1.5px solid var(--line); background: var(--panel);
-  font-size: 12.5px; line-height: 1; padding: 0;
+  width: 34px; height: 30px; border-radius: 12px; flex-shrink: 0; cursor: pointer;
+  border: 1px solid var(--line); background: var(--bg-2);
+  font-size: 15px; line-height: 1; padding: 0;
   display: flex; align-items: center; justify-content: center;
   transition: border-color .12s, background .12s, transform .1s;
 }
