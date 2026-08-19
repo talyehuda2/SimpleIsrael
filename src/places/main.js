@@ -233,8 +233,23 @@ function renderList() {
       <span class="pn">${esc(p.name)}</span>
       <span class="pbar"><i style="width:${Math.round(p.visits.length / MAX_VISITS * 100)}%"></i></span>
       <span class="pc">${p.visits.length}</span>
-    </button>`).join('') : '<p class="pempty">אין מקום שמתאים לחיפוש הזה.</p>';
+    </button>`).join('') : emptyHtml();
   $('#list').querySelectorAll('.prow').forEach((b) => b.addEventListener('click', () => select(b.dataset.id)));
+  $('#clearEra')?.addEventListener('click', () => setEra(null));
+}
+/* רשימה ריקה בזמן שתקופה מסומנת היא מבוי סתום: המקום קיים, הוא פשוט
+   מחוץ לתקופה, ובלי ההסבר הזה נראה שהחיפוש לא מצא אותו כלל. */
+function emptyHtml() {
+  if (era) {
+    const q = norm(query);
+    const elsewhere = PLACES.filter((p) => !q || hits(p.name, q) || p.aka.some((a) => hits(a, q))
+      || p.visits.some((v) => hits(v.name, q))).length;
+    if (elsewhere) {
+      return `<p class="pempty">אין תוצאות ב${esc(era.name)}.<br>
+        <button class="dfilter" id="clearEra">${elsewhere === 1 ? 'יש תוצאה אחת' : `יש ${elsewhere} תוצאות`} בשאר התקופות · הצג את כולן</button></p>`;
+    }
+  }
+  return '<p class="pempty">אין מקום שמתאים לחיפוש הזה.</p>';
 }
 
 function setEra(e) {
@@ -262,7 +277,7 @@ function renderDetail(p) {
     ${p.aka.length ? `<p class="daka">נקרא גם: ${p.aka.map(esc).join(' · ')}</p>` : ''}
     ${era && (hidden || showAll) ? `<button class="dfilter" id="dFilter">
       ${showAll ? `מוצגים כל הביקורים · הצג רק את ${esc(era.name)}`
-        : `מוצגים ${filtered.length} מ-${p.visits.length} - ${esc(era.name)} בלבד · הצג הכל`}</button>` : ''}
+        : `${filtered.length === 1 ? 'מוצג ביקור אחד' : `מוצגים ${filtered.length} ביקורים`} מתוך ${p.visits.length} - ${esc(era.name)} בלבד · הצג הכל`}</button>` : ''}
     <ul class="dvisits">${filtered.map((v) => `
       <li class="dv" style="--kc:${KIND_COLOR[v.kind] || 'var(--navy)'}">
         <div class="dvhead">

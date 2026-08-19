@@ -1317,10 +1317,14 @@ a.card-action { text-decoration: none; }
 .map-strip:hover { filter: brightness(1.05); }
 .map-strip-icon { font-size: 20px; }
 .map-strip-text { writing-mode: vertical-rl; font-size: 12.5px; font-weight: 700; color: var(--navy); letter-spacing: 1px; }
+/* יעד מגע נדיב: במסך צר זו הדרך היחידה לסגור את שכבת המפה, והכפתור
+   היה 26x27 - מתחת לסף הנוח לאצבע. */
 .map-close {
-  position: absolute; left: 12px; top: 12px; border: none; background: none;
-  font-size: 17px; color: #b0a082; cursor: pointer;
+  position: absolute; left: 8px; top: 8px; border: none; background: none;
+  width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 19px; color: #b0a082; cursor: pointer; border-radius: 50%;
 }
+.map-close:active { background: rgb(30 20 5 / .08); }
 .map-close:hover { color: var(--ink); }
 .map-title {
   margin: 2px 0; font-size: 21px; color: var(--navy);

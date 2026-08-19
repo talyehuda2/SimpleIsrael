@@ -225,6 +225,8 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
 #filters .khint kbd{font:inherit;background:rgba(0,0,0,.05);border:1px solid var(--line);
   border-radius:4px;padding:0 4px;margin:0 1px}
 @media (max-width:980px){#filters .khint{display:none}}
+#storyEmpty{margin:18px 4px;font-size:13.5px;line-height:1.9;color:var(--muted);text-align:center}
+#storyEmpty .tool{width:auto;height:auto;padding:7px 14px;margin-top:6px}
 .ehead{position:sticky;top:calc(var(--bar) + var(--filt-h, 44px) + 10px);z-index:12;margin:22px 0 10px;width:fit-content;max-width:100%;
   background:var(--navy);color:#f4ecd8;font-size:13.5px;font-weight:800;border-radius:12px;padding:6px 14px;
   box-shadow:0 5px 16px rgb(10 20 40/.3)}

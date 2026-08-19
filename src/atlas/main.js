@@ -140,6 +140,21 @@ function applyFilters() {
   refreshVisible();
   const n = document.querySelectorAll('.card:not(.hidden)').length;
   const f = $('#fcnt'); if (f) f.textContent = n + ' פריטים';
+  // כשכל השכבות כבויות הטור נשאר ריק לגמרי, ולא ברור אם משהו נשבר
+  let empty = $('#storyEmpty');
+  if (!n) {
+    if (!empty) {
+      empty = document.createElement('p');
+      empty.id = 'storyEmpty';
+      empty.innerHTML = 'אין פריטים להצגה - כל השכבות כבויות.<br><button class="tool" id="allLayers">הדלקת כל השכבות</button>';
+      $('#filters').after(empty);
+      $('#allLayers').addEventListener('click', () => {
+        LAYERS.forEach((l) => { on[l.key] = true; });
+        $('#filters').querySelectorAll('[data-l]').forEach((x) => x.setAttribute('aria-pressed', 'true'));
+        applyFilters();
+      });
+    }
+  } else if (empty) empty.remove();
   syncFilterHeight();
 }
 // גובה שורת הסינון נמדד - כותרות התקופה נצמדות מתחתיה ולא עליה
