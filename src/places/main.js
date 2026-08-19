@@ -49,8 +49,7 @@ function drawMap() {
   }).join('');
   $('#map').innerHTML =
     `<image href="${MAP_SRC}" x="0" y="0" width="${MAP_SIZE}" height="${MAP_SIZE}"/>
-     ${marks}<g id="labels">${labels}</g>
-     <g id="cog" hidden><circle cx="0" cy="0" r="30"/><text x="0" y="-40" text-anchor="middle" font-size="20">מרכז הכובד</text></g>`;
+     ${marks}<g id="labels">${labels}</g>`;
   $('#map').querySelectorAll('.pm').forEach((g) => {
     g.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(g.dataset.id); }
@@ -175,31 +174,6 @@ function paintZoom() {
     t.setAttribute('y', (+t.dataset.y - r - 8 * k).toFixed(1));
     t.style.display = (+t.dataset.v >= need || on) ? '' : 'none';
   });
-  const cg = $('#cog');
-  if (cg && cogAt) {
-    cg.querySelector('circle').setAttribute('r', (30 * k).toFixed(1));
-    cg.querySelector('text').setAttribute('font-size', (20 * k).toFixed(1));
-    cg.querySelector('text').setAttribute('y', (cogAt.cy - 40 * k).toFixed(1));
-  }
-}
-
-/* מרכז הכובד: ממוצע מיקומי הביקורים בתקופה. זו התשובה החזותית לשאלה
-   "איפה ההיסטוריה מתרחשת עכשיו" - הוא נודד דרומה עם ירידת ממלכת ישראל. */
-let cogAt = null;
-function paintCog() {
-  const g = $('#cog');
-  if (!era) { g.setAttribute('hidden', ''); cogAt = null; return; }
-  let sx = 0, sy = 0, n = 0;
-  for (const p of PLACES) for (const v of p.visits) {
-    if (v.year >= era.start && v.year < era.end) { sx += p.x; sy += p.y; n++; }
-  }
-  if (!n) { g.setAttribute('hidden', ''); cogAt = null; return; }
-  const cx = sx / n, cy = sy / n;
-  cogAt = { cx, cy };
-  g.removeAttribute('hidden');
-  g.querySelector('circle').setAttribute('cx', cx.toFixed(1));
-  g.querySelector('circle').setAttribute('cy', cy.toFixed(1));
-  g.querySelector('text').setAttribute('x', cx.toFixed(1));
 }
 
 function paintMarks() {
@@ -214,7 +188,6 @@ function paintMarks() {
   // ולכן יושבים מתחת, וירושלים הנבחרת הייתה מוסתרת חלקית תחת שכנותיה
   if (topPin) topPin.parentNode.insertBefore(topPin, $('#labels'));
   if (topLabel) topLabel.parentNode.appendChild(topLabel);
-  paintCog();
   paintZoom();
 }
 

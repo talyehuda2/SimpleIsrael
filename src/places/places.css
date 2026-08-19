@@ -22,8 +22,8 @@ button{font-family:inherit}
 #brandWrap{display:flex;align-items:center;gap:8px;justify-self:start;height:100%}
 /* אודות כאייקון לצד שם המצב, כמו בשני המסכים האחרים */
 .title-icons{display:inline-flex;align-items:center;gap:5px}
-.title-ico{width:25px;height:25px;border-radius:50%;flex-shrink:0;cursor:pointer;padding:0;
-  border:1.5px solid var(--line);background:var(--panel);font-size:12.5px;line-height:1;
+.title-ico{width:34px;height:30px;border-radius:12px;flex-shrink:0;cursor:pointer;padding:0;
+  border:1px solid var(--line);background:var(--bg);font-size:15px;line-height:1;
   display:flex;align-items:center;justify-content:center;transition:border-color .12s,background .12s,transform .1s}
 .title-ico:hover{border-color:var(--gold);background:var(--bg);transform:translateY(-1px)}
 #brand{display:flex;align-items:center;text-decoration:none;height:100%}
@@ -32,8 +32,11 @@ button{font-family:inherit}
 #brand:hover h1{color:var(--gold-ink)}
 #barEnd{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
 #tools{display:flex;gap:6px;flex:none;align-items:center}
-.tool{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;
-  border:1px solid var(--line);background:var(--bg);color:var(--navy);border-radius:14px;padding:6px 12px;cursor:pointer}
+/* אותו גודל וצורה של אייקוני הכותרת - סרגל אחיד בשלושת המסכים */
+.tool{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:15px;font-weight:700;
+  width:34px;height:30px;padding:0;border:1px solid var(--line);background:var(--bg);color:var(--navy);
+  border-radius:12px;cursor:pointer}
+.tool .tl{display:none}
 .tool:hover{border-color:var(--gold);background:var(--panel)}
 /* מתג המבטים - שלוש אפשרויות, הנוכחית ממולאת */
 .mode-switch{display:inline-flex;gap:3px;padding:3px;flex:none;
@@ -86,12 +89,6 @@ a.ms-opt:hover{background:var(--panel);color:var(--navy)}
 /* מקום נבחר: השאר מתעמעמים כדי שהמבט יישאר עליו */
 body.has-sel .pm:not(.on),body.has-sel .lb:not(.on){opacity:.2}
 body.has-sel .pm.off,body.has-sel .lb.off{opacity:.07}
-/* מרכז הכובד של התקופה - איפה ההיסטוריה מתרחשת ברגע הזה */
-#cog{pointer-events:none}
-#cog circle{fill:none;stroke:var(--leader);stroke-width:3;stroke-dasharray:9 7;vector-effect:non-scaling-stroke}
-#cog text{font-family:'Heebo',sans-serif;font-weight:800;fill:var(--leader);paint-order:stroke;
-  stroke:#f6ecd6;stroke-width:5px;stroke-linejoin:round}
-
 /* ===================== הטור הצדדי ===================== */
 #side{width:var(--side-w);flex:none;background:var(--panel);border-inline-end:1px solid var(--line);
   display:flex;flex-direction:column;height:calc(100vh - var(--bar));position:sticky;top:var(--bar)}
