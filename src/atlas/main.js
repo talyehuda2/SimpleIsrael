@@ -484,8 +484,10 @@ function balanceColumns() {
   // clientWidth ולא innerWidth - האחרון כולל את פס הגלילה וגורם לחפיפת עמודות
   const free = document.documentElement.clientWidth - storyW - cssVar('--era-w');
   const PANEL_PAD = 28;
-  let mapW = Math.min(boxH + PANEL_PAD, free - 320);
-  mapW = Math.max(430, Math.min(mapW, free - 300));
+  // רוחב מינימלי לעמודת הפירוט: הכרטיס תוכנן ל-340, ומתחת לזה השורות
+  // נשברות באמצע. שני הסייגים שהיו כאן (320 ואז 300) גם לא הסכימו זה עם זה.
+  const DETAIL_MIN = 360;
+  let mapW = Math.max(430, Math.min(boxH + PANEL_PAD, free - DETAIL_MIN));
   root.style.setProperty('--map-w', Math.round(mapW) + 'px');
   root.style.setProperty('--detail-w', Math.round(free - mapW) + 'px');
 }

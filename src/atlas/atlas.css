@@ -159,9 +159,24 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
    ו-preserveAspectRatio=slice חותך את העודף במקום להשאיר שוליים. */
 /* ריבוע: הגובה נקבע מהמקום שנשאר, והרוחב נגזר ממנו (aspect-ratio).
    width:100% היה מבטל את היחס והופך את החלון לרחב - ואז נחתכות תחנות. */
-.jm-atlas .map-wrap{flex:1;min-height:0;display:flex;width:auto;height:100%;margin-inline:auto}
+/* רצפת יחס-צדדים לחלון המפה. חלון גבוה וצר גורם למצלמה להדק את היחס
+   ל-AR_MIN, ואז slice גוזר את קצוות המפה: מסע רחב כמו יונה (תרשיש עד
+   נינוה) איבד תחנות. הרוחב ידוע מ---map-w, ולכן הגובה נחסם ממנו - בלי
+   תלות במדידה בזמן ריצה. */
+.jm-atlas .map-wrap{flex:1;min-height:0;display:flex;width:auto;height:100%;margin-inline:auto;
+  max-height:calc((var(--map-w, 100vw) - 28px) / .75)}
 .jm-atlas .map-svg{width:100%;height:100%;flex:1;min-height:0;border-radius:8px}
-.jm-atlas .map-legend{flex:none;max-height:22vh;overflow-y:auto;margin-top:8px}
+/* המקרא כשורת שבבים ולא כרשימת שורות: הוא ניצב מתחת למפה, וכל שורה בו
+   גזלה מגובהה - ומכיוון שהחלון כמעט ריבועי, גם מרוחבה. שבע תחנות לקחו
+   238 פיקסלים. השם לבדו מספיק לניווט; התיאור המלא מופיע ממילא בבועה
+   שעל המפה בבחירת תחנה. */
+.jm-atlas .map-legend{flex:none;display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start;
+  max-height:62px;overflow-y:auto;margin-top:8px;padding:0}
+.jm-atlas .map-legend li{flex:none;gap:5px;padding:3px 9px 3px 5px;border-radius:14px;
+  font-size:11.5px;border:1px solid var(--line);background:var(--panel)}
+.jm-atlas .map-legend li.active{background:#e8dcbe;border-color:var(--gold)}
+.jm-atlas .map-legend-num{width:18px;height:18px;font-size:10.5px}
+.jm-atlas .map-legend .ml-label{display:none}
 .jm-atlas .map-title{margin:0 0 2px}
 .jm-atlas .map-sub{margin:0 0 8px}
 .jm-none{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
@@ -353,6 +368,9 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
     border-inline-end:none;border-bottom:1px solid var(--line)}
   .echip{white-space:nowrap;padding:4px 11px;border-radius:14px}
   /* חלון המפה חייב למלא את מה שנותר מהמסך (ה-flex של הבסיס נשמר) */
+  /* ברוחב הזה --map-w אינו בשימוש (הוא נשאר על ברירת המחדל 700), ולכן
+     רצפת יחס-הצדדים נגזרת מרוחב החלון עצמו */
+  .jm-atlas .map-wrap{max-height:calc((100vw - 28px) / .75)}
   #mapTitle{font-size:15px}
   /* הזרם האנכי תופס את כל המסך */
   #story{margin-inline-start:0;padding-top:calc(var(--bar) + var(--erabar) + 12px);padding-bottom:18vh}

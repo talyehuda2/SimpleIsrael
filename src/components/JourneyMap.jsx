@@ -109,13 +109,13 @@ export default function JourneyMap({
       if (b.width > 8 && b.height > 8) setAr(b.width / b.height);
     };
     measure();
-    if (typeof ResizeObserver !== 'function') {
-      addEventListener('resize', measure);
-      return () => removeEventListener('resize', measure);
-    }
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
+    // במסע הדורות שכבת המפה נפתחת אחרי ההרכבה (display:none עד ללחיצה),
+    // והמדידה הראשונה נופלת על חלון בגודל אפס. מודדים שוב אחרי שהיא נפרשה.
+    const t = setTimeout(measure, 300);
+    addEventListener('resize', measure);
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+    if (ro) ro.observe(el);
+    return () => { clearTimeout(t); removeEventListener('resize', measure); if (ro) ro.disconnect(); };
   }, []);
 
   useEffect(() => {
@@ -294,7 +294,8 @@ export default function JourneyMap({
         {pts.map((p, i) => (
           <li key={p.id} className={i === step ? 'active' : ''} onClick={() => pickStation(i)}>
             <span className="map-legend-num" style={{ background: color }}>{p.order}</span>
-            <span><b>{p.name}</b> - {p.label}</span>
+            <span className="ml-name"><b>{p.name}</b></span>
+            <span className="ml-label"> - {p.label}</span>
           </li>
         ))}
       </ol>
