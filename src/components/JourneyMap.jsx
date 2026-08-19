@@ -163,7 +163,13 @@ export default function JourneyMap({
 
   useEffect(() => {
     if (!playing) return undefined;
-    if (step >= pts.length - 1) { setPlaying(false); setTimerOn(false); return undefined; }
+    /* התחנה האחרונה מקבלת את אותה שהייה כמו כל תחנה, ואז המצלמה חוזרת
+       למבט-העל: המסע מסתיים בתמונה השלמה של המסלול ולא בזום על נקודה
+       אחת, וכך גם ברור שהוא נגמר. */
+    if (step >= pts.length - 1) {
+      const done = setTimeout(() => { setPlaying(false); setTimerOn(false); setStep(-1); }, PLAY_MS);
+      return () => clearTimeout(done);
+    }
     const id = setTimeout(() => setStep((s) => s + 1), PLAY_MS);
     return () => clearTimeout(id);
   }, [playing, step, pts.length]);
