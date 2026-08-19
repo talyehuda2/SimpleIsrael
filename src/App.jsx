@@ -401,7 +401,9 @@ export default function App() {
 
   // קפיצה מאילן היוחסין: בחירה, הדלקת בני-הזמן, וזום-אין אל הדמות והקשרה.
   // אב/דמות שקיימת רק במסורת - נעבור למצב מסורת.
-  const jumpToId = (id) => {
+  /* contemp=false לכניסה הראשונה: הדגשת בני-הזמן מעמעמת את כל השאר
+     ל-14%, וזה מה שמבקר חדש היה רואה בשנייה הראשונה - בלי שביקש. */
+  const jumpToId = (id, { contemp = true } = {}) => {
     const item = searchIndex.find((x) => x.id === id);
     if (!item) { if (chronology === 'academic') setChronology('tradition'); return; }
     // סגירת האילן ישירות (לא דרך "אחורה", שהיה מנקה את הבחירה) - אנחנו מנווטים לתצוגה חדשה
@@ -411,7 +413,7 @@ export default function App() {
     const layer = LAYER_OF[item.kind];
     if (layer) setVisible((v) => (v[layer] ? v : { ...v, [layer]: true }));
     setSelected(item);
-    setContempItem(item); // הדגשת בני-הזמן
+    if (contemp) setContempItem(item); // הדגשת בני-הזמן
     if (vertical) { scrollToItem(item); return; }
     // זום-אין כך שתקופת החיים תתפוס כשליש מהרוחב - רואים את הדמות ואת מי שחי במקביל
     const el = scrollRef.current;
@@ -793,7 +795,10 @@ export default function App() {
             className="menu-btn"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((o) => !o)}
-          >{menuOpen ? '✕ סגירה' : '☰ אפשרויות'}</button>
+          >
+            <span aria-hidden="true">{menuOpen ? '✕' : '☰'}</span>
+            <span className="btn-label"> {menuOpen ? 'סגירה' : 'אפשרויות'}</span>
+          </button>
           </div>
         </div>
         <div className="search-row">
@@ -896,6 +901,14 @@ export default function App() {
             highlightRange={highlightRange} commentCounts={commentCounts}
           />
         </div>
+      )}
+
+      {/* כשכל השכבות כבויות הציר ריק, ולא ברור אם הכל בסדר */}
+      {!Object.values(visible).some(Boolean) && (
+        <p className="tl-empty">
+          כל השכבות כבויות, ולכן הציר ריק.{' '}
+          <button className="tree-btn" onClick={() => setVisible(DEFAULT_VISIBLE)}>הדלקת כל השכבות</button>
+        </p>
       )}
 
       {!selected && !vertical && (
@@ -1121,7 +1134,7 @@ export default function App() {
 
       <Intro
         open={introOpen} onClose={closeIntro} visible={visible} setVisible={setVisible}
-        mode={introMode} onStartJourney={() => jumpToId('avraham')} onCloseCard={() => setSelected(null)}
+        mode={introMode} onStartJourney={() => jumpToId('avraham', { contemp: false })} onCloseCard={() => setSelected(null)}
         atlasHref={atlasHref} onChooseView={chooseView}
       />
       <NotesBox open={notesOpen} onClose={() => setNotesOpen(false)} />
