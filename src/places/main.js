@@ -5,6 +5,7 @@
 import { MAP_SRC, MAP_SIZE } from '../utils/mapProject.js';
 import PLACES from '../data/places.json';
 import PERIODS from '../data/periods.json';
+import { shareLink } from '../lib/share.js';
 
 const $ = (s) => document.querySelector(s);
 const KIND_COLOR = { leader:'var(--leader)', judge:'var(--judge)', united:'var(--united)', judah:'var(--judah)',
@@ -387,11 +388,11 @@ $('#mAbout').addEventListener('click', () => {
   });
   document.body.appendChild(el);
 });
+// אותו shareLink של שני המסכים האחרים - ראו את ההערה שם
 $('#tShare').addEventListener('click', async () => {
   const url = location.origin + '/places' + (sel ? `?p=${encodeURIComponent(sel)}` : '');
   const title = sel ? `${sel} - מפת המקומות` : 'מפת המקומות';
-  try {
-    if (navigator.share) { await navigator.share({ title, url }); return; }
-    await navigator.clipboard.writeText(url); toast('הקישור הועתק ✓');
-  } catch { toast('העתיקו מהכתובת שלמעלה'); }
+  const res = await shareLink({ url, title });
+  if (res === 'copied') toast('הקישור הועתק ✓');
+  else if (res === 'failed') toast('העתיקו מהכתובת שלמעלה');
 });

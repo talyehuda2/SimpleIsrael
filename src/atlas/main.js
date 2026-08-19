@@ -3,6 +3,7 @@ import { renderMap } from './map.jsx';
 import { openNotes } from './notes.jsx';
 import { ALL_ITEMS } from '../data/items.js';
 import TOURS from '../data/tours.json';
+import { shareLink } from '../lib/share.js';
 const $ = (s) => document.querySelector(s);
 const LAYERS = [
   { key:'leaders', label:'אבות ומנהיגים', color:'var(--leader)',  icon:'🏛️' },
@@ -690,14 +691,16 @@ function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2400);
 }
+/* אותו shareLink של ציר הזמן: תפריט השיתוף של המערכת רק במכשירי מגע,
+   ובדסקטופ העתקה ללוח. navigator.share קיים גם בכרום שולחני, ושם הוא
+   נפתח כדיאלוג שנכשל ב-"We couldn't show you all the ways you could share". */
 $('#tShare').addEventListener('click', async () => {
   const it = items[active];
   const url = location.origin + '/atlas' + (it ? `?sel=${it.kind}:${it.id}` : '');
   const title = it ? `${it.name} - מסע הדורות` : 'מסע הדורות';
-  try {
-    if (navigator.share) { await navigator.share({ title, url }); return; }
-    await navigator.clipboard.writeText(url); toast('הקישור הועתק ✓');
-  } catch { toast('העתיקו מהכתובת שלמעלה'); }
+  const res = await shareLink({ url, title });
+  if (res === 'copied') toast('הקישור הועתק ✓');
+  else if (res === 'failed') toast('העתיקו מהכתובת שלמעלה');
 });
 
 build();
