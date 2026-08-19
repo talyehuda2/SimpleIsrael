@@ -155,8 +155,12 @@ body.has-sel .pm.off,body.has-sel .lb.off{opacity:.07}
   justify-content:center;padding:20px}
 .ovpanel{position:relative;background:var(--panel);border-radius:16px;border-top:4px solid var(--gold);
   max-width:min(560px,94vw);padding:22px 24px 26px;box-shadow:0 20px 50px rgb(20 12 0 / .3)}
-.ovclose{position:absolute;top:12px;inset-inline-start:14px;border:none;background:none;
+/* בעברית הכותרת מיושרת לימין, ולכן ה-✕ יושב בשמאל - כמו בשאר
+   שכבות-העל באתר. inset-inline-start הציב אותו בימין, על הכותרת. */
+.ovclose{position:absolute;top:12px;inset-inline-end:14px;border:none;background:none;
   font-size:17px;color:var(--muted);cursor:pointer;line-height:1}
+/* ריפוד בצד ה-✕ כדי שכותרת ארוכה לא תיגע בו */
+.ovpanel h2,.ovpanel .osub{padding-inline-end:32px}
 .ovpanel h2{font-family:'Frank Ruhl Libre',serif;font-size:22px;color:var(--navy);margin:0 0 4px}
 .ovpanel .osub{font-size:12.5px;color:var(--muted);margin:0 0 16px}
 .oabout{margin:0;font-size:14px;line-height:1.85;color:var(--ink)}

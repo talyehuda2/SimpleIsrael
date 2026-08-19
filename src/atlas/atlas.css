@@ -241,6 +241,8 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
 .ov{position:fixed;inset:0;z-index:60;background:rgb(30 20 5/.5);display:flex;align-items:center;justify-content:center;padding:20px}
 .ovpanel{background:var(--panel);border-radius:16px;border-top:4px solid var(--gold);max-width:min(680px,94vw);
   max-height:88vh;overflow-y:auto;padding:22px 24px;box-shadow:0 18px 50px rgb(40 25 0/.4);position:relative;width:100%}
+/* ריפוד בצד ה-✕ כדי שכותרת ארוכה לא תיגע בו */
+.ovpanel h2,.ovpanel .osub{padding-inline-end:32px}
 .ovpanel h2{font-family:'Frank Ruhl Libre',serif;font-size:22px;color:var(--navy);margin:0 0 4px}
 .ovpanel .osub{font-size:12.5px;color:var(--muted);margin:0 0 16px}
 .ovclose{position:absolute;left:14px;top:12px;border:none;background:none;font-size:17px;color:var(--muted);cursor:pointer}
