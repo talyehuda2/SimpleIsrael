@@ -456,6 +456,21 @@ export default function App() {
     prevOverlay.current = { map, tree: treeOpen };
   }, [selected, mapItem, mapStep, treeOpen, contempItem]);
 
+  /* Escape סוגר גם את שתי השכבות שמרונדרות כאן ולא ברכיב משלהן (אודות
+     ובוחר המסעות/אוספים). בכל שאר החלוניות הרכיב מטפל בזה בעצמו, וחוסר
+     האחידות הזה הרגיש כמו תקלה. */
+  useEffect(() => {
+    if (!aboutOpen && !toursOpen && !collection) return undefined;
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      if (collection) setCollection(null);
+      else if (toursOpen) setToursOpen(false);
+      else setAboutOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [aboutOpen, toursOpen, collection]);
+
   // כפתור "אחורה" של הדפדפן
   useEffect(() => {
     const onPop = () => {
