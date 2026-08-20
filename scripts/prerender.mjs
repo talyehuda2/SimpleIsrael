@@ -15,7 +15,7 @@ import { writeHero } from './hero.mjs';
    מסע (יש כאלה 92), ולשאר הדפים נדרש פתיח משלהם. */
 const PILOT = new Set(['prophet:eliyahu']);
 const HERO_SIZE = { w: 1080, h: 490 };   // פס עליון (טלפון/טאבלט)
-const HERO_SPLIT = { w: 900, h: 820 };  // עמודה מאונכת (מחשב)
+const HERO_SPLIT = { w: 1100, h: 1003 }; // עמודה מאונכת (מחשב) - גדל עם הכרטיס
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -231,8 +231,10 @@ footer a{color:var(--gold)}
 }
 /* מחשב: הכרטיס נפתח לשתי עמודות - הבחירה מימין, המפה משמאל וממלאת
    את מלוא גובה הכרטיס. זה גם מוותר על החיתוך הרחב לטובת חיתוך מאונך
-   (picture/source), כדי שהמפה לא תיחתך אלא תראה יותר ארץ. */
-.wrap.wide{max-width:1040px}
+   (picture/source), כדי שהמפה לא תיחתך אלא תראה יותר ארץ. הכרטיס
+   גדל ל-1200 כדי שיתפוס נתח משמעותי יותר מהמסך; ב-HERO_SPLIT יש
+   רזולוציה שתומכת ברוחב הזה בלי להיטשטש. */
+.wrap.wide{max-width:1200px}
 /* הכרטיס תופס את המסך הראשון לבדו ויושב במרכזו; הגלילה חושפת
    את הטקסט המלא מתחתיו, ברוחב קריא של 720. safe מונע חיתוך של הראש
    כשהכרטיס גבוה מהמסך. */
@@ -244,7 +246,6 @@ footer a{color:var(--gold)}
    בדיוק כמו מסך הפתיחה של האפליקציה; רק צל עדין נשאר כדי שהכרטיס
    עדיין ירחף מעל הרקע. */
 body.bg-og .gate-hero{box-shadow:0 10px 30px rgba(60,45,20,.14)}
-}
 .wrap.wide footer{max-width:720px;margin-inline:auto}
 @media (min-width:860px){
   .gate-hero.split{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);align-items:stretch}
@@ -256,15 +257,16 @@ body.bg-og .gate-hero{box-shadow:0 10px 30px rgba(60,45,20,.14)}
   .gate-hero.split .hero::after{display:block;top:0;bottom:0;right:0;left:auto;width:64px;height:auto;
     background:linear-gradient(to left,rgba(253,248,236,.92),rgba(253,248,236,0))}
   .gate-hero.split .gate-body{grid-area:1/1;display:flex;flex-direction:column;
-    justify-content:center;padding:28px 30px}
-  .gate-hero.split h1{font-size:40px;margin-bottom:5px}
-  .gate-hero.split .lead{font-size:16.5px;margin-bottom:16px}
-  .gate-hero.split .gate-q{font-size:16px;margin-bottom:11px}
-  .gate-hero.split .gopts.big{grid-template-columns:1fr;gap:11px}
-  .gate-hero.split .gopt.big{flex-direction:row;text-align:start;gap:14px;padding:13px 16px;min-height:80px}
+    justify-content:center;padding:38px 40px}
+  .gate-hero.split h1{font-size:46px;margin-bottom:6px}
+  .gate-hero.split .lead{font-size:18px;margin-bottom:19px}
+  .gate-hero.split .gate-q{font-size:17px;margin-bottom:13px}
+  .gate-hero.split .gopts.big{grid-template-columns:1fr;gap:13px}
+  .gate-hero.split .gopt.big{flex-direction:row;text-align:start;gap:16px;padding:16px 19px;min-height:88px}
   .gate-hero.split .gopt.big .gtx{flex:1 1 auto}
-  .gate-hero.split .gopt.big .gt{font-size:19px}
-  .gate-hero.split .gopt.big .gs{font-size:13.5px}
+  .gate-hero.split .gopt.big .gi{width:50px;height:50px;font-size:26px}
+  .gate-hero.split .gopt.big .gt{font-size:21px}
+  .gate-hero.split .gopt.big .gs{font-size:14.5px}
   .gate-hero.split .gopt.big .garrow{display:block}
 }
 `;
