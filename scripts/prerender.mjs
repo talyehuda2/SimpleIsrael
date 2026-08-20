@@ -6,7 +6,15 @@ import { dirname, join } from 'node:path';
 import { hebrewYearLetters, toSecular, formatRange } from '../src/utils/dates.js';
 import { sourceSegments } from '../src/utils/sefaria.js';
 import { buildPlaceIndex, relatedByPlace } from '../src/utils/related.js';
+import { journeyStations } from '../src/utils/mapProject.js';
 import { writeCard } from './og.mjs';
+import { writeHero } from './hero.mjs';
+
+/* פיילוט של הפתיח המצויר: דף אחד מקבל רצועת מפה עם תחנות המסע בראש
+   השער וכפתורי בחירה גדולים. כשהעיצוב יאושר - מרחיבים לכל דף שיש לו
+   מסע (יש כאלה 92), ולשאר הדפים נדרש פתיח משלהם. */
+const PILOT = new Set(['prophet:eliyahu']);
+const HERO_SIZE = { w: 1080, h: 490 };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -151,8 +159,8 @@ footer a{color:var(--gold)}
   box-shadow:0 10px 26px rgba(90,70,30,.09)}
 .gate .chip{margin:0 0 2px}
 .gate h1{font-size:34px;margin:0 0 4px}
-.gate .dates{margin:0 0 10px}
-.gate .lead{margin:0 0 16px;font-size:16px;line-height:1.7;color:var(--muted)}
+.gate .dates{margin:0 0 8px}
+.gate .lead{margin:0 0 12px;font-size:16px;line-height:1.7;color:var(--muted)}
 .gate-q{margin:0 0 10px;font-size:15px;font-weight:700;color:var(--navy)}
 .gopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:10px}
 .gopt{display:flex;align-items:center;gap:11px;background:#fffdf7;border:1.5px solid var(--line);
@@ -161,6 +169,34 @@ footer a{color:var(--gold)}
 .gopt .gi{font-size:23px;line-height:1}
 .gopt .gt{display:block;color:var(--navy);font-weight:700;font-size:16.5px}
 .gopt .gs{display:block;color:var(--muted);font-size:12.5px;line-height:1.45}
+/* גרסת הפתיח עם רצועת מפה: התמונה היא חלק מהכרטיס, והבחירה נפרשת
+   כשלוש שורות רחבות - הראשונה מלאה בכחול, כדי שהמעבר לאתר יהיה
+   הדבר הבולט בדף ולא הערת שוליים. */
+.gate-hero{padding:0;overflow:hidden}
+.gate-body{padding:14px 18px 16px}
+.hero{display:block;position:relative;line-height:0;text-decoration:none}
+.hero img{width:100%;height:auto;display:block}
+.hero::after{content:'';position:absolute;inset-inline:0;bottom:-1px;height:58px;
+  background:linear-gradient(180deg,rgba(253,248,236,0),rgba(253,248,236,.96))}
+.hero-tag{position:absolute;z-index:1;inset-inline-end:12px;bottom:11px;line-height:1.45;
+  background:rgba(22,58,92,.93);color:#fdf6e6;font-size:13.5px;font-weight:700;
+  padding:7px 13px;border-radius:999px;box-shadow:0 4px 12px rgba(20,40,60,.25)}
+.hero:hover .hero-tag{background:var(--gold);color:#20180a}
+.gopts.big{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.gopt.big{flex-direction:column;text-align:center;border-width:2px;border-radius:16px;
+  padding:14px 10px 13px;gap:7px}
+.gopt.big .gi{flex:0 0 auto;width:46px;height:46px;border-radius:50%;background:#f3e8ce;
+  display:inline-flex;align-items:center;justify-content:center;font-size:24px}
+.gopt.big .gt{font-size:18.5px}
+.gopt.big .gs{font-size:13px;line-height:1.45}
+.gopt.big .garrow{display:none;flex:0 0 auto;color:var(--gold);font-size:23px;font-weight:700;line-height:1}
+.gopt.big:hover{box-shadow:0 8px 18px rgba(90,70,30,.12)}
+.gopt.big.primary{background:var(--navy);border-color:var(--navy)}
+.gopt.big.primary .gt{color:#fff}
+.gopt.big.primary .gs{color:#c9dcec}
+.gopt.big.primary .gi{background:rgba(255,255,255,.15)}
+.gopt.big.primary .garrow{color:#e7c86a}
+.gopt.big.primary:hover{background:#1d4a70;border-color:#1d4a70}
 .gread{display:inline-block;margin-top:14px;font-size:14px;font-weight:700;color:var(--gold);text-decoration:none}
 .gread:hover{text-decoration:underline}
 #more{scroll-margin-top:12px}
@@ -168,8 +204,24 @@ footer a{color:var(--gold)}
   border-bottom:2px solid var(--gold);padding-bottom:4px}
 @media (max-width:520px){
   .gate{padding:16px 14px 14px}
+  .gate-hero{padding:0}
+  .gate-body{padding:14px 14px 14px}
   .gate h1{font-size:29px}
   .gopts{grid-template-columns:1fr}
+  .hero-tag{font-size:12.5px;padding:6px 11px;inset-inline-end:9px;bottom:9px}
+}
+/* בטלפון שלוש עמודות הופכות לשלוש שורות רחבות - כל אחת יעד מגע גדול
+   עם חץ בקצה, ולא שלושה ריבועים צרים */
+@media (max-width:640px){
+  /* רצועה של 2:1 היא פס דק במסך צר: חותכים מעט מהצדדים (בעיקר ים)
+     כדי שהמפה תקבל נוכחות אמיתית גם בטלפון */
+  .hero img{aspect-ratio:16/10;height:auto;object-fit:cover}
+  .gopts.big{grid-template-columns:1fr;gap:10px}
+  .gopt.big{flex-direction:row;text-align:start;gap:12px;padding:12px 13px;min-height:70px}
+  .gopt.big .gtx{flex:1 1 auto}
+  .gopt.big .gi{width:44px;height:44px;font-size:23px}
+  .gopt.big .gt{font-size:18px}
+  .gopt.big .garrow{display:block}
 }
 `;
 
@@ -189,18 +241,25 @@ const assetLinks = (entry) => {
 };
 const PREFETCH = { main: assetLinks('index.html'), places: assetLinks('places.html') };
 
-function gate({ chip, name, dates, lead, question, opts, readLabel }) {
-  return `<div class="gate">
-<div class="chip">${esc(chip)}</div>
+/* hero - רצועת מפה בראש השער (ראו PILOT למטה). כשהיא קיימת, הבחירה
+   נפרשת כשורות רחבות ולא כשלושה ריבועים קטנים. */
+function gate({ chip, name, dates, lead, question, opts, readLabel, hero }) {
+  const big = hero ? ' big' : '';
+  const inner = `<div class="chip">${esc(chip)}</div>
 <h1>${esc(name)}</h1>
 ${dates ? `<div class="dates">${esc(dates)}</div>` : ''}
 ${lead ? `<p class="lead">${esc(lead)}</p>` : ''}
 <p class="gate-q">${esc(question)}</p>
-<div class="gopts">
-${opts.map((o) => `  <a class="gopt" href="${escAttr(o.href)}"><span class="gi" aria-hidden="true">${o.icon}</span><span><span class="gt">${esc(o.title)}</span><span class="gs">${esc(o.sub)}</span></span></a>`).join('\n')}
+<div class="gopts${big}">
+${opts.map((o) => `  <a class="gopt${big}${o.primary ? ' primary' : ''}" href="${escAttr(o.href)}">`
+    + `<span class="gi" aria-hidden="true">${o.icon}</span>`
+    + `<span class="gtx"><span class="gt">${esc(o.title)}</span><span class="gs">${esc(o.sub)}</span></span>`
+    + `${hero ? '<span class="garrow" aria-hidden="true">←</span>' : ''}</a>`).join('\n')}
 </div>
-<a class="gread" href="#more">${esc(readLabel)} ↓</a>
-</div>`;
+<a class="gread" href="#more">${esc(readLabel)} ↓</a>`;
+  return hero
+    ? `<div class="gate gate-hero">\n${hero}\n<div class="gate-body">\n${inner}\n</div>\n</div>`
+    : `<div class="gate">\n${inner}\n</div>`;
 }
 
 // שלושת המבטים, עם היעד המדויק לכל דף
@@ -358,6 +417,14 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
   const firstStop = visited.slice().sort((a, b) => yearAt(a) - yearAt(b))[0];
   if (firstStop) gateOpts.push(optPlaces(`?p=${encodeURIComponent(firstStop.id)}`));
 
+  // רצועת המפה של הפיילוט - התמונה עצמה היא קישור למסע הדורות
+  const heroPts = PILOT.has(key) ? journeyStations(maps[it.id]) : [];
+  const heroHtml = heroPts.length >= 2 ? `<a class="hero" href="/atlas?sel=${key}">
+<img src="/hero/${it.kind}/${it.id}.jpg" width="${HERO_SIZE.w}" height="${HERO_SIZE.h}" alt="${escAttr(`מפת המסע של ${it.name}`)}"/>
+<span class="hero-tag">🗺️ ${heroPts.length} תחנות במסע · לחצו לצפייה ←</span>
+</a>` : '';
+  if (heroHtml) gateOpts[0].primary = true;
+
   const body = `
 ${gate({
     chip: km.label, name: it.name, dates,
@@ -365,6 +432,7 @@ ${gate({
     question: `איך תרצו לגלות את ${it.name}?`,
     opts: gateOpts,
     readLabel: `או קראו כאן על ${it.name}`,
+    hero: heroHtml,
   })}
 <section id="more">
 <h2>על ${esc(it.name)}</h2>
@@ -631,6 +699,10 @@ for (const it of items) {
     kindLabel: KINDS[it.kind].label,
     dates: formatRange(it.start, it.end, 'tradition'),
   });
+  if (PILOT.has(`${it.kind}:${it.id}`)) {
+    const pts = journeyStations(maps[it.id]);
+    if (pts.length >= 2) writeHero(DIST, join('hero', it.kind, `${it.id}.jpg`), pts, HERO_SIZE);
+  }
   count++;
 }
 sortedPeriods.forEach((p, i) => {
