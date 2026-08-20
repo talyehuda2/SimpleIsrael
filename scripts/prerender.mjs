@@ -235,6 +235,17 @@ footer a{color:var(--gold)}
 .wrap.bare{padding-top:0;padding-bottom:40px}
 .screen{min-height:100dvh;display:flex;flex-direction:column;justify-content:safe center;padding:20px 0}
 .below{max-width:720px;margin:0 auto}
+/* המסך שמאחורי הכרטיס הוא תמונת השיתוף (og-image) - הרועה מצד
+   אחד והמקדש מהצד השני. הרקע מכסה בדיוק את המסך הראשון
+   ולא ממשיך אל מתחת לטקסט, שישאר על קלף נקי. בטלפון הכרטיס
+   מכסה כמעט את כל המסך, ולכן לא מורידים שם 228KB עבור מסגרת צרה. */
+body.bg-og{position:relative}
+@media (min-width:860px){
+  body.bg-og::before{content:'';position:absolute;left:0;right:0;top:0;height:100dvh;z-index:0;
+    background:linear-gradient(rgba(239,228,200,.42),rgba(239,228,200,.42)),url('/og-image.jpg') center/cover no-repeat}
+  body.bg-og .wrap{position:relative;z-index:1}
+  body.bg-og .gate-hero{box-shadow:0 18px 44px rgba(60,45,20,.22)}
+}
 .wrap.wide footer{max-width:720px;margin-inline:auto}
 @media (min-width:860px){
   .gate-hero.split{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);align-items:stretch}
@@ -309,7 +320,7 @@ const crumbsNav = (crumbs) => (crumbs && crumbs.length ? `
   ).join('<span class="sep"> / </span>')}</nav>` : '');
 
 function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, prefetch = 'main',
-  wide = false, bare = false }) {
+  wide = false, bare = false, bodyClass = '' }) {
   const img = ogImage || `${SITE}/og-image.jpg`;
   // פירורי לחם: גם ניווט גלוי וגם BreadcrumbList לגוגל (מוצג בתוצאות החיפוש)
   const crumbLd = crumbs && crumbs.length ? {
@@ -349,7 +360,7 @@ function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, p
 ${PREFETCH[prefetch] || ''}
 ${ld ? `<script type="application/ld+json">${JSON.stringify(ld)}</script>` : ''}
 </head>
-<body><div class="wrap${wide ? ' wide' : ''}${bare ? ' bare' : ''}">
+<body${bodyClass ? ` class="${bodyClass}"` : ''}><div class="wrap${wide ? ' wide' : ''}${bare ? ' bare' : ''}">
 ${bare ? '' : `<header><a href="/">← ציר הזמן של עם ישראל</a></header>
 ${crumbsHtml}`}
 ${body}
@@ -510,7 +521,7 @@ ${gateHtml}
 ${article}`;
 
   return shell({ title: `${it.name}: ${km.label} - ציר הזמן של עם ישראל`, description: metaDesc, canonical, jsonld, body,
-    ogImage, crumbs, wide: !!heroHtml, bare: !!heroHtml });
+    ogImage, crumbs, wide: !!heroHtml, bare: !!heroHtml, bodyClass: heroHtml ? 'bg-og' : '' });
 }
 
 // דף תקופה - מרכז את כל מי שחי/התרחש בה
