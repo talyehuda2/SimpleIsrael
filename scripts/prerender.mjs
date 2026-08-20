@@ -105,6 +105,10 @@ const STYLE = `
 @font-face{font-family:'Heebo';font-weight:300 700;font-display:swap;src:url('/fonts/heebo-hebrew.woff2') format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
 :root{--bg:#efe4c8;--panel:#fbf5e7;--ink:#33281a;--muted:#6d5c42;--navy:#163a57;--gold:#b28a2b;--line:#dcc9a3}
 *{box-sizing:border-box}
+/* "קראו כאן" הוא עיגון בתוך אותו הדף - קפיצה מיידית למקום משאיר
+   אותו, ונראית כמעבר לדף אחר. מכבדים prefers-reduced-motion */
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Frank Ruhl Libre','Heebo',Georgia,serif;line-height:1.7}
 .wrap{max-width:720px;margin:0 auto;padding:20px 18px 48px}
 header a{color:var(--navy);text-decoration:none;font-weight:700;font-size:15px}
