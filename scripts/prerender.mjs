@@ -13,7 +13,16 @@ import { writeHero } from './hero.mjs';
 /* פיילוט של הפתיח המצויר: דף אחד מקבל רצועת מפה עם תחנות המסע בראש
    השער וכפתורי בחירה גדולים. כשהעיצוב יאושר - מרחיבים לכל דף שיש לו
    מסע (יש כאלה 92), ולשאר הדפים נדרש פתיח משלהם. */
-const PILOT = new Set(['prophet:eliyahu']);
+const PILOT = new Set(['prophet:eliyahu', 'world:shishak']);
+/* פיילוט שני: לפריטים בלי מסע גיאוגרפי (אירועים, ספרים, רקע עולמי,
+   ודמויות בלי תחנות מתועדות) אין מה למקם על מפה - אבל יש להם תמיד
+   מיקום בזמן. הרצועה מציגה בדיוק את זה: אותה שפה חזותית של פסים
+   ונקודות שכבר מוכרת מציר הזמן עצמו, רק חתוכה לחלון קטן סביב הפריט.
+   ראו scripts/prerender.mjs README בפקודה - זו טיוטה לבדיקה על שישק. */
+const KIND_COLOR = {
+  leader: '#9c2b50', judge: '#bd7038', united: '#6a3ca0', judah: '#245c93', israel: '#4f7a33',
+  prophet: '#b3781a', book: '#157a70', event: '#b0392c', world: '#8a7250',
+};
 const HERO_SIZE = { w: 1080, h: 490 };   // פס עליון (טלפון/טאבלט)
 const HERO_SPLIT = { w: 1100, h: 1003 }; // עמודה מאונכת (מחשב) - גדל עם הכרטיס
 
@@ -98,6 +107,77 @@ const itemsInPeriod = (p) =>
 const maps = read('maps.json');
 const placeIndex = buildPlaceIndex(maps);
 const byId = (id) => items.find((x) => x.id === id) || null;
+
+/* ---- רצועת ציר-זמן (פיילוט שני) ----
+   שכנים לרצועה: לא מספיק "חופף בכלל" - פריט כמו מלך שרוב מלכותו
+   מחוץ לחלון ורק קצה אחד נוגע בו נראה כאילו הוא הפריט המרכזי (בר
+   ענק שנחתך בשוליים). דורשים חפיפה אמיתית: לפחות 8% מרוחב החלון.
+   וגם לא ספר כמו "דברי הימים" שמשתרע על כמעט כל הציר - פריט ארוך
+   בהרבה מהחלון עצמו לא "שכן", הוא רקע. */
+function sliverNeighbors(it, yMin, yMax, max = 5) {
+  const windowSpan = yMax - yMin;
+  const minOverlap = Math.max(8, Math.round(windowSpan * 0.08));
+  const maxSpan = windowSpan * 1.8;
+  return items
+    .filter((o) => {
+      if (o === it) return false;
+      if (o.start === o.end) return o.start >= yMin && o.start <= yMax;
+      if (o.end - o.start > maxSpan) return false;
+      return Math.min(o.end, yMax) - Math.max(o.start, yMin) >= minOverlap;
+    })
+    .sort((a, b) => a.start - b.start)
+    .slice(0, max)
+    .map((o) => ({ name: o.name, start: o.start, end: o.end, color: KIND_COLOR[o.kind] || '#8a7250' }));
+}
+
+// שיבוץ שכבות: כל פריט נכנס לשורה הראשונה שהוא לא חופף בה
+function packLanes(list) {
+  const laneEnds = [];
+  return list.slice().sort((a, b) => a.start - b.start).map((it2) => {
+    let lane = laneEnds.findIndex((end) => it2.start >= end);
+    if (lane === -1) { lane = laneEnds.length; laneEnds.push(0); }
+    laneEnds[lane] = it2.end + (it2.end === it2.start ? 6 : 0);
+    return { ...it2, lane };
+  });
+}
+
+// מוקדם = ימין (x גדול), מאוחר = שמאל (x קטן) - כמו ציר הזמן האמיתי (RTL)
+// הגובה משתנה לפי מספר השורות שבאמת בשימוש - כדי ששורת הפריט המרכזי
+// למטה לעולם לא תתנגש עם תווית של שכן, גם כשיש מעט שכנים וגם כשיש חמישה
+function sliverSvg(own, ownColor, neighbors, yMin, yMax) {
+  const placed = packLanes(neighbors);
+  const laneCount = placed.reduce((m, n) => Math.max(m, n.lane + 1), 0);
+  const W = 560, padX = 16, padTop = 18, laneH = 25, ownArea = 72;
+  const lanesBottom = padTop + laneCount * laneH;
+  const baseY = lanesBottom + ownArea;
+  const H = baseY + 22;
+  const sx = (y) => padX + (W - padX * 2) - ((y - yMin) / (yMax - yMin)) * (W - padX * 2);
+  const esc2 = escAttr;
+  let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc2(`${own.name} על ציר הזמן`)}">`;
+  s += `<line class="sl-axis" x1="${padX}" x2="${W - padX}" y1="${baseY}" y2="${baseY}"/>`;
+  [yMin, yMax].forEach((y) => {
+    const px = sx(y);
+    s += `<line class="sl-tick" x1="${px}" x2="${px}" y1="${baseY - 3}" y2="${baseY + 3}"/>`;
+    s += `<text class="sl-tick-label" x="${px}" y="${baseY + 15}" text-anchor="${y === yMin ? 'end' : 'start'}">${y}</text>`;
+  });
+  placed.forEach((n) => {
+    const y = padTop + n.lane * laneH + 9;
+    // קיצוץ לגבולות המסגרת - שכן שרובו מחוץ לחלון לא ידחוף בר ענק
+    // מעבר לציר, גם אם החפיפה שהצדיקה את הכללתו קטנה
+    const x1 = sx(Math.max(n.start, yMin)), x2 = sx(Math.min(n.end, yMax));
+    if (n.start === n.end) s += `<circle class="sl-bar" cx="${x1}" cy="${y}" r="4.5" fill="${n.color}"/>`;
+    else s += `<rect class="sl-bar" x="${Math.min(x1, x2)}" y="${y - 4.5}" width="${Math.max(3, Math.abs(x2 - x1))}" height="9" rx="4.5" fill="${n.color}"/>`;
+    s += `<text class="sl-bar-label" x="${(x1 + x2) / 2}" y="${y - 8}" text-anchor="middle">${esc(n.name)}</text>`;
+  });
+  const oy = baseY - 28;
+  const ox1 = sx(own.start), ox2 = sx(own.end);
+  if (own.start === own.end) s += `<circle class="sl-own-mark" cx="${ox1}" cy="${oy}" r="7.5" fill="${ownColor}"/>`;
+  else s += `<rect class="sl-own-mark" x="${Math.min(ox1, ox2)}" y="${oy - 6.5}" width="${Math.max(7, Math.abs(ox2 - ox1))}" height="13" rx="6.5" fill="${ownColor}"/>`;
+  s += `<text class="sl-own-label" x="${(ox1 + ox2) / 2}" y="${oy - 15}" text-anchor="middle" fill="${ownColor}">${esc(own.name)}</text>`;
+  s += `<text class="sl-own-year" x="${(ox1 + ox2) / 2}" y="${oy + 20}" text-anchor="middle">${own.start === own.end ? own.start : `${own.start}–${own.end}`}</text>`;
+  s += '</svg>';
+  return s;
+}
 
 const STYLE = `
 @font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;font-display:swap;src:url('/fonts/frankruhllibre-hebrew.woff2') format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
@@ -187,6 +267,23 @@ footer a{color:var(--gold)}
   background:rgba(22,58,92,.93);color:#fdf6e6;font-size:13.5px;font-weight:700;
   padding:7px 13px;border-radius:999px;box-shadow:0 4px 12px rgba(20,40,60,.25)}
 .hero:hover .hero-tag{background:var(--gold);color:#20180a}
+/* רצועת ציר-זמן - חלופה למפה כשאין מסע גיאוגרפי (אירוע/ספר/רקע עולמי/
+   דמות בלי תחנות). אותו מכל (.hero) ואותה תווית פינתית, בלי תמונה -
+   ה-SVG וקטורי לגמרי כך שאין קובץ נפרד לצרוב בבנייה. */
+.hero.sliver{line-height:normal;display:flex;flex-direction:column;justify-content:center;
+  background:#f4e9d1;padding:26px 24px}
+.hero.sliver::after{display:none}
+.sliver-period{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.3px;margin:0 0 10px}
+.sliver-period b{color:var(--ink)}
+.hero.sliver svg{display:block;width:100%;height:auto;overflow:visible}
+.sl-axis{stroke:var(--line);stroke-width:1.5}
+.sl-tick{stroke:var(--line);stroke-width:1}
+.sl-tick-label{font-family:'Heebo',sans-serif;font-size:10px;fill:var(--muted)}
+.sl-bar{opacity:.38}
+.sl-bar-label{font-family:'Heebo',sans-serif;font-size:10px;font-weight:600;fill:var(--muted)}
+.sl-own-mark{stroke:#f4e9d1;stroke-width:2}
+.sl-own-label{font-family:'Frank Ruhl Libre',serif;font-size:13px;font-weight:700}
+.sl-own-year{font-family:'Heebo',sans-serif;font-size:10px;font-weight:600;fill:var(--muted)}
 .gopts.big{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
 .gopt.big{flex-direction:column;text-align:center;border-width:2px;border-radius:16px;
   padding:14px 10px 13px;gap:7px}
@@ -256,6 +353,9 @@ body.bg-og .gate-hero{box-shadow:0 10px 30px rgba(60,45,20,.14)}
      והמעבר הרך אל הקלף מסתיר את השאריות */
   .gate-hero.split .hero::after{display:block;top:0;bottom:0;right:0;left:auto;width:64px;height:auto;
     background:linear-gradient(to left,rgba(253,248,236,.92),rgba(253,248,236,0))}
+  /* לרצועה אין קצה תמונה שצריך להסתיר - הרקע שלה כבר קלף שטוח */
+  .gate-hero.split .hero.sliver::after{display:none}
+  .gate-hero.split .hero.sliver{padding:30px 32px}
   .gate-hero.split .gate-body{grid-area:1/1;display:flex;flex-direction:column;
     justify-content:center;padding:38px 40px}
   .gate-hero.split h1{font-size:46px;margin-bottom:6px}
@@ -472,13 +572,32 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
      מימין והמפה משמאל - ולכן יש שני חיתוכים: רחב לפס העליון בטלפון,
      ומאונך לעמודה. התמונה עצמה היא קישור למסע הדורות. */
   const heroPts = PILOT.has(key) ? journeyStations(maps[it.id]) : [];
-  const heroHtml = heroPts.length >= 2 ? `<a class="hero" href="/atlas?sel=${key}">
+  const mapHeroHtml = heroPts.length >= 2 ? `<a class="hero" href="/atlas?sel=${key}">
 <picture>
 <source media="(min-width:860px)" srcset="/hero/${it.kind}/${it.id}-split.jpg" width="${HERO_SPLIT.w}" height="${HERO_SPLIT.h}"/>
 <img src="/hero/${it.kind}/${it.id}.jpg" width="${HERO_SIZE.w}" height="${HERO_SIZE.h}" alt="${escAttr(`מפת המסע של ${it.name}`)}"/>
 </picture>
 <span class="hero-tag">🗺️ ${heroPts.length} תחנות במסע · לחצו לצפייה ←</span>
 </a>` : '';
+
+  /* פיילוט שני: לפריט בלי מסע (heroPts ריק) אבל כן ב-PILOT - במקום
+     מפה, רצועת ציר-זמן ממורכזת סביבו. ה-SVG וקטורי ונבנה כאן ישירות,
+     בלי קובץ תמונה נפרד. */
+  let sliverHeroHtml = '';
+  if (PILOT.has(key) && heroPts.length < 2) {
+    const pad = Math.max(35, Math.round((it.end - it.start) * 0.5));
+    const yMin = it.start - pad, yMax = it.end + pad;
+    const neighbors = sliverNeighbors(it, yMin, yMax);
+    const ownColor = KIND_COLOR[it.kind] || '#8a7250';
+    const periodBit = era ? `<div class="sliver-period">תקופה: <b>${esc(era.name)}</b> (${era.start}–${era.end})</div>` : '';
+    sliverHeroHtml = `<a class="hero sliver" href="/?sel=${key}">
+${periodBit}
+${sliverSvg({ name: it.name, start: it.start, end: it.end }, ownColor, neighbors, yMin, yMax)}
+<span class="hero-tag">📜 על ציר הזמן · לחצו לצפייה ←</span>
+</a>`;
+  }
+
+  const heroHtml = mapHeroHtml || sliverHeroHtml;
 
   // התוכן המלא של הדף - מה שגוגל מאנדקס - יושב מתחת לשער
   const article = `
