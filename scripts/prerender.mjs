@@ -223,15 +223,19 @@ footer a{color:var(--gold)}
   .gopt.big .gi{width:44px;height:44px;font-size:23px}
   .gopt.big .gt{font-size:18px}
   .gopt.big .garrow{display:block}
-  .wrap.bare{padding:14px 12px 24px}
+  .wrap.bare{padding:0 12px 24px}
 }
 /* מחשב: הכרטיס נפתח לשתי עמודות - הבחירה מימין, המפה משמאל וממלאת
    את מלוא גובה הכרטיס. זה גם מוותר על החיתוך הרחב לטובת חיתוך מאונך
    (picture/source), כדי שהמפה לא תיחתך אלא תראה יותר ארץ. */
 .wrap.wide{max-width:1040px}
-/* כשהכרטיס הוא כל הדף, הוא יושב במרכז המסך ולא נדבק לקצה העליון עם
-   שטח ריק מתחתיו. safe מונע חיתוך של הראש במסך נמוך מהכרטיס. */
-.wrap.bare{padding-top:26px;min-height:100dvh;display:flex;flex-direction:column;justify-content:safe center}
+/* הכרטיס תופס את המסך הראשון לבדו ויושב במרכזו; הגלילה חושפת
+   את הטקסט המלא מתחתיו, ברוחב קריא של 720. safe מונע חיתוך של הראש
+   כשהכרטיס גבוה מהמסך. */
+.wrap.bare{padding-top:0;padding-bottom:40px}
+.screen{min-height:100dvh;display:flex;flex-direction:column;justify-content:safe center;padding:20px 0}
+.below{max-width:720px;margin:0 auto}
+.wrap.wide footer{max-width:720px;margin-inline:auto}
 @media (min-width:860px){
   .gate-hero.split{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);align-items:stretch}
   .gate-hero.split .hero{grid-area:1/2;height:100%}
@@ -297,6 +301,13 @@ const optTimeline = (q = '') => ({ icon: '📜', href: `/${q}`, title: 'ציר �
 const optAtlas = (q = '') => ({ icon: '🗺️', href: `/atlas${q}`, title: 'מסע הדורות', sub: 'לעקוב אחרי המסע על המפה' });
 const optPlaces = (q = '') => ({ icon: '📍', href: `/places${q}`, title: 'מפת המקומות', sub: 'לראות מה קרה בכל מקום' });
 
+// פירורי לחם כניווט גלוי. בדף שהכרטיס פותח אותו הם יורדים מהראש
+// ומוצגים בתחילת התוכן שמתחתיו, ולכן זו פונקציה ולא קוד בתוך shell.
+const crumbsNav = (crumbs) => (crumbs && crumbs.length ? `
+<nav class="crumbs" aria-label="מיקום באתר">${crumbs.map((c) =>
+    c.url ? `<a href="${escAttr(c.url)}">${esc(c.name)}</a>` : `<span aria-current="page">${esc(c.name)}</span>`
+  ).join('<span class="sep"> / </span>')}</nav>` : '');
+
 function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, prefetch = 'main',
   wide = false, bare = false }) {
   const img = ogImage || `${SITE}/og-image.jpg`;
@@ -310,10 +321,7 @@ function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, p
     })),
   } : null;
   const ld = crumbLd ? [jsonld, crumbLd].filter(Boolean) : jsonld;
-  const crumbsHtml = crumbs && crumbs.length ? `
-<nav class="crumbs" aria-label="מיקום באתר">${crumbs.map((c) =>
-    c.url ? `<a href="${escAttr(c.url)}">${esc(c.name)}</a>` : `<span aria-current="page">${esc(c.name)}</span>`
-  ).join('<span class="sep"> / </span>')}</nav>` : '';
+  const crumbsHtml = crumbsNav(crumbs);
   return `<!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -345,7 +353,7 @@ ${ld ? `<script type="application/ld+json">${JSON.stringify(ld)}</script>` : ''}
 ${bare ? '' : `<header><a href="/">← ציר הזמן של עם ישראל</a></header>
 ${crumbsHtml}`}
 ${body}
-${bare ? '' : '<footer>חלק מ<a href="/">ציר הזמן של עם ישראל</a> · מהאבות ועד חורבן בית שני · <a href="/p">מפת האתר</a></footer>'}
+<footer>חלק מ<a href="/">ציר הזמן של עם ישראל</a> · מהאבות ועד חורבן בית שני · <a href="/p">מפת האתר</a></footer>
 </div></body>
 </html>`;
 }
@@ -459,27 +467,9 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
 </picture>
 <span class="hero-tag">🗺️ ${heroPts.length} תחנות במסע · לחצו לצפייה ←</span>
 </a>` : '';
-  if (heroHtml) gateOpts[0].primary = true;
 
-  /* בדף הפיילוט הכרטיס הוא כל הדף: אין טקסט מתחתיו, אין פירורי לחם
-     ואין כותרת עליונה. שימו לב שזה מוריד מהדף את התוכן שגוגל מאנדקס -
-     החלטה שצריכה מענה לפני שמרחיבים את העיצוב לשאר הדפים. */
-  const body = heroHtml ? `
-${gate({
-    chip: km.label, name: it.name, dates,
-    lead: firstSentence(desc, 190),
-    question: `איך תרצו לגלות את ${it.name}?`,
-    opts: gateOpts,
-    hero: heroHtml,
-    split: true,
-  })}` : `
-${gate({
-    chip: km.label, name: it.name, dates,
-    lead: firstSentence(desc, 190),
-    question: `איך תרצו לגלות את ${it.name}?`,
-    opts: gateOpts,
-    readLabel: `או קראו כאן על ${it.name}`,
-  })}
+  // התוכן המלא של הדף - מה שגוגל מאנדקס - יושב מתחת לשער
+  const article = `
 <section id="more">
 <h2>על ${esc(it.name)}</h2>
 ${rows.join('\n')}
@@ -496,8 +486,31 @@ ${placeHtml}
 </div>
 ${rel}`;
 
+  const gateHtml = gate({
+    chip: km.label, name: it.name, dates,
+    lead: firstSentence(desc, 190),
+    question: `איך תרצו לגלות את ${it.name}?`,
+    opts: gateOpts,
+    readLabel: `או קראו כאן על ${it.name}`,
+    hero: heroHtml,
+    split: !!heroHtml,
+  });
+
+  /* בדף הפיילוט הכרטיס תופס את המסך הראשון לבדו - בלי כותרת עליונה
+     ובלי פירורי לחם מעליו - והגלילה חושפת את הטקסט המלא מתחתיו. */
+  const body = heroHtml
+    ? `<div class="screen">
+${gateHtml}
+</div>
+<div class="below">${crumbsNav(crumbs)}
+${article}
+</div>`
+    : `
+${gateHtml}
+${article}`;
+
   return shell({ title: `${it.name}: ${km.label} - ציר הזמן של עם ישראל`, description: metaDesc, canonical, jsonld, body,
-    ogImage, crumbs: heroHtml ? null : crumbs, wide: !!heroHtml, bare: !!heroHtml });
+    ogImage, crumbs, wide: !!heroHtml, bare: !!heroHtml });
 }
 
 // דף תקופה - מרכז את כל מי שחי/התרחש בה
