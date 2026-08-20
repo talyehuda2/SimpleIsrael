@@ -229,13 +229,18 @@ footer a{color:var(--gold)}
    את מלוא גובה הכרטיס. זה גם מוותר על החיתוך הרחב לטובת חיתוך מאונך
    (picture/source), כדי שהמפה לא תיחתך אלא תראה יותר ארץ. */
 .wrap.wide{max-width:1040px}
-.wrap.bare{padding-top:26px}
+/* כשהכרטיס הוא כל הדף, הוא יושב במרכז המסך ולא נדבק לקצה העליון עם
+   שטח ריק מתחתיו. safe מונע חיתוך של הראש במסך נמוך מהכרטיס. */
+.wrap.bare{padding-top:26px;min-height:100dvh;display:flex;flex-direction:column;justify-content:safe center}
 @media (min-width:860px){
   .gate-hero.split{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);align-items:stretch}
   .gate-hero.split .hero{grid-area:1/2;height:100%}
   .gate-hero.split .hero picture{display:block;height:100%}
   .gate-hero.split .hero img{width:100%;height:100%;object-fit:cover;aspect-ratio:auto}
-  .gate-hero.split .hero::after{display:none}
+  /* התפר בין המפה לעמודת הטקסט: המפה נחתכת שם באמצע תוויות משלה,
+     והמעבר הרך אל הקלף מסתיר את השאריות */
+  .gate-hero.split .hero::after{display:block;top:0;bottom:0;right:0;left:auto;width:64px;height:auto;
+    background:linear-gradient(to left,rgba(253,248,236,.92),rgba(253,248,236,0))}
   .gate-hero.split .gate-body{grid-area:1/1;display:flex;flex-direction:column;
     justify-content:center;padding:28px 30px}
   .gate-hero.split h1{font-size:40px;margin-bottom:5px}
