@@ -178,13 +178,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .sr-dot.event { background: var(--event); }
 
 /* ----- כפתור אילן יוחסין ----- */
+/* אותו עיצוב כמו share-btn - מתאר בלבד, בלי כחול - כדי שיהיה עוד
+   כלי בסרגל ולא הדגשה מיוחדת. */
 .tree-btn {
   display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
-  background: var(--navy); color: #fff; border: none; border-radius: 20px;
-  padding: 8px 15px; font-family: inherit; font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: background .12s, transform .1s;
+  background: transparent; color: var(--navy); border: 1.5px solid var(--line);
+  border-radius: 20px; padding: 7px 14px; font-family: inherit; font-size: 13px;
+  font-weight: 600; cursor: pointer; transition: background .12s, border-color .12s, transform .1s;
 }
-.tree-btn:hover { background: var(--navy-2); transform: translateY(-1px); }
+.tree-btn:hover { background: var(--panel); border-color: var(--gold); transform: translateY(-1px); }
 /* דמות היום - הדגשה זהובה עדינה, מזמינה לגלות */
 /* מתג המבטים - פקד מפוצל. שתי האפשרויות גלויות תמיד, הנוכחית ממולאת
    והשנייה מזמינה ללחיצה: כך רואים שיש בדיוק שני מצבים ואיפה אנחנו. */

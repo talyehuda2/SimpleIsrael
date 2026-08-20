@@ -860,12 +860,13 @@ export default function App() {
             <div className="ctrl-group">
               <span className="ctrl-label">שכבות</span>
               <div className="toggles">
+                {/* אותו סדר כמו רצועות ציר הזמן עצמו, מלמעלה למטה */}
+                <label><input type="checkbox" checked={visible.events} onChange={() => toggle('events')} /> <span className="tg-dot dot-events" aria-hidden="true" />אירועים</label>
                 {!isAcademic && <label><input type="checkbox" checked={visible.leaders} onChange={() => toggle('leaders')} /> <span className="tg-dot dot-leaders" aria-hidden="true" />אבות ומנהיגים</label>}
                 {!isAcademic && <label><input type="checkbox" checked={visible.judges} onChange={() => toggle('judges')} /> <span className="tg-dot dot-judges" aria-hidden="true" />שופטים</label>}
                 <label><input type="checkbox" checked={visible.kings} onChange={() => toggle('kings')} /> <span className="tg-dot dot-kings" aria-hidden="true" />מלכים</label>
                 <label><input type="checkbox" checked={visible.prophets} onChange={() => toggle('prophets')} /> <span className="tg-dot dot-prophets" aria-hidden="true" />נביאים</label>
                 <label><input type="checkbox" checked={visible.books} onChange={() => toggle('books')} /> <span className="tg-dot dot-books" aria-hidden="true" />ספרים</label>
-                <label><input type="checkbox" checked={visible.events} onChange={() => toggle('events')} /> <span className="tg-dot dot-events" aria-hidden="true" />אירועים</label>
                 <label><input type="checkbox" checked={visible.world} onChange={() => toggle('world')} /> <span className="tg-dot dot-world" aria-hidden="true" />רקע עולמי</label>
               </div>
             </div>

@@ -5,13 +5,14 @@ import { ALL_ITEMS } from '../data/items.js';
 import TOURS from '../data/tours.json';
 import { shareLink } from '../lib/share.js';
 const $ = (s) => document.querySelector(s);
+// אותו סדר כמו רצועות ציר הזמן עצמו
 const LAYERS = [
+  { key:'events',  label:'אירועים',       color:'var(--event)',   icon:'◆'  },
   { key:'leaders', label:'אבות ומנהיגים', color:'var(--leader)',  icon:'🏛️' },
   { key:'judges',  label:'שופטים',        color:'var(--judge)',   icon:'⚖️' },
   { key:'kings',   label:'מלכים',         color:'var(--judah)',   icon:'👑' },
   { key:'prophets',label:'נביאים',        color:'var(--prophet)', icon:'📜' },
   { key:'books',   label:'ספרי תנ״ך',     color:'var(--book)',    icon:'📖' },
-  { key:'events',  label:'אירועים',       color:'var(--event)',   icon:'◆'  },
   { key:'world',   label:'רקע עולמי',     color:'var(--world)',   icon:'🌍' },
 ];
 const KIND_COLOR = { leader:'var(--leader)', judge:'var(--judge)', united:'var(--united)', judah:'var(--judah)',
