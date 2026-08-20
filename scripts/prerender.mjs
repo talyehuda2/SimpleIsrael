@@ -262,7 +262,9 @@ body.bg-og{position:relative}
   .gate-hero.split{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);align-items:stretch}
   .gate-hero.split .hero{grid-area:1/2;height:100%}
   .gate-hero.split .hero picture{display:block;height:100%}
-  .gate-hero.split .hero img{width:100%;height:100%;object-fit:cover;aspect-ratio:auto}
+  /* החיתוך נוטה מזרחה: הצד המערבי של המפה הוא ים, ובשוליים המרוככים
+     שמו של הים נקטע באמצע ונראה כמו כתם כחול */
+  .gate-hero.split .hero img{width:100%;height:100%;object-fit:cover;object-position:75% center;aspect-ratio:auto}
   /* התפר בין המפה לעמודת הטקסט: המפה נחתכת שם באמצע תוויות משלה,
      והמעבר הרך אל הקלף מסתיר את השאריות */
   .gate-hero.split .hero::after{display:block;top:0;bottom:0;right:0;left:auto;width:64px;height:auto;
