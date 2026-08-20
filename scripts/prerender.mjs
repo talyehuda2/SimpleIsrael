@@ -247,14 +247,15 @@ body.bg-og{position:relative}
   body.bg-og .wrap{position:relative;z-index:1}
   /* השוליים מתמוססים: במקום מלבן עם מסגרת שיושב על האיור, הכרטיס
      נטמע בו. שני מסכות נחתכים זה בזה נותנים ריכוך בארבעת הצדדים;
-     28px הוא פחות מרווח הפנים של הטקסט, ולכן שום מילה לא מחוורת. */
+     מרווח הפנים גדל ל-46px כדי שהטקסט יתחיל אחרי שהריכוך נגמר. */
   body.bg-og .gate-hero{border-color:transparent;box-shadow:none;
-    -webkit-mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent),
-      linear-gradient(to bottom,transparent,#000 28px,#000 calc(100% - 28px),transparent);
+    -webkit-mask-image:linear-gradient(to right,transparent,#000 44px,#000 calc(100% - 44px),transparent),
+      linear-gradient(to bottom,transparent,#000 44px,#000 calc(100% - 44px),transparent);
     -webkit-mask-composite:source-in;
-    mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent),
-      linear-gradient(to bottom,transparent,#000 28px,#000 calc(100% - 28px),transparent);
+    mask-image:linear-gradient(to right,transparent,#000 44px,#000 calc(100% - 44px),transparent),
+      linear-gradient(to bottom,transparent,#000 44px,#000 calc(100% - 44px),transparent);
     mask-composite:intersect}
+  body.bg-og .gate-hero.split .gate-body{padding:46px 46px 42px}
 }
 .wrap.wide footer{max-width:720px;margin-inline:auto}
 @media (min-width:860px){
