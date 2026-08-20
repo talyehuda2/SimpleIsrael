@@ -237,13 +237,17 @@ footer a{color:var(--gold)}
 .below{max-width:720px;margin:0 auto}
 /* המסך שמאחורי הכרטיס הוא תמונת השיתוף (og-image) - הרועה מצד
    אחד והמקדש מהצד השני. הרקע מכסה בדיוק את המסך הראשון
-   ולא ממשיך אל מתחת לטקסט, שישאר על קלף נקי. במסך צר מ-1200px
+   ולא ממשיך אל מתחת לטקסט, שישאר על קלף נקי. הכתם העגול במרכז מוחק
+   את כותרת האתר שבתמונה: הכרטיס מסתיר אותה במרכז, אבל בשוליים
+   המרוככים קצות האותיות הכחולות הציצו דרכו כמו כתמים. הרועה
+   והמקדש, שיושבים בצדדים, נשארים חדים. במסך צר מ-1200px
    הכרטיס מכסה כמעט את כל הרוחב ונשארת מסגרת צרה בלבד, ולכן לא
    מורידים שם 228KB עבור שוליים. */
 body.bg-og{position:relative}
 @media (min-width:1200px){
   body.bg-og::before{content:'';position:absolute;left:0;right:0;top:0;height:100dvh;z-index:0;
-    background:linear-gradient(rgba(239,228,200,.42),rgba(239,228,200,.42)),url('/og-image.jpg') center/cover no-repeat}
+    background:radial-gradient(62% 54% at 50% 40%,rgba(239,228,200,.94) 30%,rgba(239,228,200,0) 100%),
+      linear-gradient(rgba(239,228,200,.42),rgba(239,228,200,.42)),url('/og-image.jpg') center/cover no-repeat}
   body.bg-og .wrap{position:relative;z-index:1}
   /* השוליים מתמוססים: במקום מלבן עם מסגרת שיושב על האיור, הכרטיס
      נטמע בו. שני מסכות נחתכים זה בזה נותנים ריכוך בארבעת הצדדים;
