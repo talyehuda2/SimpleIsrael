@@ -42,6 +42,11 @@ function parseUrl() {
     // ?comments=1 - נחיתה עם התגובות פתוחות. מסע הדורות אינו טוען את
     // Supabase, ולכן כפתור התגובות שם מקשר לכאן.
     comments: p.get('comments') === '1',
+    // ?era / ?coll - שער הכניסה בדפי-הנחיתה (/p/period, /p/collection)
+    // שולח לכאן, וכדי שהמעבר יהיה רציף הציר נפתח כבר על אותה תקופה
+    // או עם אותו אוסף פתוח, ולא בתצוגת ברירת המחדל.
+    era: p.get('era'),
+    coll: p.get('coll'),
   };
 }
 
@@ -183,7 +188,8 @@ export default function App() {
   const exitTour = () => { tourActiveRef.current = false; setTour(null); };
 
   // אוספים תמטיים - קבוצות של דמויות/אירועים שקשורים ברעיון אחד
-  const [collection, setCollection] = useState(null);
+  const [collection, setCollection] = useState(
+    () => (INITIAL.coll ? collections.find((c) => c.id === INITIAL.coll) || null : null));
   // מזהה פריט → האוספים שהוא חבר בהם (לצ'יפ בכרטיס)
   const collectionsById = useMemo(() => {
     const m = {};
@@ -245,6 +251,10 @@ export default function App() {
   // מדריך היכרות - בביקור ראשון נפתח מסך-פתיחה קצר ("ברוכים הבאים");
   // כפתור ה-? פותח את הסיור המלא. ההעדפה נשמרת ב-localStorage.
   const [introOpen, setIntroOpen] = useState(() => {
+    // נחיתה עם כוונה מפורשת - קישור מדף-נחיתה, מגוגל או משיתוף - אינה
+    // נפתחת ב"ברוכים הבאים": המבקר ביקש דמות מסוימת ולא הזמנה כללית.
+    // ההעדפה לא נשמרת, כך שכניסה רגילה לדף הבית עדיין תציג את המסך.
+    if (INITIAL.sel || INITIAL.map || INITIAL.era || INITIAL.coll || INITIAL.tree) return false;
     try { return !localStorage.getItem('si_seen_intro'); } catch { return false; }
   });
   const [introMode, setIntroMode] = useState(introOpen ? 'welcome' : 'tour');
@@ -632,6 +642,19 @@ export default function App() {
     const px = Math.min(MAX_PX, Math.max(getMinPx(), (el.clientWidth - 40) / (preset.end - preset.start)));
     scrollToYear(preset.end, 20, px);
   };
+
+  // ?era=<id> - הגעה משער הכניסה של דף-תקופה. במקום לנחות בתצוגת
+  // ברירת המחדל, הציר נפתח כבר על אותה תקופה. ההשהיה נותנת לציר
+  // להימדד פעם אחת לפני הגלילה.
+  const eraApplied = useRef(false);
+  useEffect(() => {
+    if (eraApplied.current || !INITIAL.era) return undefined;
+    const p = periods.find((x) => x.id === INITIAL.era);
+    if (!p) return undefined;
+    eraApplied.current = true;
+    const t = setTimeout(() => goTo(p), 120);
+    return () => clearTimeout(t);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // התקופה שבמרכז התצוגה - מדליקה את הצ'יפ המתאים בפס התקופות
   const [activeEra, setActiveEra] = useState(null);

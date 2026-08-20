@@ -144,9 +144,71 @@ footer a{color:var(--gold)}
 .mlist a:hover b{color:var(--gold)}
 .mlist .dim{margin-inline-start:8px}
 .mlist p{margin:4px 0 0;font-size:15px;line-height:1.75;color:var(--muted)}
+/* שער הכניסה - הדבר הראשון בדף. הכותרת, ומיד אחריה הבחירה באיזה מבט
+   להיכנס לאתר עצמו. הטקסט המלא ממשיך מתחתיו. */
+.gate{margin:14px 0 8px;background:linear-gradient(180deg,#fdf8ec,#f4e9d1);
+  border:1px solid var(--line);border-radius:18px;padding:20px 18px 16px;
+  box-shadow:0 10px 26px rgba(90,70,30,.09)}
+.gate .chip{margin:0 0 2px}
+.gate h1{font-size:34px;margin:0 0 4px}
+.gate .dates{margin:0 0 10px}
+.gate .lead{margin:0 0 16px;font-size:16px;line-height:1.7;color:var(--muted)}
+.gate-q{margin:0 0 10px;font-size:15px;font-weight:700;color:var(--navy)}
+.gopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:10px}
+.gopt{display:flex;align-items:center;gap:11px;background:#fffdf7;border:1.5px solid var(--line);
+  border-radius:14px;padding:12px 14px;text-decoration:none;transition:border-color .15s,transform .15s}
+.gopt:hover{border-color:var(--gold);transform:translateY(-1px)}
+.gopt .gi{font-size:23px;line-height:1}
+.gopt .gt{display:block;color:var(--navy);font-weight:700;font-size:16.5px}
+.gopt .gs{display:block;color:var(--muted);font-size:12.5px;line-height:1.45}
+.gread{display:inline-block;margin-top:14px;font-size:14px;font-weight:700;color:var(--gold);text-decoration:none}
+.gread:hover{text-decoration:underline}
+#more{scroll-margin-top:12px}
+#more>h2:first-child{margin:26px 0 10px;font-size:20px;color:var(--navy);
+  border-bottom:2px solid var(--gold);padding-bottom:4px}
+@media (max-width:520px){
+  .gate{padding:16px 14px 14px}
+  .gate h1{font-size:29px}
+  .gopts{grid-template-columns:1fr}
+}
 `;
 
-function shell({ title, description, canonical, jsonld, body, ogImage, crumbs }) {
+/* ---- שער הכניסה ----
+   מי שמגיע מגוגל נוחת על דף-הנחיתה ולא על האתר עצמו, וראה טקסט בלבד.
+   הדף נשאר (הוא מה שגוגל מאנדקס), אבל הדבר הראשון שבו הוא הכותרת
+   ומיד אחריה בחירה בין המבטים - וכל בחירה נפתחת כבר על מה שחיפשו.
+   נכסי האפליקציה נטענים מראש ברקע כדי שהמעבר יהיה מיידי. */
+const assetLinks = (entry) => {
+  try {
+    const html = readFileSync(join(DIST, entry), 'utf8');
+    const urls = [...new Set([...html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map((m) => m[1]))];
+    return urls.map((u) => (u.endsWith('.css')
+      ? `<link rel="prefetch" as="style" href="${u}"/>`
+      : `<link rel="prefetch" as="script" crossorigin href="${u}"/>`)).join('\n');
+  } catch { return ''; } // הרצה ללא dist - פשוט בלי טעינה מראש
+};
+const PREFETCH = { main: assetLinks('index.html'), places: assetLinks('places.html') };
+
+function gate({ chip, name, dates, lead, question, opts, readLabel }) {
+  return `<div class="gate">
+<div class="chip">${esc(chip)}</div>
+<h1>${esc(name)}</h1>
+${dates ? `<div class="dates">${esc(dates)}</div>` : ''}
+${lead ? `<p class="lead">${esc(lead)}</p>` : ''}
+<p class="gate-q">${esc(question)}</p>
+<div class="gopts">
+${opts.map((o) => `  <a class="gopt" href="${escAttr(o.href)}"><span class="gi" aria-hidden="true">${o.icon}</span><span><span class="gt">${esc(o.title)}</span><span class="gs">${esc(o.sub)}</span></span></a>`).join('\n')}
+</div>
+<a class="gread" href="#more">${esc(readLabel)} ↓</a>
+</div>`;
+}
+
+// שלושת המבטים, עם היעד המדויק לכל דף
+const optTimeline = (q = '') => ({ icon: '📜', href: `/${q}`, title: 'ציר הזמן', sub: 'לראות מי חי לצד מי' });
+const optAtlas = (q = '') => ({ icon: '🗺️', href: `/atlas${q}`, title: 'מסע הדורות', sub: 'לעקוב אחרי המסע על המפה' });
+const optPlaces = (q = '') => ({ icon: '📍', href: `/places${q}`, title: 'מפת המקומות', sub: 'לראות מה קרה בכל מקום' });
+
+function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, prefetch = 'main' }) {
   const img = ogImage || `${SITE}/og-image.jpg`;
   // פירורי לחם: גם ניווט גלוי וגם BreadcrumbList לגוגל (מוצג בתוצאות החיפוש)
   const crumbLd = crumbs && crumbs.length ? {
@@ -186,6 +248,7 @@ function shell({ title, description, canonical, jsonld, body, ogImage, crumbs })
 <meta name="twitter:description" content="${escAttr(description)}"/>
 <meta name="twitter:image" content="${img}"/>
 <style>${STYLE}</style>
+${PREFETCH[prefetch] || ''}
 ${ld ? `<script type="application/ld+json">${JSON.stringify(ld)}</script>` : ''}
 </head>
 <body><div class="wrap">
@@ -287,21 +350,36 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
   const verseHtml = it.verse ? `
 <blockquote class="verse"><span class="vtext">${esc(it.verse)}</span>${it.verseRef ? `<cite>${esc(it.verseRef)}</cite>` : ''}</blockquote>` : '';
 
+  // שער הכניסה: שלושת המבטים, כל אחד נפתח כבר על הפריט הזה
+  const key = `${it.kind}:${it.id}`;
+  const gateOpts = [optTimeline(`?sel=${key}`), optAtlas(`?sel=${key}`)];
+  // המקום שנפתח הוא התחנה הראשונה בזמן, לא הראשונה באינדקס
+  const yearAt = (pl) => (pl.visits.find((v) => v.id === it.id) || {}).year ?? Infinity;
+  const firstStop = visited.slice().sort((a, b) => yearAt(a) - yearAt(b))[0];
+  if (firstStop) gateOpts.push(optPlaces(`?p=${encodeURIComponent(firstStop.id)}`));
+
   const body = `
-<div class="chip">${esc(km.label)}</div>
-<h1>${esc(it.name)}</h1>
-<div class="dates">${esc(dates)}</div>
+${gate({
+    chip: km.label, name: it.name, dates,
+    lead: firstSentence(desc, 190),
+    question: `איך תרצו לגלות את ${it.name}?`,
+    opts: gateOpts,
+    readLabel: `או קראו כאן על ${it.name}`,
+  })}
+<section id="more">
+<h2>על ${esc(it.name)}</h2>
 ${rows.join('\n')}
 <p class="desc">${esc(desc)}</p>
 ${verseHtml}
 ${srcHtml ? `<div class="src"><b>מקור:</b> ${srcHtml}</div>` : ''}
-<div class="ctas">
-  <a class="cta" href="/?sel=${it.kind}:${it.id}">📜 פתחו בציר הזמן ←</a>
-  <a class="cta ghost" href="/atlas?sel=${it.kind}:${it.id}">🗺️ צאו למסע הדורות ←</a>
-</div>
+</section>
 ${visitedHtml}
 ${contempHtml}
 ${placeHtml}
+<div class="ctas">
+  <a class="cta" href="/?sel=${key}">📜 פתחו בציר הזמן ←</a>
+  <a class="cta ghost" href="/atlas?sel=${key}">🗺️ צאו למסע הדורות ←</a>
+</div>
 ${rel}`;
 
   return shell({ title: `${it.name}: ${km.label} - ציר הזמן של עם ישראל`, description: metaDesc, canonical, jsonld, body,
@@ -316,15 +394,20 @@ function periodPage(p, i) {
   const prev = sortedPeriods[i - 1], next = sortedPeriods[i + 1];
   const metaDesc = truncate(`${p.name} (${p.start}–${p.end}) - כל הדמויות, האירועים וספרי התנ״ך של התקופה: ${list.slice(0, 6).map((x) => x.name).join(', ')}`, 155);
   const body = `
-<div class="chip">תקופה</div>
-<h1>${esc(p.name)}</h1>
-<div class="dates">${esc(formatRange(p.start, p.end, 'tradition'))}</div>
-<p class="desc">${esc(`${list.length} דמויות, אירועים וספרים מתוארכים לתקופה זו.`)}</p>
-<div class="ctas">
-  <a class="cta" href="/">📜 פתחו בציר הזמן ←</a>
-  <a class="cta ghost" href="/atlas">🗺️ צאו למסע הדורות ←</a>
-</div>
-<div class="idx">
+${gate({
+    chip: 'תקופה', name: p.name, dates: formatRange(p.start, p.end, 'tradition'),
+    lead: `${list.length} דמויות, אירועים וספרים מתוארכים לתקופה זו.`,
+    question: `איך תרצו לגלות את ${p.name}?`,
+    // ?era פותח את הציר גלול לתקופה ואת מפת המקומות מסוננת אליה,
+    // ומסע הדורות נפתח על הפריט הראשון שבה
+    opts: [
+      optTimeline(`?era=${p.id}`),
+      optAtlas(list.length ? `?sel=${list[0].kind}:${list[0].id}` : ''),
+      optPlaces(`?era=${p.id}`),
+    ],
+    readLabel: 'או קראו כאן מי היה בתקופה',
+  })}
+<div class="idx" id="more">
 ${Object.entries(groups).map(([g, arr]) => `<h2>${esc(g)}</h2>
 <ul>${arr.map((it) => `<li><a href="/p/${it.kind}/${it.id}">${esc(it.name)}</a></li>`).join('')}</ul>`).join('\n')}
 </div>
@@ -376,12 +459,21 @@ function collectionPage(c) {
   const eras = [...new Set(members.map((m) => periodOf(m)).filter(Boolean).map((p) => p.id))]
     .map((id) => sortedPeriods.find((p) => p.id === id));
   const body = `
-<div class="chip">אוסף</div>
-<h1>${esc(c.icon)} ${esc(c.title)}</h1>
-<div class="dates">${esc(c.subtitle)} · ${members.length} דמויות${span ? ` · ${esc(span)}` : ''}</div>
-<p class="desc">${esc(c.description)}</p>
+${gate({
+    chip: 'אוסף', name: `${c.icon} ${c.title}`,
+    dates: `${c.subtitle} · ${members.length} דמויות${span ? ` · ${span}` : ''}`,
+    lead: c.description,
+    question: 'איך תרצו לגלות את האוסף?',
+    // ?coll פותח את הציר עם כרטיס האוסף פרוש
+    opts: [
+      optTimeline(`?coll=${c.id}`),
+      optAtlas(members.length ? `?sel=${members[0].kind}:${members[0].id}` : ''),
+      optPlaces(),
+    ],
+    readLabel: 'או קראו כאן על הדמויות',
+  })}
 ${eras.length ? `<div class="row"><b>תקופות:</b> ${eras.map((p) => `<a href="/p/period/${p.id}">${esc(p.name)}</a>`).join(' · ')}</div>` : ''}
-<section class="related">
+<section class="related" id="more">
   <h2>הדמויות באוסף</h2>
   <p class="related-sub">לחצו על שם כדי לקרוא את הסיפור המלא, המקורות והמפה.</p>
   <ol class="mlist">
@@ -392,7 +484,7 @@ ${eras.length ? `<div class="row"><b>תקופות:</b> ${eras.map((p) => `<a hre
     </li>`).join('\n    ')}
   </ol>
 </section>
-<a class="cta" href="/">פתחו בציר הזמן האינטראקטיבי ←</a>
+<a class="cta" href="/?coll=${c.id}">פתחו בציר הזמן האינטראקטיבי ←</a>
 <section class="related">
   <h2>אוספים נוספים</h2>
   <ul class="chips">
@@ -462,17 +554,20 @@ function placePage(p) {
   const nearby = nearbyOf(p);
 
   const body = `
-<div class="chip">מקום</div>
-<h1>${esc(p.name)}</h1>
-<div class="dates">${evCount(p.visits.length)} · ${esc(span)}</div>
+${gate({
+    chip: 'מקום', name: p.name, dates: `${evCount(p.visits.length)} · ${span}`,
+    lead: intro,
+    question: `איך תרצו לגלות את ${p.name}?`,
+    opts: [
+      optPlaces(`?p=${encodeURIComponent(p.id)}`),
+      optAtlas(`?sel=${first.kind}:${first.id}`),
+      optTimeline(`?sel=${first.kind}:${first.id}`),
+    ],
+    readLabel: 'או קראו כאן מה קרה במקום',
+  })}
 ${p.aka.length ? `<div class="row"><b>נקרא גם:</b> ${p.aka.map(esc).join(' · ')}</div>` : ''}
 ${eras.length ? `<div class="row"><b>תקופות:</b> ${eras.map((e) => `<a href="/p/period/${e.id}">${esc(e.name)}</a>`).join(' · ')}</div>` : ''}
-<p class="desc">${esc(intro)}</p>
-<div class="ctas">
-  <a class="cta" href="/places?p=${encodeURIComponent(p.id)}">📍 פתחו במפת המקומות ←</a>
-  <a class="cta ghost" href="/atlas?sel=${first.kind}:${first.id}">🗺️ צאו למסע הדורות ←</a>
-</div>
-<section class="related">
+<section class="related" id="more">
   <h2>מה קרה כאן, לפי הסדר</h2>
   <p class="related-sub">כל מי שעבר ב${esc(p.name)} על ציר הזמן:</p>
   <ol class="mlist">
@@ -515,6 +610,8 @@ ${restOfJourney.length ? `<section class="related">
     },
     body,
     ogImage: `${SITE}/og/place/${encodeURIComponent(p.id)}.jpg`,
+    // המבט הראשי של דף-מקום הוא מפת המקומות - היא זו שנטענת מראש
+    prefetch: 'places',
     crumbs: [
       { name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
       { name: 'מפת המקומות', url: `${SITE}/places` },
@@ -571,10 +668,15 @@ for (const it of items) {
   const g = KINDS[it.kind].group;
   (groups[g] ||= []).push(it);
 }
-const idxBody = `<div class="chip">מפת האתר</div>
-<h1>כל הדמויות והאירועים</h1>
-<p class="desc">רשימת כל הדמויות, האירועים וספרי התנ״ך שעל ציר הזמן. לחצו על שם כדי לקרוא עליו, או פתחו את <a href="/">הציר האינטראקטיבי</a>.</p>
-<div class="idx">
+const idxBody = `${gate({
+  chip: 'מפת האתר', name: 'כל הדמויות והאירועים',
+  dates: `${items.length} דמויות, אירועים וספרים · ${sortedPeriods.length} תקופות · ${placesIndex.length} מקומות`,
+  lead: 'שלושה מבטים על אותו סיפור: הציר לפי הזמן, המפה לפי המסע, והמפה לפי המקום.',
+  question: 'איך תרצו להתחיל?',
+  opts: [optTimeline(), optAtlas(), optPlaces()],
+  readLabel: 'או עיינו כאן ברשימה המלאה',
+})}
+<div class="idx" id="more">
 <h2>תקופות</h2>
 <ul>${sortedPeriods.map((p) => `<li><a href="/p/period/${p.id}">${esc(p.name)}</a></li>`).join('')}</ul>
 <h2>אוספים</h2>

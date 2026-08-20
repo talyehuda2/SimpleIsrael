@@ -342,7 +342,15 @@ function stopPlay() {
 
 // ==================== אתחול ====================
 function openFromUrl(replace = true) {
-  const id = new URLSearchParams(location.search).get('p');
+  const q = new URLSearchParams(location.search);
+  // ?era=<id> - הגעה משער הכניסה של דף-תקופה: המפה נפתחת כשהתקופה
+  // כבר מסומנת. מוחל לפני הבחירה, כי setEra מנקה מקום פתוח.
+  const e = q.get('era');
+  if (e && (!era || era.id !== e)) {
+    const hit = ERAS.find((x) => x.id === e);
+    if (hit) setEra(hit);
+  }
+  const id = q.get('p');
   if (id && PLACES.some((p) => p.id === id)) select(id, replace);
   else select(null, replace);
 }
