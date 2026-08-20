@@ -14,7 +14,8 @@ import { writeHero } from './hero.mjs';
    השער וכפתורי בחירה גדולים. כשהעיצוב יאושר - מרחיבים לכל דף שיש לו
    מסע (יש כאלה 92), ולשאר הדפים נדרש פתיח משלהם. */
 const PILOT = new Set(['prophet:eliyahu']);
-const HERO_SIZE = { w: 1080, h: 490 };
+const HERO_SIZE = { w: 1080, h: 490 };   // פס עליון (טלפון/טאבלט)
+const HERO_SPLIT = { w: 900, h: 820 };  // עמודה מאונכת (מחשב)
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -222,6 +223,30 @@ footer a{color:var(--gold)}
   .gopt.big .gi{width:44px;height:44px;font-size:23px}
   .gopt.big .gt{font-size:18px}
   .gopt.big .garrow{display:block}
+  .wrap.bare{padding:14px 12px 24px}
+}
+/* מחשב: הכרטיס נפתח לשתי עמודות - הבחירה מימין, המפה משמאל וממלאת
+   את מלוא גובה הכרטיס. זה גם מוותר על החיתוך הרחב לטובת חיתוך מאונך
+   (picture/source), כדי שהמפה לא תיחתך אלא תראה יותר ארץ. */
+.wrap.wide{max-width:1040px}
+.wrap.bare{padding-top:26px}
+@media (min-width:860px){
+  .gate-hero.split{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);align-items:stretch}
+  .gate-hero.split .hero{grid-area:1/2;height:100%}
+  .gate-hero.split .hero picture{display:block;height:100%}
+  .gate-hero.split .hero img{width:100%;height:100%;object-fit:cover;aspect-ratio:auto}
+  .gate-hero.split .hero::after{display:none}
+  .gate-hero.split .gate-body{grid-area:1/1;display:flex;flex-direction:column;
+    justify-content:center;padding:28px 30px}
+  .gate-hero.split h1{font-size:40px;margin-bottom:5px}
+  .gate-hero.split .lead{font-size:16.5px;margin-bottom:16px}
+  .gate-hero.split .gate-q{font-size:16px;margin-bottom:11px}
+  .gate-hero.split .gopts.big{grid-template-columns:1fr;gap:11px}
+  .gate-hero.split .gopt.big{flex-direction:row;text-align:start;gap:14px;padding:13px 16px;min-height:80px}
+  .gate-hero.split .gopt.big .gtx{flex:1 1 auto}
+  .gate-hero.split .gopt.big .gt{font-size:19px}
+  .gate-hero.split .gopt.big .gs{font-size:13.5px}
+  .gate-hero.split .gopt.big .garrow{display:block}
 }
 `;
 
@@ -243,7 +268,7 @@ const PREFETCH = { main: assetLinks('index.html'), places: assetLinks('places.ht
 
 /* hero - רצועת מפה בראש השער (ראו PILOT למטה). כשהיא קיימת, הבחירה
    נפרשת כשורות רחבות ולא כשלושה ריבועים קטנים. */
-function gate({ chip, name, dates, lead, question, opts, readLabel, hero }) {
+function gate({ chip, name, dates, lead, question, opts, readLabel, hero, split }) {
   const big = hero ? ' big' : '';
   const inner = `<div class="chip">${esc(chip)}</div>
 <h1>${esc(name)}</h1>
@@ -256,9 +281,9 @@ ${opts.map((o) => `  <a class="gopt${big}${o.primary ? ' primary' : ''}" href="$
     + `<span class="gtx"><span class="gt">${esc(o.title)}</span><span class="gs">${esc(o.sub)}</span></span>`
     + `${hero ? '<span class="garrow" aria-hidden="true">←</span>' : ''}</a>`).join('\n')}
 </div>
-<a class="gread" href="#more">${esc(readLabel)} ↓</a>`;
+${readLabel ? `<a class="gread" href="#more">${esc(readLabel)} ↓</a>` : ''}`;
   return hero
-    ? `<div class="gate gate-hero">\n${hero}\n<div class="gate-body">\n${inner}\n</div>\n</div>`
+    ? `<div class="gate gate-hero${split ? ' split' : ''}">\n${hero}\n<div class="gate-body">\n${inner}\n</div>\n</div>`
     : `<div class="gate">\n${inner}\n</div>`;
 }
 
@@ -267,7 +292,8 @@ const optTimeline = (q = '') => ({ icon: '📜', href: `/${q}`, title: 'ציר �
 const optAtlas = (q = '') => ({ icon: '🗺️', href: `/atlas${q}`, title: 'מסע הדורות', sub: 'לעקוב אחרי המסע על המפה' });
 const optPlaces = (q = '') => ({ icon: '📍', href: `/places${q}`, title: 'מפת המקומות', sub: 'לראות מה קרה בכל מקום' });
 
-function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, prefetch = 'main' }) {
+function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, prefetch = 'main',
+  wide = false, bare = false }) {
   const img = ogImage || `${SITE}/og-image.jpg`;
   // פירורי לחם: גם ניווט גלוי וגם BreadcrumbList לגוגל (מוצג בתוצאות החיפוש)
   const crumbLd = crumbs && crumbs.length ? {
@@ -310,11 +336,11 @@ function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, p
 ${PREFETCH[prefetch] || ''}
 ${ld ? `<script type="application/ld+json">${JSON.stringify(ld)}</script>` : ''}
 </head>
-<body><div class="wrap">
-<header><a href="/">← ציר הזמן של עם ישראל</a></header>
-${crumbsHtml}
+<body><div class="wrap${wide ? ' wide' : ''}${bare ? ' bare' : ''}">
+${bare ? '' : `<header><a href="/">← ציר הזמן של עם ישראל</a></header>
+${crumbsHtml}`}
 ${body}
-<footer>חלק מ<a href="/">ציר הזמן של עם ישראל</a> · מהאבות ועד חורבן בית שני · <a href="/p">מפת האתר</a></footer>
+${bare ? '' : '<footer>חלק מ<a href="/">ציר הזמן של עם ישראל</a> · מהאבות ועד חורבן בית שני · <a href="/p">מפת האתר</a></footer>'}
 </div></body>
 </html>`;
 }
@@ -417,22 +443,37 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
   const firstStop = visited.slice().sort((a, b) => yearAt(a) - yearAt(b))[0];
   if (firstStop) gateOpts.push(optPlaces(`?p=${encodeURIComponent(firstStop.id)}`));
 
-  // רצועת המפה של הפיילוט - התמונה עצמה היא קישור למסע הדורות
+  /* רצועת המפה של הפיילוט. במחשב הכרטיס נפתח לשתי עמודות - הבחירה
+     מימין והמפה משמאל - ולכן יש שני חיתוכים: רחב לפס העליון בטלפון,
+     ומאונך לעמודה. התמונה עצמה היא קישור למסע הדורות. */
   const heroPts = PILOT.has(key) ? journeyStations(maps[it.id]) : [];
   const heroHtml = heroPts.length >= 2 ? `<a class="hero" href="/atlas?sel=${key}">
+<picture>
+<source media="(min-width:860px)" srcset="/hero/${it.kind}/${it.id}-split.jpg" width="${HERO_SPLIT.w}" height="${HERO_SPLIT.h}"/>
 <img src="/hero/${it.kind}/${it.id}.jpg" width="${HERO_SIZE.w}" height="${HERO_SIZE.h}" alt="${escAttr(`מפת המסע של ${it.name}`)}"/>
+</picture>
 <span class="hero-tag">🗺️ ${heroPts.length} תחנות במסע · לחצו לצפייה ←</span>
 </a>` : '';
   if (heroHtml) gateOpts[0].primary = true;
 
-  const body = `
+  /* בדף הפיילוט הכרטיס הוא כל הדף: אין טקסט מתחתיו, אין פירורי לחם
+     ואין כותרת עליונה. שימו לב שזה מוריד מהדף את התוכן שגוגל מאנדקס -
+     החלטה שצריכה מענה לפני שמרחיבים את העיצוב לשאר הדפים. */
+  const body = heroHtml ? `
+${gate({
+    chip: km.label, name: it.name, dates,
+    lead: firstSentence(desc, 190),
+    question: `איך תרצו לגלות את ${it.name}?`,
+    opts: gateOpts,
+    hero: heroHtml,
+    split: true,
+  })}` : `
 ${gate({
     chip: km.label, name: it.name, dates,
     lead: firstSentence(desc, 190),
     question: `איך תרצו לגלות את ${it.name}?`,
     opts: gateOpts,
     readLabel: `או קראו כאן על ${it.name}`,
-    hero: heroHtml,
   })}
 <section id="more">
 <h2>על ${esc(it.name)}</h2>
@@ -451,7 +492,7 @@ ${placeHtml}
 ${rel}`;
 
   return shell({ title: `${it.name}: ${km.label} - ציר הזמן של עם ישראל`, description: metaDesc, canonical, jsonld, body,
-    ogImage, crumbs });
+    ogImage, crumbs: heroHtml ? null : crumbs, wide: !!heroHtml, bare: !!heroHtml });
 }
 
 // דף תקופה - מרכז את כל מי שחי/התרחש בה
@@ -701,7 +742,10 @@ for (const it of items) {
   });
   if (PILOT.has(`${it.kind}:${it.id}`)) {
     const pts = journeyStations(maps[it.id]);
-    if (pts.length >= 2) writeHero(DIST, join('hero', it.kind, `${it.id}.jpg`), pts, HERO_SIZE);
+    if (pts.length >= 2) {
+      writeHero(DIST, join('hero', it.kind, `${it.id}.jpg`), pts, HERO_SIZE);
+      writeHero(DIST, join('hero', it.kind, `${it.id}-split.jpg`), pts, HERO_SPLIT);
+    }
   }
   count++;
 }
