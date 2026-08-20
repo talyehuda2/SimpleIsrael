@@ -756,9 +756,9 @@ export default function App() {
   const toggle = (key) => setVisible((v) => ({ ...v, [key]: !v[key] }));
   const isAcademic = chronology === 'academic';
 
-  /* אותם כפתורים, שני מקומות: בדסקטופ הם יושבים בשורת החיפוש עם תוויות,
-     ובמסך צר עולים לשורה הראשונה כאייקונים - שם כל הכלים מרוכזים יחד
-     במקום להתפצל בין שתי שורות. */
+  /* כל הכלים יושבים בשורה הראשונה - גם במחשב. קודם המסעות
+     ובית דוד ישבו ליד תיבת החיפוש ונראו כמו מסנני חיפוש, ולא ככלים
+     של המסך כמו השיתוף וההערה למנהל. */
   const metaBtns = (
     <>
       <button className="title-ico" onClick={() => setAboutOpen(true)}
@@ -815,7 +815,7 @@ export default function App() {
             </a>
           </div>
           <div className="header-actions">
-          {isMobile && toolBtns}
+          {toolBtns}
           {/* הערה למנהל הייתה קבורה בתפריט ⋯ ברוחב 22px, ובמובייל הוסתרה
               לגמרי. כאן היא כפתור משלה, גלוי בשני הגדלים. */}
           <button className="share-btn note-btn" onClick={() => setNotesOpen(true)} title="הערה, תיקון או מקור למנהל האתר">
@@ -841,7 +841,6 @@ export default function App() {
         </div>
         <div className="search-row">
           <SearchBox index={searchIndex} onPick={jumpTo} />
-          {!isMobile && toolBtns}
         </div>
         {/* במסך צר הבקרים מקופלים מאחורי שורה משלהם: המילה "שכבות" וחץ
             שמסתובב. כפתור אייקון בכותרת לא אמר מה הוא פותח, ולא היה בו

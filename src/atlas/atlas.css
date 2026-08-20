@@ -42,10 +42,14 @@ button{font-family:inherit}
 .tool:hover{border-color:var(--gold);background:var(--panel)}
 /* אודות והמדריך הם כלים לכל דבר, ולכן אותה צורה ואותו גודל כמו השאר -
    קודם הם היו עיגולים קטנים ו"השיתוף", שאין בו טקסט, יצא צר מכולם. */
-#brandWrap .title-ico,#bar .tool{width:38px;height:32px;padding:0;font-size:15px;border-radius:12px}
-#brandWrap .title-ico{border:1px solid var(--line);background:var(--bg);color:var(--navy)}
+#brandWrap .title-ico{width:38px;height:32px;padding:0;font-size:15px;border-radius:12px;
+  border:1px solid var(--line);background:var(--bg);color:var(--navy)}
 #brandWrap .title-ico:hover{border-color:var(--gold);background:var(--panel)}
-#bar .tool .tl{display:none}         /* אייקון בלבד, בכל רוחב */
+/* במחשב לכל כלי יש שם לצד האייקון, כמו בציר הזמן: אייקון
+   לבדו דורש ניחוש או ריחוף. במסך צר השמות יורדים והכלים
+   חוזרים לריבועים, כדי ששורה אחת תכיל את כולם. */
+#bar .tool{font-size:13px;padding:7px 13px;border-radius:14px}
+#bar .tool .tl{display:inline}
 .tool.primary{background:var(--navy);border-color:var(--navy);color:#fff}
 #tools{display:flex;gap:6px;flex:none;align-items:center}
 /* מתג המבטים מוגדר ב-styles.css המשותף; כאן רק מכווצים אותו בסרגל צר */
@@ -386,7 +390,8 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   #barEnd{flex:1}
   #bar h1{font-size:19px}
   /* ארבעה כלים ועוד שני אייקוני כותרת - מכווצים כדי שהכל ייכנס בשורה */
-  #brandWrap .title-ico,#bar .tool{width:34px;height:30px}
+  #brandWrap .title-ico,#bar .tool{width:34px;height:30px;padding:0;font-size:15px;border-radius:12px}
+  #bar .tool .tl{display:none}
   #tools{gap:4px}
   #brandWrap{gap:5px}
   /* החיפוש אינו כפתור-זכוכית שנפתח כשכבה אלא שורה קבועה בראש הרשימה,

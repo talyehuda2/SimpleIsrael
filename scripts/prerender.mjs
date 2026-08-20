@@ -245,7 +245,16 @@ body.bg-og{position:relative}
   body.bg-og::before{content:'';position:absolute;left:0;right:0;top:0;height:100dvh;z-index:0;
     background:linear-gradient(rgba(239,228,200,.42),rgba(239,228,200,.42)),url('/og-image.jpg') center/cover no-repeat}
   body.bg-og .wrap{position:relative;z-index:1}
-  body.bg-og .gate-hero{box-shadow:0 18px 44px rgba(60,45,20,.22)}
+  /* השוליים מתמוססים: במקום מלבן עם מסגרת שיושב על האיור, הכרטיס
+     נטמע בו. שני מסכות נחתכים זה בזה נותנים ריכוך בארבעת הצדדים;
+     28px הוא פחות מרווח הפנים של הטקסט, ולכן שום מילה לא מחוורת. */
+  body.bg-og .gate-hero{border-color:transparent;box-shadow:none;
+    -webkit-mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent),
+      linear-gradient(to bottom,transparent,#000 28px,#000 calc(100% - 28px),transparent);
+    -webkit-mask-composite:source-in;
+    mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent),
+      linear-gradient(to bottom,transparent,#000 28px,#000 calc(100% - 28px),transparent);
+    mask-composite:intersect}
 }
 .wrap.wide footer{max-width:720px;margin-inline:auto}
 @media (min-width:860px){

@@ -22,7 +22,7 @@ button{font-family:inherit}
 #brandWrap{display:flex;align-items:center;gap:8px;justify-self:start;height:100%}
 /* אודות כאייקון לצד שם המצב, כמו בשני המסכים האחרים */
 .title-icons{display:inline-flex;align-items:center;gap:5px}
-.title-ico{width:34px;height:30px;border-radius:12px;flex-shrink:0;cursor:pointer;padding:0;
+.title-ico{width:38px;height:32px;border-radius:12px;flex-shrink:0;cursor:pointer;padding:0;
   border:1px solid var(--line);background:var(--bg);font-size:15px;line-height:1;
   display:flex;align-items:center;justify-content:center;transition:border-color .12s,background .12s,transform .1s}
 .title-ico:hover{border-color:var(--gold);background:var(--bg);transform:translateY(-1px)}
@@ -33,10 +33,10 @@ button{font-family:inherit}
 #barEnd{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
 #tools{display:flex;gap:6px;flex:none;align-items:center}
 /* אותו גודל וצורה של אייקוני הכותרת - סרגל אחיד בשלושת המסכים */
-.tool{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:15px;font-weight:700;
-  width:34px;height:30px;padding:0;border:1px solid var(--line);background:var(--bg);color:var(--navy);
-  border-radius:12px;cursor:pointer}
-.tool .tl{display:none}
+.tool{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:700;
+  padding:7px 13px;border:1px solid var(--line);background:var(--bg);color:var(--navy);
+  border-radius:14px;cursor:pointer}
+.tool .tl{display:inline}
 .tool:hover{border-color:var(--gold);background:var(--panel)}
 /* מתג המבטים - שלוש אפשרויות, הנוכחית ממולאת */
 .mode-switch{display:inline-flex;gap:3px;padding:3px;flex:none;
@@ -175,6 +175,7 @@ body.has-sel .pm.off,body.has-sel .lb.off{opacity:.07}
   #bar h1{font-size:19px}
   #bar .mode-switch{display:none}
   #barEnd{flex:1}
+  .tool,.title-ico{width:34px;height:30px;padding:0;font-size:15px;border-radius:12px}
   .tool span.tl{display:none}
   #wrap{flex-direction:column;height:auto;padding-bottom:64px}
   #mapCol{padding:10px 10px 4px;flex:none}
