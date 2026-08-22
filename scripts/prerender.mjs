@@ -10,15 +10,15 @@ import { journeyStations } from '../src/utils/mapProject.js';
 import { writeCard } from './og.mjs';
 import { writeHero } from './hero.mjs';
 
-/* פיילוט של הפתיח המצויר: דף אחד מקבל רצועת מפה עם תחנות המסע בראש
-   השער וכפתורי בחירה גדולים. כשהעיצוב יאושר - מרחיבים לכל דף שיש לו
-   מסע (יש כאלה 92), ולשאר הדפים נדרש פתיח משלהם. */
-const PILOT = new Set(['prophet:eliyahu', 'world:shishak']);
-/* פיילוט שני: לפריטים בלי מסע גיאוגרפי (אירועים, ספרים, רקע עולמי,
-   ודמויות בלי תחנות מתועדות) אין מה למקם על מפה - אבל יש להם תמיד
-   מיקום בזמן. הרצועה מציגה בדיוק את זה: אותה שפה חזותית של פסים
-   ונקודות שכבר מוכרת מציר הזמן עצמו, רק חתוכה לחלון קטן סביב הפריט.
-   ראו scripts/prerender.mjs README בפקודה - זו טיוטה לבדיקה על שישק. */
+/* פיילוט של הפתיח המצויר עם מפה: עדיין דף אחד בלבד, כי הרחבה דורשת
+   גם צריבת שתי תמונות (פס+עמודה) לכל אחד מ-92 הפריטים עם מסע. כשזה
+   יאושר - PILOT_MAP מתרחב.
+   רצועת ציר-הזמן לעומת זאת רצה כבר על כל פריט בלי מסע (66 פריטים):
+   אירועים, ספרים, רקע עולמי, ודמויות בלי תחנות מתועדות. אין להם
+   מה למקם על מפה, אבל יש להם תמיד מיקום בזמן - אותה שפה חזותית של
+   פסים ונקודות שכבר מוכרת מציר הזמן עצמו, רק חתוכה לחלון קטן סביב
+   הפריט. וקטורי לגמרי (SVG מוטבע), בלי קובץ תמונה לצרוב. */
+const PILOT_MAP = new Set(['prophet:eliyahu']);
 const KIND_COLOR = {
   leader: '#9c2b50', judge: '#bd7038', united: '#6a3ca0', judah: '#245c93', israel: '#4f7a33',
   prophet: '#b3781a', book: '#157a70', event: '#b0392c', world: '#8a7250',
@@ -130,28 +130,37 @@ function sliverNeighbors(it, yMin, yMax, max = 5) {
     .map((o) => ({ name: o.name, start: o.start, end: o.end, color: KIND_COLOR[o.kind] || '#8a7250' }));
 }
 
-// שיבוץ שכבות: כל פריט נכנס לשורה הראשונה שהוא לא חופף בה
-function packLanes(list) {
-  const laneEnds = [];
-  return list.slice().sort((a, b) => a.start - b.start).map((it2) => {
-    let lane = laneEnds.findIndex((end) => it2.start >= end);
-    if (lane === -1) { lane = laneEnds.length; laneEnds.push(0); }
-    laneEnds[lane] = it2.end + (it2.end === it2.start ? 6 : 0);
-    return { ...it2, lane };
-  });
+/* שיבוץ שכבות: כל פריט נכנס לשורה הראשונה שהוא באמת לא חופף בה -
+   בפיקסלים, לפי רוחב התווית המשוער, לא לפי טווח השנים של המקום
+   עצמו. שני פריטים סמוכים בזמן (כמו ספר שמסתיים בדיוק כשמתחיל
+   האירוע הבא) לא חופפים כסמן, אבל שתי התוויות הרחבות מעליהם כן
+   היו מתנגשות בלי הבדיקה הזו. */
+function packLanes(list, sx) {
+  const lanes = [];
+  const placed = [];
+  for (const it2 of list) {
+    const cx1 = sx(it2.start), cx2 = sx(it2.end);
+    const half = Math.max(16, it2.name.length * 2.8);
+    const spanL = Math.min(cx1, cx2) - half, spanR = Math.max(cx1, cx2) + half;
+    let lane = lanes.findIndex((ivs) => ivs.every((iv) => spanR <= iv.l || spanL >= iv.r));
+    if (lane === -1) { lane = lanes.length; lanes.push([]); }
+    lanes[lane].push({ l: spanL, r: spanR });
+    placed.push({ ...it2, lane });
+  }
+  return placed;
 }
 
 // מוקדם = ימין (x גדול), מאוחר = שמאל (x קטן) - כמו ציר הזמן האמיתי (RTL)
 // הגובה משתנה לפי מספר השורות שבאמת בשימוש - כדי ששורת הפריט המרכזי
 // למטה לעולם לא תתנגש עם תווית של שכן, גם כשיש מעט שכנים וגם כשיש חמישה
 function sliverSvg(own, ownColor, neighbors, yMin, yMax) {
-  const placed = packLanes(neighbors);
-  const laneCount = placed.reduce((m, n) => Math.max(m, n.lane + 1), 0);
   const W = 560, padX = 16, padTop = 18, laneH = 25, ownArea = 72;
+  const sx = (y) => padX + (W - padX * 2) - ((y - yMin) / (yMax - yMin)) * (W - padX * 2);
+  const placed = packLanes(neighbors, sx);
+  const laneCount = placed.reduce((m, n) => Math.max(m, n.lane + 1), 0);
   const lanesBottom = padTop + laneCount * laneH;
   const baseY = lanesBottom + ownArea;
   const H = baseY + 22;
-  const sx = (y) => padX + (W - padX * 2) - ((y - yMin) / (yMax - yMin)) * (W - padX * 2);
   const esc2 = escAttr;
   let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc2(`${own.name} על ציר הזמן`)}">`;
   s += `<line class="sl-axis" x1="${padX}" x2="${W - padX}" y1="${baseY}" y2="${baseY}"/>`;
@@ -387,8 +396,9 @@ const assetLinks = (entry) => {
 };
 const PREFETCH = { main: assetLinks('index.html'), places: assetLinks('places.html') };
 
-/* hero - רצועת מפה בראש השער (ראו PILOT למטה). כשהיא קיימת, הבחירה
-   נפרשת כשורות רחבות ולא כשלושה ריבועים קטנים. */
+/* hero - רצועת מפה או רצועת ציר-זמן בראש השער (ראו PILOT_MAP/hasMap
+   למטה). כשהיא קיימת, הבחירה נפרשת כשורות רחבות ולא כשלושה ריבועים
+   קטנים. */
 function gate({ chip, name, dates, lead, question, opts, readLabel, hero, split }) {
   const big = hero ? ' big' : '';
   const inner = `<div class="chip">${esc(chip)}</div>
@@ -570,21 +580,24 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
 
   /* רצועת המפה של הפיילוט. במחשב הכרטיס נפתח לשתי עמודות - הבחירה
      מימין והמפה משמאל - ולכן יש שני חיתוכים: רחב לפס העליון בטלפון,
-     ומאונך לעמודה. התמונה עצמה היא קישור למסע הדורות. */
-  const heroPts = PILOT.has(key) ? journeyStations(maps[it.id]) : [];
-  const mapHeroHtml = heroPts.length >= 2 ? `<a class="hero" href="/atlas?sel=${key}">
+     ומאונך לעמודה. התמונה עצמה היא קישור למסע הדורות. hasMap נבדק
+     תמיד (לא רק בפיילוט) כדי שרצועת ציר-הזמן תדע להימנע מפריט שיש
+     לו מסע אמיתי אך עוד לא נכנס לפיילוט המפה. */
+  const journeyPts = journeyStations(maps[it.id]);
+  const hasMap = journeyPts.length >= 2;
+  const mapHeroHtml = PILOT_MAP.has(key) && hasMap ? `<a class="hero" href="/atlas?sel=${key}">
 <picture>
 <source media="(min-width:860px)" srcset="/hero/${it.kind}/${it.id}-split.jpg" width="${HERO_SPLIT.w}" height="${HERO_SPLIT.h}"/>
 <img src="/hero/${it.kind}/${it.id}.jpg" width="${HERO_SIZE.w}" height="${HERO_SIZE.h}" alt="${escAttr(`מפת המסע של ${it.name}`)}"/>
 </picture>
-<span class="hero-tag">🗺️ ${heroPts.length} תחנות במסע · לחצו לצפייה ←</span>
+<span class="hero-tag">🗺️ ${journeyPts.length} תחנות במסע · לחצו לצפייה ←</span>
 </a>` : '';
 
-  /* פיילוט שני: לפריט בלי מסע (heroPts ריק) אבל כן ב-PILOT - במקום
-     מפה, רצועת ציר-זמן ממורכזת סביבו. ה-SVG וקטורי ונבנה כאן ישירות,
-     בלי קובץ תמונה נפרד. */
+  /* רצועת ציר-זמן: לכל פריט שבאמת אין לו מסע (66 פריטים - אירועים,
+     ספרים, רקע עולמי, ודמויות בלי תחנות מתועדות), לא רק לפיילוט.
+     ה-SVG וקטורי ונבנה כאן ישירות, בלי קובץ תמונה נפרד. */
   let sliverHeroHtml = '';
-  if (PILOT.has(key) && heroPts.length < 2) {
+  if (!hasMap) {
     const pad = Math.max(35, Math.round((it.end - it.start) * 0.5));
     const yMin = it.start - pad, yMax = it.end + pad;
     const neighbors = sliverNeighbors(it, yMin, yMax);
@@ -889,7 +902,7 @@ for (const it of items) {
     kindLabel: KINDS[it.kind].label,
     dates: formatRange(it.start, it.end, 'tradition'),
   });
-  if (PILOT.has(`${it.kind}:${it.id}`)) {
+  if (PILOT_MAP.has(`${it.kind}:${it.id}`)) {
     const pts = journeyStations(maps[it.id]);
     if (pts.length >= 2) {
       writeHero(DIST, join('hero', it.kind, `${it.id}.jpg`), pts, HERO_SIZE);
