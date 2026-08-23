@@ -10,15 +10,14 @@ import { journeyStations } from '../src/utils/mapProject.js';
 import { writeCard } from './og.mjs';
 import { writeHero } from './hero.mjs';
 
-/* פיילוט של הפתיח המצויר עם מפה: עדיין דף אחד בלבד, כי הרחבה דורשת
-   גם צריבת שתי תמונות (פס+עמודה) לכל אחד מ-92 הפריטים עם מסע. כשזה
-   יאושר - PILOT_MAP מתרחב.
-   רצועת ציר-הזמן לעומת זאת רצה כבר על כל פריט בלי מסע (66 פריטים):
-   אירועים, ספרים, רקע עולמי, ודמויות בלי תחנות מתועדות. אין להם
-   מה למקם על מפה, אבל יש להם תמיד מיקום בזמן - אותה שפה חזותית של
-   פסים ונקודות שכבר מוכרת מציר הזמן עצמו, רק חתוכה לחלון קטן סביב
-   הפריט. וקטורי לגמרי (SVG מוטבע), בלי קובץ תמונה לצרוב. */
-const PILOT_MAP = new Set(['prophet:eliyahu']);
+/* הפתיח המצויר: לכל פריט עם מסע גיאוגרפי מתועד (64 פריטים - אבות,
+   שופטים, מלכים, נביאים) רצועת מפה עם תחנות המסע; לכל פריט בלעדיו
+   (94 פריטים - אירועים, ספרים, רקע עולמי, ודמויות בלי תחנות
+   מתועדות) רצועת ציר-זמן במקומה - אין להם מה למקם על מפה, אבל יש
+   להם תמיד מיקום בזמן, באותה שפה חזותית של פסים ונקודות שכבר
+   מוכרת מציר הזמן עצמו, רק חתוכה לחלון קטן סביב הפריט. וקטורי
+   לגמרי (SVG מוטבע), בלי קובץ תמונה לצרוב. hasMap נגזר תמיד
+   מ-maps.json עצמו, לא מרשימת אישור - אין יותר "פיילוט". */
 const KIND_COLOR = {
   leader: '#9c2b50', judge: '#bd7038', united: '#6a3ca0', judah: '#245c93', israel: '#4f7a33',
   prophet: '#b3781a', book: '#157a70', event: '#b0392c', world: '#8a7250',
@@ -396,8 +395,8 @@ const assetLinks = (entry) => {
 };
 const PREFETCH = { main: assetLinks('index.html'), places: assetLinks('places.html') };
 
-/* hero - רצועת מפה או רצועת ציר-זמן בראש השער (ראו PILOT_MAP/hasMap
-   למטה). כשהיא קיימת, הבחירה נפרשת כשורות רחבות ולא כשלושה ריבועים
+/* hero - רצועת מפה או רצועת ציר-זמן בראש השער (ראו hasMap למטה).
+   כשהיא קיימת, הבחירה נפרשת כשורות רחבות ולא כשלושה ריבועים
    קטנים. */
 function gate({ chip, name, dates, lead, question, opts, readLabel, hero, split }) {
   const big = hero ? ' big' : '';
@@ -578,14 +577,12 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
   const firstStop = visited.slice().sort((a, b) => yearAt(a) - yearAt(b))[0];
   if (firstStop) gateOpts.push(optPlaces(`?p=${encodeURIComponent(firstStop.id)}`));
 
-  /* רצועת המפה של הפיילוט. במחשב הכרטיס נפתח לשתי עמודות - הבחירה
-     מימין והמפה משמאל - ולכן יש שני חיתוכים: רחב לפס העליון בטלפון,
-     ומאונך לעמודה. התמונה עצמה היא קישור למסע הדורות. hasMap נבדק
-     תמיד (לא רק בפיילוט) כדי שרצועת ציר-הזמן תדע להימנע מפריט שיש
-     לו מסע אמיתי אך עוד לא נכנס לפיילוט המפה. */
+  /* רצועת המפה: לכל פריט עם מסע. במחשב הכרטיס נפתח לשתי עמודות -
+     הבחירה מימין והמפה משמאל - ולכן יש שני חיתוכים: רחב לפס העליון
+     בטלפון, ומאונך לעמודה. התמונה עצמה היא קישור למסע הדורות. */
   const journeyPts = journeyStations(maps[it.id]);
   const hasMap = journeyPts.length >= 2;
-  const mapHeroHtml = PILOT_MAP.has(key) && hasMap ? `<a class="hero" href="/atlas?sel=${key}">
+  const mapHeroHtml = hasMap ? `<a class="hero" href="/atlas?sel=${key}">
 <picture>
 <source media="(min-width:860px)" srcset="/hero/${it.kind}/${it.id}-split.jpg" width="${HERO_SPLIT.w}" height="${HERO_SPLIT.h}"/>
 <img src="/hero/${it.kind}/${it.id}.jpg" width="${HERO_SIZE.w}" height="${HERO_SIZE.h}" alt="${escAttr(`מפת המסע של ${it.name}`)}"/>
@@ -902,7 +899,7 @@ for (const it of items) {
     kindLabel: KINDS[it.kind].label,
     dates: formatRange(it.start, it.end, 'tradition'),
   });
-  if (PILOT_MAP.has(`${it.kind}:${it.id}`)) {
+  {
     const pts = journeyStations(maps[it.id]);
     if (pts.length >= 2) {
       writeHero(DIST, join('hero', it.kind, `${it.id}.jpg`), pts, HERO_SIZE);
