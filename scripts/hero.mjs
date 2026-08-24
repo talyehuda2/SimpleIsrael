@@ -92,16 +92,15 @@ ${pts.map((p, i) => (
 /* דף-מקום: נקודה אחת מודגשת (המקום עצמו) במקום מסלול. windowFor
    מטפל בה בדיוק כמו במסע - נקודה בודדת מקבלת רצפת-הזום (MIN_SPAN)
    באותה צורה, כך שגם מקום צנוע רואים אותו בהקשר החוף והערים
-   השכנות ולא כתם בלב מפה ריקה. מקומות סמוכים (nearby) מצוירים
-   כנקודות עמומות בלי תווית - הקשר, לא עוד מידע לקרוא. */
-export function placeHeroSvg(place, nearby, { w = 1080, h = 608 } = {}) {
+   השכנות ולא כתם בלב מפה ריקה.
+   ניסינו גם לצייר מקומות סמוכים כנקודות עמומות בלי תווית, אבל
+   השכנים הקרובים ביותר במרחק פיקסלים הם לרוב צמודים ממש לנקודה
+   המרכזית (בין 30 ל-80 יחידות, מול חלון של 600+), ובלי תווית הם
+   נראים כלכלוך ליד הסמן ולא כהקשר - הוסרו. */
+export function placeHeroSvg(place, { w = 1080, h = 608 } = {}) {
   const box = windowFor([{ x: place.x, y: place.y }], w / h);
   const k = box.w / w;
-  const r = 12 * k, fs = 22 * k, dotR = 5 * k;
-  const inBox = (p) => p.x > box.x && p.x < box.x + box.w && p.y > box.y && p.y < box.y + box.h;
-  const dots = nearby.filter(inBox)
-    .map((n) => `<circle cx="${n.x.toFixed(1)}" cy="${n.y.toFixed(1)}" r="${dotR.toFixed(1)}" fill="#8a7250" stroke="#fdf6e6" stroke-width="${(dotR * 0.5).toFixed(1)}" opacity="0.55"/>`)
-    .join('\n');
+  const r = 12 * k, fs = 22 * k;
   const right = place.x > box.x + box.w * 0.62;
   const anchor = right ? 'end' : 'start';
   const tx = place.x + (right ? -r * 1.6 : r * 1.6);
@@ -111,7 +110,6 @@ export function placeHeroSvg(place, nearby, { w = 1080, h = 608 } = {}) {
     + `<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="${anchor}" font-size="${fs.toFixed(1)}" font-weight="700" fill="#16385c" direction="rtl">${esc(place.name)}</text>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${box.x.toFixed(1)} ${box.y.toFixed(1)} ${box.w.toFixed(1)} ${box.h.toFixed(1)}">
 <image href="data:image/png;base64,${mapData()}" x="0" y="0" width="${MAP_SIZE}" height="${MAP_SIZE}" preserveAspectRatio="none"/>
-${dots}
 <circle cx="${place.x.toFixed(1)}" cy="${place.y.toFixed(1)}" r="${(r * 1.5).toFixed(1)}" fill="#b28a2b" opacity="0.28"/>
 <circle cx="${place.x.toFixed(1)}" cy="${place.y.toFixed(1)}" r="${r.toFixed(1)}" fill="#b28a2b" stroke="#fdf6e6" stroke-width="${(r * 0.34).toFixed(2)}"/>
 ${label}
@@ -137,6 +135,6 @@ export function writeHero(outDir, relPath, pts, size) {
   return writeJpeg(outDir, relPath, renderJpeg(heroSvg(pts, size), size));
 }
 
-export function writePlaceHero(outDir, relPath, place, nearby, size) {
-  return writeJpeg(outDir, relPath, renderJpeg(placeHeroSvg(place, nearby, size), size));
+export function writePlaceHero(outDir, relPath, place, size) {
+  return writeJpeg(outDir, relPath, renderJpeg(placeHeroSvg(place, size), size));
 }

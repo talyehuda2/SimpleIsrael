@@ -841,9 +841,8 @@ function placePage(p) {
   ];
 
   /* רצועת המפה: לכל מקום, תמיד - יש לו x/y ולכן תמיד אפשר להראות
-     אותו על המפה, בשונה מפריט שיכול בכלל לא להיות בעל מסע. אותה
-     נקודה מודגשת שנצרבה בבנייה (writePlaceHero), עם מקומות שכנים
-     כנקודות עמומות ברקע. */
+     אותו על המפה, בשונה מפריט שיכול בכלל לא להיות בעל מסע. נקודה
+     אחת מודגשת שנצרבה בבנייה (writePlaceHero). */
   const heroHtml = `<a class="hero" href="/places?p=${encodeURIComponent(p.id)}">
 <picture>
 <source media="(min-width:860px)" srcset="/hero/place/${encodeURIComponent(p.id)}-split.jpg" width="${HERO_SPLIT.w}" height="${HERO_SPLIT.h}"/>
@@ -967,8 +966,8 @@ for (const p of placesIndex) {
     kindLabel: 'מקום',
     dates: p.from === p.to ? `שנת ${p.from}` : `${p.from}–${p.to} לבריאה`,
   });
-  writePlaceHero(DIST, join('hero', 'place', `${p.id}.jpg`), p, nearbyOf(p), HERO_SIZE);
-  writePlaceHero(DIST, join('hero', 'place', `${p.id}-split.jpg`), p, nearbyOf(p), HERO_SPLIT);
+  writePlaceHero(DIST, join('hero', 'place', `${p.id}.jpg`), p, HERO_SIZE);
+  writePlaceHero(DIST, join('hero', 'place', `${p.id}-split.jpg`), p, HERO_SPLIT);
 }
 for (const c of collections) {
   const dir = join(DIST, 'p', 'collection', c.id);
