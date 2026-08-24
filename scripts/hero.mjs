@@ -36,6 +36,10 @@ const quantile = (arr, t) => {
   const lo = Math.floor(i), hi = Math.ceil(i);
   return s[lo] + (s[hi] - s[lo]) * (i - lo);
 };
+// תקרת זום: ישראל עצמה נמתחת כ-730 יחידות מדן לבאר שבע. מתחת לזה
+// שתי תחנות קרובות (כמו בבל ושושן - רחוקות מהארץ ומאזור ללא פירוט
+// באיור) נראות ככתם על קלף ריק, בלי שום רמז לאיפה זה ביחס לישראל.
+const MIN_SPAN = 640;
 function windowFor(pts, ar) {
   const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
   const bx = quantile(xs, 0.12), by = quantile(ys, 0.12);
@@ -47,6 +51,7 @@ function windowFor(pts, ar) {
   const fit = (a, b) => Math.sqrt(Math.min(a, MAP_SIZE) * b);
   if (w / h < ar) { w = fit(h * ar, w); h = w / ar; }
   else { h = fit(w / ar, h); w = h * ar; }
+  if (Math.min(w, h) < MIN_SPAN) { const k = MIN_SPAN / Math.min(w, h); w *= k; h *= k; }
   if (w > MAP_SIZE) { const k = MAP_SIZE / w; w = MAP_SIZE; h *= k; }
   if (h > MAP_SIZE) { const k = MAP_SIZE / h; h = MAP_SIZE; w *= k; }
   // ממורכז על חציון התחנות, ומוחזר פנימה אם חרג מגבולות הציור

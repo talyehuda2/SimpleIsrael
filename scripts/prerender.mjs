@@ -94,10 +94,11 @@ const contemporariesOf = (it) =>
 
 // התקופה שבה הפריט מתחיל
 const sortedPeriods = [...periods].sort((a, b) => a.start - b.start);
-const periodOf = (it) =>
-  sortedPeriods.find((p) => it.start >= p.start && it.start < p.end)
-  || sortedPeriods.find((p) => it.start >= p.start && it.start <= p.end)
+const periodAt = (year) =>
+  sortedPeriods.find((p) => year >= p.start && year < p.end)
+  || sortedPeriods.find((p) => year >= p.start && year <= p.end)
   || null;
+const periodOf = (it) => periodAt(it.start);
 const periodUrl = (p) => `${SITE}/p/period/${p.id}`;
 const itemsInPeriod = (p) =>
   items.filter((it) => overlaps(it, p)).sort((a, b) => a.start - b.start);
@@ -496,7 +497,14 @@ function itemPage(it) {
 
   const era = periodOf(it);
   const rows = [];
-  if (era) rows.push(`<div class="row"><b>תקופה:</b> <a href="/p/period/${era.id}">${esc(era.name)}</a> <span class="dim">(${era.start}–${era.end})</span></div>`);
+  // פריט ארוך (ספר, רקע עולמי) יכול לחצות כמה תקופות - "תקופה" יחידה
+  // לפי תחילתו בלבד מציגה טווח שנים שנגמר הרבה לפני שהפריט עצמו נגמר
+  if (era) {
+    const eraEndRow = periodAt(it.end);
+    rows.push(eraEndRow && eraEndRow.id !== era.id
+      ? `<div class="row"><b>תקופה:</b> <a href="/p/period/${era.id}">${esc(era.name)}</a> ועד <a href="/p/period/${eraEndRow.id}">${esc(eraEndRow.name)}</a></div>`
+      : `<div class="row"><b>תקופה:</b> <a href="/p/period/${era.id}">${esc(era.name)}</a> <span class="dim">(${era.start}–${era.end})</span></div>`);
+  }
   if (it.reignText) rows.push(`<div class="row"><b>משך המלוכה:</b> ${esc(it.reignText)}</div>`);
   if (it.lifeText) rows.push(`<div class="row"><b>שנות חיים:</b> ${esc(it.lifeText)}</div>`);
   if (it.tenureText) rows.push(`<div class="row"><b>הנהגה:</b> ${esc(it.tenureText)}</div>`);
@@ -599,7 +607,13 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
     const yMin = it.start - pad, yMax = it.end + pad;
     const neighbors = sliverNeighbors(it, yMin, yMax);
     const ownColor = KIND_COLOR[it.kind] || '#8a7250';
-    const periodBit = era ? `<div class="sliver-period">תקופה: <b>${esc(era.name)}</b> (${era.start}–${era.end})</div>` : '';
+    // פריט ארוך (כמו ספר תרי-עשר, 3100–3448) יכול לפתוח בתקופה אחת
+    // ולהסתיים בתקופה אחרת לגמרי כמה מאות שנים אחר-כך - תיוג לפי
+    // תחילתו בלבד היה מציג טווח שנים שנגמר הרבה לפני שהפריט נגמר
+    const eraEnd = era ? periodAt(it.end) : null;
+    const periodBit = !era ? '' : (eraEnd && eraEnd.id !== era.id
+      ? `<div class="sliver-period">תקופה: <b>${esc(era.name)}</b> ועד <b>${esc(eraEnd.name)}</b></div>`
+      : `<div class="sliver-period">תקופה: <b>${esc(era.name)}</b> (${era.start}–${era.end})</div>`);
     sliverHeroHtml = `<a class="hero sliver" href="/?sel=${key}">
 ${periodBit}
 ${sliverSvg({ name: it.name, start: it.start, end: it.end }, ownColor, neighbors, yMin, yMax)}
