@@ -89,14 +89,54 @@ ${pts.map((p, i) => (
 </svg>`;
 }
 
-export function writeHero(outDir, relPath, pts, size) {
-  const svg = heroSvg(pts, size);
+/* דף-מקום: נקודה אחת מודגשת (המקום עצמו) במקום מסלול. windowFor
+   מטפל בה בדיוק כמו במסע - נקודה בודדת מקבלת רצפת-הזום (MIN_SPAN)
+   באותה צורה, כך שגם מקום צנוע רואים אותו בהקשר החוף והערים
+   השכנות ולא כתם בלב מפה ריקה. מקומות סמוכים (nearby) מצוירים
+   כנקודות עמומות בלי תווית - הקשר, לא עוד מידע לקרוא. */
+export function placeHeroSvg(place, nearby, { w = 1080, h = 608 } = {}) {
+  const box = windowFor([{ x: place.x, y: place.y }], w / h);
+  const k = box.w / w;
+  const r = 12 * k, fs = 22 * k, dotR = 5 * k;
+  const inBox = (p) => p.x > box.x && p.x < box.x + box.w && p.y > box.y && p.y < box.y + box.h;
+  const dots = nearby.filter(inBox)
+    .map((n) => `<circle cx="${n.x.toFixed(1)}" cy="${n.y.toFixed(1)}" r="${dotR.toFixed(1)}" fill="#8a7250" stroke="#fdf6e6" stroke-width="${(dotR * 0.5).toFixed(1)}" opacity="0.55"/>`)
+    .join('\n');
+  const right = place.x > box.x + box.w * 0.62;
+  const anchor = right ? 'end' : 'start';
+  const tx = place.x + (right ? -r * 1.6 : r * 1.6);
+  const ty = place.y + fs * 0.34;
+  const label = `<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="${anchor}" font-size="${fs.toFixed(1)}" font-weight="700" `
+    + `fill="#fdf6e6" stroke="#fdf6e6" stroke-width="${(fs * 0.36).toFixed(1)}" stroke-linejoin="round" direction="rtl">${esc(place.name)}</text>`
+    + `<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="${anchor}" font-size="${fs.toFixed(1)}" font-weight="700" fill="#16385c" direction="rtl">${esc(place.name)}</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${box.x.toFixed(1)} ${box.y.toFixed(1)} ${box.w.toFixed(1)} ${box.h.toFixed(1)}">
+<image href="data:image/png;base64,${mapData()}" x="0" y="0" width="${MAP_SIZE}" height="${MAP_SIZE}" preserveAspectRatio="none"/>
+${dots}
+<circle cx="${place.x.toFixed(1)}" cy="${place.y.toFixed(1)}" r="${(r * 1.5).toFixed(1)}" fill="#b28a2b" opacity="0.28"/>
+<circle cx="${place.x.toFixed(1)}" cy="${place.y.toFixed(1)}" r="${r.toFixed(1)}" fill="#b28a2b" stroke="#fdf6e6" stroke-width="${(r * 0.34).toFixed(2)}"/>
+${label}
+</svg>`;
+}
+
+function renderJpeg(svg, size) {
   const png = new Resvg(svg, {
     fitTo: { mode: 'width', value: (size && size.w) || 1080 },
     font: { fontFiles: FONTS, loadSystemFonts: false, defaultFontFamily: 'Frank Ruhl Libre' },
   }).render();
+  return jpeg.encode({ data: Buffer.from(png.pixels), width: png.width, height: png.height }, 74).data;
+}
+
+function writeJpeg(outDir, relPath, data) {
   const full = join(outDir, relPath);
   mkdirSync(dirname(full), { recursive: true });
-  writeFileSync(full, jpeg.encode({ data: Buffer.from(png.pixels), width: png.width, height: png.height }, 74).data);
+  writeFileSync(full, data);
   return relPath;
+}
+
+export function writeHero(outDir, relPath, pts, size) {
+  return writeJpeg(outDir, relPath, renderJpeg(heroSvg(pts, size), size));
+}
+
+export function writePlaceHero(outDir, relPath, place, nearby, size) {
+  return writeJpeg(outDir, relPath, renderJpeg(placeHeroSvg(place, nearby, size), size));
 }

@@ -8,7 +8,7 @@ import { sourceSegments } from '../src/utils/sefaria.js';
 import { buildPlaceIndex, relatedByPlace } from '../src/utils/related.js';
 import { journeyStations } from '../src/utils/mapProject.js';
 import { writeCard } from './og.mjs';
-import { writeHero } from './hero.mjs';
+import { writeHero, writePlaceHero } from './hero.mjs';
 
 /* הפתיח המצויר: לכל פריט עם מסע גיאוגרפי מתועד (64 פריטים - אבות,
    שופטים, מלכים, נביאים) רצועת מפה עם תחנות המסע; לכל פריט בלעדיו
@@ -834,19 +834,26 @@ function placePage(p) {
   // התקופות שהמקום נוכח בהן - הקשר כרונולוגי וקישור פנימי לדפי התקופה
   const eras = sortedPeriods.filter((e) => p.visits.some((v) => v.year >= e.start && v.year < e.end));
   const nearby = nearbyOf(p);
+  const crumbs = [
+    { name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
+    { name: 'מפת המקומות', url: `${SITE}/places` },
+    { name: p.name },
+  ];
 
-  const body = `
-${gate({
-    chip: 'מקום', name: p.name, dates: `${evCount(p.visits.length)} · ${span}`,
-    lead: intro,
-    question: `איך תרצו לגלות את ${p.name}?`,
-    opts: [
-      optPlaces(`?p=${encodeURIComponent(p.id)}`),
-      optAtlas(`?sel=${first.kind}:${first.id}`),
-      optTimeline(`?sel=${first.kind}:${first.id}`),
-    ],
-    readLabel: 'או קראו כאן מה קרה במקום',
-  })}
+  /* רצועת המפה: לכל מקום, תמיד - יש לו x/y ולכן תמיד אפשר להראות
+     אותו על המפה, בשונה מפריט שיכול בכלל לא להיות בעל מסע. אותה
+     נקודה מודגשת שנצרבה בבנייה (writePlaceHero), עם מקומות שכנים
+     כנקודות עמומות ברקע. */
+  const heroHtml = `<a class="hero" href="/places?p=${encodeURIComponent(p.id)}">
+<picture>
+<source media="(min-width:860px)" srcset="/hero/place/${encodeURIComponent(p.id)}-split.jpg" width="${HERO_SPLIT.w}" height="${HERO_SPLIT.h}"/>
+<img src="/hero/place/${encodeURIComponent(p.id)}.jpg" width="${HERO_SIZE.w}" height="${HERO_SIZE.h}" alt="${escAttr(`${p.name} על המפה`)}"/>
+</picture>
+<span class="hero-tag">📍 ${evCount(p.visits.length)} · לחצו לצפייה ←</span>
+</a>`;
+
+  // התוכן המלא של הדף - מה שגוגל מאנדקס - יושב מתחת לשער
+  const article = `
 ${p.aka.length ? `<div class="row"><b>נקרא גם:</b> ${p.aka.map(esc).join(' · ')}</div>` : ''}
 ${eras.length ? `<div class="row"><b>תקופות:</b> ${eras.map((e) => `<a href="/p/period/${e.id}">${esc(e.name)}</a>`).join(' · ')}</div>` : ''}
 <section class="related" id="more">
@@ -876,6 +883,28 @@ ${restOfJourney.length ? `<section class="related">
   </ul>
 </section>`;
 
+  const gateHtml = gate({
+    chip: 'מקום', name: p.name, dates: `${evCount(p.visits.length)} · ${span}`,
+    lead: intro,
+    question: `איך תרצו לגלות את ${p.name}?`,
+    opts: [
+      optPlaces(`?p=${encodeURIComponent(p.id)}`),
+      optAtlas(`?sel=${first.kind}:${first.id}`),
+      optTimeline(`?sel=${first.kind}:${first.id}`),
+    ],
+    readLabel: 'או קראו כאן מה קרה במקום',
+    hero: heroHtml,
+    split: true,
+  });
+
+  // הכרטיס תופס את המסך הראשון לבדו, בדיוק כמו דפי הדמות/אירוע
+  const body = `<div class="screen">
+${gateHtml}
+</div>
+<div class="below">${crumbsNav(crumbs)}
+${article}
+</div>`;
+
   return shell({
     title: `${p.name}: מה קרה כאן - ציר הזמן של עם ישראל`,
     description: metaDesc,
@@ -894,11 +923,8 @@ ${restOfJourney.length ? `<section class="related">
     ogImage: `${SITE}/og/place/${encodeURIComponent(p.id)}.jpg`,
     // המבט הראשי של דף-מקום הוא מפת המקומות - היא זו שנטענת מראש
     prefetch: 'places',
-    crumbs: [
-      { name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
-      { name: 'מפת המקומות', url: `${SITE}/places` },
-      { name: p.name },
-    ],
+    crumbs,
+    wide: true, bare: true, bodyClass: 'bg-og',
   });
 }
 
@@ -941,6 +967,8 @@ for (const p of placesIndex) {
     kindLabel: 'מקום',
     dates: p.from === p.to ? `שנת ${p.from}` : `${p.from}–${p.to} לבריאה`,
   });
+  writePlaceHero(DIST, join('hero', 'place', `${p.id}.jpg`), p, nearbyOf(p), HERO_SIZE);
+  writePlaceHero(DIST, join('hero', 'place', `${p.id}-split.jpg`), p, nearbyOf(p), HERO_SPLIT);
 }
 for (const c of collections) {
   const dir = join(DIST, 'p', 'collection', c.id);
