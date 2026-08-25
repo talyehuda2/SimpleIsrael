@@ -7,8 +7,9 @@ import SearchBox from './components/SearchBox.jsx';
 import FamilyTree from './components/FamilyTree.jsx';
 import Intro from './components/Intro.jsx';
 import NotesBox from './components/NotesBox.jsx';
+import AskBox from './components/AskBox.jsx';
 import { fetchCommentCounts } from './lib/commentCounts.js';
-import { handleAdminParam } from './lib/admin.js';
+import { handleAdminParam, getAdminToken } from './lib/admin.js';
 import { shareLink } from './lib/share.js';
 import leaders from './data/leaders.json';
 import judges from './data/judges.json';
@@ -152,6 +153,10 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [askOpen, setAskOpen] = useState(false);
+  /* סוכן השאלות בשלב בדיקה - הכפתור מופיע רק למי שיש לו טוקן ניהול.
+     זו הסתרה בממשק בלבד; האכיפה האמיתית היא ב-/api/ask שמאמת את הטוקן. */
+  const [isAdmin, setIsAdmin] = useState(false);
   const [mapItem, setMapItem] = useState(() => resolveKey(INITIAL.map));
   const [mapStep, setMapStep] = useState(INITIAL.step != null ? INITIAL.step : -1);
   // הפריט שבני-הזמן שלו מודגשים - נשמר בנפרד מהבחירה, כדי שההדגשה תישאר
@@ -238,7 +243,7 @@ export default function App() {
   const vertical = false;
 
   // כניסה/יציאה ממצב ניהול דרך ?admin=1
-  useEffect(() => { handleAdminParam(); }, []);
+  useEffect(() => { handleAdminParam(); setIsAdmin(!!getAdminToken()); }, []);
 
   // מונה תגובות לכל פריט - כדי לסמן על הציר היכן כבר יש דיון
   const [commentCounts, setCommentCounts] = useState({});
@@ -777,6 +782,12 @@ export default function App() {
       <button className="tree-btn" onClick={() => setTreeOpen(true)} title="בית דוד - אילן היוחסין">
         <span aria-hidden="true">👑</span> <span className="btn-label">בית דוד</span>
       </button>
+      {/* סוכן השאלות - בבדיקה, ולכן מוצג רק במצב ניהול */}
+      {isAdmin && (
+        <button className="tree-btn ask-btn" onClick={() => setAskOpen(true)} title="שאלו על האתר (בדיקה - מנהל בלבד)">
+          <span aria-hidden="true">🔎</span> <span className="btn-label">שאלו</span>
+        </button>
+      )}
     </>
   );
 
@@ -1176,6 +1187,19 @@ export default function App() {
         atlasHref={atlasHref} onChooseView={chooseView}
       />
       <NotesBox open={notesOpen} onClose={() => setNotesOpen(false)} />
+      <AskBox
+        open={askOpen}
+        onClose={() => setAskOpen(false)}
+        onJump={(key) => {
+          const i = key.indexOf(':');
+          const kind = key.slice(0, i), id = key.slice(i + 1);
+          // מקומות ותקופות חיים מחוץ לציר הזמן - אליהם מנווטים, לשאר קופצים במקום
+          if (kind === 'place') { window.location.href = `/places?p=${encodeURIComponent(id)}`; return; }
+          if (kind === 'period') { window.location.href = `/p/period/${id}`; return; }
+          setAskOpen(false);
+          jumpToId(id);
+        }}
+      />
     </div>
   );
 }
