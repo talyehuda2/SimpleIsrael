@@ -317,30 +317,159 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
   border-top: 4px solid var(--gold); border-radius: 14px; max-width: 440px; width: 100%;
   padding: 22px 24px; box-shadow: 0 14px 40px rgb(30 20 5 / .32); animation: cardIn .18s ease-out;
 }
-/* ----- סוכן השאלות (מצב בדיקה, מנהל בלבד) ----- */
-.ask-card { max-width: 560px; }
-.ask-result {
-  margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line);
+/* ===== סוכן השאלות (מצב בדיקה, מנהל בלבד) =====
+   העיצוב מדבר בשפה של האתר ולא בשפה של צ'אטבוט: התשובה מוגשת ככתוב
+   מצוטט - קו זהב בשוליים ורקע קלף - בדיוק כמו .dc-verse, כדי שתיקרא
+   כמקור שמדבר ולא כבועת הודעה. */
+.ask-overlay {
+  position: fixed; inset: 0; z-index: 60; direction: rtl;
+  background: rgb(30 20 5 / .5); display: flex; align-items: center;
+  justify-content: center; padding: 18px; overflow-y: auto; overscroll-behavior: contain;
 }
+.ask-panel {
+  position: relative; background: var(--panel); border: 1px solid var(--line);
+  border-top: 4px solid var(--gold); border-radius: 16px;
+  max-width: 620px; width: 100%; padding: 20px 22px 22px;
+  box-shadow: 0 18px 48px rgb(30 20 5 / .34); animation: cardIn .18s ease-out;
+}
+.ask-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.ask-title {
+  margin: 0 0 3px; font-family: 'Frank Ruhl Libre', serif;
+  font-size: 21px; font-weight: 900; color: var(--navy);
+}
+.ask-sub { margin: 0; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ask-badge {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .3px;
+  color: var(--gold-ink); background: rgb(178 138 43 / .14);
+  border: 1px solid rgb(178 138 43 / .35); border-radius: 999px; padding: 2px 8px;
+}
+.ask-x {
+  margin-inline-start: auto; flex: none; border: none; background: none;
+  font-size: 16px; color: var(--muted); cursor: pointer; padding: 4px 6px; border-radius: 8px;
+}
+.ask-x:hover { background: var(--bg-2); color: var(--ink); }
+
+/* שורת השאלה - שדה שגדל עם הטקסט במקום תיבה ריקה שממתינה */
+.ask-row {
+  display: flex; align-items: flex-end; gap: 8px;
+  background: #fffdf7; border: 1.5px solid var(--line); border-radius: 14px;
+  padding: 8px 12px; transition: border-color .14s, box-shadow .14s;
+}
+.ask-row:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgb(178 138 43 / .15); }
+.ask-row.busy { opacity: .7; }
+.ask-icon { flex: none; font-size: 15px; opacity: .55; padding-bottom: 6px; }
+.ask-input {
+  flex: 1; min-width: 0; border: none; background: none; resize: none; overflow-y: auto;
+  font-family: inherit; font-size: 15.5px; line-height: 1.65; color: var(--ink);
+  padding: 5px 0; max-height: 140px;
+}
+.ask-input:focus { outline: none; }
+.ask-input::placeholder { color: var(--muted); opacity: .75; }
+.ask-go {
+  flex: none; width: 34px; height: 34px; border-radius: 50%; border: none;
+  background: var(--navy); color: #fff; font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .12s, transform .1s;
+}
+.ask-go:hover:not(:disabled) { background: var(--navy-2); transform: translateY(-1px); }
+.ask-go:disabled { opacity: .35; cursor: default; }
+.ask-spin {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid rgb(255 255 255 / .35); border-top-color: #fff;
+  animation: askSpin .7s linear infinite;
+}
+@keyframes askSpin { to { transform: rotate(360deg); } }
+/* המונה מופיע רק כשמתקרבים לתקרה - אין סיבה להציג 4/500 */
+.ask-count { margin-top: 5px; text-align: start; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* שאלות פתיחה - עונות על "מה בכלל אפשר לשאול כאן" */
+.ask-suggest { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 14px; }
+.ask-suggest-label { font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.ask-chip {
+  border: 1px solid var(--line); background: var(--bg-2); color: var(--navy);
+  border-radius: 999px; padding: 6px 13px; font-family: inherit; font-size: 12.5px;
+  cursor: pointer; transition: border-color .12s, background .12s, transform .1s;
+}
+.ask-chip:hover { border-color: var(--gold); background: #fffdf7; transform: translateY(-1px); }
+
+/* המתנה - במקום שבו התשובה תופיע, לא רק על הכפתור */
+.ask-thinking { display: flex; align-items: center; gap: 6px; margin-top: 20px; padding-inline-start: 2px; }
+.ask-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--gold);
+  animation: askPulse 1.1s ease-in-out infinite;
+}
+.ask-dot:nth-child(2) { animation-delay: .16s; }
+.ask-dot:nth-child(3) { animation-delay: .32s; }
+@keyframes askPulse { 0%, 60%, 100% { opacity: .28; } 30% { opacity: 1; } }
+.ask-thinking-text { margin-inline-start: 6px; font-size: 12.5px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) {
+  .ask-dot { animation: none; opacity: .6; }
+  .ask-spin { animation: none; }
+}
+
+.ask-err {
+  margin-top: 16px; padding: 10px 13px; border-radius: 10px;
+  background: rgb(176 57 44 / .09); border: 1px solid rgb(176 57 44 / .3);
+  color: #8c2c22; font-size: 13px;
+}
+
+.ask-result { margin-top: 18px; }
+/* השאלה עצמה, מוקטנת - כדי שתדע על מה התשובה עונה גם אחרי שערכת את השדה */
+.ask-asked {
+  margin: 0 0 8px; font-size: 12.5px; color: var(--muted); font-weight: 600;
+}
+.ask-asked::before { content: '❝ '; opacity: .5; }
+/* התשובה כמקור מצוטט - אותה שפה חזותית של .dc-verse */
 .ask-answer {
-  margin: 0 0 10px; font-size: 16px; line-height: 1.85; color: var(--ink);
+  padding: 13px 16px; border-inline-start: 3px solid var(--gold);
+  background: linear-gradient(180deg, #fff9ec, #f6ecd4);
+  /* לוגי ולא פיזי: border-radius רגיל היה מעגל את הפינות בצד ההפוך
+     לקו הזהב ב-RTL - הקצה השטוח חייב להיות באותו צד של הקו */
+  border-start-start-radius: 0; border-end-start-radius: 0;
+  border-start-end-radius: 12px; border-end-end-radius: 12px;
+  font-family: 'Frank Ruhl Libre', serif; font-size: 16.5px; line-height: 1.9; color: var(--ink);
 }
 /* הפניה לישות היא כפתור ולא קישור: היא מנווטת בתוך האפליקציה
    (jumpToId) ולא טוענת עמוד מחדש */
 .ask-ref {
-  display: inline; padding: 0 2px; border: none; background: none; cursor: pointer;
+  display: inline; padding: 0 1px; border: none; background: none; cursor: pointer;
   font: inherit; color: var(--navy); font-weight: 700;
-  border-bottom: 1.5px solid var(--gold);
+  border-bottom: 1.5px solid var(--gold-soft);
+  transition: background .12s, border-color .12s;
 }
-.ask-ref:hover { color: var(--gold-ink); background: rgb(178 138 43 / .12); }
-.ask-warn { margin: 0 0 8px; font-size: 12.5px; color: var(--israel); font-weight: 600; }
-/* שורת האבחון - קיימת רק בשלב הבדיקה, כדי לראות מה כל שאלה עולה
-   ואילו רשומות המודל בחר לשלוף */
+.ask-ref:hover { color: var(--gold-ink); background: rgb(178 138 43 / .14); border-color: var(--gold); }
+.ask-warn { margin: 8px 0 0; font-size: 12px; color: var(--event); font-weight: 600; }
+
+/* אבחון - קיים רק בשלב הבדיקה. העלות גלויה תמיד, הפירוט בלחיצה */
+.ask-foot { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.ask-meta-toggle {
+  display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line);
+  background: var(--bg-2); border-radius: 999px; padding: 3px 10px;
+  font-family: 'Heebo', sans-serif; font-size: 11.5px; color: var(--muted); cursor: pointer;
+}
+.ask-meta-toggle:hover { border-color: var(--gold); }
+.ask-meta-toggle b { color: var(--navy); font-variant-numeric: tabular-nums; }
+.ask-meta-caret { font-size: 9px; opacity: .7; }
+.ask-fetched { font-size: 11.5px; color: var(--muted); }
 .ask-meta {
-  display: flex; flex-wrap: wrap; gap: 4px 14px;
-  font-size: 11.5px; color: var(--muted); font-family: 'Heebo', sans-serif;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 6px 14px; margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--line-soft);
+  font-family: 'Heebo', sans-serif; font-size: 11.5px;
 }
-.ask-meta b { color: var(--navy); }
+.ask-meta div { display: flex; justify-content: space-between; gap: 8px; }
+.ask-meta-wide { grid-column: 1 / -1; }
+.ask-meta dt { color: var(--muted); }
+.ask-meta dd { margin: 0; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.ask-ok { color: var(--israel); font-weight: 700; }
+
+@media (max-width: 560px) {
+  .ask-panel { padding: 16px 15px 18px; border-radius: 14px; }
+  .ask-title { font-size: 19px; }
+  .ask-answer { font-size: 15.5px; padding: 11px 13px; }
+  .ask-suggest { gap: 6px; }
+  .ask-chip { font-size: 12px; padding: 5px 11px; }
+}
+
 .notes-title { margin: 2px 0 6px; font-size: 20px; font-weight: 900; color: var(--navy); font-family: 'Frank Ruhl Libre', serif; }
 .notes-sub { margin: 0 0 16px; font-size: 13.5px; line-height: 1.6; color: var(--muted); }
 .notes-name, .notes-body {
