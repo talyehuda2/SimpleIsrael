@@ -11,10 +11,27 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { INDEX, getRecords, getContemporaries } from './_lib/corpus.js';
 
-const MODEL = 'claude-opus-5';
+/* Sonnet 5 ולא Opus: המשימה כאן היא שליפה וניסוח שלוש שורות מתוך רשומה
+   שהכלי כבר הגיש - לא הסקה. התמחור נמוך פי 2.5 בכל עמודה (קלט, פלט,
+   וקריאת מטמון), וזה מה שהופך שאלה ציבורית לבת-קיימא. */
+const MODEL = 'claude-sonnet-5';
 const MAX_QUESTION_CHARS = 500;   // שכבה 2: תקרת קלט, נאכפת לפני שנוגעים ב-API
-const MAX_TOKENS = 1000;          // שכבה 1: תקרת פלט - החלק היקר פי חמש
+const MAX_TOKENS = 600;           // שכבה 1: תקרת פלט - החלק היקר פי חמש
 const MAX_TOOL_ROUNDS = 4;        // עצירה קשיחה אם המודל נתקע בלולאת שליפות
+
+/* תמחור ל-1M טוקנים (platform.claude.com/docs/en/about-claude/pricing).
+   החישוב יושב בשרת ולא בדפדפן משתי סיבות: כאן ידוע איזה מודל באמת רץ,
+   ושכבת ההגבלות הבאה תצטרך את המספר הזה כדי לסכם תקציב יומי. */
+const PRICE = {
+  'claude-sonnet-5': { input: 2, output: 10, cacheRead: 0.20, cacheWrite: 2.50 },
+  'claude-opus-5':   { input: 5, output: 25, cacheRead: 0.50, cacheWrite: 6.25 },
+};
+const costOf = (u) => {
+  const p = PRICE[MODEL];
+  if (!p) return null;   // מודל שלא תומחר - עדיף בלי מספר מאשר מספר שגוי
+  return (u.input * p.input + u.output * p.output
+    + u.cacheRead * p.cacheRead + u.cacheWrite * p.cacheWrite) / 1e4;   // באגורות
+};
 
 const SYSTEM = `אתה עוזר המחקר של "ציר הזמן של עם ישראל" - אתר על ההיסטוריה המקראית מהאבות ועד חורבן בית שני, לפי הכרונולוגיה המסורתית (סדר עולם).
 
@@ -99,7 +116,7 @@ export default async function handler(req, res) {
       const response = await client.messages.create({
         model: MODEL,
         max_tokens: MAX_TOKENS,
-        // האינדקס זהה בכל שאלה - המטמון הופך אותו מ-5$ למיליון ל-0.50$.
+        // האינדקס זהה בכל שאלה - המטמון הופך אותו מ-2$ למיליון ל-0.20$.
         // חייב להיות ראשון ויציב: שינוי בייט אחד לפניו מבטל את המטמון.
         system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
         // שאלה עובדתית שהכלי כבר מגיש לה את הרשומה לא דורשת התלבטות ארוכה
@@ -114,7 +131,7 @@ export default async function handler(req, res) {
       usage.cacheWrite += response.usage.cache_creation_input_tokens || 0;
 
       if (response.stop_reason === 'refusal') {
-        return res.status(200).json({ answer: 'לא הצלחתי לענות על השאלה הזו.', usage, fetched });
+        return res.status(200).json({ answer: 'לא הצלחתי לענות על השאלה הזו.', usage, fetched, costCents: costOf(usage) });
       }
 
       const toolUses = response.content.filter((b) => b.type === 'tool_use');
@@ -125,6 +142,7 @@ export default async function handler(req, res) {
           truncated: response.stop_reason === 'max_tokens',
           usage,
           fetched,
+          costCents: costOf(usage),
         });
       }
 
@@ -139,7 +157,7 @@ export default async function handler(req, res) {
       });
     }
     // הגענו לתקרת הסבבים בלי תשובה - עדיף להודות מאשר להמשיך לשרוף טוקנים
-    return res.status(200).json({ answer: 'השאלה הסתבכה יותר מדי. נסו לנסח אותה בצורה ממוקדת יותר.', usage, fetched });
+    return res.status(200).json({ answer: 'השאלה הסתבכה יותר מדי. נסו לנסח אותה בצורה ממוקדת יותר.', usage, fetched, costCents: costOf(usage) });
   } catch (err) {
     if (err instanceof Anthropic.RateLimitError) {
       return res.status(429).json({ error: 'יותר מדי בקשות, נסו שוב בעוד רגע' });

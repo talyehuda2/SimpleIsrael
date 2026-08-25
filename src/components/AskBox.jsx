@@ -6,12 +6,8 @@ import { getAdminToken } from '../lib/admin.js';
    בשרת היא זו שמחזיקה אותו. */
 const MAX = 500;
 
-// תמחור Opus 5, כדי לראות בזמן אמת מה כל שאלה עולה
-const PRICE = { input: 5, output: 25, cacheRead: 0.5, cacheWrite: 6.25 };
-const costOf = (u) => (
-  (u.input * PRICE.input + u.output * PRICE.output
-    + u.cacheRead * PRICE.cacheRead + u.cacheWrite * PRICE.cacheWrite) / 1e6
-);
+// העלות מגיעה מהשרת, שם ידוע איזה מודל רץ. טבלת תמחור בצד הלקוח הייתה
+// ממשיכה להראות מחירי Opus גם אחרי המעבר ל-Sonnet.
 
 /* שאלות פתיחה - כל אחת מדגימה יכולת אחרת: הצלבה בין שני נתיבים, מקום,
    כלי בני-הזמן, וחישוב על פני כמה רשומות. הן גם רשימת הזריעה הטבעית
@@ -156,7 +152,7 @@ export default function AskBox({ open, onClose, onJump }) {
 
             <div className="ask-foot">
               <button className="ask-meta-toggle" onClick={() => setShowMeta((v) => !v)}>
-                <b>{(costOf(result.usage) * 100).toFixed(2)}¢</b>
+                <b>{result.costCents != null ? `${result.costCents.toFixed(2)}¢` : '—'}</b>
                 <span className="ask-meta-caret">{showMeta ? '▾' : '▸'}</span>
               </button>
               {result.fetched.length > 0 && (

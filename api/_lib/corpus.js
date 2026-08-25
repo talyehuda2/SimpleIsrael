@@ -43,30 +43,40 @@ const periodAt = (y) => sortedPeriods.find((p) => y >= p.start && y < p.end)
   || sortedPeriods.find((p) => y >= p.start && y <= p.end) || null;
 
 /* האינדקס: שורה לכל פריט, בלי תיאורים. המודל לא צריך משפט הסבר כדי
-   לדעת שאליהו קיים ושהוא נביא - הוא צריך את זה כדי לבחור מה לשלוף. */
+   לדעת שאליהו קיים ושהוא נביא - הוא צריך את זה כדי לבחור מה לשלוף.
+
+   האינדקס נקרא מחדש בכל סבב של כל שאלה, ולכן כל תו כאן מוכפל באלפי
+   קריאות. שני שדות הוסרו כאן כי הם היו כפילות ולא מידע. */
+const KIND_LEGEND = Object.entries(KIND_LABEL).map(([k, v]) => `${k}=${v}`).join(' · ');
+
+// (1) תווית הסוג - כבר כתובה בתחילת כל מזהה (leader:avraham), ומקרא
+//     אחד בראש האינדקס מחליף אותה ב-164 שורות
 const itemLines = ALL_ITEMS
   .slice()
   .sort((a, b) => a.start - b.start)
-  .map((it) => `${it.kind}:${it.id}|${it.name}|${KIND_LABEL[it.kind]}|${it.start}-${it.end}`);
+  .map((it) => `${it.kind}:${it.id}|${it.name}|${it.start}-${it.end}`);
 
+// (2) טווח השנים של מקום - כמעט ולא משמש כדי להחליט *מה לשלוף*.
+//     מספר האירועים נשאר: הוא כן אומר כמה משקל יש למקום.
 const placeLines = places
   .slice()
   .sort((a, b) => b.visits.length - a.visits.length)
-  .map((p) => `place:${p.id}|${p.name}|${p.visits.length} אירועים|${p.from}-${p.to}`);
+  .map((p) => `place:${p.id}|${p.name}|${p.visits.length}`);
 
 const periodLines = sortedPeriods.map((p) => `period:${p.id}|${p.name}|${p.start}-${p.end}`);
-const collectionLines = collections.map((c) => `collection:${c.id}|${c.title}|${c.members.length} פריטים`);
+const collectionLines = collections.map((c) => `collection:${c.id}|${c.title}|${c.members.length}`);
 
 export const INDEX = `## תקופות
 ${periodLines.join('\n')}
 
-## דמויות, אירועים וספרים (${ALL_ITEMS.length}) - מזהה|שם|סוג|שנים לבריאה
+## דמויות, אירועים וספרים (${ALL_ITEMS.length}) - מזהה|שם|שנים לבריאה
+הסוג נקרא מתוך תחילית המזהה: ${KIND_LEGEND}
 ${itemLines.join('\n')}
 
-## מקומות (${places.length}) - מזהה|שם|מספר אירועים|טווח שנים
+## מקומות (${places.length}) - מזהה|שם|מספר האירועים שקרו בו
 ${placeLines.join('\n')}
 
-## אוספים
+## אוספים - מזהה|שם|מספר פריטים
 ${collectionLines.join('\n')}`;
 
 /* רשומה מלאה - רק למה שהמודל ביקש במפורש. כולל את תחנות המסע
