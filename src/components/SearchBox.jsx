@@ -1,5 +1,5 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
-import { trackOnce } from '../lib/analytics.js';
+import { markOnce } from '../lib/trail.js';
 
 const KIND_LABEL = {
   leader: 'מנהיג', judge: 'שופט',
@@ -55,7 +55,7 @@ export default function SearchBox({ index, onPick }) {
      החיפוש המוצלח עצמו אינו נמדד, הוא היה מייצר אירוע לכל אות. */
   useEffect(() => {
     if (norm(q).length < 2 || results.length) return undefined;
-    const t = setTimeout(() => trackOnce('search_miss', { q: q.trim().slice(0, 40) }), 1200);
+    const t = setTimeout(() => markOnce('search_miss', { q: q.trim().slice(0, 40) }), 1200);
     return () => clearTimeout(t);
   }, [q, results]);
 

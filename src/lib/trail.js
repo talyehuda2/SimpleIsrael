@@ -1,5 +1,11 @@
 /* מדידה - מה אנשים באמת פותחים.
 
+   שים לב לשמות: הקובץ הזה נקרא trail.js והטבלה si_trail, ולא
+   "analytics" ו-"events". זה לא קפריזה - חוסמי פרסומות מסננים לפי
+   תבנית בשם הקובץ ובנתיב הבקשה, ובגרסה הקודמת הם חסמו את שניהם:
+   הצ'אנק analytics-*.js לא נטען כלל, ולכן גם inject() של Vercel
+   מעולם לא רץ אצל אותם גולשים.
+
    העבודה מחולקת בין שני יעדים, וזו חלוקה מכוונת:
 
    צפיות עמוד -> Vercel. חינם בחבילת Hobby, ומגיעות עם מדינה, מכשיר ומקור
@@ -15,16 +21,16 @@
    מתקבצות לשורה אחת בשם "/". "אילו אזורים מעניינים" היא שאלה שרק אירוע
    מפורש עונה עליה.
 
-   קטלוג האירועים (כולם דרך trackOnce אלא אם צוין אחרת):
+   קטלוג האירועים (כולם דרך markOnce אלא אם צוין אחרת):
      item_open   {kind,id}  ציר הזמן   - איזו דמות נפתחה
      place_open  {id}       מפת הארץ   - איזה מקום נפתח
      era_reached {era}      מסע הדורות - עד לאיזו תקופה גללו
      search_miss {q}        חיפוש      - מה חיפשו ולא מצאו
-     view_chosen {view}     מסך פתיחה  - באיזה מבט בחרו (track, לא once)
+     view_chosen {view}     מסך פתיחה  - באיזה מבט בחרו (mark, לא once)
      map_open    {id}       ציר הזמן   - מפת מסע נפתחה
      tree_open / tours_open / guide_open   - שימוש בפיצ'רים
 
-   הטבלה והשאילתות: supabase/site_events.sql */
+   page_view              כל מסך     - ספירת תנועה בלתי-תלויה ב-Vercel
 import { inject } from '@vercel/analytics';
 import { SUPABASE_URL, SUPABASE_KEY } from './supabaseConfig.js';
 
@@ -55,16 +61,19 @@ const REF = (() => {
 
 const DEVICE = window.innerWidth < 768 ? 'mobile' : 'desktop';
 
-export function startAnalytics() {
+export function startTrail() {
   inject({ mode: DEV ? 'development' : 'production' });
+  // ספירה משלנו: הסקריפט של Vercel יושב על /_vercel/insights ונחסם אצל
+  // חלק מהגולשים בלי שנדע. השורה הזו היא הבסיס שכן בשליטתנו.
+  mark('page_view');
 }
 
 /* keepalive כדי שאירוע שנורה רגע לפני מעבר עמוד עדיין יגיע. כל שגיאה
    נבלעת בשקט: מדידה שמפילה את האתר גרועה מאין מדידה בכלל. */
 function send(name, props) {
-  if (DEV) { console.debug('[si-analytics]', name, props || ''); return; }
+  if (DEV) { console.debug('[si-trail]', name, props || ''); return; }
   try {
-    fetch(`${SUPABASE_URL}/rest/v1/site_events`, {
+    fetch(`${SUPABASE_URL}/rest/v1/si_trail`, {
       method: 'POST',
       keepalive: true,
       headers: {
@@ -85,13 +94,13 @@ function send(name, props) {
   } catch { /* מתעלמים */ }
 }
 
-export function track(name, props) { send(name, props); }
+export function mark(name, props) { send(name, props); }
 
 /* פריט נספר פעם אחת לטעינת עמוד. השאלה היא "לכמה אנשים הוא הגיע" ולא
    "כמה לחיצות היו" - מבקר שחוזר לאליהו שלוש פעמים אינו שלושה מתעניינים. */
 const fired = new Set();
 
-export function trackOnce(name, props) {
+export function markOnce(name, props) {
   const key = props ? `${name}:${Object.values(props).join('|')}` : name;
   if (fired.has(key)) return;
   fired.add(key);

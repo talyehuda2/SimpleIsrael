@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { startAnalytics } from './lib/analytics.js';
+import { startTrail } from './lib/trail.js';
 import App from './App.jsx';
 import './styles.css';
 
-startAnalytics();
+startTrail();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

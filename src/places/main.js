@@ -6,9 +6,9 @@ import { MAP_SRC, MAP_SIZE } from '../utils/mapProject.js';
 import PLACES from '../data/places.json';
 import PERIODS from '../data/periods.json';
 import { shareLink } from '../lib/share.js';
-import { startAnalytics, trackOnce } from '../lib/analytics.js';
+import { startTrail, markOnce } from '../lib/trail.js';
 
-startAnalytics();
+startTrail();
 
 const $ = (s) => document.querySelector(s);
 const KIND_COLOR = { leader:'var(--leader)', judge:'var(--judge)', united:'var(--united)', judah:'var(--judah)',
@@ -298,7 +298,7 @@ function renderDetail(p) {
 
 function select(id, replace = false) {
   // המקום שנפתח - זו התשובה ל"אילו מקומות מעניינים"
-  if (id) trackOnce('place_open', { id });
+  if (id) markOnce('place_open', { id });
   sel = id && id !== sel ? id : (id || null);
   const p = sel ? PLACES.find((x) => x.id === sel) : null;
   showAll = false;                    // כל פתיחה מתחילה מסוננת לתקופה
