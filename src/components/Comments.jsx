@@ -13,6 +13,7 @@ function fmtDate(iso) {
 // טופס כתיבה - משמש גם לתגובה חדשה וגם לתשובה בתוך שרשור
 function CommentForm({ targetKey, targetLabel, parentId = null, compact = false, onDone, onCancel }) {
   const [author, setAuthor] = useState('');
+  const [email, setEmail] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const [err, setErr] = useState('');
@@ -33,22 +34,36 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
         parent_id: parentId,
         author: author.trim().slice(0, MAX_NAME) || null,
         body: text,
+        // נשלח רק אם מולא. העמודה חסומה לקריאה מהדפדפן ברמת בסיס
+        // הנתונים, ולכן כתובת של מגיב אחד אינה נחשפת למגיב הבא.
+        notify_email: email.trim() || null,
         hp: hp.current ? hp.current.value : '',
       })
       .select('id, created_at, author, body, parent_id')
       .single();
     setSending(false);
     if (error) { setErr('שליחת התגובה נכשלה, נסו שוב'); return; }
-    setBody(''); setAuthor('');
+    setBody(''); setAuthor(''); setEmail('');
     onDone(data);
   };
 
   return (
     <form className={`comment-form${compact ? ' compact' : ''}`} onSubmit={submit}>
-      <input
-        className="comment-name" type="text" placeholder="שם (אופציונלי)"
-        value={author} maxLength={MAX_NAME} onChange={(e) => setAuthor(e.target.value)}
-      />
+      <div className="comment-ids">
+        <input
+          className="comment-name" type="text" placeholder="שם (אופציונלי)"
+          name="name" autoComplete="name"
+          value={author} maxLength={MAX_NAME} onChange={(e) => setAuthor(e.target.value)}
+        />
+        {/* type ו-autoComplete תקניים כדי שהדפדפן ישלים לבד. הכתובת
+            אינה מוצגת לאיש ומשמשת רק להודעה על תשובה לתגובה הזו. */}
+        <input
+          className="comment-mail" type="email" inputMode="email"
+          name="email" autoComplete="email"
+          placeholder="מייל לעדכון אם יגיבו לך (לא יוצג)"
+          value={email} maxLength={120} onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
       {/* honeypot - נסתר מבני-אדם, בוטים ממלאים אותו */}
       <input ref={hp} className="comment-hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" />
       <textarea
