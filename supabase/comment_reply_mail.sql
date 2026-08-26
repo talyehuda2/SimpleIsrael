@@ -79,8 +79,10 @@ begin
   );
   return new;
 exception when others then
-  -- כישלון בשליחת מייל לא יפיל את פרסום התגובה. תגובה שנכתבה חייבת
-  -- להתפרסם גם אם Resend למטה.
+  /* תגובה שנכתבה חייבת להתפרסם גם אם המייל נכשל - ולכן בולעים. אבל
+     בליעה שקטה משאירה אותך בלי שום עקבות כשלא מגיע מייל, ולכן הכישלון
+     נרשם ביומן. Supabase -> Logs -> Postgres, חיפוש notify_comment_reply. */
+  raise warning 'notify_comment_reply failed: % / %', sqlstate, sqlerrm;
   return new;
 end;
 $$;
@@ -96,7 +98,7 @@ create trigger trg_notify_comment_reply
 -- 1. כתוב תגובה באתר עם כתובת המייל שלך.
 -- 2. השב לה (מדפדפן אחר או בחלון נסתר) בלי למלא מייל.
 -- 3. המייל אמור להגיע. לבדיקת הקריאות היוצאות:
---      select id, created, url, status_code from net._http_response
+--      select created, status_code, left(content, 200) from net._http_response
 --       order by created desc limit 5;
 --
 -- כמה מגיבים השאירו כתובת (הערך עצמו לא נחוץ לך כאן):
