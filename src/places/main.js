@@ -405,8 +405,14 @@ addEventListener('keydown', (e) => {
 });
 /* React נטען רק כשבאמת פותחים את התיבה. ייבוא סטטי היה גורר ~150KB
    לכל מבקר במסך הזה, בשביל כפתור שרוב הגולשים לא ילחצו עליו. */
-$('#tNote').addEventListener('click', () => { import('../lib/notes.jsx').then((m) => m.openNotes()); });
-$('#betaChip')?.addEventListener('click', () => { import('../lib/notes.jsx').then((m) => m.openNotes()); });
+/* כישלון בטעינת הצ'אנק (בדרך כלל 404 אחרי פריסה) השאיר כאן כפתור
+   מת בלי שום סימן למשתמש. עכשיו הוא לפחות אומר מה קרה. */
+const openNotesSafe = () => import('../lib/notes.jsx')
+  .then((m) => m.openNotes())
+  .catch(() => toast('לא הצלחנו לטעון את החלק הזה - רעננו את הדף'));
+
+$('#tNote').addEventListener('click', openNotesSafe);
+$('#betaChip')?.addEventListener('click', openNotesSafe);
 $('#mAbout').addEventListener('click', () => {
   const el = document.createElement('div');
   el.className = 'ov';

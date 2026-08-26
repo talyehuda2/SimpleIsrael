@@ -4,6 +4,7 @@ import { shareLink, itemPageUrl } from '../lib/share.js';
 import { sourceSegments } from '../utils/sefaria.js';
 import { periodOf } from '../data/items.js';
 import maps from '../data/maps.json';
+import ChunkBoundary from './ChunkBoundary.jsx';
 
 // נטען רק כשנפתחות התגובות - כך ספריית Supabase לא מכבידה על טעינת הציר
 const Comments = lazy(() => import('./Comments.jsx'));
@@ -248,13 +249,15 @@ export default function DetailCard({
       </div>
 
       {showComments && (
-        <Suspense fallback={<div className="comments-loading">טוען תגובות…</div>}>
-          <Comments
-            key={`${item.kind}:${item.id}`}
-            targetKey={`${item.kind}:${item.id}`}
-            targetLabel={item.name}
-          />
-        </Suspense>
+        <ChunkBoundary>
+          <Suspense fallback={<div className="comments-loading">טוען תגובות…</div>}>
+            <Comments
+              key={`${item.kind}:${item.id}`}
+              targetKey={`${item.kind}:${item.id}`}
+              targetLabel={item.name}
+            />
+          </Suspense>
+        </ChunkBoundary>
       )}
     </aside>
   );

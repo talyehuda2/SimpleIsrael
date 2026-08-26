@@ -4,3 +4,6 @@ dist
 
 Pictures/
 og-preview/
+
+# עותקים מקומיים של קבצי SQL אחרי מילוי מפתחות - לעולם לא בגיט
+*.local.sql
