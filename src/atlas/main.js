@@ -1,6 +1,5 @@
 import { renderCard, clearCard } from './card.jsx';
 import { renderMap } from './map.jsx';
-import { openNotes } from './notes.jsx';
 import { ALL_ITEMS } from '../data/items.js';
 import TOURS from '../data/tours.json';
 import { shareLink } from '../lib/share.js';
@@ -657,7 +656,9 @@ $('#tTours').addEventListener('click', () => {
     jumpStop(TOURS[+b.dataset.t], 0);
   }));
 });
-$('#tNote').addEventListener('click', openNotes);
+/* React נטען רק כשבאמת פותחים את התיבה. ייבוא סטטי היה גורר ~150KB
+   לכל מבקר במסך הזה, בשביל כפתור שרוב הגולשים לא ילחצו עליו. */
+$('#tNote').addEventListener('click', () => { import('../lib/notes.jsx').then((m) => m.openNotes()); });
 
 /* פתיחת אוסף תמטי מתגית שבכרטיס. בלי זה התגיות מוצגות אך אינן לחיצות,
    וכל דבר שאפשר לעשות בציר הזמן צריך להיות אפשרי גם כאן. */

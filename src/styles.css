@@ -472,14 +472,15 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
 
 .notes-title { margin: 2px 0 6px; font-size: 20px; font-weight: 900; color: var(--navy); font-family: 'Frank Ruhl Libre', serif; }
 .notes-sub { margin: 0 0 16px; font-size: 13.5px; line-height: 1.6; color: var(--muted); }
-.notes-name, .notes-body {
+.notes-name, .notes-field, .notes-body {
   width: 100%; box-sizing: border-box; font-family: inherit; font-size: 14px; color: var(--ink);
   background: var(--panel); border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 11px;
   margin-bottom: 8px;
 }
-.notes-name::placeholder, .notes-body::placeholder { color: var(--muted); }
-.notes-name:focus, .notes-body:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgb(178 138 43 / .15); }
+.notes-name::placeholder, .notes-field::placeholder, .notes-body::placeholder { color: var(--muted); }
+.notes-name:focus, .notes-field:focus, .notes-body:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgb(178 138 43 / .15); }
 .notes-body { resize: vertical; min-height: 96px; line-height: 1.6; }
+.notes-hint { margin: -2px 0 10px; font-size: 12px; line-height: 1.55; color: var(--muted); }
 .notes-actions { display: flex; align-items: center; gap: 10px; }
 .notes-submit {
   margin-inline-start: auto; background: var(--navy); color: #fff; border: none;

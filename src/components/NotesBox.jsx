@@ -26,6 +26,8 @@ async function postNote(row) {
 
 export default function NotesBox({ open, onClose }) {
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
@@ -47,16 +49,20 @@ export default function NotesBox({ open, onClose }) {
     const text = body.trim();
     if (!text) return;
     setSending(true); setErr('');
+    /* המייל והטלפון נשלחים רק אם מולאו. השדה נוסף לטבלה בנפרד, ושליחת
+       contact: null בכל הערה הייתה מפילה כל פנייה עד שהעמודה קיימת. */
+    const contact = [email.trim(), phone.trim()].filter(Boolean).join(' · ');
     const ok = await postNote({
       target_key: 'admin:notes',
       target_label: '📋 הערה כללית למנהל',
       author: name.trim().slice(0, 40) || null,
       body: text.slice(0, MAX),
       hp: hp.current ? hp.current.value : '',
+      ...(contact ? { contact } : {}),
     });
     setSending(false);
     if (!ok) { setErr('השליחה נכשלה - נסו שוב'); return; }
-    setName(''); setBody(''); setDone(true);
+    setName(''); setEmail(''); setPhone(''); setBody(''); setDone(true);
   };
 
   return (
@@ -76,9 +82,23 @@ export default function NotesBox({ open, onClose }) {
             <p className="notes-sub">הערות, הארות, תיקונים או כל דבר אחר - יגיעו ישירות למנהל ולא יוצגו באתר.</p>
             <form onSubmit={submit}>
               <input
-                className="notes-name" type="text" placeholder="שם (אופציונלי)"
+                className="notes-name" type="text" name="name" autoComplete="name"
+                placeholder="שם (אופציונלי)"
                 value={name} maxLength={40} onChange={(e) => setName(e.target.value)}
               />
+              {/* type ו-autoComplete הם מה שגורם לדפדפן להציע השלמה. בלעדיהם
+                  זה סתם עוד שדה טקסט, והמבקר מקליד את המייל שלו מחדש. */}
+              <input
+                className="notes-field" type="email" name="email" autoComplete="email"
+                inputMode="email" placeholder="מייל - אם תרצו שאחזור אליכם"
+                value={email} maxLength={120} onChange={(e) => setEmail(e.target.value)}
+              />
+              <input
+                className="notes-field" type="tel" name="tel" autoComplete="tel"
+                inputMode="tel" placeholder="טלפון (לא חובה)"
+                value={phone} maxLength={30} onChange={(e) => setPhone(e.target.value)}
+              />
+              <p className="notes-hint">פרטי הקשר לא יוצגו באתר ולא יישלחו לאף אחד - הם רק כדי שאוכל לחזור אליכם.</p>
               <input ref={hp} className="comment-hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" />
               <textarea
                 className="notes-body" placeholder="כתבו כאן…" rows={5}

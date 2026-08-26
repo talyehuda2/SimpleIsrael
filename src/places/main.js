@@ -398,6 +398,9 @@ addEventListener('popstate', () => openFromUrl(true));
 addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { stopPlay(); if (sel) select(null); }
 });
+/* React נטען רק כשבאמת פותחים את התיבה. ייבוא סטטי היה גורר ~150KB
+   לכל מבקר במסך הזה, בשביל כפתור שרוב הגולשים לא ילחצו עליו. */
+$('#tNote').addEventListener('click', () => { import('../lib/notes.jsx').then((m) => m.openNotes()); });
 $('#mAbout').addEventListener('click', () => {
   const el = document.createElement('div');
   el.className = 'ov';
