@@ -1,4 +1,4 @@
-/* מפת המקומות - הציר השלישי של האתר.
+/* מפת הארץ - הציר השלישי של האתר.
    ציר הזמן שואל "מתי", מסע הדורות שואל "מי", וכאן שואלים "איפה":
    אותם 275 ביקורים, מסודרים לפי המקום ולא לפי הדמות. הנתונים מגיעים
    מ-src/data/places.json שנוצר בידי scripts/places-data.mjs. */
@@ -414,7 +414,7 @@ $('#mAbout').addEventListener('click', () => {
 // אותו shareLink של שני המסכים האחרים - ראו את ההערה שם
 $('#tShare').addEventListener('click', async () => {
   const url = location.origin + '/places' + (sel ? `?p=${encodeURIComponent(sel)}` : '');
-  const title = sel ? `${sel} - מפת המקומות` : 'מפת המקומות';
+  const title = sel ? `${sel} - מפת הארץ` : 'מפת הארץ';
   const res = await shareLink({ url, title });
   if (res === 'copied') toast('הקישור הועתק ✓');
   else if (res === 'failed') toast('העתיקו מהכתובת שלמעלה');

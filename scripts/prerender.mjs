@@ -421,7 +421,7 @@ ${readLabel ? `<a class="gread" href="#more">${esc(readLabel)} ↓</a>` : ''}`;
 // שלושת המבטים, עם היעד המדויק לכל דף
 const optTimeline = (q = '') => ({ icon: '📜', href: `/${q}`, title: 'ציר הזמן', sub: 'לראות מי חי לצד מי' });
 const optAtlas = (q = '') => ({ icon: '🗺️', href: `/atlas${q}`, title: 'מסע הדורות', sub: 'לעקוב אחרי המסע על המפה' });
-const optPlaces = (q = '') => ({ icon: '📍', href: `/places${q}`, title: 'מפת המקומות', sub: 'לראות מה קרה בכל מקום' });
+const optPlaces = (q = '') => ({ icon: '📍', href: `/places${q}`, title: 'מפת הארץ', sub: 'לראות מה קרה בכל מקום' });
 
 // פירורי לחם כניווט גלוי. בדף שהכרטיס פותח אותו הם יורדים מהראש
 // ומוצגים בתחילת התוכן שמתחתיו, ולכן זו פונקציה ולא קוד בתוך shell.
@@ -836,7 +836,7 @@ function placePage(p) {
   const nearby = nearbyOf(p);
   const crumbs = [
     { name: 'ציר הזמן של עם ישראל', url: SITE + '/' },
-    { name: 'מפת המקומות', url: `${SITE}/places` },
+    { name: 'מפת הארץ', url: `${SITE}/places` },
     { name: p.name },
   ];
 
@@ -1092,7 +1092,7 @@ let placesHtml = readFileSync(placesPath, 'utf8');
 const placesLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
-  name: 'מפת המקומות',
+  name: 'מפת הארץ',
   url: `${SITE}/places`,
   description: 'לפי מקום ולא לפי זמן: מי עבר בכל מקום בארץ ישראל ומה קרה שם, מאברהם ועד שיבת ציון.',
   inLanguage: 'he',
@@ -1106,7 +1106,7 @@ if (!placesHtml.includes('id="crawl-places"')) {
   const body = rich.map((p) => `<h2>${esc(p.name)} (${p.visits.length} ביקורים)</h2>
 <ul>${p.visits.map((v) => `<li><a href="/p/${v.kind}/${v.id}">${esc(v.name)}</a>${v.label ? ` - ${esc(v.label)}` : ''}</li>`).join('')}</ul>`).join('\n');
   placesHtml = placesHtml.replace('</body>', `<noscript><nav id="crawl-places">
-<h1>מפת המקומות - איפה קרתה ההיסטוריה של עם ישראל</h1>
+<h1>מפת הארץ - איפה קרתה ההיסטוריה של עם ישראל</h1>
 <p>המפה האינטראקטיבית דורשת JavaScript. עד אז, הנה המקומות המרכזיים ומי עבר בכל אחד מהם:
 <a href="/p">מפת האתר</a> · <a href="/">ציר הזמן</a> · <a href="/atlas">מסע הדורות</a>.</p>
 ${body}

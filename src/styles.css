@@ -842,11 +842,11 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
 }
 .wsplit-x { position: absolute; top: 14px; left: 14px; }
 .wsplit-head { text-align: center; max-width: 460px; }
+/* שלוש אפשרויות, טור לכל אחת. הגבול ביניהן הוא ההצעה עצמה. */
 .wsplit-body {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
-  width: 100%; max-width: 820px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  width: 100%; max-width: 1020px;
 }
-/* חצי מסך לכל אפשרות - הגבול ביניהן הוא ההצעה עצמה */
 .wpane {
   display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;
   padding: 22px 18px 24px; border: 1.5px solid var(--line); border-radius: 16px;
@@ -878,6 +878,12 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
 .vw-card { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
 .vw-ln { fill: var(--muted); opacity: .3; }
 .vw-ln-t { fill: var(--navy); opacity: .6; }
+/* מפת הארץ: נקודות שנדלקות בזו אחר זו, ואחת נבחרת עם הילה שמתפשטת */
+.vw-site { fill: var(--navy); opacity: .3; animation: vwSite .45s ease-out both; }
+.vw-pin-on { fill: var(--gold); }
+.vw-ring { fill: none; stroke: var(--gold); stroke-width: 2; animation: vwRing 2.8s ease-out infinite; }
+@keyframes vwSite { from { r: 0; opacity: 0; } to { r: 3.4; opacity: .3; } }
+@keyframes vwRing { 0% { r: 6; opacity: .8; } 70%, 100% { r: 16; opacity: 0; } }
 @keyframes vwGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 /* עמודת-הזמן נעה לרוחב הציר - "מי חי לצד מי" ברגע נתון */
 @keyframes vwScan { 0%, 100% { transform: translateX(52px); } 50% { transform: translateX(-52px); } }
@@ -888,10 +894,19 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
   .vw-life { transform: none; }
 }
 .wrec { display: none; }
-@media (max-width: 620px) {
-  /* בטלפון המסע מוצג ראשון: הציר האופקי צריך רוחב, והמסע הוא רשימה נגללת */
-  .wsplit-body .wpane:nth-child(1) { order: 2; }
+/* שלוש אפשרויות זו לצד זו נעשות צרות הרבה לפני רוחב הטלפון, ולכן מעבר
+   השורות קורה כאן ולא ב-620: כל מבט הוא שורה, והאיור יורד לצד הטקסט. */
+@media (max-width: 880px) {
+  .wsplit-body { grid-template-columns: 1fr; gap: 10px; max-width: 460px; }
+  .wpane { flex-direction: row; text-align: right; gap: 12px; padding: 12px 13px; }
+  .wpane .vw-illo { width: 96px; flex: 0 0 96px; max-height: 62px; }
+  .wpane .vw-txt { align-items: flex-start; }
+  /* המסע ראשון: הציר האופקי צריך רוחב, והמסע נבנה כרשימה נגללת */
+  .wsplit-body .wpane:nth-child(1) { order: 3; }
   .wsplit-body .wpane:nth-child(2) { order: 1; border-color: var(--gold); }
+  .wsplit-body .wpane:nth-child(3) { order: 2; }
+}
+@media (max-width: 620px) {
   .wrec {
     display: inline-block; align-self: flex-start; font-size: 10.5px; font-weight: 700;
     color: #fff; background: var(--gold); border-radius: 9px; padding: 2px 7px; margin-bottom: 2px;
@@ -899,14 +914,36 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
   .wsplit { gap: 12px; padding: 18px 14px; justify-content: flex-start; }
   .wsplit-head .intro-hero { font-size: 34px; }
   .wsplit-head .intro-welcome-title { font-size: 21px; }
-  .wsplit-body { grid-template-columns: 1fr; gap: 10px; max-width: 420px; }
-  /* במסך צר אין חצאים - כל אפשרות היא שורה, והאיור יורד לצד הטקסט */
-  .wpane { flex-direction: row; text-align: right; gap: 12px; padding: 12px 13px; }
-  .wpane .vw-illo { width: 96px; flex: 0 0 96px; max-height: 62px; }
   .wpane b { font-size: 16.5px; }
   .wpane span { font-size: 12.5px; }
-  .wpane .vw-txt { align-items: flex-start; }
+  .guide-card { padding: 18px 16px 20px; }
 }
+
+/* ----- המדריך: מה יש באתר ----- */
+.wsplit-guide { margin-top: 2px; }
+/* עמוד תוכן ולא בחירה, ולכן טור אחד צר וקריא במקום רשת */
+.guide-card {
+  background: var(--panel); border: 1.5px solid var(--line); border-radius: 16px;
+  padding: 22px 24px 24px; max-width: 560px; width: 100%; text-align: center;
+  box-shadow: 0 2px 10px rgb(30 20 5 / .06);
+}
+.guide-views, .guide-feats { list-style: none; margin: 0; padding: 0; text-align: right; }
+.guide-views { display: flex; flex-direction: column; gap: 12px; margin: 16px 0 4px; }
+.guide-views li {
+  display: flex; flex-direction: column; gap: 3px;
+  border-inline-start: 3px solid var(--gold); padding-inline-start: 12px;
+}
+.guide-views b { color: var(--navy); font-size: 16px; }
+.guide-views span { color: var(--muted); font-size: 13.5px; line-height: 1.65; }
+.guide-views em { font-style: normal; font-weight: 700; color: var(--navy); }
+.guide-h { color: var(--navy); font-size: 15px; margin: 20px 0 8px; text-align: right; }
+.guide-feats { display: flex; flex-direction: column; gap: 6px; }
+.guide-feats li { color: var(--muted); font-size: 13.5px; line-height: 1.6; }
+.guide-note {
+  margin: 18px 0 14px; padding: 10px 12px; border-radius: 10px;
+  background: var(--bg-2); color: var(--muted); font-size: 12.5px; line-height: 1.6; text-align: right;
+}
+.guide-note b { color: var(--navy); }
 
 /* ----- מצב ריק: הזמנה לדמות היום ----- */
 .daily-hint {

@@ -43,6 +43,24 @@ function IlloViewAtlas() {
   );
 }
 
+/* מבט מפת הארץ: לא מסלול אחד אלא פזורה. זה מה שמבדיל אותו מ"מסע הדורות",
+   שמראה דמות אחת בתנועה - כאן המקומות עומדים, והדמויות עוברות בהם. */
+const SITES = [[72, 30], [116, 22], [92, 52], [148, 44], [66, 74], [126, 84], [104, 104], [162, 96], [84, 92]];
+function IlloViewPlaces() {
+  return (
+    <svg viewBox="0 0 240 130" className="illo vw-illo" role="img" aria-label="מפת הארץ ומקומותיה">
+      <rect className="vw-map" x="34" y="8" width="172" height="114" rx="9" />
+      <path className="vw-coast" d="M60 10 L68 40 L58 68 L70 98 L62 122" fill="none" />
+      {SITES.map(([cx, cy], i) => (
+        <circle key={i} className="vw-site" cx={cx} cy={cy} r="3.4" style={{ animationDelay: `${i * 0.16}s` }} />
+      ))}
+      {/* מקום אחד נבחר - זו הפעולה שהמסך הזה מזמין אליה */}
+      <circle className="vw-ring" cx="116" cy="66" r="6" />
+      <circle className="vw-pin-on" cx="116" cy="66" r="5.5" />
+    </svg>
+  );
+}
+
 // שכבות התצוגה. הצבע משמש את הצ׳יפים בשלב "מה להציג" בסיור.
 export const LAYERS = [
   { key: 'leaders', icon: '🏛️', label: 'אבות ומנהיגים', color: 'var(--leader)' },
@@ -101,8 +119,9 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
 
   if (!open) return null;
 
-  // ===== מסך פתיחה, שאלה ראשונה: באיזו תצוגה להתחיל =====
-  // המסך אטום ומחולק לשניים - הציר שמאחור הסיח והכביד על ההחלטה.
+  // ===== מסך פתיחה, שאלה ראשונה: באיזה מבט להתחיל =====
+  // המסך אטום: הציר שנראה מאחור הסיח והכביד על ההחלטה בדיוק ברגע שבו
+  // המבקר אמור להחליט.
   if (phase === 'welcome' && !chosen) {
     return (
       <div className="wsplit">
@@ -112,7 +131,7 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
           <h2 className="intro-welcome-title">ציר הזמן של עם ישראל</h2>
           <p className="intro-value">
             כל ההיסטוריה המקראית - מהאבות ועד חורבן בית שני.
-            אותם נתונים, שני מבטים. במה נתחיל?
+            אותם נתונים, שלושה מבטים. במה נתחיל?
           </p>
         </div>
         <div className="wsplit-body">
@@ -133,7 +152,22 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
               <span>דמות אחר דמות, עם המפה והסיפור המלא לצדה</span>
             </div>
           </button>
+          {/* למפת הארץ אין סיור משלה, ולכן היא מדלגת על שאלת ההדרכה ועוברת
+              ישר. עדיף מאשר להציע הדרכה שלא קיימת. */}
+          <button
+            className="wpane"
+            onClick={() => { onChooseView?.('places'); window.location.href = '/places'; }}
+          >
+            <IlloViewPlaces />
+            <div className="vw-txt">
+              <b>📍 מפת הארץ</b>
+              <span>לפי מקום: מי עבר בכל אתר, ומה קרה שם</span>
+            </div>
+          </button>
         </div>
+        <button className="intro-link wsplit-guide" onClick={() => setPhase('guide')}>
+          רגע, מה יש כאן? →
+        </button>
       </div>
     );
   }
@@ -162,6 +196,53 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
           </div>
           <div className="intro-welcome-links">
             <button className="intro-link" onClick={() => setChosen(null)}>בחירת תצוגה אחרת →</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ===== מדריך: מה יש באתר =====
+     נגיש ממסך הפתיחה, לפני הבחירה. הוא עונה על "מה בכלל אפשר לעשות כאן" -
+     שאלה ששורת תיאור אחת בכל כרטיס לא הספיקה לה. אין כאן מספרים מהנתונים
+     בכוונה: הם היו מתיישנים בשקט בכל פעם שמוסיפים דמות. */
+  if (phase === 'guide') {
+    return (
+      <div className="wsplit">
+        <button className="about-close wsplit-x" onClick={onClose} aria-label="סגירה">✕</button>
+        <div className="guide-card">
+          <div className="intro-hero" aria-hidden="true">🧭</div>
+          <h2 className="intro-welcome-title">מה יש כאן</h2>
+          <p className="intro-value">
+            אותם נתונים בדיוק, בשלושה מבטים - כל אחד עונה על שאלה אחרת.
+          </p>
+          <ul className="guide-views">
+            <li>
+              <b>📜 ציר הזמן</b>
+              <span>עונה על <em>מתי</em>. כל הדמויות כפסים על ציר אחד, כך שרואים במבט מי חי במקביל למי.</span>
+            </li>
+            <li>
+              <b>🗺️ מסע הדורות</b>
+              <span>עונה על <em>מה קרה</em>. דמות אחר דמות לפי הסדר, עם המפה והסיפור המלא לצדה.</span>
+            </li>
+            <li>
+              <b>📍 מפת הארץ</b>
+              <span>עונה על <em>איפה</em>. לוחצים על מקום, ורואים את כל מי שעבר בו לאורך הדורות.</span>
+            </li>
+          </ul>
+          <h3 className="guide-h">בכל מבט אפשר</h3>
+          <ul className="guide-feats">
+            <li>🔎 לחפש דמות, מקום או נושא - והמסך יקפוץ ישר אליו</li>
+            <li>📖 לפתוח כרטיס מלא: הסיפור, הפסוק, המקורות ותחנות המסע</li>
+            <li>👥 לראות מי היו בני-הזמן של כל דמות</li>
+            <li>🌳 לפתוח את אילן היוחסין של בית דוד</li>
+            <li>💬 להוסיף תגובה, מקור או תיקון - ואני קורא הכל</li>
+          </ul>
+          <p className="guide-note">
+            כל התאריכים באתר הם <b>לבריאה</b>, לפי הכרונולוגיה המסורתית (סדר עולם) - ולא לספירה.
+          </p>
+          <div className="wask">
+            <button className="intro-btn primary" onClick={() => setPhase('welcome')}>← לבחירת מבט</button>
           </div>
         </div>
       </div>

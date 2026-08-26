@@ -822,7 +822,7 @@ export default function App() {
               <span aria-hidden="true">🗺️</span> מסע הדורות
             </a>
             <a className="ms-opt" href="/places" title="לפי מקום: מי עבר בכל מקום ומה קרה שם">
-              <span aria-hidden="true">📍</span> מקומות
+              <span aria-hidden="true">📍</span> מפת הארץ
             </a>
           </div>
           <div className="header-actions">
@@ -1147,7 +1147,7 @@ export default function App() {
             <span aria-hidden="true">🗺️</span>מסע הדורות
           </a>
           <a className="mn-tab" href="/places">
-            <span aria-hidden="true">📍</span>מקומות
+            <span aria-hidden="true">📍</span>מפת הארץ
           </a>
         </nav>
       )}
