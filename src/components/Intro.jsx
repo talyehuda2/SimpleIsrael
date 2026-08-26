@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import SpotlightTour from './SpotlightTour.jsx';
+import { trackOnce } from '../lib/analytics.js';
 
 /* --- שני המבטים במסך הפתיחה. האיורים מונפשים (CSS) כדי שהבחירה תהיה
    ויזואלית: רואים מה כל מבט עושה במקום לקרוא עליו. --- */
@@ -165,7 +166,7 @@ export default function Intro({ open, onClose, visible, setVisible, mode = 'tour
             </div>
           </button>
         </div>
-        <button className="intro-link wsplit-guide" onClick={() => setPhase('guide')}>
+        <button className="intro-link wsplit-guide" onClick={() => { trackOnce('guide_open'); setPhase('guide'); }}>
           רגע, מה יש כאן? →
         </button>
       </div>

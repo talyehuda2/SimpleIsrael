@@ -11,6 +11,7 @@ import AskBox from './components/AskBox.jsx';
 import { fetchCommentCounts } from './lib/commentCounts.js';
 import { handleAdminParam, getAdminToken } from './lib/admin.js';
 import { shareLink } from './lib/share.js';
+import { track, trackOnce } from './lib/analytics.js';
 import leaders from './data/leaders.json';
 import judges from './data/judges.json';
 import kings from './data/kings.json';
@@ -203,6 +204,14 @@ export default function App() {
   }, []);
   const openCollection = (c) => { setToursOpen(false); setCollection(c); };
   const [treeOpen, setTreeOpen] = useState(INITIAL.tree);
+
+  /* מדידה. הווים יושבים על המצב ולא על אתר הלחיצה, כי דמות נבחרת
+     בחמש דרכים שונות - לחיצה על הציר, חיפוש, קישור נכנס, מסע מודרך
+     ושחזור הביקור האחרון. וו אחד על המצב תופס את כולן. */
+  useEffect(() => { if (selected) trackOnce('item_open', { kind: selected.kind, id: selected.id }); }, [selected]);
+  useEffect(() => { if (mapItem) trackOnce('map_open', { id: mapItem.id }); }, [mapItem]);
+  useEffect(() => { if (treeOpen) trackOnce('tree_open'); }, [treeOpen]);
+  useEffect(() => { if (toursOpen) trackOnce('tours_open'); }, [toursOpen]);
   const [shareMsg, setShareMsg] = useState('');
 
   // שיתוף התצוגה הנוכחית: שיתוף מקורי במובייל (וואטסאפ וכו'), אחרת העתקה ללוח
@@ -272,6 +281,8 @@ export default function App() {
   // מאותה נקודה במקום לחזור לראש הציר.
   const atlasHref = `/atlas${selected ? `?sel=${itemKey(selected)}` : ''}`;
   const chooseView = (view) => {
+    // באיזה משלושת המבטים בוחרים במסך הפתיחה
+    track('view_chosen', { view });
     try { localStorage.setItem('si_view', view); } catch { /* מתעלמים */ }
   };
 

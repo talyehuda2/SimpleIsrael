@@ -3,6 +3,9 @@ import { renderMap } from './map.jsx';
 import { ALL_ITEMS } from '../data/items.js';
 import TOURS from '../data/tours.json';
 import { shareLink } from '../lib/share.js';
+import { startAnalytics, trackOnce } from '../lib/analytics.js';
+startAnalytics();
+
 const $ = (s) => document.querySelector(s);
 // אותו סדר כמו רצועות ציר הזמן עצמו
 const LAYERS = [
@@ -252,6 +255,8 @@ function renderResults(raw) {
   if (norm(raw).length < 2) { box.classList.remove('show'); $('#q').setAttribute('aria-expanded', 'false'); return; }
   if (!groups.length) {
     box.innerHTML = `<div class="qempty">לא נמצאו תוצאות עבור "${raw}"</div>`;
+    // מה חיפשו ולא מצאו - זו רשימת התוכן החסר באתר
+    trackOnce('search_miss', { q: raw.trim().slice(0, 40) });
   } else {
     let k = 0;
     box.innerHTML = groups.map((g) =>
@@ -562,6 +567,9 @@ function renderDetail(it) {
 const markEra = (idx) => {
   const card = document.querySelector(`.card[data-i="${idx}"]`);
   const ei = card ? +card.dataset.era : 0;
+  // עומק הגלילה, ולא כל פריט: המסך גלילתי, ו"עברתי ליד" אינו "התעניינתי"
+  const chip = $(`#eras .echip[data-e="${ei}"]`);
+  if (chip) trackOnce('era_reached', { era: chip.textContent.trim() });
   $('#eras').querySelectorAll('.echip').forEach(b => b.classList.toggle('on', +b.dataset.e === ei));
 };
 function pick(force) {

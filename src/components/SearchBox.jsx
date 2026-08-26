@@ -1,4 +1,5 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
+import { trackOnce } from '../lib/analytics.js';
 
 const KIND_LABEL = {
   leader: 'מנהיג', judge: 'שופט',
@@ -48,6 +49,15 @@ export default function SearchBox({ index, onPick }) {
     scored.sort((a, b) => a.rank - b.rank || (a.it.start || 0) - (b.it.start || 0));
     return scored.slice(0, 14);
   }, [q, index]);
+
+  /* חיפוש שלא החזיר כלום - זו רשימת התוכן שחסר באתר, והיא שווה יותר
+     מרשימת מה שכן נמצא. ההשהיה היא כדי לא לדווח על כל הקשה בדרך;
+     החיפוש המוצלח עצמו אינו נמדד, הוא היה מייצר אירוע לכל אות. */
+  useEffect(() => {
+    if (norm(q).length < 2 || results.length) return undefined;
+    const t = setTimeout(() => trackOnce('search_miss', { q: q.trim().slice(0, 40) }), 1200);
+    return () => clearTimeout(t);
+  }, [q, results]);
 
   useEffect(() => {
     const onDoc = (e) => { if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false); };

@@ -1,13 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { Analytics } from '@vercel/analytics/react';
+import { startAnalytics } from './lib/analytics.js';
 import App from './App.jsx';
 import './styles.css';
+
+startAnalytics();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
-    <Analytics />
   </React.StrictMode>
 );
 
