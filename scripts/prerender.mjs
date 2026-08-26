@@ -431,7 +431,7 @@ const crumbsNav = (crumbs) => (crumbs && crumbs.length ? `
   ).join('<span class="sep"> / </span>')}</nav>` : '');
 
 function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, prefetch = 'main',
-  wide = false, bare = false, bodyClass = '' }) {
+  wide = false, bare = false, bodyClass = '', robots = '' }) {
   const img = ogImage || `${SITE}/og-image.jpg`;
   // פירורי לחם: גם ניווט גלוי וגם BreadcrumbList לגוגל (מוצג בתוצאות החיפוש)
   const crumbLd = crumbs && crumbs.length ? {
@@ -452,6 +452,7 @@ function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, p
 <title>${escAttr(title)}</title>
 <meta name="description" content="${escAttr(description)}"/>
 <link rel="canonical" href="${escAttr(canonical)}"/>
+${robots ? `<meta name="robots" content="${robots}"/>` : ''}
 <link rel="preload" as="font" type="font/woff2" href="/fonts/frankruhllibre-hebrew.woff2" crossorigin/>
 <link rel="preload" as="font" type="font/woff2" href="/fonts/heebo-hebrew.woff2" crossorigin/>
 <meta property="og:type" content="article"/>
@@ -475,7 +476,7 @@ ${ld ? `<script type="application/ld+json">${JSON.stringify(ld)}</script>` : ''}
 ${bare ? '' : `<header><a href="/">← ציר הזמן של עם ישראל</a></header>
 ${crumbsHtml}`}
 ${body}
-<footer>חלק מ<a href="/">ציר הזמן של עם ישראל</a> · מהאבות ועד חורבן בית שני · <a href="/p">מפת האתר</a></footer>
+<footer>חלק מ<a href="/">ציר הזמן של עם ישראל</a> · מהאבות ועד חורבן בית שני · <a href="/p">מפת האתר</a> · <a href="/privacy">פרטיות</a></footer>
 </div></body>
 </html>`;
 }
@@ -1032,6 +1033,62 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 ${urls.map((u) => `<url><loc>${u}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n')}
 </urlset>`;
 writeFileSync(join(DIST, 'sitemap.xml'), sitemap);
+
+/* עמוד 404. Vercel מגיש את dist/404.html לכל כתובת שאינה קיימת, ולכן
+   קישור שנשבר - כתובת שהשתנתה, הקלדה חלקית, עמוד ישן ששותף בוואטסאפ -
+   נוחת בעברית ועם דרך המשך, במקום בשגיאה הגנרית באנגלית של הפלטפורמה.
+   הקישור למפת האתר כבר יושב ב-footer של shell. */
+writeFileSync(join(DIST, '404.html'), shell({
+  title: 'הדף לא נמצא - ציר הזמן של עם ישראל',
+  description: 'הכתובת שביקשתם אינה קיימת באתר.',
+  canonical: `${SITE}/404`,
+  robots: 'noindex',
+  body: gate({
+    chip: 'שגיאה 404',
+    name: 'הדף הזה לא נמצא',
+    lead: 'ייתכן שהקישור נשבר בדרך, שהכתובת הוקלדה חלקית, או שהעמוד השתנה מאז ששותף. שאר האתר במקומו.',
+    question: 'לאן תרצו להמשיך?',
+    opts: [optTimeline(), optAtlas(), optPlaces()],
+  }),
+}));
+
+/* מדיניות פרטיות. נדרשת בפני עצמה ברגע שנאספת סטטיסטיקה ונשמרות פניות
+   עם פרטי קשר, ותהיה תנאי מוקדם לכל הרשמה עתידית דרך ספק חיצוני.
+   מכוונת לתאר את מה שהאתר עושה בפועל - כל שינוי באיסוף מחייב עדכון כאן. */
+writeFileSync(join(DIST, 'privacy.html'), shell({
+  title: 'מדיניות פרטיות - ציר הזמן של עם ישראל',
+  description: 'מה נאסף באתר, מה לא, ומה נשמר במכשיר שלכם בלבד.',
+  canonical: `${SITE}/privacy`,
+  crumbs: [{ name: 'ציר הזמן של עם ישראל', url: `${SITE}/` }, { name: 'מדיניות פרטיות' }],
+  body: `<h1>מדיניות פרטיות</h1>
+<p class="lead">בקצרה: אין באתר חשבונות, אין פרסומות, ואין מעקב חוצה-אתרים. מה שנאסף הוא סטטיסטיקת שימוש אנונימית, ומה שאתם בוחרים לכתוב בעצמכם.</p>
+
+<h2>מה נאסף אוטומטית</h2>
+<p><b>סטטיסטיקת שימוש.</b> כדי לדעת אילו חלקים באתר מעניינים ומה חסר בו, נרשמות פעולות כמו: איזו דמות או מקום נפתחו, באיזה מסך, וחיפוש שלא החזיר תוצאות.</p>
+<p>לכל ביקור נוצר מזהה אקראי שנשמר בלשונית הדפדפן ונמחק ברגע שסוגרים אותה. הוא מאפשר להבדיל בין עשרה אנשים שפתחו דף אחד לבין אדם אחד שפתח עשרה דפים - ואינו מקשר בין ביקורים שונים ואינו מזהה אתכם.</p>
+<p>נשמרים גם סוג המכשיר (טלפון או מחשב) והדומיין שממנו הגעתם, למשל google.com - הדומיין בלבד ולא הכתובת המלאה.</p>
+<p><b>כתובת ה-IP שלכם אינה נשמרת.</b> כמו בכל אתר באינטרנט, שרתי האירוח רואים אותה באופן זמני כדי להגיש לכם את הדף, אך היא אינה נרשמת בנתוני האתר.</p>
+<p><b>מדידת תנועה.</b> צפיות בעמודים נמדדות גם בשירות Web Analytics של Vercel, המארחת את האתר. השירות אינו משתמש בעוגיות ואינו בונה פרופיל אישי.</p>
+
+<h2>מה נשמר רק אם תכתבו אותו</h2>
+<p><b>תגובות.</b> שם (אופציונלי) וטקסט התגובה. <b>תגובות מוצגות בפומבי באתר</b> - אנא אל תכתבו בהן פרטים אישיים.</p>
+<p><b>פנייה למנהל.</b> שם, טקסט הפנייה, ואם מילאתם - מייל או טלפון. <b>פניות אינן מוצגות באתר.</b> פרטי הקשר משמשים אך ורק כדי לחזור אליכם, ושדה יצירת הקשר חסום לקריאה מצד הדפדפן ברמת בסיס הנתונים.</p>
+
+<h2>מה נשמר במכשיר שלכם בלבד</h2>
+<p>העדפות תצוגה, הדמות האחרונה שצפיתם בה, והאם כבר ראיתם את מסך הפתיחה. אלה נשמרים בדפדפן שלכם, אינם נשלחים לשום מקום, ונמחקים כשמנקים את נתוני האתר.</p>
+
+<h2>מה לא קורה כאן</h2>
+<ul>
+<li>אין חשבונות משתמש ואין הרשמה</li>
+<li>אין פרסומות ואין רשתות פרסום</li>
+<li>אין מכירה או העברה של מידע לצד שלישי</li>
+<li>אין עוגיות מעקב</li>
+</ul>
+
+<h2>מחיקה ופנייה</h2>
+<p>רוצים שתגובה או פנייה שלכם יימחקו? השתמשו בכפתור "הערה למנהל" באתר, ואטפל בזה.</p>
+<p class="dates">עודכן לאחרונה: אוגוסט 2026</p>`,
+}));
 
 // robots.txt
 writeFileSync(join(DIST, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);

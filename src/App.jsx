@@ -1191,6 +1191,9 @@ export default function App() {
             <a className="feedback-btn" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
               💬 משוב · דיווח על תקלה · הצעת תיקון
             </a>
+            {/* חובה נגישה ולא הערת שוליים: האתר אוסף סטטיסטיקה ושומר
+                פניות עם פרטי קשר, ומי שרוצה לדעת מה נאסף צריך למצוא זאת. */}
+            <p className="about-legal"><a href="/privacy">מדיניות פרטיות</a></p>
           </div>
         </div>
       )}

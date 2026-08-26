@@ -414,7 +414,8 @@ $('#mAbout').addEventListener('click', () => {
     <h2>ℹ️ אודות הפרויקט</h2><p class="osub">נבנה באהבה בידי חובב תנ״ך</p>
     <p class="oabout">הפרויקט נבנה באהבה בידי חובב תנ״ך, מתוך רצון לתרום לקהילה ולעזור לכולנו
     לעשות סדר בתולדות עם ישראל. ייתכנו אי-דיוקים בתאריכים, במפות, במיקומים ובפרטים -
-    ואשמח לכל תיקון והערה. שימוש נעים! 📖</p></div>`;
+    ואשמח לכל תיקון והערה. שימוש נעים! 📖</p>
+    <p class="oabout"><a href="/privacy">מדיניות פרטיות</a></p></div>`;
   el.addEventListener('click', (e) => {
     if (e.target === el || e.target.classList.contains('ovclose')) el.remove();
   });
