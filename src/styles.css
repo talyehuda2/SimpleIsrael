@@ -1990,6 +1990,14 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 /* ===== ליטוש דסקטופ: תפריט מטא, נקודות שכבה, מקרא רזה ===== */
 /* אייקוני הכותרת - אודות, מדריך ושכבות. גלויים לצד שם המצב במקום
    להסתתר מאחורי ⋯, שדרש לחיצה כדי לגלות מה בכלל יש בו. */
+/* תג הביתא: מסמן שהאתר עדיין נבנה, ומקצר את הדרך למשוב לקליק אחד */
+.beta-chip {
+  font: inherit; font-size: 10.5px; font-weight: 700; letter-spacing: .04em;
+  color: var(--gold); background: transparent; border: 1px solid rgb(178 138 43 / .45);
+  border-radius: 999px; padding: 2px 8px; cursor: pointer; flex-shrink: 0;
+  transition: background .16s, color .16s, border-color .16s;
+}
+.beta-chip:hover, .beta-chip:focus-visible { background: var(--gold); color: #fff; border-color: var(--gold); }
 .title-icons { display: inline-flex; align-items: center; gap: 5px; }
 /* אותה צורה ואותו גודל של שאר הכלים בסרגל, ובשני המסכים: קודם אלה היו
    עיגולים קטנים ליד מלבנים מעוגלים גדולים יותר. */

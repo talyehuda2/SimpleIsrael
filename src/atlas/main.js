@@ -667,6 +667,7 @@ $('#tTours').addEventListener('click', () => {
 /* React נטען רק כשבאמת פותחים את התיבה. ייבוא סטטי היה גורר ~150KB
    לכל מבקר במסך הזה, בשביל כפתור שרוב הגולשים לא ילחצו עליו. */
 $('#tNote').addEventListener('click', () => { import('../lib/notes.jsx').then((m) => m.openNotes()); });
+$('#betaChip')?.addEventListener('click', () => { import('../lib/notes.jsx').then((m) => m.openNotes()); });
 
 /* פתיחת אוסף תמטי מתגית שבכרטיס. בלי זה התגיות מוצגות אך אינן לחיצות,
    וכל דבר שאפשר לעשות בציר הזמן צריך להיות אפשרי גם כאן. */

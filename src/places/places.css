@@ -1,3 +1,8 @@
+/* תג הביתא - כפתור, כדי שהמשוב יהיה במרחק לחיצה אחת */
+.beta-chip{font:inherit;font-size:10.5px;font-weight:700;letter-spacing:.04em;color:var(--gold);
+  background:transparent;border:1px solid rgb(178 138 43 / .45);border-radius:999px;padding:2px 8px;
+  cursor:pointer;flex-shrink:0;transition:background .16s,color .16s,border-color .16s}
+.beta-chip:hover,.beta-chip:focus-visible{background:var(--gold);color:#fff;border-color:var(--gold)}
 @font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;font-display:swap;src:url('/fonts/frankruhllibre-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
 @font-face{font-family:'Heebo';font-weight:300 700;font-display:swap;src:url('/fonts/heebo-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
 :root{

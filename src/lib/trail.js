@@ -30,7 +30,9 @@
      map_open    {id}       ציר הזמן   - מפת מסע נפתחה
      tree_open / tours_open / guide_open   - שימוש בפיצ'רים
 
-   page_view              כל מסך     - ספירת תנועה בלתי-תלויה ב-Vercel
+     page_view              כל מסך     - ספירת תנועה בלתי-תלויה ב-Vercel
+
+   הטבלה והשאילתות: supabase/si_trail.sql */
 import { inject } from '@vercel/analytics';
 import { SUPABASE_URL, SUPABASE_KEY } from './supabaseConfig.js';
 
