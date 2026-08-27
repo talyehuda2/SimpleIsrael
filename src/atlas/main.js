@@ -229,7 +229,10 @@ const hits = (hay, q) => {
   const h = norm(hay);
   if (!h) return false;
   const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp('(^|[\\s\\-–(,./"׳״])' + esc).test(h);
+  // ו' החיבור נבלעת: 'גת ואשדוד' לא נמצא בחיפוש 'אשדוד', וכך גם פנואל,
+  // העי, חורב, מצפה והגליל - תשעה מקומות אמיתיים שלא ניתן היה לאתר.
+  // רק ו' ולא שאר התחיליות: ב-מ-ה היו מחזירות את 'מרים' עבור 'רים'.
+  return new RegExp('(^|[\\s\\-–(,./"׳״])ו?' + esc).test(h);
 };
 function searchItems(raw) {
   const q = norm(raw);

@@ -1,0 +1,65 @@
+/* הסגנון של תיבת "הערה למנהל", בבעלות הרכיב עצמו.
+
+   עד עכשיו הוא ישב רק ב-src/styles.css, שנטען אך ורק בציר הזמן. במסע
+   הדורות ובמפת הארץ אותו רכיב בדיוק רונדר בלי שום עיצוב - חלונית לבנה
+   פרושה על המפה. גולש דיווח על זה, וזה היה שבור שם מהיום הראשון.
+
+   הכלל שנשבר: רכיב משותף שמסתמך על גיליון סגנונות של מסך אחד. עכשיו
+   הקובץ הזה מיובא מ-NotesBox.jsx, ולכן כל מי שמרנדר את הרכיב מקבל את
+   הסגנון יחד איתו - בלי שלושה עותקים שצריך לסנכרן.
+
+   המשתנים והאנימציה מוגדרים כאן עם ערכי גיבוי, כי --navy-2, --bg-2
+   ו-cardIn קיימים בציר הזמן בלבד. */
+
+@keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* ----- תיבת הערה למנהל ----- */
+.notes-overlay {
+  position: fixed; inset: 0; z-index: 60; direction: rtl;
+  background: rgb(30 20 5 / .5); display: flex; align-items: center;
+  justify-content: center; padding: 18px; overflow-y: auto; overscroll-behavior: contain;
+}
+.notes-card {
+  position: relative; background: var(--panel); border: 1px solid var(--line);
+  border-top: 4px solid var(--gold); border-radius: 14px; max-width: 440px; width: 100%;
+  padding: 22px 24px; box-shadow: 0 14px 40px rgb(30 20 5 / .32); animation: cardIn .18s ease-out;
+}
+.notes-title { margin: 2px 0 6px; font-size: 20px; font-weight: 900; color: var(--navy); font-family: 'Frank Ruhl Libre', serif; }
+.notes-sub { margin: 0 0 16px; font-size: 13.5px; line-height: 1.6; color: var(--muted); }
+.notes-name, .notes-field, .notes-body {
+  width: 100%; box-sizing: border-box; font-family: inherit; font-size: 14px; color: var(--ink);
+  background: var(--panel); border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 11px;
+  margin-bottom: 8px;
+}
+.notes-name::placeholder, .notes-field::placeholder, .notes-body::placeholder { color: var(--muted); }
+.notes-name:focus, .notes-field:focus, .notes-body:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgb(178 138 43 / .15); }
+.notes-body { resize: vertical; min-height: 96px; line-height: 1.6; }
+.notes-hint { margin: -2px 0 10px; font-size: 12px; line-height: 1.55; color: var(--muted); }
+.notes-actions { display: flex; align-items: center; gap: 10px; }
+.notes-submit {
+  margin-inline-start: auto; background: var(--navy); color: #fff; border: none;
+  border-radius: 20px; padding: 9px 22px; font-family: inherit; font-size: 14px;
+  font-weight: 700; cursor: pointer; transition: background .12s, transform .1s;
+}
+.notes-submit:hover:not(:disabled) { background: var(--navy-2, #1d4b70); transform: translateY(-1px); }
+.notes-submit:disabled { opacity: .5; cursor: default; }
+.notes-done { text-align: center; padding: 10px 4px; }
+.notes-done-icon {
+  width: 52px; height: 52px; border-radius: 50%; background: #e3f0e5; color: #2f6b39;
+  font-size: 28px; font-weight: 900; display: flex; align-items: center; justify-content: center;
+  margin: 6px auto 12px;
+}
+.notes-done h3 { margin: 0 0 6px; font-size: 19px; color: var(--navy); }
+.notes-done p { margin: 0 0 16px; font-size: 14px; color: var(--muted); line-height: 1.6; }
+.about-close {
+  position: absolute; left: 12px; top: 12px; border: none; background: none;
+  font-size: 16px; cursor: pointer; color: #b0a082;
+}
+.about-close:hover { color: var(--ink); }
+/* honeypot - מוסתר לחלוטין מבני-אדם, בלי ליצור גלילה אופקית */
+.comment-hp {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; opacity: 0;
+}
+.comment-count { font-size: 11px; color: var(--muted); }
+.comment-err { font-size: 12.5px; color: #a5321f; }

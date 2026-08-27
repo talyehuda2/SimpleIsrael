@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { SUPABASE_URL, SUPABASE_KEY } from '../lib/supabaseConfig.js';
+import './NotesBox.css';
 
 // תיבת פניות למנהל - פרטית. ההערות נשמרות עם target_key='admin:notes',
 // שכלל ה-RLS מסתיר מקריאה ציבורית. שליחה ב-fetch ישיר (בלי supabase-js)

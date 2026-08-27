@@ -305,18 +305,6 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
 .note-btn { border-color: var(--gold); color: var(--gold-ink); }
 .note-btn:hover { background: var(--gold); color: #fff; }
 .note-btn svg { display: block; }
-
-/* ----- תיבת הערה למנהל ----- */
-.notes-overlay {
-  position: fixed; inset: 0; z-index: 60; direction: rtl;
-  background: rgb(30 20 5 / .5); display: flex; align-items: center;
-  justify-content: center; padding: 18px; overflow-y: auto; overscroll-behavior: contain;
-}
-.notes-card {
-  position: relative; background: var(--panel); border: 1px solid var(--line);
-  border-top: 4px solid var(--gold); border-radius: 14px; max-width: 440px; width: 100%;
-  padding: 22px 24px; box-shadow: 0 14px 40px rgb(30 20 5 / .32); animation: cardIn .18s ease-out;
-}
 /* ===== סוכן השאלות (מצב בדיקה, מנהל בלבד) =====
    העיצוב מדבר בשפה של האתר ולא בשפה של צ'אטבוט: התשובה מוגשת ככתוב
    מצוטט - קו זהב בשוליים ורקע קלף - בדיוק כמו .dc-verse, כדי שתיקרא
@@ -469,34 +457,6 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
   .ask-suggest { gap: 6px; }
   .ask-chip { font-size: 12px; padding: 5px 11px; }
 }
-
-.notes-title { margin: 2px 0 6px; font-size: 20px; font-weight: 900; color: var(--navy); font-family: 'Frank Ruhl Libre', serif; }
-.notes-sub { margin: 0 0 16px; font-size: 13.5px; line-height: 1.6; color: var(--muted); }
-.notes-name, .notes-field, .notes-body {
-  width: 100%; box-sizing: border-box; font-family: inherit; font-size: 14px; color: var(--ink);
-  background: var(--panel); border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 11px;
-  margin-bottom: 8px;
-}
-.notes-name::placeholder, .notes-field::placeholder, .notes-body::placeholder { color: var(--muted); }
-.notes-name:focus, .notes-field:focus, .notes-body:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgb(178 138 43 / .15); }
-.notes-body { resize: vertical; min-height: 96px; line-height: 1.6; }
-.notes-hint { margin: -2px 0 10px; font-size: 12px; line-height: 1.55; color: var(--muted); }
-.notes-actions { display: flex; align-items: center; gap: 10px; }
-.notes-submit {
-  margin-inline-start: auto; background: var(--navy); color: #fff; border: none;
-  border-radius: 20px; padding: 9px 22px; font-family: inherit; font-size: 14px;
-  font-weight: 700; cursor: pointer; transition: background .12s, transform .1s;
-}
-.notes-submit:hover:not(:disabled) { background: var(--navy-2); transform: translateY(-1px); }
-.notes-submit:disabled { opacity: .5; cursor: default; }
-.notes-done { text-align: center; padding: 10px 4px; }
-.notes-done-icon {
-  width: 52px; height: 52px; border-radius: 50%; background: #e3f0e5; color: #2f6b39;
-  font-size: 28px; font-weight: 900; display: flex; align-items: center; justify-content: center;
-  margin: 6px auto 12px;
-}
-.notes-done h3 { margin: 0 0 6px; font-size: 19px; color: var(--navy); }
-.notes-done p { margin: 0 0 16px; font-size: 14px; color: var(--muted); line-height: 1.6; }
 /* מעט גדולים יותר במגע, לנוחות הלחיצה */
 @media (max-width: 680px) {
   .about-btn { width: 26px; height: 26px; font-size: 15px; }
