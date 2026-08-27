@@ -179,7 +179,10 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
    גזלה מגובהה - ומכיוון שהחלון כמעט ריבועי, גם מרוחבה. שבע תחנות לקחו
    238 פיקסלים. השם לבדו מספיק לניווט; התיאור המלא מופיע ממילא בבועה
    שעל המפה בבחירת תחנה. */
-.jm-atlas .map-legend{flex:none;display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start;
+.jm-atlas /* הערה על תחנה שהסימון שלה על המפה אינו המיקום האמיתי - מוצגת ברשימת
+   התחנות ובכרטיס המסע בלבד, ולא על גבי המפה, כדי לא להעמיס על התווית */
+.station-note { font-size: 11.5px; font-weight: 400; opacity: .72; }
+.map-legend{flex:none;display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start;
   max-height:62px;overflow-y:auto;margin-top:8px;padding:0}
 .jm-atlas .map-legend li{flex:none;gap:5px;padding:3px 9px 3px 5px;border-radius:14px;
   font-size:11.5px;border:1px solid var(--line);background:var(--panel)}

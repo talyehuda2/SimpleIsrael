@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { stationNoteText } from '../utils/placeNote.js';
 import maps from '../data/maps.json';
 import { MAP_SRC, MAP_SIZE, journeyStations } from '../utils/mapProject.js';
 
@@ -288,6 +289,9 @@ export default function JourneyMap({
             <div className="map-popup" style={{ left: `${xPct}%`, top: `${yPct}%`, transform: `translate(${tx}, ${ty})` }}>
               <div className="map-popup-head" style={{ background: color }}>
                 <span className="map-popup-num">{active.order}</span>{active.name}
+                {stationNoteText(active.name) && (
+                  <span className="station-note">{stationNoteText(active.name)}</span>
+                )}
               </div>
               <div className="map-popup-label">{active.label}</div>
               <p className="map-popup-desc">{active.desc}</p>
@@ -300,7 +304,11 @@ export default function JourneyMap({
         {pts.map((p, i) => (
           <li key={p.id} className={i === step ? 'active' : ''} onClick={() => pickStation(i)}>
             <span className="map-legend-num" style={{ background: color }}>{p.order}</span>
-            <span className="ml-name"><b>{p.name}</b></span>
+            <span className="ml-name"><b>{p.name}</b>
+              {stationNoteText(p.name) && (
+                <span className="station-note">{stationNoteText(p.name)}</span>
+              )}
+            </span>
             <span className="ml-label"> - {p.label}</span>
           </li>
         ))}
