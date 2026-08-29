@@ -93,6 +93,18 @@ const PRESETS = {
   ],
 };
 
+/* חלון הפתיחה בציר האופקי, נבחר לפי צפיפות ולא לפי מיקום ברשימת הפריסטים.
+   קודם נפתחנו על PRESETS[1] - "האבות" - שהוא החלון הדליל ביותר באתר:
+   14 פריטים על פני 310 שנה, 4.5 ל-100 שנה, בעוד שאר התקופות צפופות פי
+   חמישה. המסך הראשון יצא גם מקורב וגם ריק. החלון כאן מחזיק 72 פריטים
+   (20.3 ל-100 שנה) והוא רק 45 שנה רחב יותר, כלומר הזום כמעט לא משתנה:
+   מתחיל בדוד ובשלמה - השמות שכל אחד מזהה - וזורם משם לפילוג ולשתי
+   הממלכות במקביל, שהיא התכונה החזותית הייחודית של הציר. */
+const OPENING = {
+  tradition: { start: 2860, end: 3215 },
+  academic: { start: 2700, end: 3045 },
+};
+
 const MIN_PX = 0.4;
 const MAX_PX = 20;
 
@@ -556,11 +568,11 @@ export default function App() {
   const openingPx = () => (vertical ? VERTICAL_DEFAULT_PX : getMinPx());
 
   // תצוגת פתיחה; ובשינוי גודל חלון - לא להישאר קטן מהמסך.
-  // באופקי ללא קישור-עומק נפתחים מזוהמים אל התקופה הראשונה (האבות) - קריא
-  // ומזמין במקום "קיר" של כל ההיסטוריה; הגלילה לקצה הימני מציבה אותנו בדיוק שם.
+  // באופקי ללא קישור-עומק נפתחים על חלון OPENING - קריא ומזמין במקום "קיר"
+  // של כל ההיסטוריה; הגלילה לקצה הימני מציבה אותנו בתחילתו.
   useEffect(() => {
     const el = scrollRef.current;
-    const first = PRESETS[chronology][1];
+    const first = OPENING[chronology];
     const eraPx = el && !vertical && !selected && first
       ? Math.min(MAX_PX, Math.max(getMinPx(), (el.clientWidth - 40) / (first.end - first.start)))
       : null;
@@ -572,6 +584,19 @@ export default function App() {
       scrollRightPending.current = false;
       if (vertical) scrollToItem(selected);
       else scrollToYear((selected.start + selected.end) / 2, centerOffset(scrollRef.current), px);
+    } else if (eraPx != null) {
+      // חלון הפתיחה אינו מתחיל עוד בקצה הציר, ולכן גלילה לקצה הימני הייתה
+      // מנחיתה אותנו על 1940 ולא עליו - הזום היה משתנה והמסך היה נשאר על
+      // האבות. מדמים כאן בדיוק את מה ש-goTo עושה בלחיצה על פריסט.
+      scrollRightPending.current = false;
+      scrollToYear(first.end, 20, px);
+      /* הציר גבוה מהמסך, ולהקות המלכים יושבות מתחת לקפל: להקת המלכים
+         מתחילה ב-632px בעוד הגובה הנראה הוא 436. חלון הפתיחה הזה מספר את
+         סיפור המלוכה, ולכן בלי גלילה אנכית הוא מציג 6 פריטים במקום 54 -
+         גרוע יותר ממה שהיה. עוגן ללהקה עצמה ולא לפיקסל קבוע, כי גובה
+         הלהקות משתנה לפי השכבות שהגולש מדליק. */
+      const kingsLane = el.querySelector('.lane-kings');
+      if (kingsLane) el.scrollTop = Math.max(0, kingsLane.offsetTop - 90);
     }
     const onResize = () => setPxPerYear((p) => Math.max(p, getMinPx()));
     window.addEventListener('resize', onResize);
