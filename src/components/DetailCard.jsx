@@ -5,6 +5,7 @@ import { sourceSegments } from '../utils/sefaria.js';
 import { periodOf } from '../data/items.js';
 import maps from '../data/maps.json';
 import ChunkBoundary from './ChunkBoundary.jsx';
+import './ChronoNote.css';
 
 // נטען רק כשנפתחות התגובות - כך ספריית Supabase לא מכבידה על טעינת הציר
 const Comments = lazy(() => import('./Comments.jsx'));
@@ -37,6 +38,9 @@ export default function DetailCard({
   switchHref, switchLabel, openComments = false,
 }) {
   const [shareMsg, setShareMsg] = useState('');
+  /* הסבר הכרונולוגיה - סגור כברירת מחדל. לא title, כי רמז שמופיע
+     בריחוף אינו קיים במגע, ורוב הגולשים בטלפון. */
+  const [chronoOpen, setChronoOpen] = useState(false);
   const [showComments, setShowComments] = useState(openComments);
 
   useEffect(() => {
@@ -46,7 +50,9 @@ export default function DetailCard({
     return () => window.removeEventListener('keydown', onKey);
   }, [item, onClose]);
 
-  useEffect(() => { setShareMsg(''); setShowComments(openComments); }, [item, openComments]);
+  useEffect(() => {
+    setShareMsg(''); setShowComments(openComments); setChronoOpen(false);
+  }, [item, openComments]);
 
   const doShare = async () => {
     const res = await shareLink({ url: itemPageUrl(item), title: `${item.name} - ציר הזמן של עם ישראל` });
@@ -129,7 +135,23 @@ export default function DetailCard({
         )}
       </div>
       {mode !== 'academic' && (
-        <div className="detail-years-sec">{formatRangeSecular(item.start, item.end)}</div>
+        <>
+          <div className="detail-years-sec">
+            {formatRangeSecular(item.start, item.end)}
+            <button
+              type="button" className="chrono-q" aria-expanded={chronoOpen}
+              aria-label="למה השנים שונות ממה שמוכר לי?"
+              onClick={() => setChronoOpen((v) => !v)}
+            >?</button>
+          </div>
+          {chronoOpen && (
+            <p className="chrono-note">
+              השנים באתר נמנות לפי <strong>סדר עולם</strong>, הכרונולוגיה של חז״ל.
+              המניין המחקרי המקובל מוקדם בכ-163 שנה, והפער כולו מרוכז בתקופה
+              הפרסית: סדר עולם מונה בה 58 שנה, והמחקר כ-206.
+            </p>
+          )}
+        </>
       )}
 
       {/* 6. מיני-ציר - הקשר כרונולוגי במבט אחד */}
