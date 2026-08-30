@@ -78,6 +78,8 @@ const PAGES = [
   { url: '/atlas', name: 'מסע הדורות', check: '#story > *' },
   { url: '/places', name: 'מפת הארץ', check: '#list > *' },
   { url: '/privacy', name: 'פרטיות', check: 'body' },
+  // בלי טוקן המסך מרנדר את מסך הכניסה, בלי שום פנייה לרשת
+  { url: '/admin', name: 'ניהול', check: '.ad-login' },
   { url: '/p', name: 'אינדקס שערים', check: 'a[href^="/p/"]' },
   // תבנית אחת מכל סוג שה-prerender מייצר: פריט, תקופה, מקום ואוסף
   { url: firstOf(/^\/p\/leader\//), name: 'שער פריט', check: 'h1' },

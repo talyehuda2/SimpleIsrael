@@ -8,7 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // /atlas ו-/places הן הכתובות הנקיות של שני המבטים הנוספים. בפרודקשן
 // ה-rewrite יושב ב-vercel.json; כאן מספקים את אותו מיפוי לשרת הפיתוח
 // כדי שהקישורים יעבדו בשני המקומות.
-const CLEAN_ROUTES = { '/atlas': '/atlas.html', '/places': '/places.html' };
+const CLEAN_ROUTES = { '/atlas': '/atlas.html', '/places': '/places.html', '/admin': '/admin.html' };
 const cleanUrls = {
   name: 'clean-urls',
   configureServer(server) {
@@ -32,6 +32,9 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         atlas: resolve(__dirname, 'atlas.html'),
         places: resolve(__dirname, 'places.html'),
+        // מסך הניהול: נקודת כניסה רביעית, עצמאית לגמרי. אין לו קישור נכנס
+        // מהאתר והוא חסום ב-robots.txt - הכניסה היא בהקלדת הכתובת.
+        admin: resolve(__dirname, 'admin.html'),
       },
     },
   },

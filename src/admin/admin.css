@@ -1,0 +1,168 @@
+/* גיליון הסגנונות של מסך הניהול - עומד בפני עצמו.
+ *
+ * שום כלל כאן אינו מסתמך על styles.css, atlas.css או places.css, ושום מסך
+ * אחר אינו מסתמך עליו. זו בדיוק ההפרדה שהמסך הזה נבנה לפיה: רכיב משותף
+ * שסגנונו יושב בגיליון של מסך אחר הוא המלכודת שכבר שברה את תיבת הפניות.
+ *
+ * מובייל תחילה: זו כל מטרת המסך. במסך רחב הרשימה פשוט מתמרכזת.
+ */
+:root {
+  --ad-bg: #efe4cb;
+  --ad-panel: #fbf5e7;
+  --ad-ink: #33281a;
+  --ad-muted: #6d5c42;
+  --ad-line: #dcc9a3;
+  --ad-navy: #163a57;
+  --ad-gold: #b28a2b;
+  --ad-danger: #b0392c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ad-bg);
+  color: var(--ad-ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  /* iPhone עם מגרעת: אחרת הסרגל התחתון נחתך */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ---------- מסך הטוקן ---------- */
+.ad-login {
+  max-width: min(380px, calc(100% - 24px));
+  margin: 18vh auto 0;
+  padding: 24px;
+  background: var(--ad-panel);
+  border: 1px solid var(--ad-line);
+  border-radius: 14px;
+  text-align: center;
+}
+.ad-login h1 { margin: 0 0 6px; font-size: 22px; color: var(--ad-navy); }
+.ad-login p { margin: 0 0 16px; color: var(--ad-muted); font-size: 14px; }
+.ad-login input {
+  width: 100%; padding: 12px; font-size: 16px; /* 16px מונע זום אוטומטי ב-iOS */
+  border: 1px solid var(--ad-line); border-radius: 10px; background: #fff;
+  text-align: center; margin-bottom: 12px;
+}
+.ad-login button {
+  width: 100%; padding: 12px; font-size: 16px; font-weight: 700;
+  border: 0; border-radius: 10px; background: var(--ad-navy); color: #fff;
+}
+.ad-login button:disabled { opacity: .45; }
+
+/* ---------- מסגרת ---------- */
+.ad { max-width: 720px; margin: 0 auto; padding: 0 12px 40px; }
+
+.ad-bar {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 12px 0;
+  background: var(--ad-bg);
+  border-bottom: 1px solid var(--ad-line);
+}
+.ad-bar h1 { margin: 0; font-size: 20px; color: var(--ad-navy); }
+.ad-bar-tools { display: flex; gap: 8px; }
+.ad-bar-tools button {
+  min-height: 40px; padding: 0 14px; font-size: 15px;
+  background: var(--ad-panel); color: var(--ad-ink);
+  border: 1px solid var(--ad-line); border-radius: 10px;
+}
+
+.ad-tabs { display: flex; gap: 8px; margin: 12px 0; }
+.ad-tabs button {
+  flex: 1; min-height: 44px; font-size: 16px;
+  background: var(--ad-panel); color: var(--ad-muted);
+  border: 1px solid var(--ad-line); border-radius: 10px;
+}
+.ad-tabs button.on {
+  background: var(--ad-navy); color: #fff; border-color: var(--ad-navy); font-weight: 700;
+}
+.ad-badge, .ad-count {
+  display: inline-block; min-width: 22px; padding: 0 6px; margin-inline-start: 6px;
+  font-size: 13px; font-weight: 700; border-radius: 11px;
+}
+.ad-badge { background: var(--ad-danger); color: #fff; }
+.ad-count { background: rgba(0, 0, 0, .12); }
+
+.ad-msg { padding: 24px 4px; text-align: center; color: var(--ad-muted); }
+.ad-err { color: var(--ad-danger); }
+.ad-hint { color: var(--ad-muted); font-size: 13px; }
+
+.ad-toggle {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px; color: var(--ad-muted); font-size: 14px;
+}
+
+/* ---------- כרטיס ---------- */
+.ad-list { display: flex; flex-direction: column; gap: 12px; }
+
+.ad-card {
+  padding: 14px;
+  background: var(--ad-panel);
+  border: 1px solid var(--ad-line);
+  /* הפס הצדדי חייב להיות לוגי: border-right בעברית נכון, אבל אם המסך
+     ייטען אי פעם ב-LTR (למשל תרגום) הוא יקפוץ לצד הלא נכון */
+  border-inline-start: 3px solid var(--ad-gold);
+  border-radius: 12px;
+}
+.ad-card.done { opacity: .55; border-inline-start-color: var(--ad-line); }
+
+.ad-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+}
+.ad-head b { font-size: 15px; }
+.ad-head time { color: var(--ad-muted); font-size: 13px; white-space: nowrap; }
+
+.ad-contact { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; font-size: 14px; }
+.ad-contact a { color: var(--ad-navy); }
+
+.ad-target {
+  display: inline-block; margin-top: 4px;
+  color: var(--ad-muted); font-size: 13px; text-decoration: none;
+}
+.ad-target:hover { text-decoration: underline; }
+
+/* white-space: pre-wrap כדי שירידות שורה של הכותב יישמרו */
+.ad-body { margin: 8px 0 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.ad-sub {
+  margin: 8px 0 8px 0;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, .035);
+  border-radius: 8px;
+}
+.ad-sub .ad-body { margin: 4px 0 6px; font-size: 15px; }
+
+/* ---------- כפתורים ---------- */
+.ad-tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.ad-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px;              /* יעד מגע - זו כל הנקודה של המסך הזה */
+  padding: 0 14px; font-size: 15px; text-decoration: none;
+  background: #fff; color: var(--ad-ink);
+  border: 1px solid var(--ad-line); border-radius: 10px;
+}
+.ad-btn.primary { background: var(--ad-navy); color: #fff; border-color: var(--ad-navy); }
+.ad-btn.danger { color: var(--ad-danger); }
+.ad-btn.small { min-height: 34px; padding: 0 10px; font-size: 14px; }
+.ad-btn:disabled { opacity: .45; }
+
+/* ---------- תיבת תשובה ---------- */
+.ad-reply { margin-top: 10px; }
+.ad-reply textarea {
+  width: 100%; padding: 10px; font: inherit; font-size: 16px;
+  background: #fff; border: 1px solid var(--ad-line); border-radius: 10px;
+  resize: vertical;
+}
+.ad-reply-foot {
+  display: flex; align-items: center; gap: 10px; margin-top: 8px;
+}
+.ad-reply-foot button {
+  margin-inline-start: auto; min-height: 44px; padding: 0 18px;
+  font-size: 15px; font-weight: 700;
+  background: var(--ad-navy); color: #fff; border: 0; border-radius: 10px;
+}
+.ad-reply-foot button:disabled { opacity: .45; }

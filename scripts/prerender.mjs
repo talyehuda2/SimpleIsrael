@@ -1090,8 +1090,8 @@ writeFileSync(join(DIST, 'privacy.html'), shell({
 <p class="dates">עודכן לאחרונה: אוגוסט 2026</p>`,
 }));
 
-// robots.txt
-writeFileSync(join(DIST, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
+// robots.txt - /admin אינו חלק מהאתר הציבורי: אין לו קישור נכנס ואינו ב-sitemap
+writeFileSync(join(DIST, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /admin\nSitemap: ${SITE}/sitemap.xml\n`);
 
 // הזרקת JSON-LD של האתר + קישור זחילה ל-index.html הראשי
 const indexPath = join(DIST, 'index.html');
