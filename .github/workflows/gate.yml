@@ -1,0 +1,49 @@
+# שער איכות: מה שרץ לפני מיזוג, כדי שאפשר יהיה למזג PR מהטלפון בלי לבדוק ידנית.
+#
+# בפרויקט אין מבחני יחידה ואין לינטר, ובנייה שעוברת אינה ראיה - זה כבר קרה
+# פעמיים (treeOpen לפני אתחול, הערת בלוק שבלעה שתי שורות import). לכן השער
+# אינו "האם נבנה" אלא "האם רץ בדפדפן": scripts/smoke.mjs טוען את התוצר האמיתי
+# ונופל על חריגת JS, הפרת CSP, נכס חסר או מסך שלא התרנדר.
+name: שער איכות
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# דחיפה חדשה מבטלת ריצה קודמת על אותו ענף - אין טעם לחכות לתוצאה של קוד ישן
+concurrency:
+  group: gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      # dist נבנה כאן במלואו, כולל prerender של 318 הכתובות ותמונות ה-hero:
+      # הכשלים בשערים הם דווקא במה שגוגל מפנה אליו
+      - name: בנייה
+        run: npm run build
+
+      # Chrome מותקן מראש בתמונת הריצה; smoke.mjs מנסה chrome ואז msedge
+      - name: בדיקה בדפדפן
+        run: npm run smoke
+
+      # public/atlas-data.json ו-src/data/places.json הם קבצים מיוצרים שנשמרים
+      # בגיט. עריכה של maps.json בלי הרצה מחדש משאירה אותם מיושנים, והאתר מגיש
+      # נתונים ישנים בלי שום סימן לכך.
+      - name: קבצים מיוצרים מסונכרנים
+        run: |
+          npm run data
+          git diff --exit-code -- public/atlas-data.json src/data/places.json \
+            || { echo '::error::קובץ מיוצר אינו מסונכרן. להריץ npm run data ולדחוף את התוצאה.'; exit 1; }
