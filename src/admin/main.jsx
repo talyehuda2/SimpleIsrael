@@ -48,17 +48,29 @@ function mailtoFor(row) {
 }
 
 /* ---------- מסך הטוקן ---------- */
-function Login({ onToken }) {
+function Login({ onToken, notice }) {
   const [val, setVal] = useState('');
+  const [show, setShow] = useState(false);
   return (
     <form className="ad-login" onSubmit={(e) => { e.preventDefault(); if (val.trim()) onToken(val.trim()); }}>
       <h1>ניהול</h1>
       <p>הדביקו את טוקן הניהול. הוא נשמר בדפדפן הזה בלבד.</p>
-      {/* type=password כדי שהטוקן לא יישאר גלוי על מסך פתוח */}
+      {notice && <p className="ad-login-err">{notice}</p>}
+      {/* dir=ltr הוא לא קוסמטיקה: העמוד כולו rtl, ובשדה סיסמה כל התווים
+          מוסווים לנקודות - תו ניטרלי - ולכן הבידי מסדר אותן לפי כיוון
+          הפסקה ומציג את הטוקן הפוך. autoCapitalize/autoCorrect מכובים כי
+          מקלדת של טלפון "מתקנת" טוקן ומשנה אותו בלי שרואים. */}
       <input
-        type="password" autoComplete="off" value={val} placeholder="טוקן ניהול"
-        onChange={(e) => setVal(e.target.value)} aria-label="טוקן ניהול"
+        type={show ? 'text' : 'password'} dir="ltr"
+        autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false}
+        value={val} placeholder="admin token" aria-label="טוקן ניהול"
+        onChange={(e) => setVal(e.target.value)}
       />
+      {/* בטלפון אי אפשר לוודא הקלדה של מחרוזת ארוכה בלי לראות אותה */}
+      <label className="ad-login-show">
+        <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} />
+        הצגת הטוקן
+      </label>
       <button type="submit" disabled={!val.trim()}>כניסה</button>
     </form>
   );
@@ -114,6 +126,7 @@ function Admin() {
   const [showHandled, setShowHandled] = useState(false);
   const [openReply, setOpenReply] = useState(null);
   const [busyId, setBusyId] = useState(null);
+  const [notice, setNotice] = useState('');
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -123,7 +136,13 @@ function Admin() {
       setStatus('error');
       // הבחנה בין "הטוקן שגוי" לבין "ה-SQL לא רץ" - שתי תקלות שונות לגמרי
       const msg = error.message || '';
-      if (/טוקן/.test(msg)) { setAdminToken(''); setToken(''); return; }
+      if (/טוקן/.test(msg)) {
+        // חזרה שקטה למסך הכניסה נראית בדיוק כמו "הכפתור לא עובד". הטוקן
+        // נמחק כי הוא שגוי, אבל חייבים לומר את זה.
+        setAdminToken(''); setToken('');
+        setNotice('הטוקן שגוי. ודאו שהוא זהה למה שהודבק ב-admin_inbox.sql.');
+        return;
+      }
       setErr(error.code === 'PGRST202' || /admin_inbox/.test(msg)
         ? 'הפונקציה admin_inbox אינה קיימת. להריץ את supabase/admin_inbox.sql ב-Supabase.'
         : (msg || 'שגיאה בטעינה'));
@@ -135,8 +154,8 @@ function Admin() {
 
   useEffect(() => { load(); }, [load]);
 
-  const saveToken = (t) => { setAdminToken(t); setToken(t); };
-  const logout = () => { setAdminToken(''); setToken(''); setRows([]); };
+  const saveToken = (t) => { setNotice(''); setAdminToken(t); setToken(t); };
+  const logout = () => { setNotice(''); setAdminToken(''); setToken(''); setRows([]); };
 
   const remove = async (id) => {
     if (!window.confirm('למחוק? (תשובות בשרשור יימחקו גם הן)')) return;
@@ -157,7 +176,7 @@ function Admin() {
     )));
   };
 
-  if (!token) return <Login onToken={saveToken} />;
+  if (!token) return <Login onToken={saveToken} notice={notice} />;
 
   const notes = rows.filter((r) => r.target_key === NOTES && !r.parent_id);
   const openNotes = notes.filter((r) => !r.handled_at);

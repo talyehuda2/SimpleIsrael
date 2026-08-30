@@ -46,7 +46,22 @@ body {
   width: 100%; padding: 12px; font-size: 16px; /* 16px מונע זום אוטומטי ב-iOS */
   border: 1px solid var(--ad-line); border-radius: 10px; background: #fff;
   text-align: center; margin-bottom: 12px;
+  /* טוקן הוא מחרוזת לטינית: גופן חד-רווח מבדיל 0 מ-O ו-1 מ-l, וזה
+     ההבדל בין "לא מאשר לי" לבין הקלדה נכונה */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: .5px;
 }
+.ad-login-err {
+  margin: 0 0 14px; padding: 10px;
+  background: rgba(176, 57, 44, .09);
+  border: 1px solid rgba(176, 57, 44, .3); border-radius: 10px;
+  color: var(--ad-danger); font-size: 14px;
+}
+.ad-login-show {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-bottom: 14px; color: var(--ad-muted); font-size: 14px;
+}
+.ad-login-show input { width: auto; margin: 0; }
 .ad-login button {
   width: 100%; padding: 12px; font-size: 16px; font-weight: 700;
   border: 0; border-radius: 10px; background: var(--ad-navy); color: #fff;
