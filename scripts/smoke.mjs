@@ -67,8 +67,9 @@ await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const BASE = `http://127.0.0.1:${server.address().port}`;
 
 /* ---------- הכתובות שנבדקות ---------- */
-// שלוש נקודות הכניסה, ועוד שער אחד מכל סוג שה-prerender מייצר. השערים הם
-// מה שגוגל מפנה אליו, ולכן דף שבור שם עולה יותר מדף שבור באפליקציה.
+// ארבע נקודות הכניסה - כולל /admin, שבלי טוקן מרנדר את מסך הכניסה בלבד -
+// ועוד שער אחד מכל סוג שה-prerender מייצר. השערים הם מה שגוגל מפנה אליו,
+// ולכן דף שבור שם עולה יותר מדף שבור באפליקציה.
 const sitemap = readFileSync(join(DIST, 'sitemap.xml'), 'utf8');
 const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].replace(/^https?:\/\/[^/]+/, ''));
 const firstOf = (re) => locs.find((u) => re.test(u));
