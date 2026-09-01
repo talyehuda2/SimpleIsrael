@@ -1218,7 +1218,7 @@ export default function App() {
             </a>
             {/* חובה נגישה ולא הערת שוליים: האתר אוסף סטטיסטיקה ושומר
                 פניות עם פרטי קשר, ומי שרוצה לדעת מה נאסף צריך למצוא זאת. */}
-            <p className="about-legal"><a href="/privacy">מדיניות פרטיות</a></p>
+            <p className="about-legal"><a href="/privacy">מדיניות פרטיות</a> · <a href="/terms">תנאי שימוש</a> · <a href="/accessibility">נגישות</a></p>
           </div>
         </div>
       )}
