@@ -80,6 +80,10 @@ const PAGES = [
   { url: '/atlas', name: 'מסע הדורות', check: '#story > *' },
   { url: '/places', name: 'מפת הארץ', check: '#list > *' },
   { url: '/privacy', name: 'פרטיות', check: 'body' },
+  // שלושת העמודים המשפטיים נבדקים בנפרד: הם נוצרים ב-prerender ואינם
+  // ב-sitemap, ולכן שום בדיקה אחרת לא הייתה מגלה ש-rewrite חסר ב-vercel.json
+  { url: '/terms', name: 'תנאי שימוש', check: 'h1' },
+  { url: '/accessibility', name: 'נגישות', check: 'h1' },
   // בלי טוקן המסך מרנדר את מסך הכניסה, בלי שום פנייה לרשת
   { url: '/admin', name: 'ניהול', check: '.ad-login' },
   { url: '/p', name: 'אינדקס שערים', check: 'a[href^="/p/"]' },

@@ -719,7 +719,7 @@ $('#mAbout').addEventListener('click', () => {
     `<div class="icard"><p class="oabout">הפרויקט נבנה באהבה בידי חובב תנ״ך, מתוך רצון לתרום לקהילה
       ולעזור לכולנו לעשות סדר בתולדות עם ישראל. ייתכנו אי-דיוקים בתאריכים, במפות, במיקומים
       ובפרטים - ואשמח לכל תיקון והערה. שימוש נעים! 📖</p>
-      <p class="oabout"><a href="/privacy">מדיניות פרטיות</a></p></div>`);
+      <p class="oabout"><a href="/privacy">מדיניות פרטיות</a> · <a href="/terms">תנאי שימוש</a> · <a href="/accessibility">נגישות</a></p></div>`);
 });
 $('#mTour').addEventListener('click', () => startTour());
 
