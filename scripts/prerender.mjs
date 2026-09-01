@@ -192,7 +192,7 @@ const STYLE = `
 @font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;font-display:swap;src:url('/fonts/frankruhllibre-hebrew.woff2') format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
 @font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;font-display:swap;src:url('/fonts/frankruhllibre-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:'Heebo';font-weight:300 700;font-display:swap;src:url('/fonts/heebo-hebrew.woff2') format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-:root{--bg:#efe4c8;--panel:#fbf5e7;--ink:#33281a;--muted:#6d5c42;--navy:#163a57;--gold:#b28a2b;--line:#dcc9a3}
+:root{--bg:#efe4c8;--panel:#fbf5e7;--ink:#33281a;--muted:#6d5c42;--navy:#163a57;--gold:#b28a2b;--gold-ink:#7a5b16;--line:#dcc9a3}
 *{box-sizing:border-box}
 /* "קראו כאן" הוא עיגון בתוך אותו הדף - קפיצה מיידית למקום משאיר
    אותו, ונראית כמעבר לדף אחר. מכבדים prefers-reduced-motion */
@@ -202,10 +202,10 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Frank Ruhl Libr
 .wrap{max-width:720px;margin:0 auto;padding:20px 18px 48px}
 header a{color:var(--navy);text-decoration:none;font-weight:700;font-size:15px}
 .crumbs{font-size:12.5px;color:var(--muted);margin:14px 0 -8px}
-.crumbs a{color:var(--gold);text-decoration:none}
+.crumbs a{color:var(--gold-ink);text-decoration:none}
 .crumbs a:hover{text-decoration:underline}
 .crumbs .sep{opacity:.6}
-.chip{display:inline-block;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.3px;margin:22px 0 4px}
+.chip{display:inline-block;font-size:12px;font-weight:700;color:var(--gold-ink);letter-spacing:.3px;margin:22px 0 4px}
 h1{margin:0 0 6px;font-size:32px;color:var(--navy);font-weight:900}
 .dates{color:var(--muted);font-size:15px;margin-bottom:16px}
 .row{margin:6px 0;font-size:15px}
@@ -213,9 +213,9 @@ h1{margin:0 0 6px;font-size:32px;color:var(--navy);font-weight:900}
 .desc{font-size:17px;line-height:1.85;margin:16px 0}
 .verse{margin:18px 0;padding:12px 16px;border-inline-start:3px solid var(--gold);background:linear-gradient(180deg,#fff9ec,#f6ecd4);border-radius:0 10px 10px 0;font-size:17px;line-height:1.8;color:var(--navy)}
 .verse .vtext::before,.verse .vtext::after{content:'״';opacity:.5}
-.verse cite{display:block;margin-top:6px;font-size:13px;font-style:normal;color:var(--gold);font-weight:700}
+.verse cite{display:block;margin-top:6px;font-size:13px;font-style:normal;color:var(--gold-ink);font-weight:700}
 .src{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin-top:20px}
-.src a{color:var(--gold);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--gold)}
+.src a{color:var(--gold-ink);font-weight:700;text-decoration:none;border-bottom:1px dotted var(--gold)}
 .cta{display:inline-block;margin:22px 0 8px;background:var(--navy);color:#fff;text-decoration:none;border-radius:22px;padding:12px 22px;font-size:16px;font-weight:700}
 .ctas{display:flex;flex-wrap:wrap;gap:10px}
 .cta.ghost{background:transparent;color:var(--navy);border:2px solid var(--navy);padding:10px 20px}
@@ -223,11 +223,11 @@ h1{margin:0 0 6px;font-size:32px;color:var(--navy);font-weight:900}
 nav.rel{display:flex;justify-content:space-between;gap:10px;margin-top:26px;border-top:1px solid var(--line);padding-top:16px;font-size:14px}
 nav.rel a{color:var(--navy);text-decoration:none;font-weight:600;max-width:46%}
 footer{margin-top:34px;font-size:13px;color:var(--muted)}
-footer a{color:var(--gold)}
+footer a{color:var(--gold-ink)}
 .idx h2{color:var(--navy);font-size:20px;margin:26px 0 8px;border-bottom:2px solid var(--gold);padding-bottom:4px}
 .idx ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:6px 14px}
 .idx a{color:var(--navy);text-decoration:none;font-size:15px}
-.idx a:hover{color:var(--gold)}
+.idx a:hover{color:var(--gold-ink)}
 .dim{color:var(--muted);font-size:13px}
 .related{margin-top:30px;border-top:1px solid var(--line);padding-top:16px}
 .related h2{margin:0 0 4px;font-size:20px;color:var(--navy)}
@@ -240,10 +240,10 @@ footer a{color:var(--gold)}
 .mlist{list-style:none;padding:0;margin:14px 0 0;counter-reset:m}
 .mlist li{counter-increment:m;position:relative;padding:12px 40px 12px 0;border-top:1px solid var(--line)}
 .mlist li::before{content:counter(m);position:absolute;right:0;top:13px;width:26px;height:26px;
-  border-radius:50%;background:var(--panel);border:1px solid var(--line);color:var(--gold);
+  border-radius:50%;background:var(--panel);border:1px solid var(--line);color:var(--gold-ink);
   font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .mlist a{color:var(--navy);text-decoration:none;font-size:17px}
-.mlist a:hover b{color:var(--gold)}
+.mlist a:hover b{color:var(--gold-ink)}
 .mlist .dim{margin-inline-start:8px}
 .mlist p{margin:4px 0 0;font-size:15px;line-height:1.75;color:var(--muted)}
 /* שער הכניסה - הדבר הראשון בדף. הכותרת, ומיד אחריה הבחירה באיזה מבט
@@ -300,7 +300,7 @@ footer a{color:var(--gold)}
   display:inline-flex;align-items:center;justify-content:center;font-size:24px}
 .gopt.big .gt{font-size:18.5px}
 .gopt.big .gs{font-size:13px;line-height:1.45}
-.gopt.big .garrow{display:none;flex:0 0 auto;color:var(--gold);font-size:23px;font-weight:700;line-height:1}
+.gopt.big .garrow{display:none;flex:0 0 auto;color:var(--gold-ink);font-size:23px;font-weight:700;line-height:1}
 .gopt.big:hover{box-shadow:0 8px 18px rgba(90,70,30,.12)}
 .gopt.big.primary{background:var(--navy);border-color:var(--navy)}
 .gopt.big.primary .gt{color:#fff}
@@ -308,7 +308,7 @@ footer a{color:var(--gold)}
 .gopt.big.primary .gi{background:rgba(255,255,255,.15)}
 .gopt.big.primary .garrow{color:#e7c86a}
 .gopt.big.primary:hover{background:#1d4a70;border-color:#1d4a70}
-.gread{display:inline-block;margin-top:14px;font-size:14px;font-weight:700;color:var(--gold);text-decoration:none}
+.gread{display:inline-block;margin-top:14px;font-size:14px;font-weight:700;color:var(--gold-ink);text-decoration:none}
 .gread:hover{text-decoration:underline}
 #more{scroll-margin-top:12px}
 #more>h2:first-child{margin:26px 0 10px;font-size:20px;color:var(--navy);

@@ -979,7 +979,7 @@ export default function App() {
           />
         </div>
       ) : (
-        <div className="scroll-area" ref={scrollRef} dir="ltr" role="main" aria-label="ציר הזמן">
+        <div className="scroll-area" ref={scrollRef} dir="ltr" role="main" aria-label="ציר הזמן" tabIndex={0}>
           <Timeline
             pxPerYear={pxPerYear} gutter={gutter}
             startYear={axis.start} endYear={axis.end} mode={chronology}
