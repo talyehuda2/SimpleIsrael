@@ -10,6 +10,7 @@
 //      כותרות מ-vercel.json, כדי שהפרה תיתפס כאן ולא בייצור).
 //   3. אין בקשה שנכשלה לשרת שלנו (נכס חסר, chunk שלא נבנה).
 //   4. המסך באמת התרנדר - בדיקת אלמנט לכל מסך, לא רק "הדף נטען".
+//   5. אין הפרת נגישות לפי ת"י 5568 (WCAG 2.1 AA) - ראה AXE בהמשך.
 //
 // כל תעבורה החוצה נחסמת בכוונה: גם כדי שהריצה תהיה זהה בכל פעם, וגם כדי
 // שבדיקות CI לא ירשמו שורות אמיתיות ב-si_trail.
@@ -91,17 +92,51 @@ const PAGES = [
 
 /* ---------- הרצה ---------- */
 async function launch() {
+  // SMOKE_BROWSER הוא נתיב לבינארי, לסביבות שבהן אין Chrome מותקן אלא רק
+  // chromium מנוהל (למשל קונטיינר של סוכן) ומספר הגרסה אינו תואם ל-playwright
+  if (process.env.SMOKE_BROWSER) {
+    try { return await chromium.launch({ executablePath: process.env.SMOKE_BROWSER }); } catch { /* ליפול להמשך */ }
+  }
   const tries = process.env.SMOKE_CHANNEL ? [process.env.SMOKE_CHANNEL] : ['chrome', 'msedge', null];
   for (const channel of tries) {
     try { return await chromium.launch(channel ? { channel } : {}); } catch { /* לנסות את הבא */ }
   }
-  console.error('לא נמצא דפדפן. להתקין Chrome, או להגדיר SMOKE_CHANNEL.');
+  console.error('לא נמצא דפדפן. להתקין Chrome, או להגדיר SMOKE_CHANNEL / SMOKE_BROWSER.');
   process.exit(1);
 }
 
 // /_vercel/insights הוא סקריפט ש-Vercel מזריק ומגיש בעצמו; מחוץ ל-Vercel הוא
 // חסר בהגדרה, וה-404 שלו אינו כשל של האתר
 const IGNORE = /\/_vercel\//;
+
+/* בדיקת נגישות. ת"י 5568 הוא אימוץ של WCAG, ולכן ארבעת התגים כאן הם התרגום
+   המעשי של התקן הישראלי לרמה AA.
+
+   למה כאן ולא ככלי נפרד: נגישות נשחקת בשקט. אף אחד לא מבחין שקישור ירד
+   ל-2.5:1, ובלי שער שנופל על כך התיקון מתבטל בשינוי הבא. הריצה הזאת כבר
+   מרימה כל עמוד בדפדפן אמיתי - הבדיקה עולה שניות.
+
+   axe מוזרק דרך evaluate ולא דרך addScriptTag: evaluate רץ מחוץ למנגנון
+   ה-CSP, ולכן הבדיקה לא תישבר ביום שבו נהדק את script-src ונוריד
+   'unsafe-inline' מ-vercel.json.
+
+   מה זה לא: axe תופס כשליש מהתקן. ירוק כאן אינו "האתר נגיש" - הוא "לא
+   נוספה רגרסיה מכנית". תוויות טפסים, ניווט מקלדת וסדר קריאה נבדקים ביד. */
+const AXE = readFileSync(join(ROOT, 'node_modules/axe-core/axe.min.js'), 'utf8');
+const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
+
+async function axeViolations(tab) {
+  await tab.evaluate(AXE);
+  const res = await tab.evaluate(
+    (tags) => window.axe.run(document, { runOnly: { type: 'tag', values: tags } }),
+    AXE_TAGS,
+  );
+  return res.violations.map((v) => {
+    // הבורר של האלמנט הראשון - מספיק כדי למצוא את המקום בלי להציף את הפלט
+    const where = String(v.nodes[0]?.target || '').slice(0, 60);
+    return `נגישות [${v.impact}] ${v.id} - ${v.nodes.length} אלמנטים, למשל ${where}`;
+  });
+}
 
 const browser = await launch();
 const failures = [];
@@ -135,7 +170,11 @@ for (const page of PAGES) {
   try {
     const res = await tab.goto(BASE + page.url, { waitUntil: 'load', timeout: 30000 });
     if (!res || res.status() >= 400) errs.push(`סטטוס ${res ? res.status() : '?'}`);
-    else await tab.waitForSelector(page.check, { timeout: 15000, state: 'attached' });
+    else {
+      await tab.waitForSelector(page.check, { timeout: 15000, state: 'attached' });
+      // רק אחרי שהמסך התרנדר: axe על שלד ריק מדווח על הפרות שאינן קיימות
+      errs.push(...await axeViolations(tab));
+    }
   } catch (e) {
     errs.push(`לא התרנדר (${page.check}): ${String(e.message).split('\n')[0]}`);
   }
