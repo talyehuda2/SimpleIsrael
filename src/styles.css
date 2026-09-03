@@ -2027,7 +2027,12 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
   margin: 12px 0 4px; padding: 10px 14px;
   border-inline-start: 3px solid var(--gold);
   background: linear-gradient(180deg, #fff9ec, #f6ecd4);
-  border-radius: 0 10px 10px 0;
+  /* לוגי ולא פיזי: border-radius: 0 10px 10px 0 הוא פיזי ואינו מתהפך,
+     ולכן ב-RTL הוא הניח את הפינות השטוחות בשמאל בעוד פס הזהב יושב בימין -
+     הקצה השטוח והפס בצדדים מנוגדים. הקצה השטוח חייב להיות באותו צד של הקו.
+     זה כבר נעשה נכון ב-.ask-answer, ששתיהן אותה שפה חזותית. */
+  border-start-start-radius: 0; border-end-start-radius: 0;
+  border-start-end-radius: 10px; border-end-end-radius: 10px;
 }
 .dc-verse-text {
   display: block; font-family: 'Frank Ruhl Libre', serif;
