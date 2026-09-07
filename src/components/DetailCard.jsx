@@ -246,7 +246,7 @@ export default function DetailCard({
         </div>
       )}
 
-      {/* 12-14. פעולות: מעבר למבט השני, מפה (בציר בלבד), דף מלא, תגובות */}
+      {/* 12-13. פעולות: מעבר למבט השני, תגובות */}
       <div className="card-actions">
         {switchHref && (
           <a className="card-action" href={switchHref} title={`${item.name} ב${switchLabel}`}>
@@ -255,10 +255,10 @@ export default function DetailCard({
           </a>
         )}
         {/* המפה עלתה לכפתור ראשי בראש הכרטיס, ולכן אינה חוזרת כאן */}
-        <a className="card-action" href={`/p/${item.kind}/${item.id}`} title={`דף המידע המלא של ${item.name}`}>
-          <span className="dc-cbig" aria-hidden="true">📖</span>
-          <span>דף מלא</span>
-        </a>
+        {/* כפתור "דף מלא" (קישור ל-/p/kind/id) הוסר במכוון. דפי /p/
+           הם שערים למי שמגיע מחיפוש בגוגל, לא יעד ניווט מבפנים: הם
+           מציגים את אותו תוכן שכבר פתוח בכרטיס, ומוציאים את הגולש מהאתר החי
+           אל עמוד סטטי. השערים עצמם נשארים ב-sitemap וממשיכים להיות מיוצרים. */}
         <button
           type="button"
           className={`card-action${showComments ? ' active' : ''}`}
