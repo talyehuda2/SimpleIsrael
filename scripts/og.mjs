@@ -16,7 +16,11 @@ const FONTS = [
   join(FD, '500Medium', 'FrankRuhlLibre_500Medium.ttf'),
 ];
 const BASE = readFileSync(join(ROOT, 'build-assets', 'og-base.jpg')).toString('base64');
-const QUALITY = 80;
+/* 50 ולא 80. תמונת השיתוף נצפית כתמונה ממוזערת בוואטסאפ ובפייסבוק,
+   ובגודל הזה ההפרש אינו נראה - אבל 315 התמונות האלה היו 62MB מתוך
+   125MB של כל פריסה, ואחסון הפריסות ב-Vercel מצטבר על פני כל פריסה
+   שאי פעם נוצרה, כולל כל תצוגה מקדימה של כל PR. */
+const QUALITY = 50;
 
 const esc = (s = '') => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // גודל הגופן מותאם לאורך השם, כדי שלא יגלוש מהכרטיס
