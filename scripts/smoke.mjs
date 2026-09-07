@@ -129,7 +129,56 @@ const IGNORE = /\/_vercel\//;
 const AXE = readFileSync(join(ROOT, 'node_modules/axe-core/axe.min.js'), 'utf8');
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
+/* ---------- למה יש כאן המתנה, ולא רק axe ----------
+
+   הבדיקה הייתה תנודתית: אותו קומיט ואותו dist, שלוש ריצות רצופות ושלוש
+   תוצאות שונות. שער שנופל לסירוגין מאמן להתעלם ממנו, וזו בדיוק הסיבה
+   שהוא נבנה.
+
+   המדידה שהוכיחה את הסיבה - axe על אותו עמוד בזמנים שונים אחרי הטעינה:
+
+     /        0ms: 3 הפרות | 60ms: 3 | 120ms: 0 | 320ms: 0 | 1000ms: 0
+     /atlas   0ms: 0        | 60ms: 0 | 200ms: 16 | 320ms: 5 | 1000ms: 0
+
+   שני חלונות שונים ולא אחד. ב-/ זה .wsplit שנושא animation: introFade
+   .28s - fade של opacity מ-0. באמצע ה-fade axe מודד את צבע הטקסט ממוזג
+   ברקע, ולכן היחס נמוך מהיחס הסופי. ב-/atlas החלון מאוחר יותר ונובע
+   מאלמנטים שנרנדרים רק אחרי טעינת הנתונים.
+
+   שהאשמה היא במדידה ולא בצבע - נמדד: .wpane span נותן 5.93:1 ו-.echip
+   נותן 11.38:1 במצב הסופי. אלמנט ב-11:1 אינו יכול להיכשל באמת.
+
+   ולכן שני שלבים לפני axe: מנטרלים תנועה, וממתינים שה-DOM יירגע. */
+
+/* אפס משך לכל אנימציה ומעבר. לא "מהר יותר" אלא מיידי, כדי שלא יישאר
+   שום מצב חולף למדוד בו. CSP מתיר style-src 'unsafe-inline'. */
+const NO_MOTION = `*, *::before, *::after {
+  animation-duration: 0s !important; animation-delay: 0s !important;
+  transition-duration: 0s !important; transition-delay: 0s !important;
+}`;
+
+/** ממתין שהמסך יגיע למנוחה: אין מוטציות ב-DOM ואין אנימציה שרצה. */
+async function settle(tab, quietMs = 250, maxMs = 5000) {
+  await tab.addStyleTag({ content: NO_MOTION }).catch(() => {});
+  await tab.evaluate(async ({ quietMs, maxMs }) => {
+    // אנימציה שכבר רצה כשהגיע גיליון הסגנונות - לסיים ביד
+    document.getAnimations?.().forEach((a) => { try { a.finish(); } catch { /* אינסופית */ } });
+    await new Promise((done) => {
+      let timer;
+      const stop = () => { obs.disconnect(); clearTimeout(timer); clearTimeout(cap); done(); };
+      const bump = () => { clearTimeout(timer); timer = setTimeout(stop, quietMs); };
+      const obs = new MutationObserver(bump);
+      obs.observe(document.documentElement, {
+        childList: true, subtree: true, attributes: true, characterData: true,
+      });
+      const cap = setTimeout(stop, maxMs);   // גג קשיח: עמוד עם טיימר חי לא יתקע את השער
+      bump();
+    });
+  }, { quietMs, maxMs });
+}
+
 async function axeViolations(tab) {
+  await settle(tab);
   await tab.evaluate(AXE);
   const res = await tab.evaluate(
     (tags) => window.axe.run(document, { runOnly: { type: 'tag', values: tags } }),
