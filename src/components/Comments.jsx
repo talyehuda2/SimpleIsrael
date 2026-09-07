@@ -91,6 +91,12 @@ export default function Comments({ targetKey, targetLabel }) {
   const [status, setStatus] = useState('loading'); // loading | ready | error
   const [replyTo, setReplyTo] = useState(null);
   const [busyId, setBusyId] = useState(null);
+  /* דיווח: המצב חייב לשבת כאן ולא ב-Comment, שנוצר מחדש בכל רינדור
+     ולכן היה מאבד כל תו שמקלידים בשדה הסיבה. */
+  const [reportId, setReportId] = useState(null);
+  const [reportWhy, setReportWhy] = useState('');
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reported, setReported] = useState([]);
   const adminToken = getAdminToken();
 
   useEffect(() => {
@@ -110,6 +116,34 @@ export default function Comments({ targetKey, targetLabel }) {
     return () => { alive = false; };
   }, [targetKey]);
 
+  /* הדיווח נשלח כפנייה רגילה למנהל, ולכן הוא נוחת בתיבה הקיימת ב-/admin
+     ומקבל שם מחיקה וסימון "טופל" בלי שום צנרת חדשה. הוא גם עובר דרך
+     הסיווג האוטומטי, ש-target_label ונוסח הגוף מכוונים אותו לקטגוריית
+     "הסרה" - זו שמתחילה את שעון ארבעה-עשר הימים לפי /terms. */
+  const sendReport = async (c) => {
+    setReportBusy(true);
+    const why = reportWhy.trim().slice(0, 300);
+    const { error } = await supabase.from('comments').insert({
+      target_key: 'admin:notes',
+      target_label: '🚩 דיווח על תגובה',
+      author: null,
+      body: [
+        `דיווח על תגובה מספר ${c.id}, בעמוד "${targetLabel || targetKey}".`,
+        `נכתבה בידי: ${c.author || 'אנונימי'}`,
+        '',
+        'תוכן התגובה:',
+        `"${String(c.body || '').slice(0, 600)}"`,
+        '',
+        `סיבת הדיווח: ${why || 'לא נמסרה'}`,
+      ].join('\n'),
+      hp: '',
+    });
+    setReportBusy(false);
+    if (error) { window.alert('הדיווח לא נשלח - נסו שוב'); return; }
+    setReported((r) => [...r, c.id]);
+    setReportId(null); setReportWhy('');
+  };
+
   const remove = async (id) => {
     if (!adminToken) return;
     if (!window.confirm('למחוק את התגובה? (תשובות בשרשור יימחקו גם הן)')) return;
@@ -125,7 +159,7 @@ export default function Comments({ targetKey, targetLabel }) {
   const repliesOf = (id) => list.filter((c) => c.parent_id === id).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
   const Comment = ({ c, isReply }) => (
-    <li className={`comment${isReply ? ' reply' : ''}`}>
+    <div className={`comment${isReply ? ' reply' : ''}`}>
       <div className="comment-head">
         <span className="comment-author">{c.author || 'אנונימי'}</span>
         <span className="comment-date">{fmtDate(c.created_at)}</span>
@@ -137,6 +171,16 @@ export default function Comments({ targetKey, targetLabel }) {
             {replyTo === c.id ? 'ביטול' : 'השב'}
           </button>
         )}
+        {reported.includes(c.id) ? (
+          <span className="comment-reported">✓ הדיווח נשלח</span>
+        ) : (
+          <button
+            type="button" className="comment-link"
+            onClick={() => { setReportId(reportId === c.id ? null : c.id); setReportWhy(''); }}
+          >
+            {reportId === c.id ? 'ביטול' : '⚑ דיווח'}
+          </button>
+        )}
         {adminToken && (
           <button
             type="button" className="comment-link danger"
@@ -146,7 +190,27 @@ export default function Comments({ targetKey, targetLabel }) {
           </button>
         )}
       </div>
-    </li>
+
+      {reportId === c.id && (
+        <div className="comment-report">
+          <p className="comment-report-lead">
+            מה הבעיה בתגובה הזו? התיאור עוזר לי לטפל מהר, ואפשר גם לשלוח בלעדיו.
+          </p>
+          <input
+            className="comment-report-why" type="text" maxLength={300}
+            placeholder="למשל: פוגעני, לשון הרע, ספאם, פרטים אישיים"
+            aria-label="סיבת הדיווח (לא חובה)"
+            value={reportWhy} onChange={(e) => setReportWhy(e.target.value)}
+          />
+          <button
+            type="button" className="comment-report-send"
+            disabled={reportBusy} onClick={() => sendReport(c)}
+          >
+            {reportBusy ? 'שולח…' : 'שליחת הדיווח'}
+          </button>
+        </div>
+      )}
+    </div>
   );
 
   return (
@@ -168,7 +232,7 @@ export default function Comments({ targetKey, targetLabel }) {
 
       <ul className="comment-list">
         {roots.map((c) => (
-          <div key={c.id} className="comment-thread">
+          <li key={c.id} className="comment-thread">
             <Comment c={c} />
             {repliesOf(c.id).map((r) => <Comment key={r.id} c={r} isReply />)}
             {replyTo === c.id && (
@@ -180,7 +244,7 @@ export default function Comments({ targetKey, targetLabel }) {
                 />
               </div>
             )}
-          </div>
+          </li>
         ))}
       </ul>
     </section>
