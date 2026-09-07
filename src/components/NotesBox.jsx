@@ -84,7 +84,7 @@ export default function NotesBox({ open, onClose }) {
             <form onSubmit={submit}>
               <input
                 className="notes-name" type="text" name="name" autoComplete="name"
-                placeholder="שם (אופציונלי)"
+                placeholder="שם (אופציונלי)" aria-label="שם (לא חובה)"
                 value={name} maxLength={40} onChange={(e) => setName(e.target.value)}
               />
               {/* type ו-autoComplete הם מה שגורם לדפדפן להציע השלמה. בלעדיהם
@@ -92,17 +92,18 @@ export default function NotesBox({ open, onClose }) {
               <input
                 className="notes-field" type="email" name="email" autoComplete="email"
                 inputMode="email" placeholder="מייל - אם תרצו שאחזור אליכם"
+                aria-label="כתובת מייל, אם תרצו שאחזור אליכם"
                 value={email} maxLength={120} onChange={(e) => setEmail(e.target.value)}
               />
               <input
                 className="notes-field" type="tel" name="tel" autoComplete="tel"
-                inputMode="tel" placeholder="טלפון (לא חובה)"
+                inputMode="tel" placeholder="טלפון (לא חובה)" aria-label="מספר טלפון (לא חובה)"
                 value={phone} maxLength={30} onChange={(e) => setPhone(e.target.value)}
               />
               <p className="notes-hint">פרטי הקשר לא יוצגו באתר ולא יישלחו לאף אחד - הם רק כדי שאוכל לחזור אליכם.</p>
               <input ref={hp} className="comment-hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" />
               <textarea
-                className="notes-body" placeholder="כתבו כאן…" rows={5}
+                className="notes-body" placeholder="כתבו כאן…" rows={5} aria-label="תוכן הפנייה"
                 value={body} maxLength={MAX} onChange={(e) => setBody(e.target.value)}
               />
               <div className="notes-actions">

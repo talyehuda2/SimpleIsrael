@@ -51,7 +51,7 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
     <form className={`comment-form${compact ? ' compact' : ''}`} onSubmit={submit}>
       <div className="comment-ids">
         <input
-          className="comment-name" type="text" placeholder="שם (אופציונלי)"
+          className="comment-name" type="text" placeholder="שם (אופציונלי)" aria-label="שם (לא חובה)"
           name="name" autoComplete="name"
           value={author} maxLength={MAX_NAME} onChange={(e) => setAuthor(e.target.value)}
         />
@@ -61,6 +61,7 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
           className="comment-mail" type="email" inputMode="email"
           name="email" autoComplete="email"
           placeholder="מייל לעדכון אם יגיבו לך (לא יוצג)"
+          aria-label="כתובת מייל לעדכון אם יגיבו לך. לא מוצגת באתר"
           value={email} maxLength={120} onChange={(e) => setEmail(e.target.value)}
         />
       </div>
@@ -69,6 +70,7 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
       <textarea
         className="comment-body"
         placeholder={parentId ? 'תשובה…' : 'הוסיפו הערה, מקור או תיקון…'}
+        aria-label={parentId ? 'תשובה לתגובה' : 'הערה, מקור או תיקון'}
         value={body} maxLength={MAX_LEN} rows={2}
         onChange={(e) => setBody(e.target.value)}
       />
