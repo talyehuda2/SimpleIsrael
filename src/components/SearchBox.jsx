@@ -85,14 +85,19 @@ export default function SearchBox({ index, onPick }) {
         }}
       />
       {open && results.length > 0 && (
-        <ul className="search-results">
+        <ul className="search-results" role="listbox" aria-label="תוצאות חיפוש">
           {[0, 1, 2].flatMap((rank) => {
             const group = results.filter((r) => r.rank === rank);
             if (!group.length) return [];
             return [
-              <li key={`head-${rank}`} className="sr-head" aria-hidden="true">{GROUP_LABEL[rank]}</li>,
+              <li key={`head-${rank}`} className="sr-head" role="presentation" aria-hidden="true">{GROUP_LABEL[rank]}</li>,
               ...group.map(({ it, place }) => (
-                <li key={`${it.kind}-${it.id}`} className="sr-item" onClick={() => pick(it)}>
+                <li
+                  key={`${it.kind}-${it.id}`} className="sr-item"
+                  role="option" aria-selected={false} tabIndex={0}
+                  onClick={() => pick(it)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(it); } }}
+                >
                   <span className={`sr-dot ${it.kind}`} />
                   <span className="sr-name">{it.name}</span>
                   {place && <span className="sr-why">📍 {place}</span>}

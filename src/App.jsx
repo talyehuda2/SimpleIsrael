@@ -829,6 +829,9 @@ export default function App() {
 
   return (
     <div className={`app${menuOpen ? ' menu-open' : ''}`}>
+      {/* הדבר הראשון שמקבל פוקוס: בלעדיו משתמש מקלדת עובר את כל סרגל
+          הניווט בכל כניסה לעמוד. נראה רק כשהוא ממוקד. */}
+      <a className="skip-link" href="#main">דלג לתוכן</a>
       <header>
         <div className="header-top">
           <div className="title-block">
@@ -968,7 +971,7 @@ export default function App() {
       )}
 
       {vertical ? (
-        <div className="vtl-wrap" ref={scrollRef} role="main" aria-label="ציר הזמן">
+        <div className="vtl-wrap" id="main" ref={scrollRef} role="main" aria-label="ציר הזמן" tabIndex={0}>
           <TimelineVertical
             pxPerYear={pxPerYear}
             startYear={axis.start} endYear={axis.end} mode={chronology}
@@ -979,7 +982,7 @@ export default function App() {
           />
         </div>
       ) : (
-        <div className="scroll-area" ref={scrollRef} dir="ltr" role="main" aria-label="ציר הזמן" tabIndex={0}>
+        <div className="scroll-area" id="main" ref={scrollRef} dir="ltr" role="main" aria-label="ציר הזמן" tabIndex={0}>
           <Timeline
             pxPerYear={pxPerYear} gutter={gutter}
             startYear={axis.start} endYear={axis.end} mode={chronology}

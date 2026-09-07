@@ -300,9 +300,14 @@ export default function JourneyMap({
         })()}
       </div>
 
-      <ol className="map-legend">
+      <ol className="map-legend" role="listbox" aria-label="תחנות המסע">
         {pts.map((p, i) => (
-          <li key={p.id} className={i === step ? 'active' : ''} onClick={() => pickStation(i)}>
+          <li
+            key={p.id} className={i === step ? 'active' : ''}
+            role="option" aria-selected={i === step} tabIndex={0}
+            onClick={() => pickStation(i)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickStation(i); } }}
+          >
             <span className="map-legend-num" style={{ background: color }}>{p.order}</span>
             <span className="ml-name"><b>{p.name}</b>
               {stationNoteText(p.name) && (

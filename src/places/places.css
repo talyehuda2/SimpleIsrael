@@ -195,3 +195,16 @@ body.has-sel .pm.off,body.has-sel .lb.off{opacity:.07}
     font-size:12.5px;font-weight:700;color:var(--muted);background:var(--bg);border-radius:14px;padding:8px 4px}
   .mn-tab.on{background:var(--navy);color:#fff}
 }
+
+/* קישור דילוג לתוכן. מוסתר עד שהוא מקבל פוקוס, ואז קופץ לפינה העליונה.
+   לא display:none ולא visibility:hidden - שניהם היו מוציאים אותו גם
+   מהמקלדת, וזו בדיוק המטרה שלו. */
+.skip-link {
+  position: absolute; inset-inline-start: -9999px; top: 8px; z-index: 999;
+  background: var(--navy); color: #fff; padding: 10px 16px; border-radius: 8px;
+  font: inherit; font-size: 14px; font-weight: 700; text-decoration: none;
+}
+.skip-link:focus {
+  inset-inline-start: 8px;
+  outline: 3px solid var(--gold-ink); outline-offset: 2px;
+}
