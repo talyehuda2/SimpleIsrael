@@ -1308,7 +1308,9 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
 a.card-action { text-decoration: none; }
 .card-action span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .card-action:hover { background: var(--panel); border-color: var(--gold); transform: translateY(-1px); }
-.card-action.active { background: var(--gold); border-color: var(--gold); color: #fff; }
+/* --gold-ink ולא --gold: לבן על הזהב הבהיר נותן 3.19:1. אותו תיקון
+   שכבר נעשה ב-.echip.play, כאן במקום שהשער לא רואה. */
+.card-action.active { background: var(--gold-ink); border-color: var(--gold-ink); color: #fff; }
 .card-action.primary { background: var(--navy); border-color: var(--navy); color: #fff; }
 .card-action.primary:hover { background: var(--navy-2); border-color: var(--navy-2); }
 
@@ -1393,6 +1395,29 @@ a.card-action { text-decoration: none; }
 .comment-link:hover { color: var(--gold-ink); }
 .comment-link.danger { color: #a5321f; }
 .comment-link:disabled { opacity: .5; cursor: default; }
+
+/* טופס הדיווח. רקע --panel ולא --bg-2 של הכרטיס: גם כדי שייקרא כאזור
+   נפרד, וגם כי על הכרטיס הכהה --muted נותן 4.61:1 - עובר, אבל בלי
+   שוליים. על --panel הוא 5.93:1. */
+.comment-report {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-top: 8px; padding: 9px 10px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+}
+.comment-report-lead { margin: 0; font-size: 12px; line-height: 1.5; color: var(--muted); }
+.comment-report-why {
+  width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px;
+  color: var(--ink); background: #fff;
+  border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 9px;
+}
+.comment-report-send {
+  align-self: flex-start; font-family: inherit; font-size: 12.5px; font-weight: 700;
+  color: #fff; background: var(--navy); border: none; border-radius: 8px;
+  padding: 7px 14px; cursor: pointer;
+}
+.comment-report-send:disabled { opacity: .55; cursor: default; }
+/* ירוק כהה ולא הירוק של האתר: 4.59:1 על כרטיס התגובה, ועובר AA */
+.comment-reported { font-size: 12px; font-weight: 700; color: #2f6b34; }
 .comment-cancel {
   background: none; border: none; padding: 0; cursor: pointer;
   font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--muted);
