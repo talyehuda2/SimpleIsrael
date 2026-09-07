@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { supabase } from '../lib/supabase.js';
-import { getAdminToken, setAdminToken } from '../lib/admin.js';
+import { getAdminToken, setAdminToken, adminTokenDaysLeft } from '../lib/admin.js';
 import './admin.css';
 
 const NOTES = 'admin:notes';
@@ -178,6 +178,8 @@ function Admin() {
 
   if (!token) return <Login onToken={saveToken} notice={notice} />;
 
+  const daysLeft = adminTokenDaysLeft();
+
   const notes = rows.filter((r) => r.target_key === NOTES && !r.parent_id);
   const openNotes = notes.filter((r) => !r.handled_at);
   const shownNotes = showHandled ? notes : openNotes;
@@ -190,6 +192,12 @@ function Admin() {
       <header className="ad-bar">
         <h1>ניהול</h1>
         <div className="ad-bar-tools">
+          {/* מוצג רק בשבוע האחרון: תזכורת קבועה הופכת לרעש שמפסיקים לראות */}
+          {daysLeft !== null && daysLeft <= 7 && (
+            <span className="ad-expiry" title="הטוקן יפוג ויידרש להקליד אותו מחדש">
+              ⏳ {daysLeft === 0 ? 'פג היום' : `${daysLeft} ימים`}
+            </span>
+          )}
           <button onClick={load} title="רענון" aria-label="רענון">↻</button>
           <button onClick={logout}>יציאה</button>
         </div>

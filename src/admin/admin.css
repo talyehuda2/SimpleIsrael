@@ -14,6 +14,7 @@
   --ad-line: #dcc9a3;
   --ad-navy: #163a57;
   --ad-gold: #b28a2b;
+  --ad-gold-ink: #7a5b16;   /* זהב-דיו לכתב: 4.99:1 על --ad-bg, עומד ב-AA */
   --ad-danger: #b0392c;
 }
 
@@ -181,3 +182,10 @@ body {
   background: var(--ad-navy); color: #fff; border: 0; border-radius: 10px;
 }
 .ad-reply-foot button:disabled { opacity: .45; }
+
+/* תזכורת תפוגת הטוקן. מוצגת רק בשבוע האחרון, ולכן היא נועדה להיראות
+   כהערה ולא כאזהרה - אין כאן תקלה, רק דבר שכדאי לדעת מראש. */
+.ad-expiry {
+  font-size: 12px; font-weight: 700; color: var(--ad-gold-ink);
+  white-space: nowrap; align-self: center; margin-inline-end: 4px;
+}
