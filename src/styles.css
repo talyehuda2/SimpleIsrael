@@ -1298,7 +1298,12 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
 /* ----- שורת הפעולות בכרטיס: בני-הזמן / מפה / שיתוף ----- */
 .card-actions { display: flex; gap: 8px; margin: 12px 0 14px; }
 .card-action {
-  flex: 1 1 0; min-width: 0;
+  /* auto ולא 0 בבסיס: עם בסיס 0 כל הכפתורים מקבלים רוחב זהה ללא קשר
+     לאורך הכיתוב, ולכן "מסע הדורות" נקטע ל-"מסע הדו..." בזמן שכפתור קצר
+     לידו נשאר עם מקום פנוי. עם auto הרוחב מתחיל מאורך הטקסט והעודף מתחלק
+     שווה בשווה, כך שאף כפתור לא נקטע כשיש מקום. min-width: 0 נשאר כדי
+     שבמסך צר באמת עדיין תהיה קטיעה ולא גלישה. */
+  flex: 1 1 auto; min-width: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
   padding: 9px 4px; background: var(--bg-2); border: 1.5px solid var(--line);
   border-radius: 12px; color: var(--navy); cursor: pointer;
