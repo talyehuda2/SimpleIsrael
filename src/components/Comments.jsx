@@ -86,6 +86,80 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
   );
 }
 
+/* ⚠️ הרכיב הזה חייב לשבת כאן, ברמת המודול, ולא בתוך Comments.
+
+   רכיב שמוגדר בתוך רכיב אחר מקבל זהות חדשה בכל רינדור של האב, ולכן
+   React אינו מזהה אותו כאותו רכיב - הוא הורס את כל תת-העץ ובונה מחדש.
+   כשמצב טופס הדיווח ישב באב, כל תו שהוקלד גרם לרינדור, וההרס הזה מחק
+   את השדה שהמשתמש הקליד בו ואיבד את הפוקוס אחרי כל אות.
+
+   הבאג היה קיים גם קודם, אבל היה בלתי נראה: replyTo משתנה בלחיצה אחת,
+   ורינדור בודד אינו מורגש. שדה טקסט חשף אותו.
+
+   כל התלויות עוברות כ-props במפורש. זה ארוך יותר, וזה בדיוק מה שמונע
+   את החזרה. */
+function Comment({
+  c, isReply = false,
+  replyTo, setReplyTo,
+  reported, reportId, setReportId, reportWhy, setReportWhy, reportBusy, sendReport,
+  adminToken, busyId, remove,
+}) {
+  return (
+      <div className={`comment${isReply ? ' reply' : ''}`}>
+        <div className="comment-head">
+          <span className="comment-author">{c.author || 'אנונימי'}</span>
+          <span className="comment-date">{fmtDate(c.created_at)}</span>
+        </div>
+        <div className="comment-text">{c.body}</div>
+        <div className="comment-tools">
+          {!isReply && (
+            <button type="button" className="comment-link" onClick={() => setReplyTo(replyTo === c.id ? null : c.id)}>
+              {replyTo === c.id ? 'ביטול' : 'השב'}
+            </button>
+          )}
+          {reported.includes(c.id) ? (
+            <span className="comment-reported">✓ הדיווח נשלח</span>
+          ) : (
+            <button
+              type="button" className="comment-link"
+              onClick={() => { setReportId(reportId === c.id ? null : c.id); setReportWhy(''); }}
+            >
+              {reportId === c.id ? 'ביטול' : '⚑ דיווח'}
+            </button>
+          )}
+          {adminToken && (
+            <button
+              type="button" className="comment-link danger"
+              disabled={busyId === c.id} onClick={() => remove(c.id)}
+            >
+              {busyId === c.id ? 'מוחק…' : '🗑 מחיקה'}
+            </button>
+          )}
+        </div>
+
+        {reportId === c.id && (
+          <div className="comment-report">
+            <p className="comment-report-lead">
+              מה הבעיה בתגובה הזו? התיאור עוזר לי לטפל מהר, ואפשר גם לשלוח בלעדיו.
+            </p>
+            <input
+              className="comment-report-why" type="text" maxLength={300}
+              placeholder="למשל: פוגעני, לשון הרע, ספאם, פרטים אישיים"
+              aria-label="סיבת הדיווח (לא חובה)"
+              value={reportWhy} onChange={(e) => setReportWhy(e.target.value)}
+            />
+            <button
+              type="button" className="comment-report-send"
+              disabled={reportBusy} onClick={() => sendReport(c)}
+            >
+              {reportBusy ? 'שולח…' : 'שליחת הדיווח'}
+            </button>
+          </div>
+        )}
+      </div>
+  );
+}
+
 export default function Comments({ targetKey, targetLabel }) {
   const [list, setList] = useState([]);
   const [status, setStatus] = useState('loading'); // loading | ready | error
@@ -158,60 +232,6 @@ export default function Comments({ targetKey, targetLabel }) {
   const roots = list.filter((c) => !c.parent_id).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const repliesOf = (id) => list.filter((c) => c.parent_id === id).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-  const Comment = ({ c, isReply }) => (
-    <div className={`comment${isReply ? ' reply' : ''}`}>
-      <div className="comment-head">
-        <span className="comment-author">{c.author || 'אנונימי'}</span>
-        <span className="comment-date">{fmtDate(c.created_at)}</span>
-      </div>
-      <div className="comment-text">{c.body}</div>
-      <div className="comment-tools">
-        {!isReply && (
-          <button type="button" className="comment-link" onClick={() => setReplyTo(replyTo === c.id ? null : c.id)}>
-            {replyTo === c.id ? 'ביטול' : 'השב'}
-          </button>
-        )}
-        {reported.includes(c.id) ? (
-          <span className="comment-reported">✓ הדיווח נשלח</span>
-        ) : (
-          <button
-            type="button" className="comment-link"
-            onClick={() => { setReportId(reportId === c.id ? null : c.id); setReportWhy(''); }}
-          >
-            {reportId === c.id ? 'ביטול' : '⚑ דיווח'}
-          </button>
-        )}
-        {adminToken && (
-          <button
-            type="button" className="comment-link danger"
-            disabled={busyId === c.id} onClick={() => remove(c.id)}
-          >
-            {busyId === c.id ? 'מוחק…' : '🗑 מחיקה'}
-          </button>
-        )}
-      </div>
-
-      {reportId === c.id && (
-        <div className="comment-report">
-          <p className="comment-report-lead">
-            מה הבעיה בתגובה הזו? התיאור עוזר לי לטפל מהר, ואפשר גם לשלוח בלעדיו.
-          </p>
-          <input
-            className="comment-report-why" type="text" maxLength={300}
-            placeholder="למשל: פוגעני, לשון הרע, ספאם, פרטים אישיים"
-            aria-label="סיבת הדיווח (לא חובה)"
-            value={reportWhy} onChange={(e) => setReportWhy(e.target.value)}
-          />
-          <button
-            type="button" className="comment-report-send"
-            disabled={reportBusy} onClick={() => sendReport(c)}
-          >
-            {reportBusy ? 'שולח…' : 'שליחת הדיווח'}
-          </button>
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <section className="comments">
@@ -233,8 +253,22 @@ export default function Comments({ targetKey, targetLabel }) {
       <ul className="comment-list">
         {roots.map((c) => (
           <li key={c.id} className="comment-thread">
-            <Comment c={c} />
-            {repliesOf(c.id).map((r) => <Comment key={r.id} c={r} isReply />)}
+            <Comment
+              c={c}
+              replyTo={replyTo} setReplyTo={setReplyTo}
+              reported={reported} reportId={reportId} setReportId={setReportId}
+              reportWhy={reportWhy} setReportWhy={setReportWhy}
+              reportBusy={reportBusy} sendReport={sendReport}
+              adminToken={adminToken} busyId={busyId} remove={remove}
+            />
+            {repliesOf(c.id).map((r) => <Comment
+              key={r.id} c={r} isReply
+              replyTo={replyTo} setReplyTo={setReplyTo}
+              reported={reported} reportId={reportId} setReportId={setReportId}
+              reportWhy={reportWhy} setReportWhy={setReportWhy}
+              reportBusy={reportBusy} sendReport={sendReport}
+              adminToken={adminToken} busyId={busyId} remove={remove}
+            />)}
             {replyTo === c.id && (
               <div className="reply-box">
                 <CommentForm
