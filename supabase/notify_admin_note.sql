@@ -21,8 +21,23 @@
 --     שמור את העותק הממולא כ-notify_admin_note.local.sql - הסיומת
 --     מכוסה ב-.gitignore.
 --
---  את טוקן הטלגרם ומזהה הצ'אט אפשר לשלוף מהפונקציה הקיימת:
---    select prosrc from pg_proc where proname = 'notify_new_comment';
+--  את טוקן הטלגרם ומזהה הצ'אט אפשר לשלוף מהפונקציה הקיימת. הטוקן אינו
+--  בהכרח במשתנה נפרד - אצלנו הוא היה בתוך הכתובת עצמה, ולכן חיפוש לפי
+--  "v_token" לא מצא אותו. שאילתה שמציגה רק את השורות הרלוונטיות:
+--
+--    select proname, line
+--    from pg_proc, unnest(string_to_array(prosrc, E'\n')) as line
+--    where prosrc ilike '%telegram%'
+--      and (line ilike '%telegram%' or line ilike '%chat%');
+--
+--  ⚠️ הטוקן הוא **שני חלקים**: <מזהה הבוט>:<החלק הסודי>. שתי טעויות
+--  העתקה נפוצות, ושתיהן מחזירות מטלגרם 404 Not Found:
+--    - לקחת רק את מה שאחרי הנקודתיים (אורך 35 במקום 46)
+--    - לקחת גם את המילה 'bot' מהכתובת (הפונקציה מוסיפה אותה בעצמה)
+--  404 הוא תמיד הטוקן. מזהה צ'אט שגוי מחזיר 400 chat not found.
+--
+--  כדי לא להעתיק ביד בכלל - בסוף הקובץ יש בלוק שמעתיק את הטוקן
+--  אוטומטית מהפונקציה הישנה שכבר עובדת.
 --
 --  NOTIFY_SECRET הוא מחרוזת אקראית שאתה ממציא, והיא חייבת להיות זהה
 --  כאן ובמשתני הסביבה של Vercel. לייצר אחת: select gen_random_uuid();
@@ -111,28 +126,117 @@ create trigger trg_notify_admin_note
   execute function notify_admin_note();
 
 -- ----------------------------------------------------------------------------
---  ⚠️ שים לב לכפילות: אם notify_new_comment כבר שולחת התראה גם על
---  admin:notes, תקבל מעכשיו שתי הודעות על אותה פנייה. לבדוק:
+--  ⚠️ הכפילות אינה אפשרות - היא קרתה. אומת בייצור ב-14.9.2026:
+--  הטריגר הישן, on_new_comment, הוגדר בלי שום תנאי ולכן ירה גם על
+--  פניות פרטיות. התוצאה הייתה שתי הודעות טלגרם על אותה פנייה.
 --
---    select prosrc from pg_proc where proname = 'notify_new_comment';
+--  התיקון - צמצום דרך תנאי הטריגר בלבד. גוף notify_new_comment לא
+--  נוגעים בו, כי טוקן הטלגרם יושב בתוכו ואין סיבה לסכן אותו:
 --
---  אם היא לא מסננת לפי target_key - כלומר שולחת על כל שורה - אפשר
---  לצמצם אותה לתגובות ציבוריות בלבד בלי לגעת בגוף שלה, דרך תנאי
---  הטריגר. מצא את שם הטריגר שלה ואז:
---
---    drop trigger if exists <שם הטריגר> on comments;
---    create trigger <שם הטריגר>
---      after insert on comments
+--    drop trigger if exists on_new_comment on public.comments;
+--    create trigger on_new_comment
+--      after insert on public.comments
 --      for each row
 --      when (new.target_key is distinct from 'admin:notes')
 --      execute function notify_new_comment();
 --
---  בדיקה מקצה לקצה, בלי לחכות לגולש אמיתי:
+--  ⚠️ לפני שמצמצמים - לוודא שהפונקציה הישנה אינה עושה עוד משהו מלבד
+--  טלגרם. אם היא שולחת גם מייל, הצמצום מכבה גם אותו, ובשקט:
+--
+--    select proname, prosrc ilike '%resend%' as mail,
+--           prosrc ilike '%telegram%' as telegram
+--    from pg_proc where proname = 'notify_new_comment';
+--
+--  is distinct from ולא <>: השוואה רגילה מול NULL מחזירה "לא ידוע",
+--  ולכן תגובה עם target_key ריק הייתה מפסיקה לייצר התראה בשקט. זו
+--  בדיוק תקלה שלא מתגלה - מפסיקים לקבל חלק מההתראות בלי לדעת.
+--
+--  אם שם הטריגר אצלך שונה:
+--    select tgname, pg_get_triggerdef(oid) from pg_trigger
+--    where not tgisinternal and tgfoid = 'notify_new_comment'::regproc;
+--
+--  בדיקה מקצה לקצה, בלי לחכות לגולש אמיתי. שתי השורות, וכל אחת
+--  צריכה לייצר הודעה אחת בלבד - הראשונה את המסווגת, השנייה את הישנה:
 --
 --    insert into comments (target_key, target_label, author, body, contact)
 --    values ('admin:notes', '📋 בדיקה', 'בדיקה',
 --            'שלום, יש טעות בתאריך של שמואל הנביא', 'test@example.com');
 --
---  ואז למחוק את השורה מ-/admin. אם לא הגיעה התראה:
---    select * from net._http_response order by created desc limit 5;
+--    insert into comments (target_key, target_label, author, body)
+--    values ('event:churban1', 'חורבן בית ראשון', 'בדיקה',
+--            'תגובת בדיקה - למחוק');
+--
+--  השנייה מופיעה באתר החי כתגובה אמיתית - למחוק אותה מ-/admin מיד.
+--  שווה לבדוק גם אותה: טעות בתנאי הטריגר משתיקה התראות על תגובות
+--  אמיתיות, ובלי בדיקה מפורשת אי אפשר לדעת שזה קרה.
+--
+--  אם לא הגיעה התראה, כאן רואים בדיוק איפה נעצר:
+--    select id, created, status_code, left(content, 300)
+--    from net._http_response order by created desc limit 5;
+--
+--    500 - Vercel לא רואה את NOTIFY_SECRET (חסר Redeploy אחרי הוספתו,
+--          או שהמשתנה הוגדר ברמת הצוות ולא קושר לפרויקט)
+--    403 - הסודות אינם זהים בין Vercel ל-SQL
+--    404 - מטלגרם: הטוקן. מ-Vercel: הפונקציה לא נפרסה
+--    400 - chat not found, כלומר מזהה הצ'אט
+--    200 - הכל עבר; אם אין הודעה, לבדוק שהטלגרם לא מושתק
+--
 -- ----------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------
+--  נספח: לתקן את הטוקן בלי להעתיק אותו ביד
+--
+--  זה מה שפתר את התקלה בפועל. הבלוק שולף את הטוקן מהפונקציה הישנה -
+--  זו ששולחת התראות מזה חודשים, כלומר טוקן שמוכח שעובד - ובונה איתו
+--  מחדש את push_admin_alert. הסוד ומזהה הצ'אט נשמרים כפי שהם.
+--
+--  להריץ רק אם כבר הרצת את הקובץ פעם אחת ומשהו בטוקן שגוי.
+-- ----------------------------------------------------------------------------
+/*
+do $do$
+declare
+  v_tok text; v_sec text; v_cht text;
+begin
+  select coalesce(
+           substring(prosrc from 'bot([0-9]{6,}:[A-Za-z0-9_-]{30,})'),
+           substring(prosrc from '''([0-9]{6,}:[A-Za-z0-9_-]{30,})''')
+         ) into v_tok
+  from pg_proc where proname = 'notify_new_comment';
+
+  select substring(prosrc from 'v_secret\s+text\s*:=\s*''([^'']*)'''),
+         substring(prosrc from 'v_chat\s+text\s*:=\s*''([^'']*)''')
+    into v_sec, v_cht
+  from pg_proc where proname = 'push_admin_alert';
+
+  if v_tok is null then raise exception 'לא נמצא טוקן בפונקציה הישנה'; end if;
+  if coalesce(v_sec,'') = '' then raise exception 'לא נמצא הסוד'; end if;
+  if coalesce(v_cht,'') = '' then raise exception 'לא נמצא מזהה הצאט'; end if;
+
+  execute format($f$
+create or replace function push_admin_alert(p_secret text, p_text text)
+returns void language plpgsql security definer
+set search_path = public, extensions
+as $body$
+declare
+  v_secret text := %L;
+  v_token  text := %L;
+  v_chat   text := %L;
+begin
+  if p_secret is distinct from v_secret then
+    raise exception 'unauthorized';
+  end if;
+  perform net.http_post(
+    url     := 'https://api.telegram.org/bot' || v_token || '/sendMessage',
+    headers := jsonb_build_object('Content-Type', 'application/json'),
+    body    := jsonb_build_object(
+      'chat_id', v_chat, 'text', p_text,
+      'parse_mode', 'HTML', 'disable_web_page_preview', true)
+  );
+end;
+$body$;
+$f$, v_sec, v_tok, v_cht);
+
+  raise notice 'תוקן. אורך הטוקן החדש: %', length(v_tok);
+end
+$do$;
+*/
