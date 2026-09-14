@@ -17,7 +17,7 @@
 --  חי רק בגוף פונקציה כאן, וסיווג AI אינו סיבה מספיקה לשבור אותו.
 --  לכן Vercel מסווג ומחזיר טקסט, ו-Postgres שולח.
 --
---  ⚠️ שלושה מקומות שאתה ממלא בעצמך, מסומנים ב-<<< >>>.
+--  ⚠️ שישה מקומות שאתה ממלא בעצמך, מסומנים ב-<<< >>>.
 --     שמור את העותק הממולא כ-notify_admin_note.local.sql - הסיומת
 --     מכוסה ב-.gitignore.
 --
@@ -64,6 +64,13 @@ declare
   v_secret text := '<<<NOTIFY_SECRET>>>';
   v_token  text := '<<<TELEGRAM_BOT_TOKEN>>>';
   v_chat   text := '<<<TELEGRAM_CHAT_ID>>>';
+  /* המייל אינו תוספת נוחות. הפונקציה הישנה notify_new_comment שלחה גם
+     טלגרם וגם מייל, והצמצום שלה לתגובות ציבוריות בלבד (ראה למטה) כיבה
+     את המייל על פניות פרטיות. כאן הוא חוזר - ועם הטקסט המסווג, שעדיף
+     על הנוסח הגנרי שהיה. את המפתח אפשר לשלוף מ-notify_new_comment. */
+  v_key    text := '<<<RESEND_API_KEY>>>';
+  v_from   text := '<<<כתובת השולח, למשל SimpleIsrael <onboarding@resend.dev>>>>';
+  v_to     text := '<<<תיבת המייל שלך>>>';
 begin
   if p_secret is distinct from v_secret then
     raise exception 'unauthorized';
@@ -78,6 +85,27 @@ begin
       'parse_mode',               'HTML',
       'disable_web_page_preview', true)
   );
+
+  /* בלוק נפרד במכוון: אם Resend נופלת, הטלגרם כבר יצא. שתי דרכים
+     עצמאיות להגיע אליך, ולא שרשרת שנקרעת בחוליה אחת.
+     שורת הנושא היא השורה הראשונה של ההתראה בלי תגיות - כלומר
+     הקטגוריה והדחיפות, שנראות ברשימת המיילים בלי לפתוח. */
+  begin
+    perform net.http_post(
+      url     := 'https://api.resend.com/emails',
+      headers := jsonb_build_object(
+                   'Authorization', 'Bearer ' || v_key,
+                   'Content-Type',  'application/json'),
+      body    := jsonb_build_object(
+        'from',    v_from,
+        'to',      jsonb_build_array(v_to),
+        'subject', regexp_replace(split_part(p_text, chr(10), 1), '<[^>]+>', '', 'g'),
+        'html',    '<div dir="rtl" style="font-family:system-ui,Arial,sans-serif;line-height:1.7;color:#222">'
+                   || replace(p_text, chr(10), '<br>') || '</div>')
+    );
+  exception when others then
+    raise warning 'push_admin_alert mail failed: % / %', sqlstate, sqlerrm;
+  end;
 end;
 $$;
 
@@ -169,6 +197,22 @@ create trigger trg_notify_admin_note
 --  השנייה מופיעה באתר החי כתגובה אמיתית - למחוק אותה מ-/admin מיד.
 --  שווה לבדוק גם אותה: טעות בתנאי הטריגר משתיקה התראות על תגובות
 --  אמיתיות, ובלי בדיקה מפורשת אי אפשר לדעת שזה קרה.
+--
+--  ✉️ המייל הגיע לספאם, ולא נעלם. Resend החזירה 200 עם מזהה הודעה -
+--  כלומר "קיבלתי ושלחתי", שאינו "הגיע לתיבה". שורת נושא חדשה שמתחילה
+--  באימוג'י, משולחת בדומיין המשותף resend.dev, היא בדיוק מה שמסננים
+--  תופסים. הסטטוס האמיתי נמצא ב-resend.com -> Emails, לא כאן.
+--
+--  התיקון הנכון הוא לאמת את simpleisrael.co.il ב-Resend ולשלוח
+--  מ-noreply@simpleisrael.co.il. onboarding@resend.dev היא כתובת חול:
+--  היא עוברת סינון גרוע, ו-Resend מתירה ממנה שליחה רק לבעל החשבון.
+--  ⚠️ המגבלה הזאת חלה גם על notify_comment_reply, ששולחת לגולשים -
+--  כלומר ייתכן שתשובות לתגובות אינן מגיעות כלל, בלי שום סימן.
+--
+--  ⏱ שתי שורות עם Timeout of 5000 ms ביומן הן תקינות. זו הקריאה
+--  ל-/api/notify: pg_net מוותר על ההמתנה אחרי חמש שניות, והסיווג
+--  לוקח יותר. Vercel קיבל, סיווג והחזיר - ההתראה עצמה היא ההוכחה.
+--  פשוט אין מי שיקשיב לתשובה בצד הזה של הקו.
 --
 --  אם לא הגיעה התראה, כאן רואים בדיוק איפה נעצר:
 --    select id, created, status_code, left(content, 300)
