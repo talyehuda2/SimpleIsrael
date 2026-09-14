@@ -19,8 +19,13 @@ import { writeHero, writePlaceHero } from './hero.mjs';
    לגמרי (SVG מוטבע), בלי קובץ תמונה לצרוב. hasMap נגזר תמיד
    מ-maps.json עצמו, לא מרשימת אישור - אין יותר "פיילוט". */
 const KIND_COLOR = {
-  leader: '#9c2b50', judge: '#bd7038', united: '#6a3ca0', judah: '#245c93', israel: '#4f7a33',
-  prophet: '#b3781a', book: '#157a70', event: '#b0392c', world: '#8a7250',
+  /* judge ו-prophet כהים כאן מאשר בפלטה של האתר החי, ומאותה סיבה:
+     בשער הצבע אינו רק מילוי של הפס אלא גם צבע השם עצמו
+     (sl-own-label), כלומר טקסט. #bd7038 על רקע ה-hero נותן 3.15:1
+     ו-#b3781a נותן 3.10 - מתחת לסף. הגוונים כאן זהים ל---judge-ink
+     ול---prophet-ink ב-styles.css, כדי שהשער והציר ידברו אותו צבע. */
+  leader: '#9c2b50', judge: '#97531f', united: '#6a3ca0', judah: '#245c93', israel: '#4f7a33',
+  prophet: '#8f5f13', book: '#157a70', event: '#b0392c', world: '#8a7250',
 };
 const HERO_SIZE = { w: 1080, h: 490 };   // פס עליון (טלפון/טאבלט)
 const HERO_SPLIT = { w: 1100, h: 1003 }; // עמודה מאונכת (מחשב) - גדל עם הכרטיס

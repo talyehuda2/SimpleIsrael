@@ -52,10 +52,17 @@
   /* ----- צבעי נתיבים (גווני אבן-חן, קריאים על קלף) ----- */
   --leader: #9c2b50;
   --judge: #bd7038;
+  /* ה--ink הוא הגוון שנושא טקסט לבן. הפיצול הזה הוא בדיוק הדפוס של
+     --gold/--gold-ink שכבר קיים כאן: הצבע המזהה נשאר לנקודות, למקרא
+     ולרקע השורה - שם אין טקסט ואין סף - וה--ink נכנס רק היכן שיושב
+     עליו כיתוב. #bd7038 עם לבן נותן 3.79:1, מתחת ל-4.5 שת"י 5568
+     דורש; #97531f נותן 5.88. הגוון אינו חדש - הוא כבר תחתית כל פס. */
+  --judge-ink: #97531f;
   --united: #6a3ca0;
   --judah: #245c93;
   --israel: #4f7a33;
   --prophet: #b3781a;
+  --prophet-ink: #8f5f13;   /* 3.74:1 -> 5.51:1 */
   --book: #157a70;
   --event: #b0392c;
 
@@ -1054,11 +1061,11 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
 .bar-mapicon { margin-inline-start: 7px; vertical-align: -1.5px; opacity: .92; }
 
 .bar.leader { background: linear-gradient(180deg, var(--leader), #7f2141); }
-.bar.judge { background: linear-gradient(180deg, var(--judge), #97531f); }
+.bar.judge { background: linear-gradient(180deg, var(--judge-ink), #7d4318); }
 .bar.united { background: linear-gradient(180deg, var(--united), #542f7f); }
 .bar.judah { background: linear-gradient(180deg, var(--judah), #1b476f); }
 .bar.israel { background: linear-gradient(180deg, var(--israel), #3d5f27); }
-.bar.prophet { background: linear-gradient(180deg, var(--prophet), #8f5f13); }
+.bar.prophet { background: linear-gradient(180deg, var(--prophet-ink), #744c0e); }
 .bar.book { background: linear-gradient(180deg, var(--book), #0f5f57); }
 .bar.world { background: linear-gradient(180deg, var(--world), #5f4d32); }
 /* גוון לפי אימפריה (גובר על bar.world) */
@@ -1156,11 +1163,11 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
   border-radius: 20px; padding: 2px 11px; margin-bottom: 2px;
 }
 .kind-chip.leader { background: var(--leader); }
-.kind-chip.judge { background: var(--judge); }
+.kind-chip.judge { background: var(--judge-ink); }
 .kind-chip.united { background: var(--united); }
 .kind-chip.judah { background: var(--judah); }
 .kind-chip.israel { background: var(--israel); }
-.kind-chip.prophet { background: var(--prophet); }
+.kind-chip.prophet { background: var(--prophet-ink); }
 .kind-chip.book { background: var(--book); }
 .kind-chip.event { background: var(--event); }
 .kind-chip.world { background: var(--world); }
@@ -1826,11 +1833,11 @@ a.card-action { text-decoration: none; }
 .vrow-dot.good { background: #6fd47a; } .vrow-dot.bad { background: #ff8f88; } .vrow-dot.mixed { background: #ffd166; }
 
 .vrow.leader  { background: linear-gradient(90deg, var(--leader), #7f2141); }
-.vrow.judge   { background: linear-gradient(90deg, var(--judge), #97531f); }
+.vrow.judge   { background: linear-gradient(90deg, var(--judge-ink), #7d4318); }
 .vrow.united  { background: linear-gradient(90deg, var(--united), #542f7f); }
 .vrow.judah   { background: linear-gradient(90deg, var(--judah), #1b476f); }
 .vrow.israel  { background: linear-gradient(90deg, var(--israel), #3d5f27); }
-.vrow.prophet { background: linear-gradient(90deg, var(--prophet), #8f5f13); }
+.vrow.prophet { background: linear-gradient(90deg, var(--prophet-ink), #744c0e); }
 .vrow.book    { background: linear-gradient(90deg, var(--book), #0f5f57); }
 .vrow.world   { background: linear-gradient(90deg, var(--world), #5f4d32); }
 .vrow.event   { background: linear-gradient(90deg, #6d4b16, #8a6320); }
