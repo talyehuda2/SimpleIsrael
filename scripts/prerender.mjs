@@ -19,8 +19,13 @@ import { writeHero, writePlaceHero } from './hero.mjs';
    לגמרי (SVG מוטבע), בלי קובץ תמונה לצרוב. hasMap נגזר תמיד
    מ-maps.json עצמו, לא מרשימת אישור - אין יותר "פיילוט". */
 const KIND_COLOR = {
-  leader: '#9c2b50', judge: '#bd7038', united: '#6a3ca0', judah: '#245c93', israel: '#4f7a33',
-  prophet: '#b3781a', book: '#157a70', event: '#b0392c', world: '#8a7250',
+  /* judge ו-prophet כהים כאן בדיוק כמו --judge-ink ו---prophet-ink
+     ב-styles.css. מאז שהשם נצבע ב---ink הצבע כאן הוא גרפיקה בלבד,
+     ולכן די היה בסף 3:1 שגם הגוונים הבהירים עברו - אבל אותו פריט
+     צריך להיראות באותו צבע בשער ובציר, ופיצול היה יוצר שני גוונים
+     לאותו סוג. העקביות היא הסיבה, לא הסף. */
+  leader: '#9c2b50', judge: '#97531f', united: '#6a3ca0', judah: '#245c93', israel: '#4f7a33',
+  prophet: '#8f5f13', book: '#157a70', event: '#b0392c', world: '#8a7250',
 };
 const HERO_SIZE = { w: 1080, h: 490 };   // פס עליון (טלפון/טאבלט)
 const HERO_SPLIT = { w: 1100, h: 1003 }; // עמודה מאונכת (מחשב) - גדל עם הכרטיס
@@ -193,7 +198,12 @@ function sliverSvg(own, ownColor, neighbors, yMin, yMax) {
   const ox1 = sx(own.start), ox2 = sx(own.end);
   if (own.start === own.end) s += `<circle class="sl-own-mark" cx="${ox1}" cy="${oy}" r="7.5" fill="${ownColor}"/>`;
   else s += `<rect class="sl-own-mark" x="${Math.min(ox1, ox2)}" y="${oy - 6.5}" width="${Math.max(7, Math.abs(ox2 - ox1))}" height="13" rx="6.5" fill="${ownColor}"/>`;
-  s += `<text class="sl-own-label" x="${(ox1 + ox2) / 2}" y="${oy - 15}" text-anchor="middle" fill="${ownColor}">${esc(own.name)}</text>`;
+  /* השם נצבע ב---ink ולא בצבע הסוג. צבע הסוג נועד לזהות קטגוריה, וזה
+     תפקיד של הפס - לא של הכיתוב: שם בצבע הסוג הוא טקסט, ולכן כפוף לסף
+     4.5:1, וחמישה מתשעת הצבעים לא עמדו בו על רקע ה-hero (הנמוך: רקע
+     עולמי ב-3.78). הפס עצמו נשאר צבעוני וכפוף לסף הגרפיקה 3:1 בלבד,
+     שכל התשעה עוברים. התוצאה: אותו מידע, 11.94:1 במקום 3.78. */
+  s += `<text class="sl-own-label" x="${(ox1 + ox2) / 2}" y="${oy - 15}" text-anchor="middle">${esc(own.name)}</text>`;
   s += `<text class="sl-own-year" x="${(ox1 + ox2) / 2}" y="${oy + 20}" text-anchor="middle">${own.start === own.end ? own.start : `${own.start}–${own.end}`}</text>`;
   s += '</svg>';
   return s;
@@ -302,7 +312,7 @@ footer a{color:var(--gold-ink)}
 .sl-bar{opacity:.38}
 .sl-bar-label{font-family:'Heebo',sans-serif;font-size:10px;font-weight:600;fill:var(--muted)}
 .sl-own-mark{stroke:#f4e9d1;stroke-width:2}
-.sl-own-label{font-family:'Frank Ruhl Libre',serif;font-size:13px;font-weight:700}
+.sl-own-label{font-family:'Frank Ruhl Libre',serif;font-size:13px;font-weight:700;fill:var(--ink)}
 .sl-own-year{font-family:'Heebo',sans-serif;font-size:10px;font-weight:600;fill:var(--muted)}
 .gopts.big{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
 .gopt.big{flex-direction:column;text-align:center;border-width:2px;border-radius:16px;
