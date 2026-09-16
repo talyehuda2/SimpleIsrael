@@ -208,3 +208,9 @@ body.has-sel .pm.off,body.has-sel .lb.off{opacity:.07}
   inset-inline-start: 8px;
   outline: 3px solid var(--gold-ink); outline-offset: 2px;
 }
+
+/* הטקסט הכתוב-ביד על המקום. מופיע מעל רשימת הביקורים ולכן מסומן
+   בפס זהב, כמו ציטוט - כדי שייקרא כהקשר ולא כעוד תחנה. */
+.dlore{margin:10px 0 14px;padding:0 0 0 0;padding-inline-start:11px;
+  border-inline-start:3px solid var(--gold,#b28a2b);
+  font-size:14px;line-height:1.75;color:var(--ink,#33281a)}
