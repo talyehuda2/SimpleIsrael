@@ -281,6 +281,7 @@ function renderDetail(p) {
     <h2>${esc(p.name)}</h2>
     <p class="dsub">${p.visits.length} ביקורים · ${esc(range)}</p>
     ${p.aka.length ? `<p class="daka">נקרא גם: ${p.aka.map(esc).join(' · ')}</p>` : ''}
+    ${p.lore ? `<p class="dlore">${esc(p.lore)}</p>` : ''}
     ${era && (hidden || showAll) ? `<button class="dfilter" id="dFilter">
       ${showAll ? `מוצגים כל הביקורים · הצג רק את ${esc(era.name)}`
         : `${filtered.length === 1 ? 'מוצג ביקור אחד' : `מוצגים ${filtered.length} ביקורים`} מתוך ${p.visits.length} - ${esc(era.name)} בלבד · הצג הכל`}</button>` : ''}

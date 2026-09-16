@@ -35,6 +35,10 @@ declare
   v_who  text;
   v_key  constant text := '<<< כאן מדביקים את מפתח ה-API של Resend >>>';
   v_from constant text := '<<< כאן מדביקים את כתובת השולח, למשל: ציר הזמן <noreply@simpleisrael.co.il> >>>';
+  /* בלי reply_to, השורה "להפסקת עדכונים - השיבו למייל הזה" שבתחתית
+     המייל היא הבטחה ריקה: noreply אינה תיבה, ותשובה של גולש נעלמת.
+     זו לא אי-נוחות בלבד - הבטחנו לו דרך לצאת. */
+  v_reply constant text := '<<< כאן מדביקים את תיבת המייל שלך, לתשובות >>>';
 begin
   -- רק תשובות בתוך שרשור מעניינות כאן
   if new.parent_id is null then return new; end if;
@@ -64,8 +68,9 @@ begin
                  'Authorization', 'Bearer ' || v_key,
                  'Content-Type',  'application/json'),
     body    := jsonb_build_object(
-      'from',    v_from,
-      'to',      jsonb_build_array(v_to),
+      'from',     v_from,
+      'reply_to', v_reply,
+      'to',       jsonb_build_array(v_to),
       'subject', 'מישהו הגיב לתגובה שלך - ציר הזמן של עם ישראל',
       'html',
         '<div dir="rtl" style="font-family:system-ui,Arial,sans-serif;line-height:1.75;color:#222">'

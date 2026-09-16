@@ -91,6 +91,11 @@ for (const [itemId, m] of Object.entries(maps)) {
   }
 }
 
+/* placeLore.json נכתב ביד ואינו מיוצר. הוא ממוזג לכאן ולא נשמר בנפרד
+   כדי שמסך המקומות והשער יקראו את אותו מקור - טקסט שיופיע רק באחד מהם
+   הוא או תוכן שנכתב לגוגל בלבד, או תוכן שהגולש רואה וגוגל לא. */
+const lore = JSON.parse(readFileSync(join(ROOT, 'src', 'data', 'placeLore.json'), 'utf8'));
+
 const out = [...places.values()].map((p) => {
   // ממוצע חסין-חריגים: חציון, כדי שתחנה אחת שהוצבה ידנית לא תזיז את הנקודה
   const med = (a) => { const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
@@ -104,6 +109,7 @@ const out = [...places.values()].map((p) => {
     y: +med(p.ys).toFixed(1),
     from: years.length ? Math.min(...years) : null,
     to: years.length ? Math.max(...years) : null,
+    ...(lore[slugify(p.name)] ? { lore: lore[slugify(p.name)] } : {}),
     visits,
   };
 }).sort((a, b) => b.visits.length - a.visits.length);
@@ -112,5 +118,9 @@ writeFileSync(join(ROOT, 'src', 'data', 'places.json'), JSON.stringify(out, null
 
 const rich = out.filter((p) => p.visits.length >= 3);
 console.log(`places.json: ${out.length} מקומות, ${out.reduce((s, p) => s + p.visits.length, 0)} ביקורים`);
+const withLore = out.filter((p) => p.lore).length;
+console.log(`עם טקסט מקום (placeLore): ${withLore} מתוך ${out.length}`);
+const orphan = Object.keys(lore).filter((k) => !out.some((p) => p.id === k));
+if (orphan.length) console.warn(`⚠️ מזהים ב-placeLore שאין להם מקום: ${orphan.join(', ')}`);
 console.log(`עשירים (3+ ביקורים): ${rich.length}`);
 console.log(rich.slice(0, 14).map((p) => `  ${p.name.padEnd(16)} ${String(p.visits.length).padStart(2)} ביקורים · ${p.from}–${p.to}${p.aka.length ? ' · גם: ' + p.aka.join(', ') : ''}`).join('\n'));

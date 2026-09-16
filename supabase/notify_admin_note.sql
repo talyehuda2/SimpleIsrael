@@ -69,8 +69,13 @@ declare
      את המייל על פניות פרטיות. כאן הוא חוזר - ועם הטקסט המסווג, שעדיף
      על הנוסח הגנרי שהיה. את המפתח אפשר לשלוף מ-notify_new_comment. */
   v_key    text := '<<<RESEND_API_KEY>>>';
-  v_from   text := '<<<כתובת השולח, למשל SimpleIsrael <onboarding@resend.dev>>>>';
+  /* הדומיין simpleisrael.co.il מאומת ב-Resend, ולכן שולחים ממנו ולא
+     מ-onboarding@resend.dev. כתובת החול עוברת סינון גרוע - מייל ממנה
+     נחת אצלנו בספאם. v_reply הוא מה שהופך את noreply לכתובת שאפשר
+     להשיב אליה: היא עצמה אינה תיבה, ובלי זה תשובה נעלמת. */
+  v_from   text := '<<<SimpleIsrael <noreply@simpleisrael.co.il>>>>';
   v_to     text := '<<<תיבת המייל שלך>>>';
+  v_reply  text := '<<<תיבת המייל שלך, לתשובות>>>';
 begin
   if p_secret is distinct from v_secret then
     raise exception 'unauthorized';
@@ -97,8 +102,9 @@ begin
                    'Authorization', 'Bearer ' || v_key,
                    'Content-Type',  'application/json'),
       body    := jsonb_build_object(
-        'from',    v_from,
-        'to',      jsonb_build_array(v_to),
+        'from',     v_from,
+        'reply_to', v_reply,
+        'to',       jsonb_build_array(v_to),
         'subject', regexp_replace(split_part(p_text, chr(10), 1), '<[^>]+>', '', 'g'),
         'html',    '<div dir="rtl" style="font-family:system-ui,Arial,sans-serif;line-height:1.7;color:#222">'
                    || replace(p_text, chr(10), '<br>') || '</div>')

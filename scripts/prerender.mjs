@@ -276,6 +276,10 @@ footer a{color:var(--gold-ink)}
 .gate h1{font-size:34px;margin:0 0 4px}
 .gate .dates{margin:0 0 8px}
 .gate .lead{margin:0 0 12px;font-size:16px;line-height:1.7;color:var(--muted)}
+/* הטקסט הכתוב-ביד על המקום. פס זהב ולא גופן גדול, כדי שייקרא כהקשר
+   ולא כתקציר של הדף - וזהה במכוון ל-.dlore במסך המקומות החי. */
+.gate .place-lore{margin:0 0 15px;padding-inline-start:12px;
+  border-inline-start:3px solid var(--gold);font-size:15.5px;line-height:1.8;color:var(--ink)}
 .gate-q{margin:0 0 10px;font-size:15px;font-weight:700;color:var(--navy)}
 .gopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:10px}
 .gopt{display:flex;align-items:center;gap:11px;background:#fffdf7;border:1.5px solid var(--line);
@@ -852,7 +856,7 @@ function placePage(p) {
   const restOfJourney = thin
     ? placesIndex.filter((o) => o.id !== p.id && o.visits.some((v) => v.id === first.id))
     : [];
-  const metaDesc = truncate(`${p.name} - ${evCount(p.visits.length)} בין ${p.from} ל-${p.to} לבריאה. ${clean(first.desc || intro)}`, 155);
+  const metaDesc = truncate(`${p.name} - ${evCount(p.visits.length)} בין ${p.from} ל-${p.to} לבריאה. ${clean(p.lore || first.desc || intro)}`, 155);
   // התקופות שהמקום נוכח בהן - הקשר כרונולוגי וקישור פנימי לדפי התקופה
   const eras = sortedPeriods.filter((e) => p.visits.some((v) => v.year >= e.start && v.year < e.end));
   const nearby = nearbyOf(p);
@@ -874,7 +878,12 @@ function placePage(p) {
 </a>`;
 
   // התוכן המלא של הדף - מה שגוגל מאנדקס - יושב מתחת לשער
+  /* הטקסט הכתוב-ביד על המקום, כשיש. הוא נפתח את המאמר במכוון: זה
+     התוכן היחיד בדף שאינו נגזר מהתחנות, ולכן הוא מה שמבדיל בין מקום
+     עם אירוע אחד לבין תבנית עם שם מוחלף. אותו טקסט עצמו מוצג גם
+     במסך המקומות החי - הוא נכתב לגולש, לא למנוע החיפוש. */
   const article = `
+${p.lore ? `<p class="place-lore">${esc(p.lore)}</p>` : ''}
 ${p.aka.length ? `<div class="row"><b>נקרא גם:</b> ${p.aka.map(esc).join(' · ')}</div>` : ''}
 ${eras.length ? `<div class="row"><b>תקופות:</b> ${eras.map((e) => `<a href="/p/period/${e.id}">${esc(e.name)}</a>`).join(' · ')}</div>` : ''}
 <section class="related" id="more">
