@@ -23,6 +23,7 @@
    ההתראה לעולם לא נאבדת: אם המודל נכשל, נופל בזמן או מחזיר זבל -
    נשלחת ההתראה הגולמית עם סימון. סיווג הוא שיפור, לא תנאי. */
 import Anthropic from '@anthropic-ai/sdk';
+import { timingSafeEqual } from 'node:crypto';
 import { SUPABASE_URL, SUPABASE_KEY } from '../src/lib/supabaseConfig.js';
 
 /* Opus 5 ולא Sonnet כמו בסוכן השאלות: שם המשימה היא ניסוח מתוך רשומה
@@ -163,6 +164,21 @@ async function push(text) {
   if (!r.ok) throw new Error(`push_admin_alert ${r.status}: ${await r.text()}`);
 }
 
+/* השוואת סוד בזמן קבוע. השוואת מחרוזות רגילה ב-JS נעצרת בתו הראשון
+   שנבדל, ולכן משך התשובה מדליף כמה תווים נכונים - ומאפשר לגלות סוד
+   תו-אחר-תו במקום לנחש אותו כולו. timingSafeEqual משווה תמיד את כל
+   האורך. אורך שונה נבדק בנפרד כי הפונקציה זורקת עליו, ואורך אינו סוד. */
+function secretEquals(a, b) {
+  /* כותרת שנשלחת פעמיים מגיעה כמערך, ו-String() מיישר אותה בשקט.
+     דחייה מפורשת של כל מה שאינו מחרוזת: אין סיבה לגיטימית לשלוח את
+     הכותרת הזאת כמערך, ודמיון מקרי אחרי המרה אינו הזדהות. */
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const x = Buffer.from(a, 'utf8');
+  const y = Buffer.from(b, 'utf8');
+  if (x.length !== y.length) return false;
+  return timingSafeEqual(x, y);
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -170,11 +186,16 @@ export default async function handler(req, res) {
   }
 
   const secret = process.env.NOTIFY_SECRET;
-  if (!secret) return res.status(500).json({ error: 'השרת לא הוגדר: חסר NOTIFY_SECRET' });
+  if (!secret) {
+    /* שם משתנה הסביבה אינו יוצא אל מי שלא הזדהה: הוא מספר לתוקף איך
+       השרת בנוי. הפירוט נשאר ביומן, שם הוא נחוץ לאבחון. */
+    console.error('notify: חסר NOTIFY_SECRET');
+    return res.status(503).json({ error: 'השירות אינו זמין כרגע' });
+  }
 
   /* הכתובת פומבית, ולכן בלי הסוד המשותף כל אחד יכול היה להציף לך את
      הטלפון בהתראות מזויפות - ולשרוף תקציב מודל בדרך. */
-  if ((req.headers['x-notify-secret'] || '') !== secret) {
+  if (!secretEquals(req.headers['x-notify-secret'], secret)) {
     return res.status(403).json({ error: 'סוד שגוי' });
   }
 
