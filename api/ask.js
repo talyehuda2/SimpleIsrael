@@ -13,6 +13,7 @@
    ארבע שכבות הגבלה, מהזולה ליקרה: תקרת קלט (MAX_QUESTION_CHARS),
    מטמון תשובות, מכסה יומית לגולש ותקציב יומי לאתר - כולן נבדקות
    *לפני* שנוגעים ב-API. תקרת הפלט (MAX_TOKENS) חוסמת מלמעלה. */
+import { timingSafeEqual } from 'node:crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import { INDEX, getRecords, getContemporaries } from './_lib/corpus.js';
 import { dbReady, qhashOf, ipHashOf, askGate, logAsk } from './_lib/db.js';
@@ -170,13 +171,30 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'הסוכן כבוי כרגע. נסו שוב מאוחר יותר.' });
   }
 
+/* השוואת סוד בזמן קבוע. השוואת מחרוזות רגילה ב-JS נעצרת בתו הראשון
+   שנבדל, ולכן משך התשובה מדליף כמה תווים נכונים - ומאפשר לגלות סוד
+   תו-אחר-תו במקום לנחש אותו כולו. timingSafeEqual משווה תמיד את כל
+   האורך. אורך שונה נבדק בנפרד כי הפונקציה זורקת עליו, ואורך אינו סוד. */
+function secretEquals(a, b) {
+  /* כותרת שנשלחת פעמיים מגיעה כמערך, ו-String() מיישר אותה בשקט.
+     דחייה מפורשת של כל מה שאינו מחרוזת: אין סיבה לגיטימית לשלוח את
+     הכותרת הזאת כמערך, ודמיון מקרי אחרי המרה אינו הזדהות. */
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const x = Buffer.from(a, 'utf8');
+  const y = Buffer.from(b, 'utf8');
+  if (x.length !== y.length) return false;
+  return timingSafeEqual(x, y);
+}
+
   const adminToken = process.env.ADMIN_TOKEN;
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!adminToken || !apiKey) {
-    return res.status(500).json({ error: 'השרת לא הוגדר: חסר ANTHROPIC_API_KEY או ADMIN_TOKEN' });
+    /* שמות משתני הסביבה אינם יוצאים אל מי שלא הזדהה. הפירוט ביומן. */
+    console.error('ask: חסר ANTHROPIC_API_KEY או ADMIN_TOKEN');
+    return res.status(503).json({ error: 'השירות אינו זמין כרגע' });
   }
 
-  const isAdmin = (req.headers['x-admin-token'] || '') === adminToken;
+  const isAdmin = secretEquals(req.headers['x-admin-token'], adminToken);
   // הדלת לציבור נפתחת רק כש-ASK_PUBLIC=1. עד אז הקוד המלא רץ, אבל
   // רק המנהל מגיע אליו - כך אפשר לבנות ולבדוק בלי לחשוף.
   if (!isAdmin && process.env.ASK_PUBLIC !== '1') {

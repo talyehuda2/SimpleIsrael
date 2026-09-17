@@ -21,6 +21,17 @@ revoke select (notify_email) on comments from anon;
 revoke select (notify_email) on comments from authenticated;
 
 -- ----------------------------------------------------------------------------
+/* השומר על הכתובת. מוגדר גם ב-comment_reply_url_fix.sql, וחוזר כאן
+   כדי שהרצה של הקובץ הזה לבדו תיתן פונקציה תקינה. */
+create or replace function safe_site_url(p_url text)
+returns text language sql immutable as $sfu$
+  select case
+    when p_url ~ '^https://simpleisrael\.co\.il/(\?sel=|places\?p=)[^[:space:]"''<>&\\]+$'
+      then p_url
+    else 'https://simpleisrael.co.il/'
+  end;
+$sfu$;
+
 create or replace function notify_comment_reply()
 returns trigger
 language plpgsql
@@ -56,11 +67,15 @@ begin
   v_who  := replace(replace(coalesce(new.author, 'מגיב אנונימי'), '<', '&lt;'), '>', '&gt;');
   v_name := replace(replace(v_name, '<', '&lt;'), '>', '&gt;');
 
-  v_url := case
+  /* ⚠️ target_key מגיע מהדפדפן ונשלט בידי מי שכותב את התגובה. הוא נכנס
+     לתוך href של מייל שנשלח לגולש **אחר**, ולכן חייב אימות - לא בריחה.
+     בלי safe_site_url אפשר לשתול קישור זר במייל מהדומיין המאומת שלך,
+     כלומר דיוג. ראה supabase/comment_reply_url_fix.sql. */
+  v_url := safe_site_url(case
     when new.target_key like 'place:%'
       then 'https://simpleisrael.co.il/places?p=' || substring(new.target_key from 7)
     else 'https://simpleisrael.co.il/?sel=' || new.target_key
-  end;
+  end);
 
   perform net.http_post(
     url     := 'https://api.resend.com/emails',
