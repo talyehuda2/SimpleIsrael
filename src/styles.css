@@ -1580,7 +1580,7 @@ a.card-action { text-decoration: none; }
   overflow: hidden; direction: rtl; pointer-events: none;
 }
 .map-popup-close {
-  position: absolute; top: 4px; left: 5px; z-index: 2; pointer-events: auto;
+  position: absolute; top: 4px; inset-inline-start: 5px; z-index: 2; pointer-events: auto;
   border: none; background: rgb(255 255 255 / .28); color: #fff;
   width: 19px; height: 19px; border-radius: 50%; font-size: 11px; line-height: 1;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -1717,7 +1717,7 @@ a.card-action { text-decoration: none; }
   /* כפתורי זום צפים */
   .fab-zoom {
     display: flex; flex-direction: column; gap: 9px;
-    position: fixed; bottom: 46px; left: 12px; z-index: 15;
+    position: fixed; bottom: 46px; inset-inline-start: 12px; z-index: 15;
   }
   .fab-zoom button {
     width: 46px; height: 46px; border-radius: 50%; border: none;
@@ -1763,7 +1763,7 @@ a.card-action { text-decoration: none; }
   .app.menu-open .legend { display: flex; }
   .fab-zoom {
     display: flex; flex-direction: column; gap: 8px;
-    position: fixed; bottom: 40px; left: 10px; z-index: 15;
+    position: fixed; bottom: 40px; inset-inline-start: 10px; z-index: 15;
   }
   .fab-zoom button {
     width: 42px; height: 42px; border-radius: 50%; border: none;
@@ -2165,7 +2165,7 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 /* ===== מסע מודרך ===== */
 /* בדסקטופ הכרטיס והמפה בצד שמאל - השורה יושבת מימין-למטה, לא מתנגשת */
 .tour-bar {
-  position: fixed; bottom: 42px; right: 16px; z-index: 34;
+  position: fixed; bottom: 42px; inset-inline-end: 16px; z-index: 34;
   display: flex; align-items: center; gap: 10px;
   width: min(440px, calc(100vw - 24px));
   background: var(--navy); color: #fff; border-radius: 14px;
