@@ -710,6 +710,20 @@ $('#tTree').addEventListener('click', () => {
   }));
 });
 
+/* שתי הממלכות - אותו רכיב React של ציר הזמן, נטען רק כשלוחצים עליו.
+   הוא מרנדר את עצמו לתוך #kingsHost שהוא יוצר בעצמו, ולכן אין לו
+   מקום שמור ב-HTML. */
+$('#tKings').addEventListener('click', () => {
+  markOnce('kings_open');
+  import('./kings.jsx')
+    .then((m) => m.openKings((id) => {
+      // jumpToId מסיר רק חלוניות .ov; את שלנו סוגרים כאן
+      if (jumpToId(id)) m.closeKings();
+      else toast('הפריט מוסתר - הפעילו את השכבה המתאימה');
+    }))
+    .catch(() => toast('לא הצלחנו לטעון את המסך. נסו שוב.'));
+});
+
 /* מסך התובנות הוסר לבקשת המשתמש - הסרגל היה עמוס מדי. הנתונים
    ממשיכים להיווצר ב-atlas-data.json, כך שההחזרה היא כפתור ומאזין. */
 

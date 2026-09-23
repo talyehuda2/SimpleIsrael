@@ -29,6 +29,7 @@
      view_chosen {view}     מסך פתיחה  - באיזה מבט בחרו (mark, לא once)
      map_open    {id}       ציר הזמן   - מפת מסע נפתחה
      tree_open / tours_open / guide_open   - שימוש בפיצ'רים
+     kings_open            שני המסכים - "שתי הממלכות" נפתח
 
      page_view              כל מסך     - ספירת תנועה בלתי-תלויה ב-Vercel
 
