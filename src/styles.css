@@ -1623,10 +1623,11 @@ a.card-action { text-decoration: none; }
   /* במובייל אין מתג בבר העליון (הוא בסרגל התחתון), ולכן אין מה למרכז.
      שורה אחת ויחידה: שם קצר בימין, ארבעה אייקונים בשמאל - כמו הסרגל
      של מסע הדורות. קודם הכותרת והכפתורים גלשו לשתי שורות. */
-  .header-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 7px 8px; }
-  .header-actions { margin-inline-start: auto; flex-wrap: nowrap; gap: 6px; }
+  .header-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 7px 8px; justify-content: space-around; }
+  .header-actions { flex: 0 0 auto; flex-wrap: nowrap; gap: 6px; }
+  .title-block h1 { display: none; }
   h1 { font-size: 19px; white-space: nowrap; }
-  .h1-rest { display: none; }              /* "של עם ישראל" - אין לו מקום */
+  .h1-rest { display: none; }
   .title-row { gap: 6px; }
   .title-icons { gap: 4px; }
   .subtitle { display: none; }               /* הכותרת מספיקה - חוסך גובה */
