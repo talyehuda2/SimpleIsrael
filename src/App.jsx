@@ -300,7 +300,14 @@ export default function App() {
   const chooseView = (view) => {
     // באיזה משלושת המבטים בוחרים במסך הפתיחה
     mark('view_chosen', { view });
-    try { localStorage.setItem('si_view', view); } catch { /* מתעלמים */ }
+    try {
+      localStorage.setItem('si_view', view);
+      /* בחירת מבט היא סיום מסך הפתיחה לכל דבר, ולכן היא מסמנת אותו כנראה.
+         בלי השורה הזאת רק מסלול ציר הזמן נסגר כראוי: מי שבחר "מסע הדורות"
+         או "מפת הארץ" עבר לכתובת אחרת ב-window.location, closeIntro מעולם
+         לא רץ, וחזרה לדף הבית הציגה לו שוב את אותה שאלה שכבר ענה עליה. */
+      localStorage.setItem('si_seen_intro', '1');
+    } catch { /* מתעלמים */ }
   };
 
   // מצב ריק חכם: כשכלום לא נבחר - הזמנה עדינה לדמות היום (נסגרת לסשן)
