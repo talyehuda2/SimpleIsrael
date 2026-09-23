@@ -494,7 +494,7 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
 }
 .feedback-btn:hover { background: var(--navy-2); transform: translateY(-1px); }
 .about-close {
-  position: absolute; left: 12px; top: 12px; border: none; background: none;
+  position: absolute; inset-inline-start: 12px; top: 12px; border: none; background: none;
   font-size: 16px; cursor: pointer; color: #b0a082;
 }
 .about-close:hover { color: var(--ink); }
@@ -808,7 +808,7 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
   gap: 18px; padding: 22px 18px; overflow-y: auto; overscroll-behavior: contain;
   animation: introFade .28s ease-out;
 }
-.wsplit-x { position: absolute; top: 14px; left: 14px; }
+.wsplit-x { position: absolute; top: 14px; inset-inline-start: 14px; }
 .wsplit-head { text-align: center; max-width: 460px; }
 /* שלוש אפשרויות, טור לכל אחת. הגבול ביניהן הוא ההצעה עצמה. */
 .wsplit-body {
@@ -1153,9 +1153,9 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
   display: inline-flex; align-items: center; justify-content: center;
   border: none; background: none; cursor: pointer;
 }
-.close-btn { left: 10px; font-size: 16px; line-height: 1; color: #b0a082; }
+.close-btn { inset-inline-start: 10px; font-size: 16px; line-height: 1; color: #b0a082; }
 .close-btn:hover { color: var(--ink); }
-.card-share { left: 38px; z-index: 2; gap: 6px; color: var(--gold-ink); width: auto; min-width: 24px; }
+.card-share { inset-inline-start: 38px; z-index: 2; gap: 6px; color: var(--gold-ink); width: auto; min-width: 24px; }
 .card-share:hover { color: var(--navy); }
 .card-share-msg { font-size: 11.5px; font-weight: 700; color: var(--navy); white-space: nowrap; }
 .kind-chip {
@@ -1488,7 +1488,7 @@ a.card-action { text-decoration: none; }
   padding: 16px 18px 20px; animation: cardIn .18s ease-out;
 }
 .map-min {
-  position: absolute; left: 12px; top: 12px; width: 24px; height: 24px;
+  position: absolute; inset-inline-start: 12px; top: 12px; width: 24px; height: 24px;
   border-radius: 50%; border: 1.5px solid var(--gold); background: transparent;
   color: var(--gold-ink); line-height: 1; cursor: pointer;
   /* חץ SVG המצביע שמאלה - לכיוון שאליו המפה מתכווצת אל הרצועה */
@@ -1510,7 +1510,7 @@ a.card-action { text-decoration: none; }
 /* יעד מגע נדיב: במסך צר זו הדרך היחידה לסגור את שכבת המפה, והכפתור
    היה 26x27 - מתחת לסף הנוח לאצבע. */
 .map-close {
-  position: absolute; left: 8px; top: 8px; border: none; background: none;
+  position: absolute; inset-inline-start: 8px; top: 8px; border: none; background: none;
   width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
   font-size: 19px; color: #b0a082; cursor: pointer; border-radius: 50%;
 }
@@ -1580,7 +1580,7 @@ a.card-action { text-decoration: none; }
   overflow: hidden; direction: rtl; pointer-events: none;
 }
 .map-popup-close {
-  position: absolute; top: 4px; left: 5px; z-index: 2; pointer-events: auto;
+  position: absolute; top: 4px; inset-inline-start: 5px; z-index: 2; pointer-events: auto;
   border: none; background: rgb(255 255 255 / .28); color: #fff;
   width: 19px; height: 19px; border-radius: 50%; font-size: 11px; line-height: 1;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -1623,10 +1623,11 @@ a.card-action { text-decoration: none; }
   /* במובייל אין מתג בבר העליון (הוא בסרגל התחתון), ולכן אין מה למרכז.
      שורה אחת ויחידה: שם קצר בימין, ארבעה אייקונים בשמאל - כמו הסרגל
      של מסע הדורות. קודם הכותרת והכפתורים גלשו לשתי שורות. */
-  .header-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 7px 8px; }
-  .header-actions { margin-inline-start: auto; flex-wrap: nowrap; gap: 6px; }
+  .header-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 7px 8px; justify-content: space-around; }
+  .header-actions { flex: 0 0 auto; flex-wrap: nowrap; gap: 6px; }
+  .title-block h1 { display: none; }
   h1 { font-size: 19px; white-space: nowrap; }
-  .h1-rest { display: none; }              /* "של עם ישראל" - אין לו מקום */
+  .h1-rest { display: none; }
   .title-row { gap: 6px; }
   .title-icons { gap: 4px; }
   .subtitle { display: none; }               /* הכותרת מספיקה - חוסך גובה */
@@ -1717,7 +1718,7 @@ a.card-action { text-decoration: none; }
   /* כפתורי זום צפים */
   .fab-zoom {
     display: flex; flex-direction: column; gap: 9px;
-    position: fixed; bottom: 46px; left: 12px; z-index: 15;
+    position: fixed; bottom: 46px; inset-inline-start: 12px; z-index: 15;
   }
   .fab-zoom button {
     width: 46px; height: 46px; border-radius: 50%; border: none;
@@ -1763,7 +1764,7 @@ a.card-action { text-decoration: none; }
   .app.menu-open .legend { display: flex; }
   .fab-zoom {
     display: flex; flex-direction: column; gap: 8px;
-    position: fixed; bottom: 40px; left: 10px; z-index: 15;
+    position: fixed; bottom: 40px; inset-inline-start: 10px; z-index: 15;
   }
   .fab-zoom button {
     width: 42px; height: 42px; border-radius: 50%; border: none;
@@ -1829,7 +1830,7 @@ a.card-action { text-decoration: none; }
 /* קצה ישר = ממשיך אל מחוץ לתקופה */
 .vrow-fill.cont-before { border-start-end-radius: 0; border-end-end-radius: 0; }
 .vrow-fill.cont-after { border-start-start-radius: 0; border-end-start-radius: 0; }
-.vrow-dot { position: absolute; left: 10px; top: 10px; width: 9px; height: 9px; border-radius: 50%; }
+.vrow-dot { position: absolute; inset-inline-start: 10px; top: 10px; width: 9px; height: 9px; border-radius: 50%; }
 .vrow-dot.good { background: #6fd47a; } .vrow-dot.bad { background: #ff8f88; } .vrow-dot.mixed { background: #ffd166; }
 
 .vrow.leader  { background: linear-gradient(90deg, var(--leader), #7f2141); }
@@ -2165,7 +2166,7 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 /* ===== מסע מודרך ===== */
 /* בדסקטופ הכרטיס והמפה בצד שמאל - השורה יושבת מימין-למטה, לא מתנגשת */
 .tour-bar {
-  position: fixed; bottom: 42px; right: 16px; z-index: 34;
+  position: fixed; bottom: 42px; inset-inline-end: 16px; z-index: 34;
   display: flex; align-items: center; gap: 10px;
   width: min(440px, calc(100vw - 24px));
   background: var(--navy); color: #fff; border-radius: 14px;
