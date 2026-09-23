@@ -1,0 +1,169 @@
+/* הסגנון של "שתי הממלכות", בבעלות הרכיב עצמו.
+
+   זה הדפוס של NotesBox.css, ומאותה סיבה: הרכיב מרונדר משני מסכים עם
+   שני גיליונות סגנונות נפרדים (ציר הזמן ומסע הדורות), ורכיב שסגנונו
+   יושב רק באחד מהם מופיע במסך השני בלי שום עיצוב. המשתנים עצמם
+   (--panel, --ink, --judah, --israel וחבריהם) מוגדרים בשני הגיליונות,
+   ולכן אין כאן ערכי גיבוי - למעט cardIn, שקיים בציר הזמן בלבד. */
+
+@keyframes kingsIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.kings-overlay {
+  position: fixed; inset: 0; z-index: 60; direction: rtl;
+  background: rgb(30 20 5 / .5); display: flex; align-items: center;
+  justify-content: center; padding: 18px;
+}
+.kings-panel {
+  position: relative; width: 100%; max-width: min(880px, 96vw); max-height: 90vh;
+  overflow-y: auto; overscroll-behavior: contain;
+  background: var(--panel); color: var(--ink);
+  border-radius: 16px; border-top: 4px solid var(--gold);
+  box-shadow: 0 18px 50px rgb(40 25 0 / .4);
+  padding: 20px 22px 26px; animation: kingsIn .18s ease-out;
+}
+@media (prefers-reduced-motion: reduce) { .kings-panel { animation: none; } }
+
+.kings-close {
+  position: absolute; left: 14px; top: 12px; border: none; background: none;
+  font-size: 17px; color: var(--muted); cursor: pointer; font-family: inherit;
+}
+.kings-close:hover { color: var(--ink); }
+.kings-panel h2 {
+  font-family: 'Frank Ruhl Libre', serif; font-size: 22px; color: var(--navy);
+  margin: 0 0 4px; padding-inline-end: 32px;
+}
+.kings-sub {
+  font-size: 12.5px; line-height: 1.7; color: var(--muted);
+  margin: 0 0 14px; padding-inline-end: 32px; max-width: 60ch;
+}
+
+/* ----- הממלכה המאוחדת: הקשר, לא חלק מקנה המידה ----- */
+.kings-united {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
+  padding: 9px 11px; border: 1px dashed var(--line); border-radius: 11px;
+  background: rgb(106 60 160 / .06);
+}
+.ku-label { font-size: 11px; font-weight: 700; color: var(--united); }
+.ku-chip {
+  font-family: inherit; font-size: 12px; font-weight: 700; color: var(--ink);
+  background: var(--bg); border: 1.5px solid rgb(106 60 160 / .4);
+  border-radius: 9px; padding: 3px 9px; cursor: pointer;
+}
+.ku-chip span { font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ku-chip:hover, .ku-chip:focus-visible { border-color: var(--united); background: var(--panel); }
+.ku-note { font-size: 10.5px; color: var(--muted); margin-inline-start: auto; }
+
+.kings-split {
+  text-align: center; font-size: 12px; font-weight: 700; color: var(--gold-ink);
+  font-variant-numeric: tabular-nums; padding: 8px 0 2px;
+}
+
+/* ----- כותרות הטורים, נדבקות לראש הגלילה ----- */
+.kings-head {
+  position: sticky; top: 0; z-index: 5;
+  display: grid; grid-template-columns: 1fr 62px 1fr; gap: 0;
+  margin: 0 -22px 10px; padding: 8px 22px;
+  background: var(--panel); border-bottom: 1px solid var(--line);
+}
+.kh { font-size: 12.5px; font-weight: 700; text-align: center; }
+.kh.judah { color: var(--judah); }
+.kh.israel { color: var(--israel); }
+/* המחלקה נקראת kh-axis ולא axis: ב-styles.css יש .axis - רצועת השנים
+   של ציר הזמן, בגובה קבוע ועם רקע וגבול משלה - והיא תפסה את התא הזה
+   והפכה אותו לריבוע של 62px. זו בדיוק המלכודת של רכיב משותף שנוחת
+   בגיליון של מסך אחר: שם מחלקה כללי נתפס בדרך. */
+.kh.kh-axis { font-size: 9.5px; font-weight: 400; color: var(--muted); align-self: center; }
+
+/* ----- הציר עצמו ----- */
+.kings-chart {
+  position: relative; display: grid; grid-template-columns: 1fr 62px 1fr;
+  margin-bottom: 76px;
+}
+.kcol { position: relative; }
+
+.kb {
+  position: absolute; inset-inline: 2px; display: flex; flex-direction: column;
+  justify-content: center; gap: 1px; overflow: hidden;
+  font-family: inherit; text-align: start; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 7px;
+  border-inline-start-width: 4px; padding: 2px 7px;
+}
+.kb.judah  { background: color-mix(in srgb, var(--judah) 11%, var(--panel));
+             border-color: color-mix(in srgb, var(--judah) 32%, var(--panel)); }
+.kb.israel { background: color-mix(in srgb, var(--israel) 11%, var(--panel));
+             border-color: color-mix(in srgb, var(--israel) 32%, var(--panel)); }
+/* הפס בצד: השיפוט שבספר מלכים. אצל ישראל הוא אדום כמעט לכל אורך הטור,
+   וזה בדיוק מה שהמסך הזה אמור להראות במבט אחד. */
+.kb.j-good  { border-inline-start-color: #2e6b33; }
+.kb.j-bad   { border-inline-start-color: #9c2f24; }
+.kb.j-mixed { border-inline-start-color: #7a5b16; }
+.kb:hover, .kb:focus-visible { filter: brightness(1.04); box-shadow: 0 2px 8px rgb(40 25 0 / .18); }
+/* תיבה שהוגדלה לגובה המזערי - קו מקווקו, כדי שיהיה ברור שהגובה אינו לפי קנה המידה */
+.kb.short { border-top-style: dashed; border-bottom-style: dashed; }
+
+.kb-line { font-size: 10.5px; font-weight: 700; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kb-name { font-size: 12.5px; font-weight: 700; color: var(--ink); line-height: 1.25; }
+.kb-reign, .kb-years { font-size: 10px; color: var(--muted); line-height: 1.3; }
+/* ה-span נושא dir="ltr" כדי שטווח השנים לא יתהפך, ולכן start אצלו הוא שמאל - ו-end הוא הצד שבו יושב השם */
+.kb-years { font-variant-numeric: tabular-nums; text-align: end; }
+.kb.t-lg .kb-name { font-size: 13.5px; }
+
+/* ----- הסרגל שבין הטורים ----- */
+.kaxis { position: relative; }
+.kaxis::before {
+  content: ''; position: absolute; inset-block: 0; inset-inline-start: 50%;
+  width: 1px; background: var(--line);
+}
+.ktick {
+  position: absolute; inset-inline: 0; transform: translateY(-50%);
+  text-align: center; font-size: 9.5px; color: var(--muted);
+  font-variant-numeric: tabular-nums; background: var(--panel); padding: 1px 0;
+}
+.kmark {
+  position: absolute; inset-inline: -2px; height: 2px; border-radius: 2px;
+}
+.kmark.exile   { background: var(--israel); }
+.kmark.churban { background: var(--event); }
+
+/* השטח שאחרי גלות עשרת השבטים: יהודה ממשיכה עוד 133 שנה, וחצי המסך
+   נשאר ריק. הקווקוו אומר "כאן כבר אין ממלכה" במקום להיראות כתקלה. */
+.kgone {
+  position: absolute; inset-inline: 2px; bottom: 0; border-radius: 9px;
+  background: repeating-linear-gradient(135deg, transparent 0 7px, rgb(109 92 66 / .07) 7px 14px);
+}
+
+/* ----- שתי הסיומות ----- */
+.kend {
+  position: absolute; inset-inline: 2px; display: flex; flex-direction: column; gap: 2px;
+  margin-top: 7px; padding: 8px 10px; border-radius: 9px;
+  font-size: 11px; line-height: 1.6; color: var(--ink);
+}
+.kend b { font-size: 12px; font-variant-numeric: tabular-nums; }
+.kend.israel { background: rgb(79 122 51 / .13); border: 1px solid rgb(79 122 51 / .35); }
+.kend.israel b { color: #3d5f27; }
+.kend.judah  { background: rgb(176 57 44 / .1); border: 1px solid rgb(176 57 44 / .35); }
+.kend.judah b { color: #9c2f24; }
+
+/* ----- מקרא ----- */
+.kings-legend {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px;
+  border-top: 1px solid var(--line); padding-top: 12px;
+}
+.kl { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink); }
+.kl.note { font-size: 10.5px; color: var(--muted); line-height: 1.6; flex: 1 1 100%; }
+.kl .sw { width: 4px; height: 15px; border-radius: 2px; flex: none; }
+.kl .sw.good  { background: #2e6b33; }
+.kl .sw.mixed { background: #7a5b16; }
+.kl .sw.bad   { background: #9c2f24; }
+
+@media (max-width: 600px) {
+  .kings-overlay { padding: 0; }
+  .kings-panel { max-width: 100%; max-height: 100%; height: 100%; border-radius: 0; padding: 16px 12px 22px; }
+  .kings-head { grid-template-columns: 1fr 44px 1fr; margin: 0 -12px 10px; padding: 7px 12px; }
+  .kings-chart { grid-template-columns: 1fr 44px 1fr; }
+  .kh { font-size: 11.5px; }
+  .kb-name { font-size: 11.5px; }
+  .kb.t-lg .kb-name { font-size: 12.5px; }
+  .kb-line { font-size: 9.5px; }
+}

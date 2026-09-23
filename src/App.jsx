@@ -5,6 +5,7 @@ import DetailCard from './components/DetailCard.jsx';
 import JourneyMap from './components/JourneyMap.jsx';
 import SearchBox from './components/SearchBox.jsx';
 import FamilyTree from './components/FamilyTree.jsx';
+import KingsChart from './components/KingsChart.jsx';
 import Intro from './components/Intro.jsx';
 import NotesBox from './components/NotesBox.jsx';
 import AskBox from './components/AskBox.jsx';
@@ -38,6 +39,7 @@ function parseUrl() {
     map: p.get('map'),
     step: step != null ? parseInt(step, 10) : null,
     tree: p.get('tree') === '1',
+    kings: p.get('kings') === '1',
     // ?contemp=1 - נחיתה עם בני-הזמן כבר מודגשים. כך "הצג על ציר הזמן"
     // ממסע הדורות מגיע ישר לתשובה שהמבט הזה טוב בה: מי חי לצד מי.
     contemp: p.get('contemp') === '1',
@@ -52,7 +54,7 @@ function parseUrl() {
   };
 }
 
-function buildUrl({ sel, map, step, tree, contemp }) {
+function buildUrl({ sel, map, step, tree, kings, contemp }) {
   const p = new URLSearchParams();
   if (sel) p.set('sel', sel);
   if (map) {
@@ -60,6 +62,7 @@ function buildUrl({ sel, map, step, tree, contemp }) {
     if (step != null && step >= 0) p.set('step', String(step));
   }
   if (tree) p.set('tree', '1');
+  if (kings) p.set('kings', '1');
   if (contemp) p.set('contemp', '1');
   const qs = p.toString();
   return window.location.pathname + (qs ? `?${qs}` : '');
@@ -216,6 +219,7 @@ export default function App() {
   }, []);
   const openCollection = (c) => { setToursOpen(false); setCollection(c); };
   const [treeOpen, setTreeOpen] = useState(INITIAL.tree);
+  const [kingsOpen, setKingsOpen] = useState(INITIAL.kings);
 
   /* מדידה. הווים יושבים על המצב ולא על אתר הלחיצה, כי דמות נבחרת
      בחמש דרכים שונות - לחיצה על הציר, חיפוש, קישור נכנס, מסע מודרך
@@ -223,6 +227,7 @@ export default function App() {
   useEffect(() => { if (selected) markOnce('item_open', { kind: selected.kind, id: selected.id }); }, [selected]);
   useEffect(() => { if (mapItem) markOnce('map_open', { id: mapItem.id }); }, [mapItem]);
   useEffect(() => { if (treeOpen) markOnce('tree_open'); }, [treeOpen]);
+  useEffect(() => { if (kingsOpen) markOnce('kings_open'); }, [kingsOpen]);
   useEffect(() => { if (toursOpen) markOnce('tours_open'); }, [toursOpen]);
   const [shareMsg, setShareMsg] = useState('');
 
@@ -445,9 +450,9 @@ export default function App() {
     const item = searchIndex.find((x) => x.id === id);
     if (!item) { if (chronology === 'academic') setChronology('tradition'); return; }
     // סגירת האילן ישירות (לא דרך "אחורה", שהיה מנקה את הבחירה) - אנחנו מנווטים לתצוגה חדשה
-    setTreeOpen(false);
+    setTreeOpen(false); setKingsOpen(false);
     overlayPushed.current = Math.max(0, overlayPushed.current - 1);
-    prevOverlay.current = { map: null, tree: false };
+    prevOverlay.current = { map: null, tree: false, kings: false };
     const layer = LAYER_OF[item.kind];
     if (layer) setVisible((v) => (v[layer] ? v : { ...v, [layer]: true }));
     setSelected(item);
@@ -465,10 +470,11 @@ export default function App() {
   const applyUrl = (u, px) => {
     const selItem = resolveKey(u.sel);
     setTreeOpen(!!u.tree);
+    setKingsOpen(!!u.kings);
     setMapItem(resolveKey(u.map));
     setMapStep(u.step != null ? u.step : -1);
     setSelected(selItem);
-    prevOverlay.current = { map: u.map || null, tree: !!u.tree };
+    prevOverlay.current = { map: u.map || null, tree: !!u.tree, kings: !!u.kings };
     if (selItem) {
       if (vertical) { scrollToItem(selItem); return; }
       const el = scrollRef.current;
@@ -481,18 +487,19 @@ export default function App() {
   useEffect(() => {
     if (popping.current) {
       popping.current = false;
-      prevOverlay.current = { map: mapItem && itemKey(mapItem), tree: treeOpen };
+      prevOverlay.current = { map: mapItem && itemKey(mapItem), tree: treeOpen, kings: kingsOpen };
       return;
     }
     const map = mapItem ? itemKey(mapItem) : null;
     const contemp = !!(selected && contempItem && itemKey(contempItem) === itemKey(selected));
-    const url = buildUrl({ sel: selected ? itemKey(selected) : null, map, step: mapStep, tree: treeOpen, contemp });
+    const url = buildUrl({ sel: selected ? itemKey(selected) : null, map, step: mapStep, tree: treeOpen, kings: kingsOpen, contemp });
     // פתיחת חלונית (מפה/אילן) דוחפת רשומת היסטוריה כדי ש"אחורה" יסגור אותה; שאר השינויים מחליפים בלבד
-    const opened = (map && map !== prevOverlay.current.map) || (treeOpen && !prevOverlay.current.tree);
+    const opened = (map && map !== prevOverlay.current.map) || (treeOpen && !prevOverlay.current.tree)
+      || (kingsOpen && !prevOverlay.current.kings);
     if (opened) { window.history.pushState({}, '', url); overlayPushed.current += 1; }
     else window.history.replaceState({}, '', url);
-    prevOverlay.current = { map, tree: treeOpen };
-  }, [selected, mapItem, mapStep, treeOpen, contempItem]);
+    prevOverlay.current = { map, tree: treeOpen, kings: kingsOpen };
+  }, [selected, mapItem, mapStep, treeOpen, kingsOpen, contempItem]);
 
   /* Escape סוגר גם את שתי השכבות שמרונדרות כאן ולא ברכיב משלהן (אודות
      ובוחר המסעות/אוספים). בכל שאר החלוניות הרכיב מטפל בזה בעצמו, וחוסר
@@ -617,7 +624,7 @@ export default function App() {
   useEffect(() => {
     if (prevChrono.current === chronology) return;
     prevChrono.current = chronology;
-    setSelected(null); setMapItem(null); setTreeOpen(false); setContempItem(null);
+    setSelected(null); setMapItem(null); setTreeOpen(false); setKingsOpen(false); setContempItem(null);
     scrollRightPending.current = true;
     setPxPerYear(getMinPx());
   }, [chronology]);
@@ -817,6 +824,9 @@ export default function App() {
           Insights.jsx נשאר במקומו, כך שהחזרה היא כפתור אחד. */}
       <button className="tree-btn" onClick={() => setTreeOpen(true)} title="בית דוד - אילן היוחסין">
         <span aria-hidden="true">👑</span> <span className="btn-label">בית דוד</span>
+      </button>
+      <button className="tree-btn" onClick={() => setKingsOpen(true)} title="שתי הממלכות - מלכי יהודה מול מלכי ישראל">
+        <span aria-hidden="true">🏰</span> <span className="btn-label">שתי הממלכות</span>
       </button>
       {/* סוכן השאלות - בבדיקה, ולכן מוצג רק במצב ניהול */}
       {isAdmin && (
@@ -1176,6 +1186,7 @@ export default function App() {
       )}
 
       <FamilyTree open={treeOpen} onClose={() => closeOverlay(() => setTreeOpen(false))} onJump={jumpToId} />
+      <KingsChart open={kingsOpen} onClose={() => closeOverlay(() => setKingsOpen(false))} onJump={jumpToId} />
 
       {/* מובייל: הסרגל התחתון הוא מתג המצבים ולא מגירת כלים. המעבר בין שני
           המבטים היה הפעולה הכי פחות מובנת למבקר חדש, והוא זה שראוי למקום

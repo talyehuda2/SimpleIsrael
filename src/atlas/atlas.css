@@ -391,13 +391,13 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
   #filters{top:calc(var(--bar) + var(--erabar) + 4px)}
   .ehead{top:calc(var(--bar) + var(--erabar) + var(--filt-h, 44px) + 10px)}
   .card .more{display:none}
-  #bar h1 span{display:none}
+
   /* המתג יורד ל-#modeNav התחתון כאן, ולכן יורד מהבר ואין מה למרכז */
   #bar{display:flex;padding:7px 10px;gap:7px}
   #bar .mode-switch{display:none}
   #barEnd{flex:1}
   #bar h1{font-size:19px}
-  /* ארבעה כלים ועוד שני אייקוני כותרת - מכווצים כדי שהכל ייכנס בשורה */
+  /* חמישה כלים ועוד שני אייקוני כותרת - מכווצים כדי שהכל ייכנס בשורה */
   #brandWrap .title-ico,#bar .tool{width:34px;height:30px;padding:0;font-size:15px;border-radius:12px}
   #bar .tool .tl{display:none}
   #tools{gap:4px}
@@ -417,4 +417,22 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
 .skip-link:focus {
   inset-inline-start: 8px;
   outline: 3px solid var(--gold-ink); outline-offset: 2px;
+}
+
+/* מסך צר במיוחד. עם הוספת "שתי הממלכות" יש חמישה כלים בסרגל, ובמדידה
+   ב-360px הם עלו על אייקוני הכותרת ב-47 פיקסלים. שם המסך יורד כאן ונשאר
+   האייקון בלבד - ולא כי אין ברירה: מתחת ל-980px מתג המבטים כבר יושב
+   ב-#modeNav התחתון, ושם "מסע הדורות" מסומן כעמוד הנוכחי. השם לא נעלם,
+   הוא רק לא נכתב פעמיים.
+
+   מדידה אחרי השינוי ב-360px: הכותרת 140px, הכלים 162px, סך הכל 323
+   מתוך 360 - כלומר גם ב-320px אין חפיפה.
+
+   הערה: החפיפה לא נולדה כאן. לפני התוספת היא כבר הייתה 14px, ורק לא
+   הבחינו בה. */
+@media (max-width:430px){
+  #bar{gap:5px;padding:7px 8px}
+  #brandWrap .title-ico,#bar .tool{width:30px;height:28px;font-size:14px;border-radius:11px}
+  #tools{gap:3px}
+  #bar h1 .bname{display:none}
 }
