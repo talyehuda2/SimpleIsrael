@@ -15,7 +15,10 @@
    סוגי שקפים (שדה type):
      text   - title, paras[], question        טקסט שנגמר בשאלה
      verses - eyebrow, title, blocks[]        {v, ref} פסוק | {p, strong?, soft?} | {cite}
-     site   - eyebrow, title, path, openMap?, stop?, clip?   צילום מסך מהאתר (מ-dist)
+     site   - eyebrow, title, path, openMap?, stop?, crop?   צילום מסך מהאתר (מ-dist)
+              crop: {from, to?, h?, pad?} - חיתוך לפי אלמנטים בעמוד, מראש from
+              עד תחתית to (או h פיקסלים). בלי crop נשמר מסך טלפון שלם, ואז הוא
+              מוקטן לחצי מרוחב התמונה והטקסט שבו כמעט לא נקרא.
      cta    - eyebrow, title, p               סיום עם כתובת האתר */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, createReadStream, mkdtempSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -55,7 +58,7 @@ function body(s, shot) {
   const head = s.eyebrow ? `<div class="eyebrow">${esc(s.eyebrow)}</div>` : '<div class="rule"></div>';
   if (s.type === 'text') return `${head}<h1>${esc(s.title)}</h1>${s.paras.map((p) => `<p>${fmt(p)}</p>`).join('')}${s.question ? `<div class="qn">${esc(s.question)}</div>` : ''}`;
   if (s.type === 'verses') return `${head}<h1>${esc(s.title)}</h1><main>${s.blocks.map(block).join('')}</main>`;
-  if (s.type === 'site') return `${head}<h1 class="sm">${esc(s.title)}</h1><img class="shot" src="file://${shot}">`;
+  if (s.type === 'site') return `${head}<h1 class="sm">${esc(s.title)}</h1><img class="shot${s.crop ? ' crop' : ''}" src="file://${shot}">`;
   if (s.type === 'cta') return `${head}<h1>${esc(s.title)}</h1><p>${fmt(s.p)}</p><div class="urlbox">simpleisrael.co.il<small>בחינם, בלי הרשמה</small></div>`;
   throw new Error(`סוג שקף לא מוכר: ${s.type}`);
 }
@@ -92,6 +95,8 @@ cite.solo{margin-top:-18px}
    נמוך יותר משאר התוכן בלי לעלות עליו - כל עוד רוחבו עד 680 */
 .shot{align-self:flex-start;max-width:680px;max-height:1180px;border-radius:34px;border:6px solid #fbf5e7;
   box-shadow:0 26px 60px rgb(60 40 0 / .38)}
+/* חיתוך: רק החלק החשוב, מוגדל עד כל רוחב התמונה - בערך גודל הקריאה האמיתי באתר */
+.shot.crop{max-width:912px;max-height:1090px}
 .urlbox{margin-top:40px;background:#163a57;color:#fff;border-radius:28px;padding:40px;text-align:center;direction:ltr;font-weight:700;font-size:64px}
 .urlbox small{display:block;direction:rtl;font-size:36px;font-weight:500;color:#e7d9ba;margin-top:10px}
 .url{position:absolute;right:84px;bottom:230px;font-weight:700;font-size:36px;color:#163a57;direction:ltr}
@@ -130,7 +135,22 @@ async function siteShot(browser, base, s, i) {
   if (s.openMap) { await pg.locator('.dc-map-cta').first().click(); await pg.waitForTimeout(1200); }
   if (s.stop) { await pg.locator('.map-legend li').filter({ hasText: s.stop }).first().click(); await pg.waitForTimeout(1200); }
   const file = join(TMP, `shot-${i}.png`);
-  await pg.screenshot({ path: file, clip: { x: 0, y: 0, width: 390, height: s.clip || 844 } });
+  let clip = { x: 0, y: 0, width: 390, height: 844 };
+  if (s.crop) {
+    const { from, to, h, pad = 8 } = s.crop;
+    clip = await pg.evaluate(({ from, to, h, pad }) => {
+      const a = document.querySelector(from)?.getBoundingClientRect();
+      if (!a) return null;
+      const b = to ? document.querySelector(to)?.getBoundingClientRect() : null;
+      const x = Math.max(0, Math.min(a.left, b ? b.left : a.left) - pad);
+      const y = Math.max(0, a.top - pad);
+      const right = Math.min(innerWidth, Math.max(a.right, b ? b.right : a.right) + pad);
+      const bottom = Math.min(innerHeight, b ? b.bottom + pad : a.top + h);
+      return { x, y, width: right - x, height: bottom - y };
+    }, { from, to, h, pad });
+    if (!clip) throw new Error(`crop: לא נמצא ${from} ב-${s.path}`);
+  }
+  await pg.screenshot({ path: file, clip });
   await ctx.close();
   return file;
 }
@@ -160,9 +180,17 @@ for (const [i, s] of spec.slides.entries()) {
   await pg.goto(`file://${html}`, { waitUntil: 'load' });
   await pg.evaluate(() => document.fonts.ready);
   // התוכן צריך להיגמר מעל האיור; מתחת ל-1560 הוא עולה על האיש עם המקל.
-  // צילום מסך יושב מימין לאיש ולכן מותר לו לרדת עד מעל שורת הכתובת.
-  const limit = s.type === 'site' ? 1650 : 1560;
-  const bottom = await pg.evaluate(() => Math.round(document.querySelector('.content').getBoundingClientRect().bottom));
+  // צילום מסך צר יושב מימין לאיש ולכן מותר לו לרדת עד מעל שורת הכתובת.
+  const m = await pg.evaluate(() => {
+    const r = (e) => e && e.getBoundingClientRect();
+    const c = r(document.querySelector('.content')), shot = r(document.querySelector('.shot'));
+    return { bottom: Math.round(c.bottom), shot: shot && { left: Math.round(shot.left), bottom: Math.round(shot.bottom) } };
+  });
+  // צילום רחב (x<310) כבר אינו מימין לאיש עם המקל, ולכן חל עליו הגבול הרגיל
+  const wide = m.shot && m.shot.left < 310;
+  const bottom = m.bottom;
+  const limit = s.type === 'site' && !wide ? 1650 : 1560;
+  if (process.env.STATUS_DEBUG) console.log(JSON.stringify(m));
   const name = `${String(i + 1).padStart(2, '0')}.jpg`;
   if (bottom > limit) { bad++; console.log(`⚠ ${name}: התוכן נגמר ב-${bottom}px, עולה על האיור - לקצר`); }
   await pg.screenshot({ path: join(OUT, name), type: 'jpeg', quality: 90 });
