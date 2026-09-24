@@ -13,6 +13,7 @@
    הפלט: status-out/<שם>/01.jpg, 02.jpg... לפי סדר ההעלאה.
 
    סוגי שקפים (שדה type):
+     intro  - eyebrow, title, p, steps[], hint   פתיחה: מה הסדרה ואיך עוקבים
      text   - title, paras[], question        טקסט שנגמר בשאלה
      verses - eyebrow, title, blocks[]        {v, ref} פסוק | {p, strong?, soft?} | {cite}
      site   - eyebrow, title, path, openMap?, stop?, crop?   צילום מסך מהאתר (מ-dist)
@@ -59,6 +60,9 @@ function body(s, shot) {
   if (s.type === 'text') return `${head}<h1>${esc(s.title)}</h1>${s.paras.map((p) => `<p>${fmt(p)}</p>`).join('')}${s.question ? `<div class="qn">${esc(s.question)}</div>` : ''}`;
   if (s.type === 'verses') return `${head}<h1>${esc(s.title)}</h1><main>${s.blocks.map(block).join('')}</main>`;
   if (s.type === 'site') return `${head}<h1 class="sm">${esc(s.title)}</h1><img class="shot${s.crop ? ' crop' : ''}" src="file://${shot}">`;
+  if (s.type === 'intro') return `${head}<h1 class="xl">${esc(s.title)}</h1><p>${fmt(s.p)}</p>`
+    + `<ol class="steps">${s.steps.map((t) => `<li>${fmt(t)}</li>`).join('')}</ol>`
+    + (s.hint ? `<div class="hint">${esc(s.hint)}</div>` : '');
   if (s.type === 'cta') return `${head}<h1>${esc(s.title)}</h1><p>${fmt(s.p)}</p><div class="urlbox">simpleisrael.co.il<small>בחינם, בלי הרשמה</small></div>`;
   throw new Error(`סוג שקף לא מוכר: ${s.type}`);
 }
@@ -97,6 +101,14 @@ cite.solo{margin-top:-18px}
   box-shadow:0 26px 60px rgb(60 40 0 / .38)}
 /* חיתוך: רק החלק החשוב, מוגדל עד כל רוחב התמונה - בערך גודל הקריאה האמיתי באתר */
 .shot.crop{max-width:912px;max-height:1090px}
+h1.xl{font-size:118px;line-height:1.04}
+/* השלבים הם רצף אמיתי - סדר ההעלאה - ולכן ממוספרים */
+.steps{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:22px;counter-reset:st}
+.steps li{counter-increment:st;display:flex;align-items:center;gap:26px;font-weight:700;font-size:46px;line-height:1.3;
+  background:rgb(251 245 231 / .7);border-radius:22px;padding:22px 28px}
+.steps li::before{content:counter(st);flex:none;width:70px;height:70px;border-radius:50%;background:#163a57;color:#e7c873;
+  display:flex;align-items:center;justify-content:center;font-weight:900;font-size:40px}
+.hint{margin-top:40px;font-weight:700;font-size:38px;color:#7a5b16}
 .urlbox{margin-top:40px;background:#163a57;color:#fff;border-radius:28px;padding:40px;text-align:center;direction:ltr;font-weight:700;font-size:64px}
 .urlbox small{display:block;direction:rtl;font-size:36px;font-weight:500;color:#e7d9ba;margin-top:10px}
 .url{position:absolute;right:84px;bottom:230px;font-weight:700;font-size:36px;color:#163a57;direction:ltr}

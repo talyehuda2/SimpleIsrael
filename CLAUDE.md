@@ -122,8 +122,8 @@ axe-core הוא הכלי שהשער מריץ, ו**הוא לא מודד שני ד
 
 `scripts/status.mjs` מייצר סדרת תמונות 1080x1920 מקובץ תוכן ב-`scripts/status/<שם>.json`,
 והפלט ב-`status-out/<שם>/01.jpg...` לפי סדר ההעלאה (`status-out` ב-`.gitignore`).
-דוגמה מלאה: `scripts/status/yeravam-sukkot.json`. ארבעה סוגי שקפים: `text` (טקסט שנגמר
-בשאלה), `verses` (תשובה עם פסוקים), `site` (צילום מסך מה-dist - צריך `npm run build` קודם),
+דוגמה מלאה: `scripts/status/yeravam-sukkot.json`. חמישה סוגי שקפים: `intro` (פתיחה כללית -
+מה הסדרה ואיך עוקבים, זהה בכל סדרה ועולה ראשונה), `text` (טקסט שנגמר בשאלה), `verses` (תשובה עם פסוקים), `site` (צילום מסך מה-dist - צריך `npm run build` קודם),
 `cta` (סיום עם כתובת האתר).
 
 - **כל התמונות על אותו רקע** - האיש עם המקל מ-`build-assets/og-base.jpg`. זו בקשה מפורשת
