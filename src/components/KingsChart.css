@@ -37,25 +37,22 @@
   margin: 0 0 14px; padding-inline-end: 32px; max-width: 60ch;
 }
 
-/* ----- הממלכה המאוחדת: הקשר, לא חלק מקנה המידה ----- */
-.kings-united {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
-  padding: 9px 11px; border: 1px dashed var(--line); border-radius: 11px;
-  background: rgb(106 60 160 / .06);
-}
-.ku-label { font-size: 11px; font-weight: 700; color: var(--united); }
-.ku-chip {
-  font-family: inherit; font-size: 12px; font-weight: 700; color: var(--ink);
-  background: var(--bg); border: 1.5px solid rgb(106 60 160 / .4);
-  border-radius: 9px; padding: 3px 9px; cursor: pointer;
-}
-.ku-chip span { font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.ku-chip:hover, .ku-chip:focus-visible { border-color: var(--united); background: var(--panel); }
-.ku-note { font-size: 10.5px; color: var(--muted); margin-inline-start: auto; }
+/* ----- הממלכה המאוחדת: ברוחב שני הטורים, באותו קנה מידה ----- */
+/* .kings-head.ku-head ולא .ku-head: כלל המסך הצר של .kings-head מאוחר יותר בקובץ וגבר */
+.kings-head.ku-head { position: static; grid-template-columns: 1fr; }
+.kh.united { color: var(--united); }
+.kings-united { position: relative; }
+.kb.united { background: color-mix(in srgb, var(--united) 10%, var(--panel));
+             border-color: color-mix(in srgb, var(--united) 30%, var(--panel)); }
+/* תיבה ברוחב מלא: השם והשנים בשורה אחת ולא בטור, אחרת הרוחב מבוזבז */
+.kb.united.t-lg { flex-direction: row; align-items: center; justify-content: flex-start; gap: 14px; padding: 2px 14px; }
+.kb.united.t-lg .kb-name { font-size: 15px; }
+/* margin-inline-end ולא start: ה-span הוא dir="ltr", ולכן ה-end שלו הוא ימין - הדחיפה לקצה השמאלי */
+.kb.united.t-lg .kb-years { margin-inline-end: auto; }
 
 .kings-split {
   text-align: center; font-size: 12px; font-weight: 700; color: var(--gold-ink);
-  font-variant-numeric: tabular-nums; padding: 8px 0 2px;
+  font-variant-numeric: tabular-nums; padding: 12px 0 4px;
 }
 
 /* ----- כותרות הטורים, נדבקות לראש הגלילה ----- */

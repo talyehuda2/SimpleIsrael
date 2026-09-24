@@ -23,8 +23,9 @@ import './KingsChart.css';
       טור ישראל, והחורבן לתחתית טור יהודה. כך שום סימון אינו סותר שום
       תיבה.
 
-   הממלכה המאוחדת (שאול, דוד, שלמה) מוצגת כשורת שבבים מעל הציר ולא על
-   קנה המידה - היא ההקשר לפילוג, לא חלק מההשוואה. */
+   הממלכה המאוחדת (שאול, דוד, שלמה) פותחת את המסך, בתיבות ברוחב שני
+   הטורים ובאותו קנה מידה: לפני הפילוג היה כיסא אחד. קודם היא הייתה שורת
+   שבבים מעל הציר, ואז ארבעים שנות דוד נראו כמו שבב אחד ליד זמרי. */
 
 const MIN_H = 19;                       // גובה מזערי לתיבה, כדי ששם המלך ייקרא
 const SPLIT = 2964;                     // פילוג הממלכה - ראש הציר
@@ -35,12 +36,12 @@ const pxPerYear = () => (typeof window !== 'undefined' && window.innerWidth < 60
 
 /* פריסת טור: תיבה לכל מלך לפי שנות מלוכתו, ומי שקצר מדי נדחף למטה
    במקום להיעלם. flow שומר על הסדר - תיבה לעולם לא מטפסת על קודמתה. */
-function layout(list, py) {
+function layout(list, py, origin = SPLIT) {
   let flow = 0;
   return list.map((k) => {
     const years = k.end - k.start;
     const h = Math.max(years * py, MIN_H);
-    const top = Math.max((k.start - SPLIT) * py, flow);
+    const top = Math.max((k.start - origin) * py, flow);
     flow = top + h;
     return { k, top, h, years, short: years * py < MIN_H };
   });
@@ -79,6 +80,8 @@ export default function KingsChart({ open, onClose, onJump }) {
 
   const view = useMemo(() => {
     const py = pxPerYear();
+    const united = layout(KINGS.united, py, KINGS.united[0].start);
+    const uEnd = united[united.length - 1];
     const judah = layout(KINGS.judah, py);
     const israel = layout(KINGS.israel, py);
     const jEnd = judah[judah.length - 1];
@@ -94,7 +97,7 @@ export default function KingsChart({ open, onClose, onJump }) {
     // ציון שנה כל 50 שנה, בשנים עגולות בתוך טווח הפילוג
     const ticks = [];
     for (let y = Math.ceil(SPLIT / 50) * 50; y < jEnd.k.end; y += 50) ticks.push({ y, top: yOf(y) });
-    return { judah, israel, height, ticks, israelEnd: iEnd.top + iEnd.h, judahEnd: jEnd.top + jEnd.h, exile: iEnd.k.end, churban: jEnd.k.end };
+    return { united, unitedHeight: uEnd.top + uEnd.h, judah, israel, height, ticks, israelEnd: iEnd.top + iEnd.h, judahEnd: jEnd.top + jEnd.h, exile: iEnd.k.end, churban: jEnd.k.end };
   }, [open]);
 
   if (!open) return null;
@@ -105,19 +108,16 @@ export default function KingsChart({ open, onClose, onJump }) {
         <button className="kings-close" onClick={onClose} aria-label="סגירה">✕</button>
         <h2>🏰 שתי הממלכות</h2>
         <p className="kings-sub">
-          מלכי יהודה מול מלכי ישראל, משנת הפילוג ועד החורבן. גובה התיבה הוא שנות המלוכה,
-          והשורה שממול היא מי שישב על הכיסא השני באותן שנים. לחיצה פותחת את הכרטיס המלא.
+          שלושת מלכי הממלכה המאוחדת, ואחריהם מלכי יהודה מול מלכי ישראל עד החורבן. גובה
+          התיבה הוא שנות המלוכה, והשורה שממול היא מי שישב על הכיסא השני באותן שנים. לחיצה
+          פותחת את הכרטיס המלא.
         </p>
 
-        <div className="kings-united">
-          <span className="ku-label">הממלכה המאוחדת</span>
-          {KINGS.united.map((k) => (
-            <button key={k.id} className="ku-chip" onClick={() => onJump(k.id)}
-              title={`${k.name} · ${k.reignText} · קפיצה לכרטיס`}>
-              {k.name} <span dir="ltr">{k.start}–{k.end}</span>
-            </button>
-          ))}
-          <span className="ku-note">עד כאן ממלכה אחת</span>
+        <div className="kings-head ku-head">
+          <span className="kh united">👑 הממלכה המאוחדת</span>
+        </div>
+        <div className="kings-united" style={{ height: `${view.unitedHeight}px` }}>
+          {view.united.map((b) => <Box key={b.k.id} b={b} realm="united" onJump={onJump} />)}
         </div>
 
         <div className="kings-split">▼ {SPLIT} · פילוג הממלכה</div>
