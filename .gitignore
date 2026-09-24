@@ -13,3 +13,6 @@ og-preview/
 .env
 .env.*
 !.env.example
+
+# תמונות סטטוס שנוצרות ב-scripts/status.mjs
+status-out/
