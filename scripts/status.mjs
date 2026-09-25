@@ -18,7 +18,12 @@
      verses - eyebrow, title, blocks[]        {v, ref} פסוק | {p, strong?, soft?} | {cite}
      site   - eyebrow, title, path, openMap?, stop?, crop?   צילום מסך מהאתר (מ-dist)
               crop: {from, to?, h?, pad?} - חיתוך לפי אלמנטים בעמוד, מראש from
-              עד תחתית to (או h פיקסלים). בלי crop נשמר מסך טלפון שלם, ואז הוא
+              עד תחתית to (או h פיקסלים). from/to הם סלקטורים ככל ש-CSS מרשה,
+              כולל רשימה (".map-wrap, .map-popup") - והחיתוך מקיף את כולם, כך
+              שחלון קופץ שבולט מעל המפה לא נחתך.
+              vh: גובה מסך הטלפון (ברירת מחדל 844) - כשהתוכן ארוך מהמסך.
+              css: סגנון שמוזרק לצילום בלבד, למשל פריסת רשימה שנגללת באתר
+              (".map-legend{max-height:none}") כדי שכל הפריטים ייראו. בלי crop נשמר מסך טלפון שלם, ואז הוא
               מוקטן לחצי מרוחב התמונה והטקסט שבו כמעט לא נקרא.
      cta    - eyebrow, title, p               סיום עם כתובת האתר */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, createReadStream, mkdtempSync } from 'node:fs';
@@ -137,30 +142,36 @@ function serveDist() {
 
 async function siteShot(browser, base, s, i) {
   // מסך טלפון (390x844) בצפיפות 3 - כמו צילום מסך אמיתי מאייפון
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
+  const ctx = await browser.newContext({ viewport: { width: 390, height: s.vh || 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
   await ctx.addInitScript(() => { try { localStorage.setItem('si_seen_intro', '1'); } catch { /* */ } });
   // בלי תעבורה החוצה - וגם בלי שורות אמיתיות ב-si_trail
   await ctx.route('**', (r) => (r.request().url().startsWith(base) ? r.continue() : r.abort()));
   const pg = await ctx.newPage();
   await pg.goto(base + s.path, { waitUntil: 'networkidle' });
   await pg.waitForTimeout(1200);
+  if (s.css) await pg.addStyleTag({ content: s.css });
   if (s.openMap) { await pg.locator('.dc-map-cta').first().click(); await pg.waitForTimeout(1200); }
   if (s.stop) { await pg.locator('.map-legend li').filter({ hasText: s.stop }).first().click(); await pg.waitForTimeout(1200); }
   const file = join(TMP, `shot-${i}.png`);
-  let clip = { x: 0, y: 0, width: 390, height: 844 };
+  let clip = { x: 0, y: 0, width: 390, height: s.vh || 844 };
   if (s.crop) {
     const { from, to, h, pad = 8 } = s.crop;
     clip = await pg.evaluate(({ from, to, h, pad }) => {
-      const a = document.querySelector(from)?.getBoundingClientRect();
-      if (!a) return null;
-      const b = to ? document.querySelector(to)?.getBoundingClientRect() : null;
-      const x = Math.max(0, Math.min(a.left, b ? b.left : a.left) - pad);
-      const y = Math.max(0, a.top - pad);
-      const right = Math.min(innerWidth, Math.max(a.right, b ? b.right : a.right) + pad);
-      const bottom = Math.min(innerHeight, b ? b.bottom + pad : a.top + h);
-      return { x, y, width: right - x, height: bottom - y };
+      const rects = (sel) => (sel ? [...document.querySelectorAll(sel)] : [])
+        .map((e) => e.getBoundingClientRect()).filter((r) => r.width && r.height);
+      const a = rects(from), b = rects(to), all = [...a, ...b];
+      if (!a.length) return null;
+      const top = Math.min(...a.map((r) => r.top));
+      const x = Math.max(0, Math.min(...all.map((r) => r.left)) - pad);
+      const y = Math.max(0, top - pad);
+      const right = Math.min(innerWidth, Math.max(...all.map((r) => r.right)) + pad);
+      const end = b.length ? Math.max(...all.map((r) => r.bottom)) + pad : top + h;
+      const bottom = Math.min(innerHeight, end);
+      return { x, y, width: right - x, height: bottom - y, cut: end > innerHeight };
     }, { from, to, h, pad });
     if (!clip) throw new Error(`crop: לא נמצא ${from} ב-${s.path}`);
+    if (clip.cut) console.log(`⚠ שקף ${i + 1}: החיתוך נמשך מתחת למסך ונקטע - להגדיל vh`);
+    delete clip.cut;
   }
   await pg.screenshot({ path: file, clip });
   await ctx.close();
