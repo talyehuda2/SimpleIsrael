@@ -136,7 +136,7 @@ axe-core הוא הכלי שהשער מריץ, ו**הוא לא מודד שני ד
 
 ## נתונים
 
-`src/data/*.json` — כ-472KB. `maps.json` הוא מקור האמת למסעות (277 תחנות).
+`src/data/*.json` — כ-472KB. `maps.json` הוא מקור האמת למסעות (282 תחנות).
 
 **`places.json` הוא קובץ מיוצר** בידי `scripts/places-data.mjs` מתוך `maps.json` — אל
 תערוך אותו ידנית.

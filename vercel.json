@@ -31,6 +31,66 @@
       "source": "/proto-atlas.html",
       "destination": "/atlas",
       "permanent": true
+    },
+    {
+      "source": "/p/place/סוכות-ופנואל",
+      "destination": "/p/place/%D7%A1%D7%95%D7%9B%D7%95%D7%AA",
+      "permanent": true
+    },
+    {
+      "source": "/p/place/%D7%A1%D7%95%D7%9B%D7%95%D7%AA-%D7%95%D7%A4%D7%A0%D7%95%D7%90%D7%9C",
+      "destination": "/p/place/%D7%A1%D7%95%D7%9B%D7%95%D7%AA",
+      "permanent": true
+    },
+    {
+      "source": "/p/place/בית-אל-והעי",
+      "destination": "/p/place/%D7%91%D7%99%D7%AA-%D7%90%D7%9C",
+      "permanent": true
+    },
+    {
+      "source": "/p/place/%D7%91%D7%99%D7%AA-%D7%90%D7%9C-%D7%95%D7%94%D7%A2%D7%99",
+      "destination": "/p/place/%D7%91%D7%99%D7%AA-%D7%90%D7%9C",
+      "permanent": true
+    },
+    {
+      "source": "/p/place/העי-ובית-אל",
+      "destination": "/p/place/%D7%94%D7%A2%D7%99",
+      "permanent": true
+    },
+    {
+      "source": "/p/place/%D7%94%D7%A2%D7%99-%D7%95%D7%91%D7%99%D7%AA-%D7%90%D7%9C",
+      "destination": "/p/place/%D7%94%D7%A2%D7%99",
+      "permanent": true
+    },
+    {
+      "source": "/p/place/מדין-וחורב",
+      "destination": "/p/place/%D7%9E%D7%93%D7%99%D7%9F",
+      "permanent": true
+    },
+    {
+      "source": "/p/place/%D7%9E%D7%93%D7%99%D7%9F-%D7%95%D7%97%D7%95%D7%A8%D7%91",
+      "destination": "/p/place/%D7%9E%D7%93%D7%99%D7%9F",
+      "permanent": true
+    },
+    {
+      "source": "/p/place/גת-ואשדוד",
+      "destination": "/p/place/%D7%90%D7%A9%D7%93%D7%95%D7%93",
+      "permanent": true
+    },
+    {
+      "source": "/p/place/%D7%92%D7%AA-%D7%95%D7%90%D7%A9%D7%93%D7%95%D7%93",
+      "destination": "/p/place/%D7%90%D7%A9%D7%93%D7%95%D7%93",
+      "permanent": true
+    },
+    {
+      "source": "/p/place/חצור-והגליל",
+      "destination": "/p/place/%D7%97%D7%A6%D7%95%D7%A8",
+      "permanent": true
+    },
+    {
+      "source": "/p/place/%D7%97%D7%A6%D7%95%D7%A8-%D7%95%D7%94%D7%92%D7%9C%D7%99%D7%9C",
+      "destination": "/p/place/%D7%97%D7%A6%D7%95%D7%A8",
+      "permanent": true
     }
   ],
   "headers": [
