@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { supabase } from '../lib/supabase.js';
 import { getAdminToken, setAdminToken, adminTokenDaysLeft } from '../lib/admin.js';
+import Traffic from './Traffic.jsx';
 import './admin.css';
 
 const NOTES = 'admin:notes';
@@ -155,6 +156,10 @@ function Admin() {
   useEffect(() => { load(); }, [load]);
 
   const saveToken = (t) => { setNotice(''); setAdminToken(t); setToken(t); };
+  const badToken = useCallback(() => {
+    setAdminToken(''); setToken('');
+    setNotice('הטוקן שגוי. ודאו שהוא זהה למה שהודבק ב-admin_inbox.sql.');
+  }, []);
   const logout = () => { setNotice(''); setAdminToken(''); setToken(''); setRows([]); };
 
   const remove = async (id) => {
@@ -210,10 +215,12 @@ function Admin() {
         <button className={tab === 'comments' ? 'on' : ''} onClick={() => setTab('comments')}>
           תגובות {roots.length > 0 && <span className="ad-count">{roots.length}</span>}
         </button>
+        <button className={tab === 'traffic' ? 'on' : ''} onClick={() => setTab('traffic')}>כניסות</button>
       </nav>
 
-      {status === 'loading' && <p className="ad-msg">טוען…</p>}
-      {status === 'error' && <p className="ad-msg ad-err">{err}</p>}
+      {tab !== 'traffic' && status === 'loading' && <p className="ad-msg">טוען…</p>}
+      {tab !== 'traffic' && status === 'error' && <p className="ad-msg ad-err">{err}</p>}
+      {tab === 'traffic' && <Traffic token={token} onBadToken={badToken} />}
 
       {status === 'ready' && tab === 'notes' && (
         <main className="ad-list">
