@@ -15,7 +15,8 @@ import { itemKey } from '../data/items.js';
 import { hebrewYearLetters } from '../utils/dates.js';
 import { startTrail, mark, markOnce } from '../lib/trail.js';
 import {
-  HAND, deal, rng, israelDay, dayNumber, byTime, poolFor, TOPICS, PERIODS,
+  HAND, deal, rng, israelDay, dayNumber, byTime, poolFor, availableTopics, availablePeriods,
+  TOPICS, PERIODS,
 } from './pool.js';
 import './game.css';
 
@@ -112,28 +113,33 @@ function saveDaily(day, order) {
    בגרסה הקודמת כל לחיצה על תחום ערבבה יד חדשה מיד - ולחיצה בטעות באמצע
    משחק מחקה אותו. עכשיו הבחירה היא טיוטה, והמשחק הרץ לא נוגע בה.
    אין שמירה בין ביקורים, בכוונה: כל כניסה מתחילה בבחירה. */
-const EMPTY = { topics: [], periods: [] };
+const EMPTY = { topics: [], periods: [], lead: null };
 
-function ChipGroup({ label, items, selected, onChange }) {
+function ChipGroup({ label, items, selected, enabled, onChange }) {
   const toggle = (id) => onChange(selected.includes(id)
     ? selected.filter((x) => x !== id)
     : items.map((x) => x.id).filter((x) => x === id || selected.includes(x)));
-  const all = selected.length === items.length;
+  const open = items.filter((x) => enabled.includes(x.id)).map((x) => x.id);
+  const all = open.length > 0 && open.every((x) => selected.includes(x));
   return (
     <fieldset className="gm-group">
       <legend>
         {label}
-        <button type="button" className="gm-all" onClick={() => onChange(all ? [] : items.map((x) => x.id))}>
+        <button type="button" className="gm-all" onClick={() => onChange(all ? [] : open)}>
           {all ? 'ניקוי' : 'בחירת הכל'}
         </button>
       </legend>
       <div className="gm-topics">
-        {items.map((t) => (
-          <button
-            key={t.id} type="button" className="gm-topic"
-            aria-pressed={selected.includes(t.id)} onClick={() => toggle(t.id)}
-          >{t.label}</button>
-        ))}
+        {items.map((t) => {
+          const off = !enabled.includes(t.id);
+          return (
+            <button
+              key={t.id} type="button" className="gm-topic" disabled={off}
+              aria-pressed={selected.includes(t.id)} onClick={() => toggle(t.id)}
+              title={off ? 'אין פריטים בצירוף עם הבחירה השנייה' : undefined}
+            >{t.label}</button>
+          );
+        })}
       </div>
     </fieldset>
   );
@@ -142,24 +148,44 @@ function ChipGroup({ label, items, selected, onChange }) {
 const PERIOD_ITEMS = PERIODS.map((p, i) => ({ id: i, label: p.name }));
 
 function Settings({ draft, setDraft, onStart, onCancel }) {
+  /* מה שנבחר ראשון מוביל, והשני מסונן לפיו - לא להפך. בחירה שנייה אף פעם
+     לא מבטלת את הראשונה: מי שבחר "תקופת האבות" ואז "שופטים" לא יגלה
+     שהתקופה נעלמה לו. כשהצד המוביל מתרוקן, ההובלה עוברת לצד השני. */
+  const topicsOk = draft.lead === 'periods' ? availableTopics(draft.periods) : TOPICS.map((t) => t.id);
+  const periodsOk = draft.lead === 'topics' ? availablePeriods(draft.topics) : PERIODS.map((_, i) => i);
+  const setTopics = (topics) => {
+    let lead = draft.lead || (topics.length ? 'topics' : null);
+    if (lead === 'topics' && !topics.length) lead = draft.periods.length ? 'periods' : null;
+    // שינוי בצד המוביל מוריד מהצד השני את מה שכבר אין בו אף פריט
+    const periods = lead === 'topics'
+      ? draft.periods.filter((i) => availablePeriods(topics).includes(i)) : draft.periods;
+    setDraft({ topics, periods, lead });
+  };
+  const setPeriods = (periods) => {
+    let lead = draft.lead || (periods.length ? 'periods' : null);
+    if (lead === 'periods' && !periods.length) lead = draft.topics.length ? 'topics' : null;
+    const topics = lead === 'periods'
+      ? draft.topics.filter((t) => availableTopics(periods).includes(t)) : draft.topics;
+    setDraft({ topics, periods, lead });
+  };
   const ready = draft.topics.length > 0 && draft.periods.length > 0;
   const possible = ready && !!poolFor(draft.topics, draft.periods);
   return (
-    <section className="gm-settings" aria-label="בחירת תחום ותקופה">
+    <section className="gm-settings" aria-label="בחירת דמויות ותקופות">
       <ChipGroup
-        label="מה לשאול" items={TOPICS} selected={draft.topics}
-        onChange={(topics) => setDraft({ ...draft, topics })}
+        label="על מי לשאול" items={TOPICS} selected={draft.topics} enabled={topicsOk}
+        onChange={setTopics}
       />
       <ChipGroup
-        label="מאילו תקופות" items={PERIOD_ITEMS} selected={draft.periods}
-        onChange={(periods) => setDraft({ ...draft, periods })}
+        label="מאילו תקופות" items={PERIOD_ITEMS} selected={draft.periods} enabled={periodsOk}
+        onChange={setPeriods}
       />
       {ready && !possible && (
         <p className="gm-empty" role="status">
-          אין בבחירה הזו חמישה פריטים שאפשר לסדר בלי חפיפה. הוסיפו תקופה או תחום.
+          אין בבחירה הזו חמישה פריטים שאפשר לסדר בלי חפיפה. הוסיפו תקופה או סוג דמויות.
         </p>
       )}
-      {!ready && <p className="gm-hint">בחרו לפחות תחום אחד ותקופה אחת.</p>}
+      {!ready && <p className="gm-hint">בחרו על מי לשאול ומאיזו תקופה - מה שבוחרים ראשון מסנן את השני.</p>}
       <div className="gm-actions">
         <button type="button" className="gm-btn primary" disabled={!possible} onClick={onStart}>הפעל</button>
         {onCancel && <button type="button" className="gm-btn" onClick={onCancel}>ביטול</button>}
@@ -227,7 +253,7 @@ function Game() {
 
   const reset = () => { setPlaced([]); setChecked(false); setShareMsg(''); };
   const start = () => {
-    setApplied({ topics: draft.topics, periods: [...draft.periods].sort((x, y) => x - y) });
+    setApplied({ ...draft, periods: [...draft.periods].sort((x, y) => x - y) });
     setEditing(false); setRound((r) => r + 1); reset();
   };
   const edit = () => { setDraft(applied || EMPTY); setEditing(true); };

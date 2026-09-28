@@ -126,3 +126,5 @@ button{font-family:inherit}
   font-size:13.5px;font-weight:700;color:var(--ink)}
 .gm-summary span{min-width:0}
 .gm-summary .gm-all{flex:none;white-space:nowrap}
+/* שבב שאין לו פריט בצירוף עם הבחירה בצד השני */
+.gm-topic:disabled{opacity:.38;cursor:not-allowed;border-style:dashed}

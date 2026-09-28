@@ -75,16 +75,40 @@ function maxDisjoint(pool) {
   return out;
 }
 
+/* פריט שייך לכל תקופה שהיה בה, לא רק לזו שבה התחיל: משה נולד בגלות מצרים
+   אבל הוא דמות של דור המדבר, ומי שבוחר "דור המדבר" מצפה למצוא אותו שם */
+export function inPeriod(it, p) {
+  if (it.start === it.end) return it.start >= p.start && it.start < p.end;
+  return it.start < p.end && it.end > p.start;
+}
+
+const kindsOf = (topics) => new Set(TOPICS.filter((t) => topics.includes(t.id)).flatMap((t) => t.kinds));
+
+/* סינון הדדי בלוח הבחירה: מה שנבחר ראשון מצמצם את השני. תחום זמין רק אם
+   יש לו פריט באחת התקופות שנבחרו, ותקופה זמינה רק אם יש בה פריט מהתחומים
+   שנבחרו. כשהצד השני ריק - הכל זמין. */
+export function availableTopics(periods) {
+  if (!periods.length) return TOPICS.map((t) => t.id);
+  const ranges = periods.map((i) => SORTED_PERIODS[i]);
+  return TOPICS.filter((t) => CANDIDATES.some((it) => t.kinds.includes(it.kind)
+    && ranges.some((p) => inPeriod(it, p)))).map((t) => t.id);
+}
+export function availablePeriods(topics) {
+  if (!topics.length) return SORTED_PERIODS.map((_, i) => i);
+  const kinds = kindsOf(topics);
+  return SORTED_PERIODS.map((p, i) => i).filter((i) => CANDIDATES.some((it) => kinds.has(it.kind)
+    && inPeriod(it, SORTED_PERIODS[i])));
+}
+
 /* המאגר לפי בחירת הגולש: תחומים, ותקופות (אינדקסים ב-PERIODS, לא חייבות
-   להיות רצופות). פריט שייך לתקופה שבה הוא מתחיל.
+   להיות רצופות).
    קודם רק המוכרים; אם הם לא מספיקים ליד, נכנסים גם הפחות מוכרים מאותם
    תחומים - מי שבחר "מלכים" בתקופת הפילוג ביקש את זה במפורש.
    מחזיר null כשגם כך אין מספיק. */
 export function poolFor(topics, periods) {
-  const kinds = new Set(TOPICS.filter((t) => topics.includes(t.id)).flatMap((t) => t.kinds));
+  const kinds = kindsOf(topics);
   const ranges = periods.map((i) => SORTED_PERIODS[i]);
-  const inRange = CANDIDATES.filter((it) => kinds.has(it.kind)
-    && ranges.some((p) => it.start >= p.start && it.start < p.end));
+  const inRange = CANDIDATES.filter((it) => kinds.has(it.kind) && ranges.some((p) => inPeriod(it, p)));
   const known = inRange.filter(familiar);
   if (maxDisjoint(known).length >= HAND) return known;
   if (maxDisjoint(inRange).length >= HAND) return inRange;
