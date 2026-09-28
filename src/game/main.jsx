@@ -15,7 +15,7 @@ import { itemKey } from '../data/items.js';
 import { hebrewYearLetters } from '../utils/dates.js';
 import { startTrail, mark, markOnce } from '../lib/trail.js';
 import {
-  HAND, deal, rng, israelDay, dayNumber, byTime, poolFor, TOPICS, ALL_TOPICS, PERIODS,
+  HAND, deal, rng, israelDay, dayNumber, byTime, poolFor, TOPICS, PERIODS,
 } from './pool.js';
 import './game.css';
 
@@ -108,64 +108,77 @@ function saveDaily(day, order) {
   try { localStorage.setItem(SAVE, JSON.stringify({ day, order })); } catch { /* לא נורא */ }
 }
 
-/* הבחירה במשחק החופשי נזכרת בין ביקורים - מי שאוהב נביאים לא צריך
-   לבחור אותם מחדש בכל פעם. אחסון חסום = ברירת המחדל, כלום לא נשבר. */
-const PREFS = 'si_game_prefs';
-const DEFAULT_PREFS = { topics: ALL_TOPICS, from: 0, to: PERIODS.length - 1 };
-function loadPrefs() {
-  try {
-    const p = JSON.parse(localStorage.getItem(PREFS) || 'null');
-    const ok = p && Array.isArray(p.topics) && p.topics.length
-      && p.topics.every((t) => ALL_TOPICS.includes(t))
-      && Number.isInteger(p.from) && Number.isInteger(p.to)
-      && p.from >= 0 && p.to < PERIODS.length && p.from <= p.to;
-    return ok ? p : DEFAULT_PREFS;
-  } catch { return DEFAULT_PREFS; }
-}
-function savePrefs(p) {
-  try { localStorage.setItem(PREFS, JSON.stringify(p)); } catch { /* לא נורא */ }
-}
+/* הבחירה במשחק החופשי מתחילה ריקה, ונכנסת לתוקף רק בלחיצה על "הפעל".
+   בגרסה הקודמת כל לחיצה על תחום ערבבה יד חדשה מיד - ולחיצה בטעות באמצע
+   משחק מחקה אותו. עכשיו הבחירה היא טיוטה, והמשחק הרץ לא נוגע בה.
+   אין שמירה בין ביקורים, בכוונה: כל כניסה מתחילה בבחירה. */
+const EMPTY = { topics: [], periods: [] };
 
-function Settings({ prefs, onChange, empty }) {
-  const toggle = (id) => {
-    const has = prefs.topics.includes(id);
-    // לפחות תחום אחד תמיד נשאר בחור - לוח ריק אינו משחק
-    if (has && prefs.topics.length === 1) return;
-    const topics = has ? prefs.topics.filter((t) => t !== id) : [...prefs.topics, id];
-    onChange({ ...prefs, topics: ALL_TOPICS.filter((t) => topics.includes(t)) });
-  };
-  const setFrom = (v) => onChange({ ...prefs, from: v, to: Math.max(v, prefs.to) });
-  const setTo = (v) => onChange({ ...prefs, to: v, from: Math.min(v, prefs.from) });
+function ChipGroup({ label, items, selected, onChange }) {
+  const toggle = (id) => onChange(selected.includes(id)
+    ? selected.filter((x) => x !== id)
+    : items.map((x) => x.id).filter((x) => x === id || selected.includes(x)));
+  const all = selected.length === items.length;
   return (
-    <section className="gm-settings" aria-label="בחירת תחום ותקופה">
-      <div className="gm-topics" role="group" aria-label="תחומים">
-        {TOPICS.map((t) => (
+    <fieldset className="gm-group">
+      <legend>
+        {label}
+        <button type="button" className="gm-all" onClick={() => onChange(all ? [] : items.map((x) => x.id))}>
+          {all ? 'ניקוי' : 'בחירת הכל'}
+        </button>
+      </legend>
+      <div className="gm-topics">
+        {items.map((t) => (
           <button
             key={t.id} type="button" className="gm-topic"
-            aria-pressed={prefs.topics.includes(t.id)} onClick={() => toggle(t.id)}
+            aria-pressed={selected.includes(t.id)} onClick={() => toggle(t.id)}
           >{t.label}</button>
         ))}
       </div>
-      <div className="gm-range">
-        <label>
-          <span>מתקופה</span>
-          <select value={prefs.from} onChange={(e) => setFrom(Number(e.target.value))}>
-            {PERIODS.map((p, i) => <option key={p.id} value={i}>{p.name}</option>)}
-          </select>
-        </label>
-        <label>
-          <span>עד</span>
-          <select value={prefs.to} onChange={(e) => setTo(Number(e.target.value))}>
-            {PERIODS.map((p, i) => <option key={p.id} value={i}>{p.name}</option>)}
-          </select>
-        </label>
-      </div>
-      {empty && (
+    </fieldset>
+  );
+}
+
+const PERIOD_ITEMS = PERIODS.map((p, i) => ({ id: i, label: p.name }));
+
+function Settings({ draft, setDraft, onStart, onCancel }) {
+  const ready = draft.topics.length > 0 && draft.periods.length > 0;
+  const possible = ready && !!poolFor(draft.topics, draft.periods);
+  return (
+    <section className="gm-settings" aria-label="בחירת תחום ותקופה">
+      <ChipGroup
+        label="מה לשאול" items={TOPICS} selected={draft.topics}
+        onChange={(topics) => setDraft({ ...draft, topics })}
+      />
+      <ChipGroup
+        label="מאילו תקופות" items={PERIOD_ITEMS} selected={draft.periods}
+        onChange={(periods) => setDraft({ ...draft, periods })}
+      />
+      {ready && !possible && (
         <p className="gm-empty" role="status">
-          אין בבחירה הזו חמישה פריטים שאפשר לסדר בלי חפיפה. הרחיבו את טווח התקופות או הוסיפו תחום.
+          אין בבחירה הזו חמישה פריטים שאפשר לסדר בלי חפיפה. הוסיפו תקופה או תחום.
         </p>
       )}
+      {!ready && <p className="gm-hint">בחרו לפחות תחום אחד ותקופה אחת.</p>}
+      <div className="gm-actions">
+        <button type="button" className="gm-btn primary" disabled={!possible} onClick={onStart}>הפעל</button>
+        {onCancel && <button type="button" className="gm-btn" onClick={onCancel}>ביטול</button>}
+      </div>
     </section>
+  );
+}
+
+// שורת סיכום במקום הלוח המלא בזמן משחק - אין בה שום דבר שלחיצה בטעות משנה
+function Summary({ applied, onEdit }) {
+  const topics = TOPICS.filter((t) => applied.topics.includes(t.id)).map((t) => t.label);
+  const periods = applied.periods.length === PERIODS.length ? 'כל התקופות'
+    : applied.periods.length > 3 ? `${applied.periods.length} תקופות`
+    : applied.periods.map((i) => PERIODS[i].name).join(', ');
+  return (
+    <div className="gm-summary">
+      <span>{topics.length === TOPICS.length ? 'כל התחומים' : topics.join(', ')} · {periods}</span>
+      <button type="button" className="gm-all" onClick={onEdit}>שינוי בחירה</button>
+    </div>
   );
 }
 
@@ -178,7 +191,9 @@ function Game() {
   const num = dayNumber(day);
   const [daily, setDaily] = useState(true);
   const [round, setRound] = useState(0); // מונה סבבים חופשיים - כל ערך הוא ערבוב חדש
-  const [prefs, setPrefs] = useState(loadPrefs);
+  const [applied, setApplied] = useState(null); // הבחירה שהמשחק רץ עליה
+  const [draft, setDraft] = useState(EMPTY);     // מה שמסומן כרגע בלוח הבחירה
+  const [editing, setEditing] = useState(true);
   const [years, setYears] = useState(loadYears);
   const changeYears = (v) => {
     setYears(v);
@@ -186,8 +201,8 @@ function Game() {
   };
 
   const pool = useMemo(
-    () => (daily ? undefined : poolFor(prefs.topics, prefs.from, prefs.to)),
-    [daily, prefs],
+    () => (daily || !applied ? null : poolFor(applied.topics, applied.periods)),
+    [daily, applied],
   );
   const hand = useMemo(() => {
     if (daily) return deal(rng(seedOf(day)));
@@ -211,7 +226,11 @@ function Game() {
   useEffect(() => { markOnce('game_start', { mode: daily ? 'daily' : 'free' }); }, [daily]);
 
   const reset = () => { setPlaced([]); setChecked(false); setShareMsg(''); };
-  const changePrefs = (p) => { setPrefs(p); savePrefs(p); reset(); };
+  const start = () => {
+    setApplied({ topics: draft.topics, periods: [...draft.periods].sort((x, y) => x - y) });
+    setEditing(false); setRound((r) => r + 1); reset();
+  };
+  const edit = () => { setDraft(applied || EMPTY); setEditing(true); };
   const switchMode = (toDaily) => {
     if (toDaily === daily) return;
     setDaily(toDaily); setRound(0); reset();
@@ -234,15 +253,15 @@ function Game() {
     } else {
       // כל סבב חופשי נספר, יחד עם הבחירה - כך רואים אילו תחומים מעניינים
       mark('game_done', {
-        mode: 'free', score: s, topics: prefs.topics.join(','),
-        range: `${PERIODS[prefs.from].id}..${PERIODS[prefs.to].id}`,
+        mode: 'free', score: s, topics: applied.topics.join(','),
+        periods: applied.periods.map((i) => PERIODS[i].id).join(','),
       });
     }
   };
 
-  // אחרי האתגר היומי "סבב נוסף" עובר למשחק החופשי
+  // אחרי האתגר היומי "סבב נוסף" עובר למשחק החופשי, ושם - לבחירה אם עוד לא נבחר כלום
   const next = () => {
-    if (daily) setDaily(false);
+    if (daily) { setDaily(false); if (!applied) setEditing(true); }
     setRound((r) => r + 1); reset();
   };
 
@@ -285,7 +304,10 @@ function Game() {
             משחק חופשי
           </button>
         </div>
-        {!daily && <Settings prefs={prefs} onChange={changePrefs} empty={!pool} />}
+        {!daily && (editing || !applied
+          ? <Settings draft={draft} setDraft={setDraft} onStart={start}
+              onCancel={applied ? () => setEditing(false) : null} />
+          : <Summary applied={applied} onEdit={edit} />)}
         {hand.length > 0 && (
           <>
         <p className="gm-lead">

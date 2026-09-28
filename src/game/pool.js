@@ -75,14 +75,16 @@ function maxDisjoint(pool) {
   return out;
 }
 
-/* המאגר לפי בחירת הגולש: תחומים, ותקופה מ-עד (אינדקסים ב-PERIODS).
+/* המאגר לפי בחירת הגולש: תחומים, ותקופות (אינדקסים ב-PERIODS, לא חייבות
+   להיות רצופות). פריט שייך לתקופה שבה הוא מתחיל.
    קודם רק המוכרים; אם הם לא מספיקים ליד, נכנסים גם הפחות מוכרים מאותם
    תחומים - מי שבחר "מלכים" בתקופת הפילוג ביקש את זה במפורש.
    מחזיר null כשגם כך אין מספיק. */
-export function poolFor(topics, from, to) {
+export function poolFor(topics, periods) {
   const kinds = new Set(TOPICS.filter((t) => topics.includes(t.id)).flatMap((t) => t.kinds));
-  const lo = SORTED_PERIODS[from].start, hi = SORTED_PERIODS[to].end;
-  const inRange = CANDIDATES.filter((it) => kinds.has(it.kind) && it.start >= lo && it.start < hi);
+  const ranges = periods.map((i) => SORTED_PERIODS[i]);
+  const inRange = CANDIDATES.filter((it) => kinds.has(it.kind)
+    && ranges.some((p) => it.start >= p.start && it.start < p.end));
   const known = inRange.filter(familiar);
   if (maxDisjoint(known).length >= HAND) return known;
   if (maxDisjoint(inRange).length >= HAND) return inRange;
