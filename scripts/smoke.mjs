@@ -74,6 +74,10 @@ const BASE = `http://127.0.0.1:${server.address().port}`;
 const sitemap = readFileSync(join(DIST, 'sitemap.xml'), 'utf8');
 const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].replace(/^https?:\/\/[^/]+/, ''));
 const firstOf = (re) => locs.find((u) => re.test(u));
+// period, place ו-collection הן תבניות נפרדות; כל השאר תחת /p/ הוא סוג פריט
+const NON_ITEM = new Set(['period', 'place', 'collection']);
+const itemKinds = [...new Set(locs.map((u) => u.match(/^\/p\/([^/]+)\/./)?.[1]).filter(Boolean))]
+  .filter((k) => !NON_ITEM.has(k));
 
 const PAGES = [
   { url: '/', name: 'ציר הזמן', check: '#root > *' },
@@ -87,8 +91,11 @@ const PAGES = [
   // בלי טוקן המסך מרנדר את מסך הכניסה, בלי שום פנייה לרשת
   { url: '/admin', name: 'ניהול', check: '.ad-login' },
   { url: '/p', name: 'אינדקס שערים', check: 'a[href^="/p/"]' },
-  // תבנית אחת מכל סוג שה-prerender מייצר: פריט, תקופה, מקום ואוסף
-  { url: firstOf(/^\/p\/leader\//), name: 'שער פריט', check: 'h1' },
+  // שער פריט אחד מכל סוג, ולא תבנית אחת: לכל סוג צבע משלו, ו-/p/leader/avraham
+  // עבר בזמן ש-/p/judge/dvora נכשל בניגודיות. הסוגים נגזרים מה-sitemap, כך שסוג
+  // חדש נכנס לבדיקה בלי לגעת כאן
+  ...itemKinds.map((k) => ({ url: firstOf(new RegExp(`^/p/${k}/`)), name: `שער ${k}`, check: 'h1' })),
+  // ועוד תבנית אחת מכל סוג עמוד אחר: תקופה, מקום ואוסף
   { url: firstOf(/^\/p\/period\//), name: 'שער תקופה', check: 'h1' },
   { url: firstOf(/^\/p\/place\//), name: 'שער מקום', check: 'h1' },
   { url: firstOf(/^\/p\/collection\//), name: 'שער אוסף', check: 'h1' },
