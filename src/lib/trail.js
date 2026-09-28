@@ -31,7 +31,10 @@
      tree_open / tours_open / guide_open   - שימוש בפיצ'רים
      kings_open            שני המסכים - "שתי הממלכות" נפתח
 
-     page_view              כל מסך     - ספירת תנועה בלתי-תלויה ב-Vercel
+     page_view   {src?}     כל מסך     - ספירת תנועה בלתי-תלויה ב-Vercel.
+                                        src מגיע מ-?src= בקישור (למשל status),
+                                        כי וואטסאפ לא שולח referrer וביקור
+                                        מסטטוס נראה אחרת כמו כניסה ישירה
 
    הטבלה והשאילתות: supabase/si_trail.sql */
 import { inject } from '@vercel/analytics';
@@ -64,11 +67,19 @@ const REF = (() => {
 
 const DEVICE = window.innerWidth < 768 ? 'mobile' : 'desktop';
 
+// ?src=status בקישור ששותף. מסונן לאותיות, ספרות ומקף - זה ערך מה-URL
+const SRC = (() => {
+  try {
+    const v = new URLSearchParams(location.search).get('src');
+    return v && /^[a-z0-9-]{1,24}$/.test(v) ? v : null;
+  } catch { return null; }
+})();
+
 export function startTrail() {
   inject({ mode: DEV ? 'development' : 'production' });
   // ספירה משלנו: הסקריפט של Vercel יושב על /_vercel/insights ונחסם אצל
   // חלק מהגולשים בלי שנדע. השורה הזו היא הבסיס שכן בשליטתנו.
-  mark('page_view');
+  mark('page_view', SRC ? { src: SRC } : undefined);
 }
 
 /* keepalive כדי שאירוע שנורה רגע לפני מעבר עמוד עדיין יגיע. כל שגיאה
