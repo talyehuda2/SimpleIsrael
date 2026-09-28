@@ -114,8 +114,8 @@ axe-core הוא הכלי שהשער מריץ, ו**הוא לא מודד שני ד
 
 ### prerender
 
-`scripts/prerender.mjs` (כ-1330 שורות) מייצר **315 כתובות ב-sitemap**: 159 עמודי פריט,
-13 עמודי תקופה, 129 עמודי מקום ועמודי אוסף, ובנוסף `sitemap.xml`, `robots.txt`, `404.html` ושלושת העמודים המשפטיים (`privacy.html`, `terms.html`, `accessibility.html`).
+`scripts/prerender.mjs` (כ-1330 שורות) מייצר **316 כתובות ב-sitemap**: 159 עמודי פריט,
+13 עמודי תקופה, 130 עמודי מקום ועמודי אוסף, ובנוסף `sitemap.xml`, `robots.txt`, `404.html` ושלושת העמודים המשפטיים (`privacy.html`, `terms.html`, `accessibility.html`).
 העמודים האלה הם מה שגוגל מפנה אליו, והם "שערים" — כרטיס עם שלוש דרכי כניסה לאתר החי.
 
 `scripts/hero.mjs` שורף תמונות JPEG לכל פריט (`@resvg/resvg-js` + `jpeg-js`).
@@ -142,7 +142,7 @@ axe-core הוא הכלי שהשער מריץ, ו**הוא לא מודד שני ד
 
 ## נתונים
 
-`src/data/*.json` — כ-680KB. `maps.json` הוא מקור האמת למסעות (282 תחנות).
+`src/data/*.json` — כ-680KB. `maps.json` הוא מקור האמת למסעות (283 תחנות).
 
 **`places.json` הוא קובץ מיוצר** בידי `scripts/places-data.mjs` מתוך `maps.json` — אל
 תערוך אותו ידנית.
