@@ -210,6 +210,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .ms-opt.on { background: var(--navy); color: #fff; box-shadow: 0 2px 6px rgb(22 58 87 / .25); }
 a.ms-opt:hover { background: var(--panel); color: var(--navy); }
 .header-gap { flex: 1; }
+/* מרכז הבר: מתג המבטים ולצדו תפריט "עוד באתר" (siteMenu.js, שמעוצב בגיליון משלו) */
+.center-nav { display: flex; align-items: center; gap: 8px; justify-self: center; }
 
 .share-btn {
   display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
@@ -1627,7 +1629,7 @@ a.card-action { text-decoration: none; }
   /* margin שלילי מבטל את ריפוד ה-header, כך שהמרחק מהדופן זהה למסע הדורות.
      .header-top בסלקטור - כלל .title-icons מאוחר יותר בקובץ גבר עליו. */
   .header-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 0; justify-content: space-around; margin-inline: -8px; }
-  .header-top .title-block, .header-top .title-row, .header-top .title-icons, .header-top .header-actions { display: contents; }
+  .header-top .title-block, .header-top .title-row, .header-top .title-icons, .header-top .header-actions, .header-top .center-nav { display: contents; }
   .title-block h1 { display: none; }
   h1 { font-size: 19px; white-space: nowrap; }
   .h1-rest { display: none; }

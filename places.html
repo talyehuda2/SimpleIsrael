@@ -36,10 +36,14 @@
       <button class="title-ico" id="mAbout" title="אודות הפרויקט" aria-label="אודות הפרויקט">ℹ️</button>
     </span>
   </div>
-  <div class="mode-switch" role="group" aria-label="מצב תצוגה">
-    <a class="ms-opt" href="/" title="מי חי מתי, ומי לצד מי">📜 ציר הזמן</a>
-    <a class="ms-opt" href="/atlas" title="דמות אחר דמות, עם המפה והסיפור לצדה">🗺️ מסע הדורות</a>
-    <span class="ms-opt on" aria-current="page">📍 מפת הארץ</span>
+  <!-- במרכז: מתג המבטים ולצדו תפריט "עוד באתר" (components/siteMenu.js) -->
+  <div class="center-nav">
+    <div class="mode-switch" role="group" aria-label="מצב תצוגה">
+      <a class="ms-opt" href="/" title="מי חי מתי, ומי לצד מי">📜 ציר הזמן</a>
+      <a class="ms-opt" href="/atlas" title="דמות אחר דמות, עם המפה והסיפור לצדה">🗺️ מסע הדורות</a>
+      <span class="ms-opt on" aria-current="page">📍 מפת הארץ</span>
+    </div>
+    <span id="menuHost" class="sm-host"></span>
   </div>
   <div id="barEnd">
     <div id="tools">

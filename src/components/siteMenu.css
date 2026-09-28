@@ -1,0 +1,43 @@
+/* תפריט "עוד באתר". נטען בשלושה מסכים עם שלושה גיליונות שונים, ולכן כל
+   משתנה כאן מגיע עם ערך גיבוי - אותו דפוס של NotesBox.css. */
+
+/* ----- הכפתור: באותה שפה של מתג המבטים שלידו ----- */
+.sm-btn{display:inline-flex;align-items:center;gap:6px;flex:none;white-space:nowrap;cursor:pointer;
+  font-family:inherit;font-size:13px;font-weight:700;color:var(--navy,#163a57);
+  padding:7px 14px;border-radius:22px;border:1px solid var(--line,#dcc9a3);background:rgb(30 20 5 / .05);
+  transition:background .14s,border-color .14s}
+.sm-btn:hover,.sm-btn.on{background:var(--panel,#fbf5e7);border-color:var(--gold,#b28a2b)}
+.sm-btn:focus-visible{outline:3px solid var(--navy,#163a57);outline-offset:2px}
+.sm-ico{font-size:14px;line-height:1}
+
+/* ----- הלוח ----- */
+.sm-panel{position:fixed;z-index:60;direction:rtl;padding:6px;
+  background:var(--panel,#fbf5e7);border:1px solid var(--line,#dcc9a3);border-radius:16px;
+  box-shadow:0 12px 32px rgb(40 25 0 / .22);font-family:'Heebo',system-ui,sans-serif;
+  animation:smIn .14s ease-out}
+.sm-panel[hidden]{display:none}
+@keyframes smIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.sm-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sm-item{display:flex;align-items:center;gap:12px;width:100%;text-align:start;cursor:pointer;
+  padding:10px 12px;border:0;border-radius:12px;background:transparent;color:var(--ink,#33281a);
+  font:inherit;text-decoration:none}
+.sm-item:hover{background:var(--bg,#efe4cb)}
+.sm-item:focus-visible{outline:3px solid var(--navy,#163a57);outline-offset:-3px}
+.sm-i{flex:none;width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  font-size:19px;border-radius:10px;background:var(--bg,#efe4cb)}
+.sm-t{display:flex;flex-direction:column;gap:1px;min-width:0;font-size:14.5px;color:var(--navy,#163a57)}
+.sm-d{font-size:12.5px;font-weight:400;color:var(--muted,#6d5c42);line-height:1.4}
+/* שורת הכותרת נפרדת: בתוך עמודת ה-flex התגית נמתחה לכל הרוחב */
+.sm-h{display:flex;align-items:center;gap:6px}
+.sm-badge{flex:none;display:inline-block;padding:1px 7px;border-radius:999px;vertical-align:1px;
+  font-size:10.5px;font-weight:700;color:#fff;background:var(--event,#b0392c)}
+
+@media (prefers-reduced-motion:reduce){.sm-panel{animation:none}}
+
+/* ----- טלפון: אייקון בלבד, באותו גודל של שאר אייקוני הסרגל ----- */
+@media (max-width:680px){
+  .sm-btn{width:34px;height:30px;padding:0;gap:0;justify-content:center;border-radius:12px;font-size:15px;
+    background:var(--bg-2,#f6eedc)}
+  .sm-l{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+}
+@media (max-width:345px){ .sm-btn{width:27px;height:26px;font-size:13px;border-radius:10px} }

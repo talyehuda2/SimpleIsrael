@@ -25,6 +25,8 @@ button{font-family:inherit}
   display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;
   padding:0 14px;background:var(--panel);border-bottom:2px solid var(--gold);box-shadow:0 2px 10px rgb(60 40 0 / .12)}
 #barEnd{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
+/* מרכז הבר: מתג המבטים ולצדו תפריט "עוד באתר" (siteMenu.js, שמעוצב בגיליון משלו) */
+.center-nav{display:flex;align-items:center;gap:8px;justify-self:center}
 /* justify-self: אחרת הבלוק נמתח על כל עמודת ה-1fr ואזור הלחיצה חורג מהטקסט.
    השם ממלא את גובה הבר - הוא זהות המסך, לא עוד פריט בסרגל. */
 #brandWrap{display:flex;align-items:center;gap:8px;justify-self:start;height:100%}
@@ -439,9 +441,9 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
      הקבוצות (אודות+מדריך, חמשת הכלים), והרווח בתוכן 3px ובין הקבוצות 90px.
      #brand יורד כולו ולא רק ה-h1 - אלמנט ריק עדיין מקבל רווח משלו. */
   #bar{display:flex;justify-content:space-around;align-items:center;gap:0;padding:7px 4px;overflow:hidden}
-  #brandWrap,#brandWrap .title-icons,#barEnd,#tools,#notesHost{display:contents}
+  #brandWrap,#brandWrap .title-icons,#barEnd,#tools,#notesHost,.center-nav{display:contents}
   #brand,#search{display:none}
-  #brandWrap .title-ico,#bar .tool{width:30px;height:28px;font-size:14px;border-radius:11px}
+  #brandWrap .title-ico,#bar .tool,#bar .sm-btn{width:30px;height:28px;font-size:14px;border-radius:11px}
 }
 /* מסכים של 320px (iPhone SE וכדומה) - כיווץ נוסף במקום להסתיר כלי */
 @media (max-width:345px){

@@ -13,6 +13,7 @@ import { fetchCommentCounts } from './lib/commentCounts.js';
 import { handleAdminParam, getAdminToken } from './lib/admin.js';
 import { shareLink } from './lib/share.js';
 import { mark, markOnce } from './lib/trail.js';
+import { mountSiteMenu } from './components/siteMenu.js';
 import leaders from './data/leaders.json';
 import judges from './data/judges.json';
 import kings from './data/kings.json';
@@ -40,6 +41,8 @@ function parseUrl() {
     step: step != null ? parseInt(step, 10) : null,
     tree: p.get('tree') === '1',
     kings: p.get('kings') === '1',
+    // ?tours=1 - מתפריט "עוד באתר" במסכים שאין להם את בוחר המסעות
+    tours: p.get('tours') === '1',
     // ?contemp=1 - נחיתה עם בני-הזמן כבר מודגשים. כך "הצג על ציר הזמן"
     // ממסע הדורות מגיע ישר לתשובה שהמבט הזה טוב בה: מי חי לצד מי.
     contemp: p.get('contemp') === '1',
@@ -198,7 +201,7 @@ export default function App() {
 
   // מסע מודרך - סיור רציף דמות-אחר-דמות עם שורת הקשר מקשרת
   const [tour, setTour] = useState(null); // { data, step }
-  const [toursOpen, setToursOpen] = useState(false);
+  const [toursOpen, setToursOpen] = useState(INITIAL.tours);
   const tourActiveRef = useRef(false);
   const tourJump = (data, step) => {
     tourActiveRef.current = true;
@@ -285,7 +288,7 @@ export default function App() {
     // נחיתה עם כוונה מפורשת - קישור מדף-נחיתה, מגוגל או משיתוף - אינה
     // נפתחת ב"ברוכים הבאים": המבקר ביקש דמות מסוימת ולא הזמנה כללית.
     // ההעדפה לא נשמרת, כך שכניסה רגילה לדף הבית עדיין תציג את המסך.
-    if (INITIAL.sel || INITIAL.map || INITIAL.era || INITIAL.coll || INITIAL.tree) return false;
+    if (INITIAL.sel || INITIAL.map || INITIAL.era || INITIAL.coll || INITIAL.tree || INITIAL.tours || INITIAL.kings) return false;
     try { return !localStorage.getItem('si_seen_intro'); } catch { return false; }
   });
   const [introMode, setIntroMode] = useState(introOpen ? 'welcome' : 'tour');
@@ -808,6 +811,16 @@ export default function App() {
     };
   });
 
+  // תפריט "עוד באתר" - רכיב vanilla, ולכן מורכב פעם אחת מתוך effect
+  const siteMenuHost = useRef(null);
+  useEffect(() => mountSiteMenu(siteMenuHost.current, {
+    actions: {
+      tours: () => setToursOpen(true),
+      tree: () => setTreeOpen(true),
+      kings: () => setKingsOpen(true),
+    },
+  }), []);
+
   const toggle = (key) => setVisible((v) => ({ ...v, [key]: !v[key] }));
   const isAcademic = chronology === 'academic';
 
@@ -822,26 +835,12 @@ export default function App() {
         title="מדריך היכרות" aria-label="מדריך היכרות">❓</button>
     </>
   );
-  const toolBtns = (
-    <>
-      <button className="tree-btn" onClick={() => setToursOpen(true)} title="מסעות מודרכים - סיור דמות-אחר-דמות">
-        <span aria-hidden="true">🧭</span> <span className="btn-label">מסעות</span>
-      </button>
-      {/* "תובנות" הוסר לבקשת המשתמש - הסרגל היה עמוס מדי. הרכיב
-          Insights.jsx נשאר במקומו, כך שהחזרה היא כפתור אחד. */}
-      <button className="tree-btn" onClick={() => setTreeOpen(true)} title="בית דוד - אילן היוחסין">
-        <span aria-hidden="true">👑</span> <span className="btn-label">בית דוד</span>
-      </button>
-      <button className="tree-btn" onClick={() => setKingsOpen(true)} title="שתי הממלכות - מלכי יהודה מול מלכי ישראל">
-        <span aria-hidden="true">🏰</span> <span className="btn-label">שתי הממלכות</span>
-      </button>
-      {/* סוכן השאלות - בבדיקה, ולכן מוצג רק במצב ניהול */}
-      {isAdmin && (
-        <button className="tree-btn ask-btn" onClick={() => setAskOpen(true)} title="שאלו על האתר (בדיקה - מנהל בלבד)">
-          <span aria-hidden="true">🔎</span> <span className="btn-label">שאלו</span>
-        </button>
-      )}
-    </>
+  /* מסעות, בית דוד ושתי הממלכות עברו לתפריט "עוד באתר" (siteMenu.js), המשותף
+     לשלושת המסכים. כאן נשאר רק סוכן השאלות, שמוצג למנהל בלבד. */
+  const toolBtns = isAdmin && (
+    <button className="tree-btn ask-btn" onClick={() => setAskOpen(true)} title="שאלו על האתר (בדיקה - מנהל בלבד)">
+      <span aria-hidden="true">🔎</span> <span className="btn-label">שאלו</span>
+    </button>
   );
 
   return (
@@ -873,6 +872,7 @@ export default function App() {
           {/* מתג מפוצל במרכז הבר: שתי האפשרויות גלויות תמיד והנוכחית מודגשת.
               כפתור בודד ("מסע הדורות") נקרא כמו עוד כלי בסרגל, ולא כמעבר בין
               שני מצבים של אותה אפליקציה. */}
+          <div className="center-nav">
           <div className="mode-switch" role="group" aria-label="מצב תצוגה">
             <span className="ms-opt on" aria-current="page">
               <span aria-hidden="true">📜</span> ציר הזמן
@@ -883,6 +883,8 @@ export default function App() {
             <a className="ms-opt" href="/places" title="לפי מקום: מי עבר בכל מקום ומה קרה שם">
               <span aria-hidden="true">📍</span> מפת הארץ
             </a>
+          </div>
+          <span className="sm-host" ref={siteMenuHost} />
           </div>
           <div className="header-actions">
           {toolBtns}

@@ -30,6 +30,7 @@
      map_open    {id}       ציר הזמן   - מפת מסע נפתחה
      tree_open / tours_open / guide_open   - שימוש בפיצ'רים
      kings_open            שני המסכים - "שתי הממלכות" נפתח
+     menu_pick   {id}       תפריט "עוד באתר" - איזה פריט נבחר (mark, לא once)
      game_start  {mode}     סדר את הציר - daily או free
      game_done   {mode,score,topics?,range?}
                             האתגר היומי פעם אחת (markOnce), וכל סבב חופשי

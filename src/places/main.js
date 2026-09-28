@@ -7,8 +7,12 @@ import PLACES from '../data/places.json';
 import PERIODS from '../data/periods.json';
 import { shareLink } from '../lib/share.js';
 import { startTrail, markOnce } from '../lib/trail.js';
+import { mountSiteMenu } from '../components/siteMenu.js';
 
 startTrail();
+/* תפריט "עוד באתר" המשותף. במסך הזה אין חלוניות משלו, ולכן כל פריט הוא
+   קישור שפותח אותו בציר הזמן (או במשחק). */
+mountSiteMenu(document.getElementById('menuHost'));
 
 const $ = (s) => document.querySelector(s);
 const KIND_COLOR = { leader:'var(--leader)', judge:'var(--judge)', united:'var(--united)', judah:'var(--judah)',

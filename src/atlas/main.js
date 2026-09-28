@@ -4,6 +4,7 @@ import { ALL_ITEMS } from '../data/items.js';
 import TOURS from '../data/tours.json';
 import { shareLink } from '../lib/share.js';
 import { startTrail, markOnce } from '../lib/trail.js';
+import { mountSiteMenu } from '../components/siteMenu.js';
 startTrail();
 
 const $ = (s) => document.querySelector(s);
@@ -658,7 +659,7 @@ function jumpStop(data, step) {
   if (!jumpToId(data.stops[step].ref)) toast('התחנה מוסתרת - הפעילו את השכבה המתאימה');
 }
 function endJourney() { jt = null; tourBar(); }
-$('#tTours').addEventListener('click', () => {
+const openTours = () => {
   const el = overlay('🧭 מסעות מודרכים', 'סיור דמות-אחר-דמות עם ההקשר המחבר - מתקדמים בקצב שלכם',
     `<div class="ilist">${TOURS.map((t, i) => `<button class="ilrow" data-t="${i}">
       <b>${t.icon} ${t.title}</b><span>${t.stops.length} תחנות</span></button>`).join('')}</div>`);
@@ -666,7 +667,7 @@ $('#tTours').addEventListener('click', () => {
     el.remove();
     jumpStop(TOURS[+b.dataset.t], 0);
   }));
-});
+};
 /* React נטען רק כשבאמת פותחים את התיבה. ייבוא סטטי היה גורר ~150KB
    לכל מבקר במסך הזה, בשביל כפתור שרוב הגולשים לא ילחצו עליו. */
 /* כישלון בטעינת הצ'אנק (בדרך כלל 404 אחרי פריסה) השאיר כאן כפתור
@@ -695,7 +696,7 @@ function openCollection(c) {
   }));
 }
 
-$('#tTree').addEventListener('click', () => {
+const openTree = () => {
   const node = (n, cls) => `<button class="tnode ${cls}${n.id?' link':''}" ${n.id?`data-id="${n.id}"`:''}>
     <span class="tn">${cls==='sp'?'⚭ ':''}${n.name}</span>${n.role?`<span class="tr">${n.role}</span>`:''}
     ${n.note?`<span class="tr">${n.note}</span>`:''}</button>`;
@@ -708,12 +709,12 @@ $('#tTree').addEventListener('click', () => {
   el.querySelectorAll('.tnode.link').forEach(b => b.addEventListener('click', () => {
     if (!jumpToId(b.dataset.id)) toast('הפריט מוסתר - הפעילו את השכבה המתאימה');
   }));
-});
+};
 
 /* שתי הממלכות - אותו רכיב React של ציר הזמן, נטען רק כשלוחצים עליו.
    הוא מרנדר את עצמו לתוך #kingsHost שהוא יוצר בעצמו, ולכן אין לו
    מקום שמור ב-HTML. */
-$('#tKings').addEventListener('click', () => {
+const openKingsView = () => {
   markOnce('kings_open');
   import('./kings.jsx')
     .then((m) => m.openKings((id) => {
@@ -722,7 +723,12 @@ $('#tKings').addEventListener('click', () => {
       else toast('הפריט מוסתר - הפעילו את השכבה המתאימה');
     }))
     .catch(() => toast('לא הצלחנו לטעון את המסך. נסו שוב.'));
-});
+};
+
+/* מסעות, בית דוד ושתי הממלכות יושבים בתפריט "עוד באתר" המשותף לשלושת
+   המסכים (components/siteMenu.js). כאן הם פעולות מקומיות - אותה חלונית
+   שנפתחה מהכפתור - ולא קישור לציר הזמן. */
+mountSiteMenu($('#menuHost'), { actions: { tours: openTours, tree: openTree, kings: openKingsView } });
 
 /* מסך התובנות הוסר לבקשת המשתמש - הסרגל היה עמוס מדי. הנתונים
    ממשיכים להיווצר ב-atlas-data.json, כך שההחזרה היא כפתור ומאזין. */

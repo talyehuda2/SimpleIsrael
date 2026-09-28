@@ -36,6 +36,8 @@ button{font-family:inherit}
   color:var(--navy);margin:0;white-space:nowrap}
 #brand:hover h1{color:var(--gold-ink)}
 #barEnd{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
+/* מרכז הבר: מתג המבטים ולצדו תפריט "עוד באתר" (siteMenu.js, שמעוצב בגיליון משלו) */
+.center-nav{display:flex;align-items:center;gap:8px;justify-self:center}
 #tools{display:flex;gap:6px;flex:none;align-items:center}
 /* אותו גודל וצורה של אייקוני הכותרת - סרגל אחיד בשלושת המסכים */
 .tool{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:700;
