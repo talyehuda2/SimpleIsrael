@@ -1049,9 +1049,16 @@ writeCard(DIST, join('og', 'atlas.jpg'), {
   dates: 'מהאבות ועד חורבן בית שני',
 });
 
+// ואותו דבר למשחק (/game) - זו התמונה שמופיעה כשמשתפים תוצאה בוואטסאפ
+writeCard(DIST, join('og', 'game.jpg'), {
+  name: 'סדר את הציר',
+  kindLabel: 'מה קרה קודם?',
+  dates: 'אתגר יומי אחד לכולם',
+});
+
 // sitemap.xml
 const urls = [
-  `${SITE}/`, `${SITE}/atlas`, `${SITE}/places`, `${SITE}/p`,
+  `${SITE}/`, `${SITE}/atlas`, `${SITE}/places`, `${SITE}/game`, `${SITE}/p`,
   ...sortedPeriods.map(periodUrl),
   ...collections.map((c) => `${SITE}/p/collection/${c.id}`),
   ...placesIndex.map(placeUrl),

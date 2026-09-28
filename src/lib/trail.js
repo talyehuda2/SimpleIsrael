@@ -30,6 +30,10 @@
      map_open    {id}       ציר הזמן   - מפת מסע נפתחה
      tree_open / tours_open / guide_open   - שימוש בפיצ'רים
      kings_open            שני המסכים - "שתי הממלכות" נפתח
+     game_start  {mode}     סדר את הציר - daily או free
+     game_done   {mode,score,topics?,range?}
+                            האתגר היומי פעם אחת (markOnce), וכל סבב חופשי
+                            בנפרד (mark) יחד עם התחומים והתקופות שנבחרו
 
      page_view   {src?}     כל מסך     - ספירת תנועה בלתי-תלויה ב-Vercel.
                                         src מגיע מ-?src= בקישור (למשל status),

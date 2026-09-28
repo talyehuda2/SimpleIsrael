@@ -24,6 +24,10 @@
     {
       "source": "/admin",
       "destination": "/admin.html"
+    },
+    {
+      "source": "/game",
+      "destination": "/game.html"
     }
   ],
   "redirects": [
