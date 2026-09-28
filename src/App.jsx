@@ -111,9 +111,6 @@ const OPENING = {
 const MIN_PX = 0.4;
 const MAX_PX = 20;
 
-// טופס משוב/דיווח (Google Forms)
-const FEEDBACK_URL = 'https://forms.gle/PosRsinUJSqd8K3a6';
-
 // ברירת מחדל לשכבות הגלויות (נשמר ב-localStorage בין ביקורים)
 const DEFAULT_VISIBLE = { leaders: true, judges: true, kings: true, prophets: true, books: true, events: true, world: true };
 
@@ -1219,8 +1216,6 @@ export default function App() {
           ? 'התאריכים לפי המחקר ההיסטורי המקובל'
           : 'התאריכים משוערים לפי המסורת; ייתכנו חפיפות בין מלכים (מלוכה משותפת)'}
         {' · '}
-        <a className="footer-feedback" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">💬 משוב ודיווח</a>
-        {' · '}
         <a className="footer-feedback" href="/p/">מפת האתר</a>
       </footer>
 
@@ -1234,9 +1229,11 @@ export default function App() {
               לעשות סדר בתולדות עם ישראל. ייתכנו אי-דיוקים בתאריכים, במפות, במיקומים
               ובפרטים - ואשמח לכל תיקון והערה. שימוש נעים! 📖
             </p>
-            <a className="feedback-btn" href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
+            {/* פונה ל"הערה למנהל" ולא לטופס Google הישן, שנסגר לתגובות: הפניות
+                מגיעות לתיבת הניהול ולהתראה המסווגת, ולא לטופס שאף אחד לא קורא. */}
+            <button className="feedback-btn" onClick={() => { setAboutOpen(false); setNotesOpen(true); }}>
               💬 משוב · דיווח על תקלה · הצעת תיקון
-            </a>
+            </button>
             {/* חובה נגישה ולא הערת שוליים: האתר אוסף סטטיסטיקה ושומר
                 פניות עם פרטי קשר, ומי שרוצה לדעת מה נאסף צריך למצוא זאת. */}
             <p className="about-legal"><a href="/privacy">מדיניות פרטיות</a> · <a href="/terms">תנאי שימוש</a> · <a href="/accessibility">נגישות</a></p>
