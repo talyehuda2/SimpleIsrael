@@ -440,7 +440,10 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
      #brand יורד כולו ולא רק ה-h1 - אלמנט ריק עדיין מקבל רווח משלו. */
   #bar{display:flex;justify-content:space-around;align-items:center;gap:0;padding:7px 4px;overflow:hidden}
   #brandWrap,#brandWrap .title-icons,#barEnd,#tools,#notesHost{display:contents}
-  #brand,#search{display:none}
+  /* #search לא מוסתר כאן: placeSearch מעביר אותו לשורה משלו בראש #filters,
+     ושם הוא נחוץ גם בטלפון. הסתרה גורפת שלו (23.9) העלימה את החיפוש מכל
+     טלפון מאונך - גולש דיווח שאין שורת חיפוש. */
+  #brand{display:none}
   #brandWrap .title-ico,#bar .tool{width:30px;height:28px;font-size:14px;border-radius:11px}
 }
 /* מסכים של 320px (iPhone SE וכדומה) - כיווץ נוסף במקום להסתיר כלי */
