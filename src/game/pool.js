@@ -149,7 +149,7 @@ export function israelDay(now = new Date()) {
 }
 
 // מספר האתגר: 1 ביום ההשקה. מחושב מהתאריך, ולכן זהה בכל מכשיר
-const EPOCH = Date.UTC(2026, 8, 29);
+const EPOCH = Date.UTC(2026, 8, 28);
 export function dayNumber(day) {
   const [y, m, d] = day.split('-').map(Number);
   return Math.round((Date.UTC(y, m - 1, d) - EPOCH) / 86400000) + 1;
