@@ -107,3 +107,11 @@ button{font-family:inherit}
 .gm-range select{font:inherit;font-size:14px;font-weight:400;color:var(--ink);padding:7px 8px;
   border:1px solid var(--line);border-radius:10px;background:var(--bg);width:100%}
 .gm-empty{margin:12px 0 0;font-size:13.5px;font-weight:700;color:var(--bad)}
+
+/* ----- הצגת השנים ----- */
+.gm-years{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:14px}
+.gm-years-l{font-size:12.5px;font-weight:700;color:var(--muted)}
+.gm-year{font-size:13px;font-weight:700;padding:5px 11px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--line);background:var(--bg);color:var(--muted)}
+.gm-year[aria-checked="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.gm-year:focus-visible{outline:3px solid var(--navy);outline-offset:2px}

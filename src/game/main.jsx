@@ -29,19 +29,68 @@ const VERB = {
   prophet: 'ניבא', world: 'מלך', event: '',
 };
 
-/* הטווח המספרי עטוף ב-dir="ltr": בתוך שורה עברית אלגוריתם הכיווניות הופך
+/* שלוש דרכים להציג את אותה שנה, לבחירת הגולש. כולן נגזרות מאותה שנה
+   לבריאה לפי סדר עולם - גם "לפי מניינם" היא המרה של השנה הזו ולא
+   הכרונולוגיה האקדמית (זו חיה בציר הזמן כמצב נפרד, עם נתונים משלה).
+
+   הטווח המספרי עטוף ב-dir="ltr": בתוך שורה עברית אלגוריתם הכיווניות הופך
    את "2964–2981" ל-"2981–2964", ורחבעם נראה כמי שמלך אחורה בזמן */
-function When({ it }) {
-  const heb = it.start === it.end
-    ? hebrewYearLetters(it.start)
-    : `${hebrewYearLetters(it.start)}–${hebrewYearLetters(it.end)}`;
-  const num = it.start === it.end ? `${it.start}` : `${it.start}–${it.end}`;
+const YEAR_MODES = [
+  { id: 'heb', label: 'עברי' },
+  { id: 'num', label: 'מספר לבריאה' },
+  { id: 'sec', label: 'לפי מניינם' },
+];
+
+function secular(start, end) {
+  const bce = (y) => 3761 - y, ce = (y) => y - 3760;
+  if (start === end) return start < 3761 ? [`${bce(start)}`, 'לפנה"ס'] : [`${ce(start)}`, 'לספירה'];
+  if (end < 3761) return [`${bce(start)}–${bce(end)}`, 'לפנה"ס'];
+  if (start >= 3761) return [`${ce(start)}–${ce(end)}`, 'לספירה'];
+  return [`${bce(start)} לפנה"ס – ${ce(end)} לספירה`, ''];
+}
+
+function When({ it, mode }) {
+  const one = it.start === it.end;
+  let text;
+  if (mode === 'num') {
+    text = <span dir="ltr">{one ? it.start : `${it.start}–${it.end}`}</span>;
+  } else if (mode === 'sec') {
+    const [range, era] = secular(it.start, it.end);
+    text = era ? <><span dir="ltr">{range}</span> {era}</> : <span>{range}</span>;
+  } else {
+    text = one ? hebrewYearLetters(it.start)
+      : `${hebrewYearLetters(it.start)}–${hebrewYearLetters(it.end)}`;
+  }
+  return <span className="gm-when">{VERB[it.kind] && `${VERB[it.kind]} `}{text}</span>;
+}
+
+const YEARS_KEY = 'si_game_years';
+function loadYears() {
+  try {
+    const v = localStorage.getItem(YEARS_KEY);
+    return YEAR_MODES.some((m) => m.id === v) ? v : 'heb';
+  } catch { return 'heb'; }
+}
+
+function YearSwitch({ mode, onChange }) {
   return (
-    <span className="gm-when">
-      {[VERB[it.kind], heb].filter(Boolean).join(' ')} <span dir="ltr">({num})</span>
-    </span>
+    <div className="gm-years" role="radiogroup" aria-label="הצגת השנים">
+      <span className="gm-years-l" aria-hidden="true">שנים:</span>
+      {YEAR_MODES.map((m) => (
+        <button
+          key={m.id} type="button" role="radio" aria-checked={mode === m.id}
+          className="gm-year" onClick={() => onChange(m.id)}
+        >{m.label}</button>
+      ))}
+    </div>
   );
 }
+
+const YEAR_NOTE = {
+  heb: 'השנים לבריאה, לפי סדר עולם.',
+  num: 'השנים לבריאה, לפי סדר עולם.',
+  sec: 'השנים לפי מניינם, מחושבות מהשנה לבריאה לפי סדר עולם.',
+};
 
 // זרע מספרי מתוך מחרוזת התאריך
 const seedOf = (s) => [...s].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261);
@@ -130,6 +179,11 @@ function Game() {
   const [daily, setDaily] = useState(true);
   const [round, setRound] = useState(0); // מונה סבבים חופשיים - כל ערך הוא ערבוב חדש
   const [prefs, setPrefs] = useState(loadPrefs);
+  const [years, setYears] = useState(loadYears);
+  const changeYears = (v) => {
+    setYears(v);
+    try { localStorage.setItem(YEARS_KEY, v); } catch { /* לא נורא */ }
+  };
 
   const pool = useMemo(
     () => (daily ? undefined : poolFor(prefs.topics, prefs.from, prefs.to)),
@@ -265,7 +319,7 @@ function Game() {
                 >
                   <span className="gm-name">{it.name}</span>
                   <Chip kind={it.kind} />
-                  {checked && <When it={it} />}
+                  {checked && <When it={it} mode={years} />}
                 </button>
               </li>
             );
@@ -302,13 +356,14 @@ function Game() {
                   <a href={`/?sel=${itemKey(it)}&src=game`}>
                     <span className="gm-name">{it.name}</span>
                     <Chip kind={it.kind} />
-                    <When it={it} />
+                    <When it={it} mode={years} />
                     <span className="gm-go" aria-hidden="true">←</span>
                   </a>
                 </li>
               ))}
             </ol>
-            <p className="gm-note">השנים לבריאה, לפי סדר עולם. לחיצה על פריט פותחת אותו בציר הזמן.</p>
+            <YearSwitch mode={years} onChange={changeYears} />
+            <p className="gm-note">{YEAR_NOTE[years]} לחיצה על פריט פותחת אותו בציר הזמן.</p>
             <div className="gm-actions">
               <button type="button" className="gm-btn primary" onClick={share}>שיתוף התוצאה</button>
               <button type="button" className="gm-btn" onClick={next}>סבב נוסף</button>
