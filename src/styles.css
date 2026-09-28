@@ -490,7 +490,7 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
 .about-card p { margin: 0; font-size: 14.5px; line-height: 1.75; color: var(--ink); }
 .feedback-btn {
   display: block; width: fit-content; margin: 16px auto 2px;
-  background: var(--navy); color: #fff; text-decoration: none;
+  background: var(--navy); color: #fff; text-decoration: none; border: none; cursor: pointer;
   border-radius: 22px; padding: 9px 18px; font-family: inherit;
   font-size: 14px; font-weight: 700; transition: background .12s, transform .1s;
 }
