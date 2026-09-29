@@ -455,8 +455,20 @@ const crumbsNav = (crumbs) => (crumbs && crumbs.length ? `
     c.url ? `<a href="${escAttr(c.url)}">${esc(c.name)}</a>` : `<span aria-current="page">${esc(c.name)}</span>`
   ).join('<span class="sep"> / </span>')}</nav>` : '');
 
+/* שיתוף מכרטיס: הקישור הוא לעמוד הזה, כי רק הוא נושא את תמונת השיתוף של
+   הדמות - וואטסאפ לא מריץ JavaScript, ולקישור לאתר החי הייתה יוצאת התמונה
+   הכללית. אבל מי שלוחץ על הקישור ציפה להגיע לכרטיס עצמו, באותו מסך שממנו
+   שותף, ולא לעמוד ביניים עם שלוש דלתות. ?to= אומר מאיזה מסך, והסקריפט
+   מעביר מיד - לפני שהגוף מצויר. בלי ?to= (כניסה מגוגל) העמוד מוצג כרגיל. */
+function shareRedirect(key) {
+  const k = encodeURIComponent(key).replace(/%3A/g, ':');
+  return `<script>(function(){var t=new URLSearchParams(location.search).get('to');`
+    + `var d={timeline:'/?sel=${k}',atlas:'/atlas?sel=${k}'}[t];`
+    + `if(d)location.replace(d+'&src=card-share');})();</script>`;
+}
+
 function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, prefetch = 'main',
-  wide = false, bare = false, bodyClass = '', robots = '' }) {
+  wide = false, bare = false, bodyClass = '', robots = '', head = '' }) {
   const img = ogImage || `${SITE}/og-image.jpg`;
   // פירורי לחם: גם ניווט גלוי וגם BreadcrumbList לגוגל (מוצג בתוצאות החיפוש)
   const crumbLd = crumbs && crumbs.length ? {
@@ -473,6 +485,7 @@ function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, p
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8"/>
+${head}
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>${escAttr(title)}</title>
 <meta name="description" content="${escAttr(description)}"/>
@@ -691,7 +704,8 @@ ${gateHtml}
 ${article}`;
 
   return shell({ title: `${it.name}: ${km.label} - ציר הזמן של עם ישראל`, description: metaDesc, canonical, jsonld, body,
-    ogImage, crumbs, wide: !!heroHtml, bare: !!heroHtml, bodyClass: heroHtml ? 'bg-og' : '' });
+    ogImage, crumbs, wide: !!heroHtml, bare: !!heroHtml, bodyClass: heroHtml ? 'bg-og' : '',
+    head: shareRedirect(key) });
 }
 
 // דף תקופה - מרכז את כל מי שחי/התרחש בה

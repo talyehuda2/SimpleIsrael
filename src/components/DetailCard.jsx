@@ -55,7 +55,9 @@ export default function DetailCard({
   }, [item, openComments]);
 
   const doShare = async () => {
-    const res = await shareLink({ url: itemPageUrl(item), title: `${item.name} - ציר הזמן של עם ישראל` });
+    // הקישור מביא את מי שלוחץ עליו לאותו מסך שממנו שותף - ראו shareRedirect ב-prerender
+    const to = location.pathname.startsWith('/atlas') ? 'atlas' : 'timeline';
+    const res = await shareLink({ url: `${itemPageUrl(item)}?to=${to}`, title: `${item.name} - ציר הזמן של עם ישראל` });
     if (res === 'copied') setShareMsg('הועתק ✓');
     else if (res === 'failed') setShareMsg('נכשל');
     if (res === 'copied' || res === 'failed') setTimeout(() => setShareMsg(''), 2000);

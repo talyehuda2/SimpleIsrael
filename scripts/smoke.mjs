@@ -98,6 +98,10 @@ const PAGES = [
   // חדש נכנס לבדיקה בלי לגעת כאן
   ...itemKinds.map((k) => ({ url: firstOf(new RegExp(`^/p/${k}/`)), name: `שער ${k}`, check: 'h1' })),
   // ועוד תבנית אחת מכל סוג עמוד אחר: תקופה, מקום ואוסף
+  // שיתוף מכרטיס: עמוד הפריט עם ?to= חייב להעביר מיד למסך שממנו שותף. הבדיקה
+  // היא סלקטור שקיים רק במסך היעד - אם ההעברה נשברה, נשארים בעמוד הפריט ונופלים
+  { url: firstOf(/^\/p\/leader\//) + '?to=timeline', name: 'שיתוף → ציר', check: '#root > *', redirects: true },
+  { url: firstOf(/^\/p\/leader\//) + '?to=atlas', name: 'שיתוף → מסע', check: '#story > *', redirects: true },
   { url: firstOf(/^\/p\/period\//), name: 'שער תקופה', check: 'h1' },
   { url: firstOf(/^\/p\/place\//), name: 'שער מקום', check: 'h1' },
   { url: firstOf(/^\/p\/collection\//), name: 'שער אוסף', check: 'h1' },
@@ -226,6 +230,9 @@ for (const page of PAGES) {
     if (local(r.url()) && r.status() >= 400) errs.push(`${r.status()} על ${r.url().slice(BASE.length)}`);
   });
   tab.on('requestfailed', (r) => {
+    // בכתובת שמעבירה הלאה, הדפדפן מבטל את מה שעמוד המעבר התחיל לטעון (גופנים,
+    // תמונת הגיבור). ERR_ABORTED שם הוא ההעברה עצמה, לא נכס חסר
+    if (page.redirects && r.failure()?.errorText === 'net::ERR_ABORTED') return;
     if (local(r.url())) errs.push(`בקשה נכשלה: ${r.url().slice(BASE.length)} (${r.failure()?.errorText})`);
   });
 
