@@ -18,6 +18,7 @@ import {
   HAND, deal, rng, israelDay, dayNumber, byTime, poolFor, availableTopics, availablePeriods,
   TOPICS, PERIODS,
 } from './pool.js';
+import { confetti } from './confetti.js';
 import './game.css';
 
 const KIND_LABEL = {
@@ -273,6 +274,13 @@ function Game() {
   const check = () => {
     setChecked(true);
     const s = placed.filter((it, i) => itemKey(it) === itemKey(answer[i])).length;
+    /* התוצאה יושבת בראש המסך - גוללים אליה, כדי שמי שלחץ "בדיקה" בתחתית הרשימה
+       יראה מיד את הציון ואת כפתור השיתוף. קונפטי רק כשיש מה לחגוג: מלא על 5,
+       מתון על 3-4, ובלי על פחות - שם ההודעה מזמינה לנסות שוב. */
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    if (s === HAND) confetti(170);
+    else if (s >= 3) confetti(60);
     if (daily) {
       markOnce('game_done', { mode: 'daily', score: s });
       saveDaily(day, placed.map(itemKey));
@@ -309,9 +317,12 @@ function Game() {
     }
   };
 
-  const verdict = score === HAND ? 'מושלם! כל הפריטים במקום.'
-    : score >= 3 ? 'כמעט - הנה הסדר הנכון:'
-    : 'הציר מפתיע. הנה הסדר הנכון:';
+  const RESULT = {
+    5: { icon: '🎉', head: 'מושלם!', text: 'כל הפריטים במקום. שתפו ותראו מי מצליח כמוכם.' },
+    4: { icon: '👏', head: 'כמעט מושלם!', text: 'רק פריט אחד זז ממקומו.' },
+    3: { icon: '👍', head: 'יפה מאוד!', text: 'רוב הציר במקום.' },
+  };
+  const result = RESULT[score] || { icon: '🧭', head: 'הציר מפתיע', text: 'הנה הסדר הנכון - בסבב הבא זה כבר יהיה מוכר.' };
 
   return (
     <>
@@ -336,13 +347,24 @@ function Game() {
           : <Summary applied={applied} onEdit={edit} />)}
         {hand.length > 0 && (
           <>
-        <p className="gm-lead">
-          {checked
-            ? <>
-                <b>{score} מתוך {HAND}.</b> {verdict}
-              </>
-            : <>סדרו מהמוקדם למאוחר. לחיצה על פריט מכניסה אותו למקום הפנוי הבא, ולחיצה חוזרת מוציאה אותו.</>}
-        </p>
+        {checked ? (
+          <section className={`gm-result${score === HAND ? ' perfect' : score >= 3 ? ' good' : ''}`} aria-live="polite">
+            <div className="gm-r-icon" aria-hidden="true">{result.icon}</div>
+            <div className="gm-r-score"><b>{score}</b> מתוך {HAND}</div>
+            <div className="gm-r-head">{result.head}</div>
+            <p className="gm-r-text">{result.text}</p>
+            <div className="gm-r-squares" aria-hidden="true">{right.map((ok) => (ok ? '🟩' : '🟥')).join('')}</div>
+            <div className="gm-r-actions">
+              <button type="button" className="gm-btn primary big" onClick={share}>📤 שיתוף התוצאה</button>
+              <button type="button" className="gm-btn" onClick={next}>סבב נוסף</button>
+            </div>
+            <p className="gm-msg" role="status">{shareMsg}</p>
+            {daily && <p className="gm-note">אתגר חדש מחר בחצות.</p>}
+          </section>
+        ) : (
+          <p className="gm-lead">סדרו מהמוקדם למאוחר. לחיצה על פריט מכניסה אותו למקום הפנוי הבא, ולחיצה חוזרת מוציאה אותו.</p>
+        )}
+        {checked && <h2 className="gm-sub">הציר שלכם</h2>}
 
         <ol className="gm-slots" aria-label="הציר שלכם, מהמוקדם למאוחר">
           {Array.from({ length: HAND }, (_, i) => {
@@ -398,6 +420,7 @@ function Game() {
 
         {checked && (
           <>
+            <h2 className="gm-sub">הסדר הנכון</h2>
             <ol className="gm-answer" aria-label="הסדר הנכון">
               {answer.map((it) => (
                 <li key={itemKey(it)}>
@@ -413,11 +436,8 @@ function Game() {
             <YearSwitch mode={years} onChange={changeYears} />
             <p className="gm-note">{YEAR_NOTE[years]} לחיצה על פריט פותחת אותו בציר הזמן.</p>
             <div className="gm-actions">
-              <button type="button" className="gm-btn primary" onClick={share}>שיתוף התוצאה</button>
               <button type="button" className="gm-btn" onClick={next}>סבב נוסף</button>
             </div>
-            <p className="gm-msg" role="status">{shareMsg}</p>
-            {daily && <p className="gm-note">אתגר חדש מחר בחצות.</p>}
           </>
         )}
           </>

@@ -128,3 +128,24 @@ button{font-family:inherit}
 .gm-summary .gm-all{flex:none;white-space:nowrap}
 /* שבב שאין לו פריט בצירוף עם הבחירה בצד השני */
 .gm-topic:disabled{opacity:.38;cursor:not-allowed;border-style:dashed}
+
+/* ----- תוצאה: גדולה ובראש המסך ----- */
+.gm-result{text-align:center;margin:0 0 18px;padding:20px 16px 16px;border-radius:18px;
+  background:var(--panel);border:1.5px solid var(--line);box-shadow:0 6px 20px rgb(60 40 0 / .1);
+  animation:gmPop .35s ease-out}
+.gm-result.good{border-color:var(--gold)}
+.gm-result.perfect{border-color:var(--gold);background:linear-gradient(180deg,#fff8e1,var(--panel) 70%)}
+@keyframes gmPop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.gm-r-icon{font-size:44px;line-height:1}
+.gm-r-score{margin-top:6px;font-size:18px;font-weight:700;color:var(--muted)}
+.gm-r-score b{font-family:'Frank Ruhl Libre',serif;font-size:46px;font-weight:900;color:var(--navy);vertical-align:-4px}
+.gm-r-head{font-family:'Frank Ruhl Libre',serif;font-size:28px;font-weight:900;color:var(--navy);margin-top:2px}
+.gm-r-text{margin:4px 0 0;font-size:15px;color:var(--ink)}
+.gm-r-squares{margin-top:10px;font-size:24px;letter-spacing:2px}
+.gm-r-actions{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.gm-btn.big{font-size:18px;padding:14px 20px}
+.gm-result .gm-msg,.gm-result .gm-note{text-align:center}
+.gm-sub{margin:18px 0 8px;font-size:15px;font-weight:700;color:var(--navy)}
+@media (prefers-reduced-motion:reduce){ .gm-result{animation:none} }
+/* שורת "הועתק" ריקה עד השיתוף - בלי זה נשאר חור בין הכפתורים ל"אתגר חדש מחר" */
+.gm-result .gm-msg:empty{min-height:0;margin:0}
