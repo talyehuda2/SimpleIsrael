@@ -677,7 +677,6 @@ const openNotesSafe = () => import('../lib/notes.jsx')
   .catch(() => toast('לא הצלחנו לטעון את החלק הזה - רעננו את הדף'));
 
 $('#tNote').addEventListener('click', openNotesSafe);
-$('#betaChip')?.addEventListener('click', openNotesSafe);
 
 /* פתיחת אוסף תמטי מתגית שבכרטיס. בלי זה התגיות מוצגות אך אינן לחיצות,
    וכל דבר שאפשר לעשות בציר הזמן צריך להיות אפשרי גם כאן. */

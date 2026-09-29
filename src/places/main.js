@@ -420,7 +420,6 @@ const openNotesSafe = () => import('../lib/notes.jsx')
   .catch(() => toast('לא הצלחנו לטעון את החלק הזה - רעננו את הדף'));
 
 $('#tNote').addEventListener('click', openNotesSafe);
-$('#betaChip')?.addEventListener('click', openNotesSafe);
 $('#mAbout').addEventListener('click', () => {
   const el = document.createElement('div');
   el.className = 'ov';

@@ -1628,8 +1628,14 @@ a.card-action { text-decoration: none; }
      קבוצה 6px ובין הקבוצות 80px. */
   /* margin שלילי מבטל את ריפוד ה-header, כך שהמרחק מהדופן זהה למסע הדורות.
      .header-top בסלקטור - כלל .title-icons מאוחר יותר בקובץ גבר עליו. */
-  .header-top { display: flex; flex-wrap: nowrap; align-items: center; gap: 0; justify-content: space-around; margin-inline: -8px; }
-  .header-top .title-block, .header-top .title-row, .header-top .title-icons, .header-top .header-actions, .header-top .center-nav { display: contents; }
+  /* שלוש קבוצות, לא שורת אייקונים מפוזרת: אודות ומדריך צמודים לימין, הערה
+     ושיתוף צמודים לשמאל, והתפריט במרכז האמיתי של הבר. 1fr משני הצדדים הוא
+     מה שמחזיק את התפריט במרכז גם כשהקבוצות ברוחב שונה (כפתור "שאלו" למנהל). */
+  .header-top { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 0 8px; }
+  .header-top .title-block { flex-direction: row; justify-self: start; min-width: 0; }
+  .header-top .title-row, .header-top .title-icons { display: flex; align-items: center; gap: 8px; }
+  .header-top .center-nav { display: flex; justify-self: center; }
+  .header-top .header-actions { display: flex; flex-wrap: nowrap; justify-self: end; gap: 8px; }
   .title-block h1 { display: none; }
   h1 { font-size: 19px; white-space: nowrap; }
   .h1-rest { display: none; }
@@ -1994,7 +2000,6 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 /* ===== ליטוש דסקטופ: תפריט מטא, נקודות שכבה, מקרא רזה ===== */
 /* אייקוני הכותרת - אודות, מדריך ושכבות. גלויים לצד שם המצב במקום
    להסתתר מאחורי ⋯, שדרש לחיצה כדי לגלות מה בכלל יש בו. */
-/* תג הביתא: מסמן שהאתר עדיין נבנה, ומקצר את הדרך למשוב לקליק אחד */
 /* שם ומייל באותה שורה: שניהם אופציונליים, ושורה שלמה לכל אחד הייתה
    מרמזת שהם נדרשים. במסך צר הם נערמים. */
 /* נראה רק כשצ'אנק לא נטען - כמעט תמיד אחרי פריסה באמצע ביקור */
@@ -2010,13 +2015,6 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 .about-legal { margin: 12px 0 0; text-align: center; font-size: 12.5px; }
 .about-legal a { color: var(--muted); text-decoration: underline; }
 .about-legal a:hover { color: var(--gold); }
-.beta-chip {
-  font: inherit; font-size: 10.5px; font-weight: 700; letter-spacing: .04em;
-  color: var(--gold); background: transparent; border: 1px solid rgb(178 138 43 / .45);
-  border-radius: 999px; padding: 2px 8px; cursor: pointer; flex-shrink: 0;
-  transition: background .16s, color .16s, border-color .16s;
-}
-.beta-chip:hover, .beta-chip:focus-visible { background: var(--gold); color: #fff; border-color: var(--gold); }
 .title-icons { display: inline-flex; align-items: center; gap: 5px; }
 /* אותה צורה ואותו גודל של שאר הכלים בסרגל, ובשני המסכים: קודם אלה היו
    עיגולים קטנים ליד מלבנים מעוגלים גדולים יותר. */
@@ -2267,5 +2265,4 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
   .header-top .title-ico, .header-actions .tree-btn, .header-actions .share-btn {
     width: 27px; height: 26px; font-size: 13px; border-radius: 10px;
   }
-  .header-top .beta-chip { padding: 2px 6px; font-size: 10px; }
 }

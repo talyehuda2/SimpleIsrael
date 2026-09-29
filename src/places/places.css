@@ -1,8 +1,3 @@
-/* תג הביתא - כפתור, כדי שהמשוב יהיה במרחק לחיצה אחת */
-.beta-chip{font:inherit;font-size:10.5px;font-weight:700;letter-spacing:.04em;color:var(--gold-ink);
-  background:transparent;border:1px solid rgb(178 138 43 / .45);border-radius:999px;padding:2px 8px;
-  cursor:pointer;flex-shrink:0;transition:background .16s,color .16s,border-color .16s}
-.beta-chip:hover,.beta-chip:focus-visible{background:var(--gold-ink);color:#fff;border-color:var(--gold-ink)}
 @font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;font-display:swap;src:url('/fonts/frankruhllibre-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
 @font-face{font-family:'Heebo';font-weight:300 700;font-display:swap;src:url('/fonts/heebo-hebrew.woff2') format('woff2');unicode-range:U+0590-05FF,U+FB1D-FB4F}
 :root{
@@ -178,12 +173,14 @@ body.has-sel .pm.off,body.has-sel .lb.off{opacity:.07}
 #toast.show{opacity:1}
 
 @media (max-width:980px){
-  #bar{display:flex;padding:7px 10px;gap:7px}
+  /* נשאר רשת של שלוש עמודות: התפריט במרכז האמיתי, הקבוצות בקצוות */
+  #bar{padding:7px 10px;gap:7px}
   #bar h1{font-size:19px}
   #bar .mode-switch{display:none}
   #barEnd{flex:1}
   .tool,.title-ico{width:34px;height:30px;padding:0;font-size:15px;border-radius:12px}
   .tool span.tl{display:none}
+  #tools{gap:8px}
   #wrap{flex-direction:column;height:auto;padding-bottom:64px}
   #mapCol{padding:10px 10px 4px;flex:none}
   #mapWrap{flex:none;height:54vh;max-width:none}
@@ -197,6 +194,10 @@ body.has-sel .pm.off,body.has-sel .lb.off{opacity:.07}
     font-size:12.5px;font-weight:700;color:var(--muted);background:var(--bg);border-radius:14px;padding:8px 4px}
   .mn-tab.on{background:var(--navy);color:#fff}
 }
+/* טלפון: השם יורד מהבר, כמו בשני המסכים האחרים - הסרגל התחתון כבר מסמן
+   "מפת הארץ" כעמוד הנוכחי. כך אודות צמוד לימין, הערה ושיתוף לשמאל,
+   והתפריט במרכז. */
+@media (max-width:560px){ #brand{display:none} #notesHost{display:contents} }
 
 /* קישור דילוג לתוכן. מוסתר עד שהוא מקבל פוקוס, ואז קופץ לפינה העליונה.
    לא display:none ולא visibility:hidden - שניהם היו מוציאים אותו גם
