@@ -356,7 +356,12 @@ function Game() {
             <div className="gm-r-score"><b>{score}</b> מתוך {HAND}</div>
             <div className="gm-r-head">{result.head}</div>
             <p className="gm-r-text">{result.text}</p>
-            <div className="gm-r-squares" aria-hidden="true">{right.map((ok) => (ok ? '🟩' : '🟥')).join('')}</div>
+            {/* התוצאה כציר קטן - חרוזים על קו זהב, ולא ריבועי אימוג'י */}
+            <ol className="gm-r-line" aria-label={`${score} מתוך ${HAND} במקום הנכון`}>
+              {right.map((ok, i) => (
+                <li key={i} className={ok ? 'ok' : 'bad'} aria-hidden="true">{ok ? '✓' : '✗'}</li>
+              ))}
+            </ol>
             <div className="gm-r-actions">
               <button type="button" className="gm-btn primary big" onClick={share}>📤 שיתוף התוצאה</button>
               <button type="button" className="gm-btn" onClick={next}>סבב נוסף</button>

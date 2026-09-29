@@ -62,14 +62,22 @@ export const GAME_RESULT = {
   5: 'מושלם!', 4: 'כמעט מושלם!', 3: 'יפה מאוד!', 2: 'הציר מפתיע', 1: 'הציר מפתיע', 0: 'הציר מפתיע',
 };
 export function buildGameSvg(score, total = 5) {
-  const sq = 58, gap = 14, x0 = 1112 - total * sq - (total - 1) * gap;
-  // מימין לשמאל, כמו הריבועים בהודעה: הירוקים ראשונים
-  const squares = Array.from({ length: total }, (_, i) => {
-    const x = 1112 - (i + 1) * sq - i * gap;
-    const ok = i < score;
-    return `<rect x="${x}" y="318" width="${sq}" height="${sq}" rx="10" fill="${ok ? '#4f7a33' : '#a3342a'}"/>`
-      + `<rect x="${x}" y="318" width="${sq}" height="${sq}" rx="10" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="2"/>`;
-  }).join('');
+  /* אותו ציר של מסך התוצאה: קו זהב ועליו חרוזים. ירוק עם ✓ במקום, בהיר עם
+     מסגרת לבנה-אדומה ו-✗ כשלא. מימין לשמאל: הנכונים ראשונים (בכרטיס אין
+     סדר - רק הציון). ✓ ו-✗ מצוירים כקווים, כי ל-Frank Ruhl אין את התווים. */
+  const r = 27, gap = 26, x0 = 1112 - total * 2 * r - (total - 1) * gap, cy = 347;
+  const squares = `<line x1="${x0 - 18}" y1="${cy}" x2="${1112 + 6}" y2="${cy}" stroke="#a8842c" stroke-width="3"/>`
+    + Array.from({ length: total }, (_, i) => {
+      const cx = 1112 - r - i * (2 * r + gap);
+      const ok = i < score;
+      const mark = ok
+        ? `<path d="M${cx - 10},${cy + 1} L${cx - 3},${cy + 9} L${cx + 11},${cy - 8}" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`
+        : `<path d="M${cx - 8},${cy - 8} L${cx + 8},${cy + 8} M${cx + 8},${cy - 8} L${cx - 8},${cy + 8}" fill="none" stroke="#a3342a" stroke-width="4.5" stroke-linecap="round"/>`;
+      return `<circle cx="${cx}" cy="${cy}" r="${r + 5}" fill="#f4e9cf"/>`
+        + (ok ? `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#3f6628"/>`
+              : `<circle cx="${cx}" cy="${cy}" r="${r - 1.5}" fill="#fbeee9" stroke="#a3342a" stroke-width="3"/>`)
+        + mark;
+    }).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" direction="rtl">
 <image href="data:image/jpeg;base64,${BASE}" x="0" y="0" width="1200" height="630" preserveAspectRatio="xMidYMid slice"/>
 <rect x="16" y="16" width="1168" height="598" rx="8" fill="none" stroke="#a8842c" stroke-width="3"/>

@@ -141,7 +141,14 @@ button{font-family:inherit}
 .gm-r-score b{font-family:'Frank Ruhl Libre',serif;font-size:46px;font-weight:900;color:var(--navy);vertical-align:-4px}
 .gm-r-head{font-family:'Frank Ruhl Libre',serif;font-size:28px;font-weight:900;color:var(--navy);margin-top:2px}
 .gm-r-text{margin:4px 0 0;font-size:15px;color:var(--ink)}
-.gm-r-squares{margin-top:10px;font-size:24px;letter-spacing:2px}
+/* שורת התוצאה כציר: קו זהב ועליו חמישה חרוזים, מהמוקדם (ימין) למאוחר */
+.gm-r-line{position:relative;list-style:none;display:flex;justify-content:center;gap:18px;margin:14px 0 0;padding:0}
+.gm-r-line::before{content:'';position:absolute;top:50%;inset-inline:calc(50% - 128px);height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold) 12%,var(--gold) 88%,transparent);transform:translateY(-50%)}
+.gm-r-line li{position:relative;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:700;line-height:1}
+.gm-r-line li.ok{background:var(--ok);color:#fff;box-shadow:0 0 0 3px var(--panel),0 2px 6px rgb(63 102 40 / .35)}
+.gm-r-line li.bad{background:#fbeee9;color:var(--bad);border:2px solid var(--bad);box-shadow:0 0 0 3px var(--panel)}
 .gm-r-actions{display:flex;flex-direction:column;gap:8px;margin-top:14px}
 .gm-btn.big{font-size:18px;padding:14px 20px}
 .gm-result .gm-msg,.gm-result .gm-note{text-align:center}
