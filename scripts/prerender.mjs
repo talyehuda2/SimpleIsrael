@@ -297,16 +297,26 @@ footer a{color:var(--gold-ink)}
 .hero img{width:100%;height:auto;display:block}
 .hero::after{content:'';position:absolute;inset-inline:0;bottom:-1px;height:58px;
   background:linear-gradient(180deg,rgba(253,248,236,0),rgba(253,248,236,.96))}
-.hero-tag{position:absolute;z-index:1;inset-inline-end:12px;bottom:11px;line-height:1.45;
-  background:rgba(22,58,92,.93);color:#fdf6e6;font-size:13.5px;font-weight:700;
-  padding:7px 13px;border-radius:999px;box-shadow:0 4px 12px rgba(20,40,60,.25)}
-.hero:hover .hero-tag{background:var(--gold);color:#20180a}
+/* כפתור הפעולה של התמונה. היה תגית קטנה בפינה ("8 תחנות · לחצו לצפייה"),
+   ומי שנכנס מקישור לא הבין שזה המקום ללחוץ. עכשיו כפתור רחב בתחתית התמונה,
+   בזהב של האתר, עם פועל שאומר לאן הוא מוביל. זהב #b28a2b מול #20180a: 6.4:1. */
+.hero-tag{position:absolute;z-index:1;inset-inline:14px;bottom:14px;line-height:1.35;
+  display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;
+  background:#b28a2b;color:#20180a;font-size:17px;font-weight:700;
+  padding:13px 18px;border-radius:16px;border:2px solid rgba(255,248,230,.7);
+  box-shadow:0 6px 18px rgba(40,28,6,.35)}
+.hero-tag small{font-size:14px;font-weight:500;opacity:.85}
+.hero-tag .ht-arrow{font-size:20px;line-height:1}
+.hero:hover .hero-tag,.hero:focus-visible .hero-tag{background:#16385c;color:#fdf6e6}
+.hero:focus-visible{outline:3px solid #16385c;outline-offset:3px}
 /* רצועת ציר-זמן - חלופה למפה כשאין מסע גיאוגרפי (אירוע/ספר/רקע עולמי/
    דמות בלי תחנות). אותו מכל (.hero) ואותה תווית פינתית, בלי תמונה -
    ה-SVG וקטורי לגמרי כך שאין קובץ נפרד לצרוב בבנייה. */
 .hero.sliver{line-height:normal;display:flex;flex-direction:column;justify-content:center;
   background:#f4e9d1;padding:26px 24px}
 .hero.sliver::after{display:none}
+/* ברצועה אין תמונה גבוהה לשבת עליה: כפתור צף כיסה את שמות הפריטים. כאן הוא יושב מתחת לרצועה */
+.hero.sliver .hero-tag{position:static;margin-top:18px}
 .sliver-period{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.3px;margin:0 0 10px}
 .sliver-period b{color:var(--ink)}
 .hero.sliver svg{display:block;width:100%;height:auto;overflow:visible}
@@ -344,7 +354,8 @@ footer a{color:var(--gold-ink)}
   .gate-body{padding:14px 14px 14px}
   .gate h1{font-size:29px}
   .gopts{grid-template-columns:1fr}
-  .hero-tag{font-size:12.5px;padding:6px 11px;inset-inline-end:9px;bottom:9px}
+  .hero-tag{font-size:16px;padding:12px 14px;inset-inline:10px;bottom:10px;gap:8px}
+  .hero-tag small{font-size:13px}
 }
 /* בטלפון שלוש עמודות הופכות לשלוש שורות רחבות - כל אחת יעד מגע גדול
    עם חץ בקצה, ולא שלושה ריבועים צרים */
@@ -634,7 +645,7 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
 <source media="(min-width:860px)" srcset="/hero/${it.kind}/${it.id}-split.jpg" width="${HERO_SPLIT.w}" height="${HERO_SPLIT.h}"/>
 <img src="/hero/${it.kind}/${it.id}.jpg" width="${HERO_SIZE.w}" height="${HERO_SIZE.h}" alt="${escAttr(`מפת המסע של ${it.name}`)}"/>
 </picture>
-<span class="hero-tag">🗺️ ${journeyPts.length} תחנות במסע · לחצו לצפייה ←</span>
+<span class="hero-tag"><span aria-hidden="true">🗺️</span> <span>צפו במסע של ${esc(it.name)} <small>· ${journeyPts.length} תחנות</small></span> <span class="ht-arrow" aria-hidden="true">←</span></span>
 </a>` : '';
 
   /* רצועת ציר-זמן: לכל פריט שבאמת אין לו מסע (66 פריטים - אירועים,
@@ -656,7 +667,7 @@ ${next ? `<a href="/p/${next.kind}/${next.id}">${esc(next.name)} →</a>` : '<sp
     sliverHeroHtml = `<a class="hero sliver" href="/?sel=${key}">
 ${periodBit}
 ${sliverSvg({ name: it.name, start: it.start, end: it.end }, ownColor, neighbors, yMin, yMax)}
-<span class="hero-tag">📜 על ציר הזמן · לחצו לצפייה ←</span>
+<span class="hero-tag"><span aria-hidden="true">📜</span> <span>פתחו את ${esc(it.name)} על ציר הזמן</span> <span class="ht-arrow" aria-hidden="true">←</span></span>
 </a>`;
   }
 
@@ -888,7 +899,7 @@ function placePage(p) {
 <source media="(min-width:860px)" srcset="/hero/place/${encodeURIComponent(p.id)}-split.jpg" width="${HERO_SPLIT.w}" height="${HERO_SPLIT.h}"/>
 <img src="/hero/place/${encodeURIComponent(p.id)}.jpg" width="${HERO_SIZE.w}" height="${HERO_SIZE.h}" alt="${escAttr(`${p.name} על המפה`)}"/>
 </picture>
-<span class="hero-tag">📍 ${evCount(p.visits.length)} · לחצו לצפייה ←</span>
+<span class="hero-tag"><span aria-hidden="true">📍</span> <span>${esc(p.name)} על המפה <small>· ${evCount(p.visits.length)}</small></span> <span class="ht-arrow" aria-hidden="true">←</span></span>
 </a>`;
 
   // התוכן המלא של הדף - מה שגוגל מאנדקס - יושב מתחת לשער
