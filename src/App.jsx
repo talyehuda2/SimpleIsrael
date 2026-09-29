@@ -846,6 +846,9 @@ export default function App() {
           הניווט בכל כניסה לעמוד. נראה רק כשהוא ממוקד. */}
       <a className="skip-link" href="#main">דלג לתוכן</a>
       <header>
+        {/* שם האתר בטלפון בלבד. במחשב הוא כתוב בכותרת מימין; בטלפון הכותרת
+            יורדת כדי לפנות מקום לאייקונים, ושום דבר לא אמר באיזה אתר אתה. */}
+        <a className="m-brand" href="/">ציר הזמן של עם ישראל</a>
         <div className="header-top">
           <div className="title-block">
             <div className="title-row">

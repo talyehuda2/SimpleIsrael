@@ -212,6 +212,8 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
 .header-gap { flex: 1; }
 /* מרכז הבר: מתג המבטים ולצדו תפריט "עוד באתר" (siteMenu.js, שמעוצב בגיליון משלו) */
 .center-nav { display: flex; align-items: center; gap: 8px; justify-self: center; }
+/* שם האתר מעל האייקונים - רק בטלפון (ראו App.jsx) */
+.m-brand { display: none; }
 
 .share-btn {
   display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
@@ -1636,6 +1638,8 @@ a.card-action { text-decoration: none; }
   .header-top .title-row, .header-top .title-icons { display: flex; align-items: center; gap: 8px; }
   .header-top .center-nav { display: flex; justify-self: center; }
   .header-top .header-actions { display: flex; flex-wrap: nowrap; justify-self: end; gap: 8px; }
+  .m-brand { display: block; text-align: center; text-decoration: none; line-height: 1.15;
+    font-family: 'Frank Ruhl Libre', serif; font-weight: 900; font-size: 21px; color: var(--navy); }
   .title-block h1 { display: none; }
   h1 { font-size: 19px; white-space: nowrap; }
   .h1-rest { display: none; }

@@ -25,6 +25,7 @@ button{font-family:inherit}
 /* justify-self: אחרת הבלוק נמתח על כל עמודת ה-1fr ואזור הלחיצה חורג מהטקסט.
    השם ממלא את גובה הבר - הוא זהות המסך, לא עוד פריט בסרגל. */
 #brandWrap{display:flex;align-items:center;gap:8px;justify-self:start;height:100%}
+.m-brand{display:none}
 #brand{display:flex;align-items:center;text-decoration:none;flex:none;height:100%}
 #bar h1{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:31px;line-height:1;
   color:var(--navy);margin:0;white-space:nowrap}
@@ -438,7 +439,11 @@ button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
      #brand יורד כולו ולא רק ה-h1 - אלמנט ריק עדיין מקבל רווח משלו. */
   /* שלוש קבוצות ולא שורה מפוזרת: אודות ומדריך צמודים לימין, הערה ושיתוף
      לשמאל, והתפריט במרכז. */
-  #bar{padding:7px 10px;overflow:hidden}
+  /* שתי שורות: שם האתר, ומתחתיו האייקונים. הגובה auto - syncBar מודד אותו
+     וכל הפריסה (תקופות, סינון, הסיפור) נשענת על --bar */
+  #bar{padding:6px 10px 7px;overflow:hidden;height:auto;grid-template-rows:auto auto;row-gap:4px}
+  .m-brand{display:block;grid-column:1/-1;text-align:center;text-decoration:none;line-height:1.15;
+    font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:21px;color:var(--navy)}
   #brandWrap .title-icons,#tools{display:flex;align-items:center;gap:8px}
   #notesHost{display:contents}
   /* #search לא מוסתר כאן: placeSearch מעביר אותו לשורה משלו בראש #filters,
