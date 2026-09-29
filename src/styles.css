@@ -1923,6 +1923,38 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
 .ins-count b { display: block; font-size: 22px; color: var(--navy); font-weight: 900; }
 .ins-count span { font-size: 11px; color: var(--muted); }
 
+/* ===== מסך בינוני (טאבלט, חלון מחשב צר): הבר נשאר שורה אחת =====
+   מאז שהתפריט "עוד באתר" נכנס למרכז לצד המתג, העמודות בצדדים צרות יותר,
+   ומתחת ל-1200px השם המלא נשבר לשלוש שורות והערה ושיתוף נערמו זה על זה.
+   אותו פתרון של מסע הדורות ומפת הארץ ברוחב הזה: שם קצר, ומתחת ל-1000px
+   הכלים כאייקונים בלבד. הטלפון (680px ומטה) מוגדר בנפרד למטה. */
+@media (min-width: 681px) and (max-width: 1200px) {
+  .h1-rest { display: none; }
+  .header-top h1 { white-space: nowrap; }
+  .title-block { min-width: 0; }
+  .subtitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header-actions { flex-wrap: nowrap; }
+}
+@media (min-width: 681px) and (max-width: 1000px) {
+  .subtitle { display: none; }
+  .header-actions .btn-label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .header-actions .share-btn, .header-actions .tree-btn { width: 34px; height: 30px; padding: 0; gap: 0; justify-content: center; border-radius: 12px; font-size: 15px; }
+  .header-actions { gap: 8px; }
+}
+/* מתחת ל-900px גם המרכז צריך לפנות מקום: בלי זה המתג כיסה את ❓ (נמדד ב-760px).
+   המתג מתהדק, ו"עוד באתר" הופך ל-☰ בלבד - כמו בטלפון. */
+@media (min-width: 681px) and (max-width: 900px) {
+  .ms-opt { padding: 6px 9px; font-size: 12px; gap: 4px; }
+  .center-nav { gap: 6px; }
+  .center-nav .sm-btn { width: 34px; height: 30px; padding: 0; gap: 0; justify-content: center; border-radius: 12px; }
+  .center-nav .sm-l { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+}
+/* 681-760px: גם אחרי ההידוק המתג נגע ב-❓ (6px חפיפה ב-681). השם יורד, כמו
+   בטלפון - "ציר הזמן" ממילא כתוב ומסומן במתג שלצדו. */
+@media (min-width: 681px) and (max-width: 760px) {
+  .header-top h1 { display: none; }
+}
+
 /* ===== מובייל כאפליקציה: סרגל תחתון, header רזה, גיליונות ===== */
 .bottom-nav, .more-overlay, .sheet-backdrop, .sheet-handle { display: none; }
 .sheet-grip { display: block; width: 42px; height: 5px; border-radius: 3px; background: var(--line); margin: 7px auto; }
