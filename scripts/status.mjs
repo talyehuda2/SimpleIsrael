@@ -25,7 +25,11 @@
               css: סגנון שמוזרק לצילום בלבד, למשל פריסת רשימה שנגללת באתר
               (".map-legend{max-height:none}") כדי שכל הפריטים ייראו. בלי crop נשמר מסך טלפון שלם, ואז הוא
               מוקטן לחצי מרוחב התמונה והטקסט שבו כמעט לא נקרא.
-     cta    - eyebrow, title, p               סיום עם כתובת האתר */
+              game: {free?, place?, correct?, solve?, wait?} - צילום מהמשחק (/game). free: משחק חופשי
+              עם כל התחומים והתקופות (ולא האתגר היומי - כדי לא לחשוף את התשובה של היום).
+              place: כמה קלפים להניח לפני הצילום. solve: לפתור 5/5 ולצלם את מסך התוצאה
+              (wait מ"ש אחרי "בדיקה" - 700 תופס את הקונפטי באוויר).
+     cta    - eyebrow, title, p, url?         סיום עם כתובת האתר (url: למשל simpleisrael.co.il/game) */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, createReadStream, mkdtempSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename, extname } from 'node:path';
@@ -68,7 +72,7 @@ function body(s, shot) {
   if (s.type === 'intro') return `${head}<h1 class="xl">${esc(s.title)}</h1><p>${fmt(s.p)}</p>`
     + `<ol class="steps">${s.steps.map((t) => `<li>${fmt(t)}</li>`).join('')}</ol>`
     + (s.hint ? `<div class="hint">${esc(s.hint)}</div>` : '');
-  if (s.type === 'cta') return `${head}<h1>${esc(s.title)}</h1><p>${fmt(s.p)}</p><div class="urlbox">simpleisrael.co.il<small>בחינם, בלי הרשמה</small></div>`;
+  if (s.type === 'cta') return `${head}<h1>${esc(s.title)}</h1><p>${fmt(s.p)}</p><div class="urlbox">${esc(s.url || 'simpleisrael.co.il')}<small>בחינם, בלי הרשמה</small></div>`;
   throw new Error(`סוג שקף לא מוכר: ${s.type}`);
 }
 
@@ -121,7 +125,7 @@ h1.xl{font-size:118px;line-height:1.04}
 <div class="wash"></div>
 <img class="art" src="file://${BG}">
 <div class="content">${body(s, shot)}</div>
-${s.type === 'cta' ? '' : '<div class="url">simpleisrael.co.il</div>'}
+${s.type === 'cta' ? '' : `<div class="url">${esc(s.footUrl || 'simpleisrael.co.il')}</div>`}
 </body></html>`;
 
 /* ---------- צילומי מסך מהאתר ---------- */
@@ -130,7 +134,7 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
 function serveDist() {
   const srv = http.createServer((q, r) => {
     let p = decodeURIComponent(q.url.split('?')[0]);
-    if (['/atlas', '/places'].includes(p)) p += '.html';
+    if (['/atlas', '/places', '/game'].includes(p)) p += '.html';
     if (p.endsWith('/')) p += 'index.html';
     const f = join(DIST, p);
     if (!f.startsWith(DIST) || !existsSync(f)) { r.writeHead(404); r.end(); return; }
@@ -140,15 +144,60 @@ function serveDist() {
   return new Promise((res) => srv.listen(0, () => res(srv)));
 }
 
+async function playGame(pg, g) {
+  const startFree = async () => {
+    await pg.getByRole('tab', { name: 'משחק חופשי' }).click();
+    await pg.locator('.gm-group').nth(0).locator('.gm-all').click();
+    await pg.locator('.gm-group').nth(1).locator('.gm-all').click();
+    await pg.getByRole('button', { name: 'הפעל' }).click();
+  };
+  if (g.free) await startFree();
+  // "exact" - "יהושע" לא יתפוס את "יהושע בן נון"
+  const exact = (n) => new RegExp(`^${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+  const card = (n) => pg.locator('.gm-pool .gm-card').filter({ has: pg.locator('.gm-name', { hasText: exact(n) }) }).first();
+  /* הסדר הנכון נלמד מסבב ראשון שגוי, ואז רענון מחזיר את אותה יד (Math.random עם זרע) */
+  let order = null;
+  if (g.solve || g.correct) {
+    for (let k = 0; k < 5; k++) await pg.locator('.gm-pool .gm-card').first().click();
+    await pg.getByRole('button', { name: 'בדיקה' }).click();
+    order = await pg.locator('.gm-answer .gm-name').allTextContents();
+    await pg.evaluate(() => localStorage.removeItem('si_game_daily'));
+    await pg.reload({ waitUntil: 'networkidle' });
+    if (g.free) await startFree();
+  }
+  if (g.solve) {
+    for (const n of order) await card(n).click();
+    await pg.getByRole('button', { name: 'בדיקה' }).click();
+    await pg.waitForTimeout(g.wait ?? 700);
+    return;
+  }
+  // place: כמה קלפים להניח. correct: לפי הסדר הנכון, כדי שהצילום לא יראה טעות
+  for (let k = 0; k < (g.place || 0); k++) await (order ? card(order[k]) : pg.locator('.gm-pool .gm-card').first()).click();
+  await pg.waitForTimeout(300);
+}
+
 async function siteShot(browser, base, s, i) {
   // מסך טלפון (390x844) בצפיפות 3 - כמו צילום מסך אמיתי מאייפון
   const ctx = await browser.newContext({ viewport: { width: 390, height: s.vh || 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
   await ctx.addInitScript(() => { try { localStorage.setItem('si_seen_intro', '1'); } catch { /* */ } });
   // בלי תעבורה החוצה - וגם בלי שורות אמיתיות ב-si_trail
   await ctx.route('**', (r) => (r.request().url().startsWith(base) ? r.continue() : r.abort()));
+  /* במשחק: Math.random עם זרע קבוע, בצילום בלבד. כך אותה יד חוזרת אחרי רענון -
+     סבב ראשון שגוי חושף את הסדר הנכון, ובשני מסדרים אותו ומקבלים 5/5 */
+  if (s.game) {
+    await ctx.addInitScript(() => {
+      let a = 20260929;
+      Math.random = () => {
+        a = (a + 0x6d2b79f5) >>> 0; let t = a;
+        t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    });
+  }
   const pg = await ctx.newPage();
   await pg.goto(base + s.path, { waitUntil: 'networkidle' });
   await pg.waitForTimeout(1200);
+  if (s.game) await playGame(pg, s.game);
   if (s.css) await pg.addStyleTag({ content: s.css });
   if (s.openMap) { await pg.locator('.dc-map-cta').first().click(); await pg.waitForTimeout(1200); }
   if (s.stop) { await pg.locator('.map-legend li').filter({ hasText: s.stop }).first().click(); await pg.waitForTimeout(1200); }

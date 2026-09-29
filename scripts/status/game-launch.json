@@ -1,0 +1,43 @@
+{
+  "note": "השקת המשחק 'סדר את הציר'. ארבעה שקפים: שאלה שמזמינה לנחש, הלוח באמצע משחק, מסך הניצחון עם קונפטי, והזמנה עם הכתובת. הצילומים מהמשחק החופשי ולא מהאתגר היומי - כדי לא לחשוף את התשובה של היום. הקישור בכיתוב: simpleisrael.co.il/game?src=status",
+  "slides": [
+    {
+      "type": "text",
+      "eyebrow": "חדש באתר · משחק",
+      "title": "סדר את הציר",
+      "paras": [
+        "חמישה פריטים מהתנ״ך - דמויות, מלכים, נביאים ואירועים.",
+        "המשימה: לסדר אותם מהמוקדם למאוחר.",
+        "נשמע קל? דוד או יאשיהו - מי מלך קודם? אליהו או ישעיהו? סנחריב או נבוכדנצר?"
+      ],
+      "question": "כמה מחמשת תצליחו לסדר?",
+      "footUrl": "simpleisrael.co.il/game"
+    },
+    {
+      "type": "site",
+      "eyebrow": "ככה זה נראה",
+      "title": "לוחצים לפי הסדר",
+      "path": "/game",
+      "game": { "free": true, "place": 2, "correct": true },
+      "vh": 1200,
+      "crop": { "from": ".gm-lead", "to": ".gm-pool" },
+      "footUrl": "simpleisrael.co.il/game"
+    },
+    {
+      "type": "site",
+      "eyebrow": "ובסוף",
+      "title": "חמש מתוך חמש!",
+      "path": "/game",
+      "game": { "free": true, "solve": true, "wait": 1300 },
+      "crop": { "from": ".gm-result", "to": ".gm-result" },
+      "footUrl": "simpleisrael.co.il/game"
+    },
+    {
+      "type": "cta",
+      "eyebrow": "סדר את הציר",
+      "title": "כל יום - אתגר חדש",
+      "p": "אתגר יומי אחד לכולם, ומשחק חופשי לפי דמויות ותקופות. שתפו את התוצאה - ותראו מי מסדר טוב יותר.",
+      "url": "simpleisrael.co.il/game"
+    }
+  ]
+}
