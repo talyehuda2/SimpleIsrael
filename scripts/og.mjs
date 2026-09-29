@@ -22,6 +22,7 @@ const BASE = readFileSync(join(ROOT, 'build-assets', 'og-base.jpg')).toString('b
    שאי פעם נוצרה, כולל כל תצוגה מקדימה של כל PR. */
 const QUALITY = 50;
 
+const RLM_ = '\u200F';
 const esc = (s = '') => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // גודל הגופן מותאם לאורך השם, כדי שלא יגלוש מהכרטיס
 const fit = (n) => (n.length <= 12 ? 96 : n.length <= 20 ? 74 : n.length <= 30 ? 58 : 46);
@@ -41,14 +42,56 @@ export function buildSvg({ name, kindLabel, dates }) {
 <rect x="16" y="16" width="1168" height="598" rx="8" fill="none" stroke="#a8842c" stroke-width="3"/>
 <rect x="27" y="27" width="1146" height="576" rx="4" fill="none" stroke="#a8842c" stroke-width="1" opacity="0.55"/>
 ${corner(32, 32, 1, 1)}${corner(1168, 32, -1, 1)}${corner(32, 598, 1, -1)}${corner(1168, 598, -1, -1)}
-<text x="1112" y="176" text-anchor="end" font-weight="700" font-size="32" fill="#8a6a24" letter-spacing="1">${esc(kindLabel)}</text>
+<text x="1112" y="176" text-anchor="end" font-weight="700" font-size="32" fill="#8a6a24" letter-spacing="1">${esc(kindLabel)}${RLM_}</text>
 <text x="1112" y="${nameY}" text-anchor="end" font-weight="900" font-size="${fs}" fill="#16385c">${esc(n)}</text>
 <line x1="732" y1="${nameY + 34}" x2="1112" y2="${nameY + 34}" stroke="#a8842c" stroke-width="1.5" opacity="0.75"/>
-<text x="1112" y="${nameY + 80}" text-anchor="end" font-weight="500" font-size="30" fill="#6b5426">${esc(dates)}</text>
+<text x="1112" y="${nameY + 80}" text-anchor="end" font-weight="500" font-size="30" fill="#6b5426">${esc(dates)}${RLM_}</text>
 <text x="1112" y="566" text-anchor="end" font-weight="700" font-size="28" fill="#16385c">ציר הזמן של עם ישראל</text>
 <text x="88" y="566" text-anchor="start" font-weight="700" font-size="26" fill="#f7edd6" stroke="#f7edd6" stroke-width="6" stroke-linejoin="round" direction="ltr" opacity="0.85">simpleisrael.co.il</text>
 <text x="88" y="566" text-anchor="start" font-weight="700" font-size="26" fill="#16385c" direction="ltr">simpleisrael.co.il</text>
 </svg>`;
+}
+
+/* כרטיס תוצאה של "סדר את הציר" - מה שמופיע בוואטסאפ כשמשתפים תוצאה. אותו
+   קלף, מסגרת ואיש עם מקל של כל כרטיסי האתר, ובמקום שם הדמות - הציון.
+   הריבועים מצוירים כצורות ולא כאימוג'י: ל-resvg אין גופן אימוג'י.
+   ה-RLM (U+200F) בסוף שורות שנגמרות בסימן פיסוק: resvg אינו מריץ bidi
+   מלא, ובלעדיו "?" של "מה קרה קודם?" נחת בצד השמאלי של המשפט. */
+const RLM = '\u200F';
+export const GAME_RESULT = {
+  5: 'מושלם!', 4: 'כמעט מושלם!', 3: 'יפה מאוד!', 2: 'הציר מפתיע', 1: 'הציר מפתיע', 0: 'הציר מפתיע',
+};
+export function buildGameSvg(score, total = 5) {
+  const sq = 58, gap = 14, x0 = 1112 - total * sq - (total - 1) * gap;
+  // מימין לשמאל, כמו הריבועים בהודעה: הירוקים ראשונים
+  const squares = Array.from({ length: total }, (_, i) => {
+    const x = 1112 - (i + 1) * sq - i * gap;
+    const ok = i < score;
+    return `<rect x="${x}" y="318" width="${sq}" height="${sq}" rx="10" fill="${ok ? '#4f7a33' : '#a3342a'}"/>`
+      + `<rect x="${x}" y="318" width="${sq}" height="${sq}" rx="10" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="2"/>`;
+  }).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" direction="rtl">
+<image href="data:image/jpeg;base64,${BASE}" x="0" y="0" width="1200" height="630" preserveAspectRatio="xMidYMid slice"/>
+<rect x="16" y="16" width="1168" height="598" rx="8" fill="none" stroke="#a8842c" stroke-width="3"/>
+<rect x="27" y="27" width="1146" height="576" rx="4" fill="none" stroke="#a8842c" stroke-width="1" opacity="0.55"/>
+${corner(32, 32, 1, 1)}${corner(1168, 32, -1, 1)}${corner(32, 598, 1, -1)}${corner(1168, 598, -1, -1)}
+<text x="1112" y="128" text-anchor="end" font-weight="700" font-size="32" fill="#8a6a24" letter-spacing="1">סדר את הציר · מה קרה קודם?${RLM}</text>
+<text x="1112" y="262" text-anchor="end" font-weight="900" font-size="132" fill="#16385c">${score}</text>
+<text x="1012" y="258" text-anchor="end" font-weight="700" font-size="54" fill="#6b5426">מתוך ${total}${RLM}</text>
+${squares}
+<line x1="${x0}" y1="410" x2="1112" y2="410" stroke="#a8842c" stroke-width="1.5" opacity="0.75"/>
+<text x="1112" y="462" text-anchor="end" font-weight="900" font-size="44" fill="#16385c">${esc(GAME_RESULT[score])}${RLM}</text>
+<text x="1112" y="510" text-anchor="end" font-weight="500" font-size="30" fill="#6b5426">תצליחו יותר?${RLM}</text>
+<text x="1112" y="566" text-anchor="end" font-weight="700" font-size="28" fill="#16385c">ציר הזמן של עם ישראל</text>
+<text x="88" y="566" text-anchor="start" font-weight="700" font-size="26" fill="#f7edd6" stroke="#f7edd6" stroke-width="6" stroke-linejoin="round" direction="ltr" opacity="0.85">simpleisrael.co.il/game</text>
+<text x="88" y="566" text-anchor="start" font-weight="700" font-size="26" fill="#16385c" direction="ltr">simpleisrael.co.il/game</text>
+</svg>`;
+}
+
+export function writeGameCard(outDir, relPath, score) {
+  const full = join(outDir, relPath);
+  mkdirSync(dirname(full), { recursive: true });
+  writeFileSync(full, renderJpeg(buildGameSvg(score)));
 }
 
 export function renderJpeg(svg) {

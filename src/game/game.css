@@ -149,3 +149,6 @@ button{font-family:inherit}
 @media (prefers-reduced-motion:reduce){ .gm-result{animation:none} }
 /* שורת "הועתק" ריקה עד השיתוף - בלי זה נשאר חור בין הכפתורים ל"אתגר חדש מחר" */
 .gm-result .gm-msg:empty{min-height:0;margin:0}
+/* אישור ההעתקה (במחשב, שם אין תפריט שיתוף): תגית בצבע המותג ולא שורת טקסט ירוקה */
+.gm-result .gm-msg:not(:empty){display:inline-block;margin:12px auto 0;padding:8px 16px;border-radius:999px;
+  background:var(--navy);color:#fff;font-size:14px;animation:gmPop .25s ease-out}

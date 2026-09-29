@@ -299,11 +299,14 @@ function Game() {
     setRound((r) => r + 1); reset();
   };
 
+  /* ההודעה שנשלחת. *כוכביות* הן הדגשה בוואטסאפ. הקישור הוא לעמוד התוצאה
+     (/game-result/<ציון>), שנושא כרטיס שיתוף עם הציון בעיצוב האתר ומעביר
+     מיד למשחק - ראו prerender. */
   const share = async () => {
     const squares = right.map((ok) => (ok ? '🟩' : '🟥')).join('');
-    const head = daily ? `סדר את הציר · אתגר #${num}` : 'סדר את הציר';
-    const text = `${head}\n${squares} ${score}/${HAND}\nתצליחו יותר?`;
-    const url = `${location.origin}/game?src=game-share`;
+    const head = daily ? `🧭 *סדר את הציר* · אתגר #${num}` : '🧭 *סדר את הציר* · משחק חופשי';
+    const text = `${head}\n${squares}  ${score}/${HAND} - ${result.head}\nמה קרה קודם? נסו לנצח אותי 👇`;
+    const url = `${location.origin}/game-result/${score}`;
     const touch = window.matchMedia?.('(pointer: coarse)').matches;
     if (touch && navigator.share) {
       try { await navigator.share({ text: `${text}\n${url}` }); } catch { /* נסגר */ }
@@ -311,7 +314,7 @@ function Game() {
     }
     try {
       await navigator.clipboard.writeText(`${text}\n${url}`);
-      setShareMsg('התוצאה הועתקה - אפשר להדביק בוואטסאפ');
+      setShareMsg('✓ התוצאה הועתקה - הדביקו בוואטסאפ');
     } catch {
       setShareMsg('ההעתקה נכשלה');
     }

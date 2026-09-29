@@ -7,7 +7,7 @@ import { hebrewYearLetters, toSecular, formatRange } from '../src/utils/dates.js
 import { sourceSegments } from '../src/utils/sefaria.js';
 import { buildPlaceIndex, relatedByPlace } from '../src/utils/related.js';
 import { journeyStations } from '../src/utils/mapProject.js';
-import { writeCard } from './og.mjs';
+import { writeCard, writeGameCard, GAME_RESULT } from './og.mjs';
 import { writeHero, writePlaceHero } from './hero.mjs';
 
 /* הפתיח המצויר: לכל פריט עם מסע גיאוגרפי מתועד (64 פריטים - אבות,
@@ -1069,6 +1069,44 @@ writeCard(DIST, join('og', 'game.jpg'), {
   kindLabel: 'מה קרה קודם?',
   dates: 'אתגר יומי אחד לכולם',
 });
+
+/* עמודי תוצאה של המשחק: /game-result/0 עד /game-result/5. זה הקישור שנשלח
+   בשיתוף תוצאה, וכל אחד נושא כרטיס שיתוף עם הציון - "5 מתוך 5, מושלם!" -
+   במקום הכרטיס הכללי של /game. וואטסאפ קורא את התמונה מה-HTML, ולכן צריך
+   עמוד לכל ציון; מי שלוחץ מועבר מיד למשחק. לא ב-sitemap ו-noindex: אין בהם
+   תוכן משלהם. */
+for (let score = 0; score <= 5; score++) {
+  writeGameCard(DIST, join('og', `game-${score}.jpg`), score);
+  const title = `${score} מתוך 5 ב"סדר את הציר" - ${GAME_RESULT[score]}`;
+  const desc = 'חמישה פריטים מהתנ"ך, סדר אחד נכון. מה קרה קודם? תצליחו יותר?';
+  const img = `${SITE}/og/game-${score}.jpg`;
+  const dir = join(DIST, 'game-result', String(score));
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'index.html'), `<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<script>location.replace('/game?src=game-share');</script>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="noindex"/>
+<title>${escAttr(title)}</title>
+<meta name="description" content="${escAttr(desc)}"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="ציר הזמן של עם ישראל"/>
+<meta property="og:title" content="${escAttr(title)}"/>
+<meta property="og:description" content="${escAttr(desc)}"/>
+<meta property="og:url" content="${SITE}/game-result/${score}"/>
+<meta property="og:image" content="${img}"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:locale" content="he_IL"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="${escAttr(title)}"/>
+<meta name="twitter:image" content="${img}"/>
+</head>
+<body><p><a href="/game">לסדר את הציר</a></p></body>
+</html>`);
+}
 
 // sitemap.xml
 const urls = [

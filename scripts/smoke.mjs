@@ -102,6 +102,8 @@ const PAGES = [
   // היא סלקטור שקיים רק במסך היעד - אם ההעברה נשברה, נשארים בעמוד הפריט ונופלים
   { url: firstOf(/^\/p\/leader\//) + '?to=timeline', name: 'שיתוף → ציר', check: '#root > *', redirects: true },
   { url: firstOf(/^\/p\/leader\//) + '?to=atlas', name: 'שיתוף → מסע', check: '#story > *', redirects: true },
+  // עמוד תוצאה של המשחק - הקישור שנשלח בשיתוף. חייב להעביר למשחק עצמו
+  { url: '/game-result/5', name: 'תוצאה → משחק', check: '.gm-pool .gm-card', redirects: true },
   { url: firstOf(/^\/p\/period\//), name: 'שער תקופה', check: 'h1' },
   { url: firstOf(/^\/p\/place\//), name: 'שער מקום', check: 'h1' },
   { url: firstOf(/^\/p\/collection\//), name: 'שער אוסף', check: 'h1' },
