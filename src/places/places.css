@@ -70,6 +70,20 @@ a.ms-opt:hover{background:var(--panel);color:var(--navy)}
   box-shadow:0 3px 10px rgb(60 40 0 / .2)}
 #reset.show{display:block}
 #reset:hover{border-color:var(--gold)}
+/* "איפה אני" - צף בפינה התחתונה של המפה, כמו כפתור המיקום במפות אחרות.
+   בכוונה על המפה ולא בסרגל העליון: פיצ'ר חדש אינו מקבל כפתור בבר. */
+#locate{position:absolute;bottom:10px;inset-inline-start:10px;z-index:2;
+  font-size:13px;font-weight:700;color:var(--navy);background:rgb(251 245 231 / .95);
+  border:1px solid var(--line);border-radius:16px;padding:8px 13px;cursor:pointer;
+  box-shadow:0 3px 10px rgb(60 40 0 / .22)}
+#locate:hover{border-color:var(--gold)}
+#locate.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+/* הנקודה הכחולה: הצבע המוכר של "אתה כאן" בכל אפליקציית מפות, ובכוונה
+   שונה מהנייבי של המקומות ומהזהב של המקום הנבחר */
+.me-acc{fill:#1a73e8;fill-opacity:.14;stroke:#1a73e8;stroke-opacity:.45;stroke-width:1.5;vector-effect:non-scaling-stroke}
+.me-dot{fill:#1a73e8;stroke:#fff;stroke-width:3;vector-effect:non-scaling-stroke;
+  filter:drop-shadow(0 1px 3px rgb(0 0 0 / .45))}
+#me{pointer-events:none}
 
 /* ---- סימוני המפה ---- */
 /* vector-effect: העוביים נמדדים בפיקסלים של המסך ולא ביחידות ה-viewBox,
@@ -93,6 +107,24 @@ a.ms-opt:hover{background:var(--panel);color:var(--navy)}
 body.has-sel .pm:not(.on),body.has-sel .lb:not(.on){opacity:.2}
 body.has-sel .pm.off,body.has-sel .lb.off{opacity:.07}
 /* ===================== הטור הצדדי ===================== */
+/* "קרוב אליך" */
+#near{padding:12px 14px;border-bottom:1px solid var(--line);background:#f6eedb}
+.nhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.nhead h2{margin:0;font-family:'Frank Ruhl Libre',serif;font-size:18px;color:var(--navy)}
+.nclose{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--panel);
+  color:var(--muted);font-size:13px;cursor:pointer}
+.nclose:hover{border-color:var(--gold)}
+.nlist{display:flex;flex-direction:column;gap:4px}
+.nrow{display:flex;align-items:baseline;justify-content:space-between;gap:10px;width:100%;text-align:start;
+  font-family:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:11px;background:var(--panel);cursor:pointer}
+.nrow:hover{border-color:var(--gold)}
+.nn{font-size:14.5px;font-weight:700;color:var(--navy)}
+.nn small{font-size:11px;font-weight:500;color:var(--muted)}
+.nk{flex:none;font-size:13px;font-weight:700;color:var(--gold-ink);font-variant-numeric:tabular-nums}
+.nmsg{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink)}
+.nnote{margin:8px 0 0;font-size:11.5px;color:var(--muted)}
+.dnear{margin:0 0 10px;font-size:12.5px;font-weight:700;color:#1a5fc0}
+
 #side{width:var(--side-w);flex:none;background:var(--panel);border-inline-end:1px solid var(--line);
   display:flex;flex-direction:column;height:calc(100vh - var(--bar));position:sticky;top:var(--bar)}
 #sideHead{padding:12px 14px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:9px}

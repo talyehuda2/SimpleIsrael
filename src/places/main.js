@@ -6,7 +6,8 @@ import { MAP_SRC, MAP_SIZE } from '../utils/mapProject.js';
 import PLACES from '../data/places.json';
 import PERIODS from '../data/periods.json';
 import { shareLink } from '../lib/share.js';
-import { startTrail, markOnce } from '../lib/trail.js';
+import { startTrail, markOnce, mark } from '../lib/trail.js';
+import { nearest, locateOnMap, pxPerKm, fmtKm, getPosition, MAX_KM } from './nearby.js';
 import { mountSiteMenu } from '../components/siteMenu.js';
 
 startTrail();
@@ -30,6 +31,9 @@ const ERAS = PERIODS.filter((e) => PLACES.some((p) => inEra(p, e)));
 // שנת הביקור היא שנת הפתיחה של הדמות, ולכן ה"תקופה" כאן היא תקופתה של
 // הדמות המבקרת. זה מה שכתוב גם בתווית שמעל הכפתורים, כדי לא להטעות.
 let era = null, sel = null, query = '', playT = null;
+/* "איפה אני": null, או { state: 'loading' | 'ok' | 'outside' | 'error', ... }.
+   נשמר בזיכרון הדף בלבד - לא ב-localStorage ולא בכתובת. */
+let near = null;
 
 // ==================== מפה ====================
 const RAD = (n) => 5 + 3.6 * Math.sqrt(n - 1);
@@ -57,7 +61,7 @@ function drawMap() {
   }).join('');
   $('#map').innerHTML =
     `<image href="${MAP_SRC}" x="0" y="0" width="${MAP_SIZE}" height="${MAP_SIZE}"/>
-     ${marks}<g id="labels">${labels}</g>`;
+     ${marks}<g id="me" aria-hidden="true"></g><g id="labels">${labels}</g>`;
   $('#map').querySelectorAll('.pm').forEach((g) => {
     g.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(g.dataset.id); }
@@ -130,6 +134,11 @@ function camTarget() {
     const p = PLACES.find((x) => x.id === sel);
     if (p) return fitBox({ x0: p.x, x1: p.x, y0: p.y, y1: p.y }, 165);
   }
+  // הגולש ושלושת המקומות הקרובים אליו - כך רואים גם איפה אתה וגם מה סביבך
+  if (near && near.state === 'ok') {
+    const pts = [near.pt, ...near.list.slice(0, 3).map((n) => n.p)];
+    return fitBox(bboxOf(pts), 110);
+  }
   if (era) {
     const list = PLACES.filter((p) => inEra(p, era));
     if (list.length) return fitBox(bboxOf(list), 80);
@@ -175,13 +184,29 @@ function paintZoom() {
     // הגדלה מתונה בלבד: אזור פגיעה נדיב של סמן קטן היה מכסה את שכנו
     g.querySelector('.hit').setAttribute('r', Math.max(r * 1.25, 9 * k).toFixed(1));
   });
+  paintMe(k);
+  // שמות המקומות שברשימת "קרוב אליך" גלויים תמיד - אחרת "יפו · 4.9 ק״מ"
+  // הופיע ברשימה בלי שם ליד הנקודה שלו במפה
+  const nearIds = new Set(near && near.state === 'ok' ? near.list.map((n) => n.p.id) : []);
   $('#map').querySelectorAll('.lb').forEach((t) => {
     const on = t.classList.contains('on');
     const r = RAD(+t.dataset.v) * k * (on ? 1.3 : 1);
     t.setAttribute('font-size', ((on ? 24 : 21) * k).toFixed(1));
     t.setAttribute('y', (+t.dataset.y - r - 8 * k).toFixed(1));
-    t.style.display = (+t.dataset.v >= need || on) ? '' : 'none';
+    t.style.display = (+t.dataset.v >= need || on || nearIds.has(t.dataset.id)) ? '' : 'none';
   });
+}
+
+/* הנקודה הכחולה ועיגול הדיוק. העיגול בק"מ אמיתיים (ביחידות המפה), והנקודה
+   עצמה נשמרת בגודל קבוע על המסך כמו שאר הסמנים. */
+function paintMe(k = Math.max(0.4, cam.h / BASE_H)) {
+  const g = $('#me'); if (!g) return;
+  if (!near || near.state !== 'ok') { g.innerHTML = ''; return; }
+  const { pt, acc, lat, lon } = near;
+  // תקרה של 25 ק"מ: עיגול בגודל חצי הארץ (מחשב בלי GPS) רק מסתיר את המפה
+  const accR = Math.min(acc / 1000, 25) * pxPerKm(lat, lon);
+  g.innerHTML = `<circle class="me-acc" cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="${Math.max(accR, 12 * k).toFixed(1)}"/>
+    <circle class="me-dot" cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="${(9 * k).toFixed(1)}"/>`;
 }
 
 function paintMarks() {
@@ -284,6 +309,7 @@ function renderDetail(p) {
     <button class="dback" id="dBack">→ חזרה לרשימה</button>
     <h2>${esc(p.name)}</h2>
     <p class="dsub">${p.visits.length} ביקורים · ${esc(range)}</p>
+    ${nearKm(p) != null ? `<p class="dnear">📍 ${fmtKm(nearKm(p))} ממך</p>` : ''}
     ${p.aka.length ? `<p class="daka">נקרא גם: ${p.aka.map(esc).join(' · ')}</p>` : ''}
     ${p.lore ? `<p class="dlore">${esc(p.lore)}</p>` : ''}
     ${era && (hidden || showAll) ? `<button class="dfilter" id="dFilter">
@@ -325,11 +351,86 @@ function select(id, replace = false) {
     $('#list').hidden = false;
   }
   document.body.classList.toggle('has-sel', !!sel);
+  renderNear();
   renderList();
   paintMarks();
   moveCam();
   const url = p ? `/places?p=${encodeURIComponent(p.id)}` : '/places';
   history[replace ? 'replaceState' : 'pushState']({}, '', url);
+}
+
+// ==================== איפה אני ====================
+const nearKm = (p) => {
+  if (!near || near.state !== 'ok' || p.lat == null || p.approx) return null;
+  const hit = near.list.find((n) => n.p.id === p.id);
+  return hit ? hit.km : null;
+};
+const NEAR_MSG = {
+  denied: 'לא התקבלה הרשאה למיקום. כדי לאפשר: בהגדרות הדפדפן ← הרשאות אתר ← מיקום, ואז ללחוץ שוב על "איפה אני".',
+  timeout: 'לא הצלחנו לאתר את המיקום בזמן. כדאי לוודא שהמיקום (GPS) בטלפון דלוק ולנסות שוב.',
+  unavailable: 'לא הצלחנו לאתר את המיקום. כדאי לוודא שהמיקום (GPS) בטלפון דלוק ולנסות שוב.',
+  unsupported: 'הדפדפן הזה אינו יודע למסור מיקום.',
+};
+
+function renderNear() {
+  const el = $('#near');
+  // כשמקום פתוח, הפירוט תופס את הטור; הרשימה הקרובה חוזרת ב"חזרה לרשימה"
+  el.hidden = !near || !!sel;
+  if (el.hidden) return;
+  const head = `<div class="nhead"><h2>📍 קרוב אליך</h2>
+    <button class="nclose" id="nClose" aria-label="סגירת קרוב אליך">✕</button></div>`;
+  let body;
+  if (near.state === 'loading') body = '<p class="nmsg">מאתר את המיקום שלך…</p>';
+  else if (near.state === 'error') body = `<p class="nmsg">${esc(near.msg)}</p>`;
+  else if (near.state === 'outside') {
+    body = `<p class="nmsg">נראה שאתה מחוץ לגבולות המפה. הכפתור מראה מקומות בארץ ישראל ובסביבתה -
+      נסו אותו כשאתם בארץ.</p>`;
+  } else {
+    body = `<div class="nlist">${near.list.map(({ p, km }) => `
+      <button class="nrow" data-id="${esc(p.id)}">
+        <span class="nn">${esc(p.name)}${p.disputed ? '<small> · זיהוי שנוי במחלוקת</small>' : ''}</span>
+        <span class="nk">${fmtKm(km)}</span>
+      </button>`).join('')}</div>
+      ${near.acc > 1000 ? `<p class="nnote">המיקום משוער, בטווח של כ-${fmtKm(near.acc / 1000)}.</p>` : ''}
+      <p class="nnote">המרחקים בקו אווירי, ורוב הזיהויים של מקומות עתיקים משוערים.</p>`;
+  }
+  el.innerHTML = head + body;
+  $('#nClose').addEventListener('click', closeNear);
+  el.querySelectorAll('.nrow').forEach((b) => b.addEventListener('click', () => select(b.dataset.id)));
+}
+
+function closeNear() {
+  near = null;
+  $('#locate').classList.remove('on');
+  renderNear(); paintMe(); moveCam();
+}
+
+async function locate() {
+  stopPlay();
+  near = { state: 'loading' };
+  $('#locate').classList.add('on');
+  if (sel) select(null); else renderNear();
+  let r;
+  try {
+    const c = await getPosition();
+    const pt = locateOnMap(c.latitude, c.longitude);
+    const list = pt ? nearest(PLACES, c.latitude, c.longitude) : [];
+    if (!pt || !list.length || list[0].km > MAX_KM) {
+      near = { state: 'outside' }; r = 'outside';
+    } else {
+      near = { state: 'ok', lat: c.latitude, lon: c.longitude, acc: c.accuracy || 0, pt, list }; r = 'ok';
+      // השאלה היא "מה סביבי", לא "מה סביבי בתקופה X": סינון פעיל היה מעמעם
+      // בדיוק את המקומות שברשימה
+      if (era) { era = null; renderEras(); renderList(); paintMarks(); }
+    }
+  } catch (e) {
+    const code = NEAR_MSG[e.message] ? e.message : 'unavailable';
+    near = { state: 'error', msg: NEAR_MSG[code] }; r = code === 'denied' ? 'denied' : 'error';
+  }
+  // רק התוצאה, בלי שום קואורדינטה - ראו את ההערה בראש nearby.js
+  mark('geo_locate', { r });
+  if (near.state !== 'ok') $('#locate').classList.remove('on');
+  renderNear(); paintMe(); moveCam();
 }
 
 // ==================== הרצת תקופות ====================
@@ -397,6 +498,7 @@ addEventListener('resize', () => { if (measureWrap()) refit(false); });
 // הגופן העברי מחליף את גופן הגיבוי אחרי הציור הראשון ומשנה גבהים בטור
 document.fonts?.ready.then(() => { if (measureWrap()) refit(false); });
 
+$('#locate').addEventListener('click', locate);
 $('#reset').addEventListener('click', () => {
   camFree = true;
   setCam(fullCam());

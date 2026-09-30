@@ -35,8 +35,9 @@ const RES = ANCHORS.map(([lon, lat, px, py]) => {
   return { lon, lat, rx: px - a.X, ry: py - a.Y };
 });
 
-/** lat/lon -> פיקסלים על המפה המרובעת */
-export function project(lon, lat) {
+/** lat/lon -> פיקסלים, בלי הצמדה לשולי המפה. "איפה אני" צריך לדעת שהגולש
+    מחוץ למסגרת, ולא לקבל נקודה תקועה בקצה. */
+export function projectRaw(lon, lat) {
   const a = affine(lon, lat);
   let sw = 0, sx = 0, sy = 0;
   for (const r of RES) {
@@ -44,9 +45,15 @@ export function project(lon, lat) {
     const w = 1 / (d2 + 0.0004);
     sw += w; sx += w * r.rx; sy += w * r.ry;
   }
+  return { x: a.X + sx / sw, y: a.Y + sy / sw };
+}
+
+/** lat/lon -> פיקסלים על המפה המרובעת */
+export function project(lon, lat) {
+  const q = projectRaw(lon, lat);
   return {
-    x: Math.max(16, Math.min(MAP_SIZE - 16, a.X + sx / sw)),
-    y: Math.max(16, Math.min(MAP_SIZE - 16, a.Y + sy / sw)),
+    x: Math.max(16, Math.min(MAP_SIZE - 16, q.x)),
+    y: Math.max(16, Math.min(MAP_SIZE - 16, q.y)),
   };
 }
 

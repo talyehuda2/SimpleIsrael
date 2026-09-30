@@ -31,6 +31,9 @@
      tree_open / tours_open / guide_open   - שימוש בפיצ'רים
      kings_open            שני המסכים - "שתי הממלכות" נפתח
      menu_pick   {id}       תפריט "עוד באתר" - איזה פריט נבחר (mark, לא once)
+     geo_locate  {r}        מפת הארץ   - "איפה אני" הופעל, ומה יצא: ok / outside /
+                                        denied / error (mark, לא once). בכוונה בלי
+                                        קואורדינטה: המיקום אינו יוצא מהמכשיר
      game_start  {mode}     סדר את הציר - daily או free
      game_done   {mode,score,topics?,range?}
                             האתגר היומי פעם אחת (markOnce), וכל סבב חופשי

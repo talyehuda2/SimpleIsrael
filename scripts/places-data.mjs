@@ -10,7 +10,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { journeyStations } from '../src/utils/mapProject.js';
+import { journeyStations, oldPixelToLatLon } from '../src/utils/mapProject.js';
+import { stationNote } from '../src/utils/placeNote.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f) => JSON.parse(readFileSync(join(ROOT, 'src', 'data', f), 'utf8'));
@@ -84,9 +85,17 @@ for (const [itemId, m] of Object.entries(maps)) {
   if (!item) continue;
   for (const st of journeyStations(m)) {
     const name = canonical(st.name);
-    if (!places.has(name)) places.set(name, { name, xs: [], ys: [], visits: [], aka: new Set() });
+    if (!places.has(name)) places.set(name, { name, xs: [], ys: [], lats: [], lons: [], notes: new Set(), visits: [], aka: new Set() });
     const p = places.get(name);
     p.xs.push(st.x); p.ys.push(st.y);
+    // קואורדינטות אמיתיות, בשביל "איפה אני" במפת הארץ: מרחק בק"מ נמדד
+    // על הכדור ולא על התמונה המצוירת. journeyStations דורס את x/y של
+    // תחנות ותיקות, ולכן ה-lat/lon נגזר מהתחנה המקורית שב-maps.json.
+    const raw = m.points.find((q) => q.id === st.id) || st;
+    const ll = raw.x != null ? oldPixelToLatLon(raw.x, raw.y) : { lat: raw.lat, lon: raw.lon };
+    if (ll.lat != null && ll.lon != null) { p.lats.push(ll.lat); p.lons.push(ll.lon); }
+    const note = stationNote(st.name.trim());
+    if (note) p.notes.add(note);
     if (st.name.trim() !== name) p.aka.add(st.name.trim());
     p.visits.push({
       id: item.id, kind: item.kind, name: item.name,
@@ -111,6 +120,11 @@ const out = [...places.values()].map((p) => {
     aka: [...p.aka],
     x: +med(p.xs).toFixed(1),
     y: +med(p.ys).toFixed(1),
+    ...(p.lats.length ? { lat: +med(p.lats).toFixed(4), lon: +med(p.lons).toFixed(4) } : {}),
+    // "מיקום מקורב" = הנקודה מציינת כיוון בלבד (מחוץ למסגרת המפה), ולכן
+    // אין למדוד אליה מרחק. "זיהוי שנוי במחלוקת" נמדד, אבל מסומן.
+    ...(p.notes.has('מיקום מקורב') ? { approx: true } : {}),
+    ...(p.notes.has('זיהוי שנוי במחלוקת') ? { disputed: true } : {}),
     from: years.length ? Math.min(...years) : null,
     to: years.length ? Math.max(...years) : null,
     ...(lore[slugify(p.name)] ? { lore: lore[slugify(p.name)] } : {}),

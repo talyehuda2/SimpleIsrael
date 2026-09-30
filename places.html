@@ -68,6 +68,9 @@
 <main id="wrap" tabindex="-1">
   <!-- הרשימה בימין (כיוון הקריאה) והמפה לצדה, כמו סדר העמודות במסע הדורות -->
   <aside id="side" aria-label="רשימת המקומות">
+    <!-- "איפה אני": המקומות הקרובים לגולש. בראש הטור ולא בתוך הרשימה, כדי
+         שבטלפון התוצאה תופיע מיד מתחת למפה ולא אחרי החיפוש והתקופות -->
+    <div id="near" hidden aria-live="polite"></div>
     <div id="sideHead">
       <div id="searchRow">
         <input id="q" type="search" autocomplete="off" placeholder="חיפוש מקום…" aria-label="חיפוש מקום"/>
@@ -83,6 +86,7 @@
     <div id="mapWrap">
       <svg id="map" viewBox="0 0 1254 1254" role="group" aria-label="מפת המקומות ההיסטוריים"></svg>
       <button id="reset">↺ מבט מלא</button>
+      <button id="locate" title="אילו מקומות היסטוריים קרובים אליי">📍 איפה אני</button>
     </div>
     <p id="mapHint">גודל הנקודה = כמה דמויות עברו במקום. לחיצה פותחת את מה שקרה שם.</p>
   </section>

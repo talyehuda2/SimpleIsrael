@@ -83,6 +83,16 @@ const PAGES = [
   { url: '/', name: 'ציר הזמן', check: '#root > *' },
   { url: '/atlas', name: 'מסע הדורות', check: '#story > *' },
   { url: '/places', name: 'מפת הארץ', check: '#list > *' },
+  /* "איפה אני" עם מיקום מדומה. הבדיקה עוברת גם דרך כותרת Permissions-Policy
+     של vercel.json: אם היא חוזרת ל-geolocation=() הדפדפן מסרב, והראשונה נופלת.
+     בשילה המקום הקרוב ביותר חייב להיות שילה; בלונדון - הודעת "מחוץ למפה";
+     ובלי הרשאה - הסבר איך לאפשר, ולא כפתור שלא עושה כלום. */
+  { url: '/places', name: 'איפה אני', check: '#list > *', geo: { latitude: 32.055, longitude: 35.289 },
+    click: '#locate', expect: '.nlist .nrow:first-child[data-id="שילה"]' },
+  { url: '/places', name: 'מחוץ למפה', check: '#list > *', geo: { latitude: 51.507, longitude: -0.128 },
+    click: '#locate', expect: '#near .nmsg >> text=מחוץ לגבולות המפה' },
+  { url: '/places', name: 'בלי הרשאה', check: '#list > *', geo: 'denied',
+    click: '#locate', expect: '#near .nmsg >> text=לא התקבלה הרשאה' },
   { url: '/privacy', name: 'פרטיות', check: 'body' },
   // שלושת העמודים המשפטיים נבדקים בנפרד: הם נוצרים ב-prerender ואינם
   // ב-sitemap, ולכן שום בדיקה אחרת לא הייתה מגלה ש-rewrite חסר ב-vercel.json
@@ -210,10 +220,21 @@ const browser = await launch();
 const failures = [];
 
 for (const page of PAGES) {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const ctx = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+    // מיקום מדומה נמסר רק כשההרשאה ניתנה; 'denied' = בלי הרשאה, כמו גולש שסירב
+    ...(page.geo && page.geo !== 'denied' ? { geolocation: page.geo, permissions: ['geolocation'] } : {}),
+  });
   // חסימת כל היעדים החיצוניים: ריצה זהה בכל פעם, ובלי לזהם את si_trail
   await ctx.route('**', (route) => (route.request().url().startsWith(BASE) ? route.continue() : route.abort()));
   const tab = await ctx.newPage();
+  // לדפדפן אוטומטי אין דרך "לסרב": בלי הרשאה הבקשה פשוט תלויה. לכן הסירוב
+  // מדומה בשגיאה עצמה, קוד 1 (PERMISSION_DENIED), כמו שהדפדפן מחזיר לגולש שסירב
+  if (page.geo === 'denied') {
+    await tab.addInitScript(() => {
+      navigator.geolocation.getCurrentPosition = (ok, fail) => fail({ code: 1, message: 'denied' });
+    });
+  }
   const errs = [];
 
   tab.on('pageerror', (e) => errs.push(`חריגת JS: ${e.message}`));
@@ -243,6 +264,10 @@ for (const page of PAGES) {
     if (!res || res.status() >= 400) errs.push(`סטטוס ${res ? res.status() : '?'}`);
     else {
       await tab.waitForSelector(page.check, { timeout: 15000, state: 'attached' });
+      if (page.click) {
+        await tab.click(page.click);
+        await tab.waitForSelector(page.expect, { timeout: 10000 });
+      }
       // רק אחרי שהמסך התרנדר: axe על שלד ריק מדווח על הפרות שאינן קיימות
       errs.push(...await axeViolations(tab));
     }
