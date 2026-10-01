@@ -61,7 +61,7 @@ function drawMap() {
   }).join('');
   $('#map').innerHTML =
     `<image href="${MAP_SRC}" x="0" y="0" width="${MAP_SIZE}" height="${MAP_SIZE}"/>
-     ${marks}<g id="me" aria-hidden="true"></g><g id="labels">${labels}</g>`;
+     ${marks}<g id="labels">${labels}</g><g id="me" aria-hidden="true"></g>`;
   $('#map').querySelectorAll('.pm').forEach((g) => {
     g.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(g.dataset.id); }
@@ -269,16 +269,23 @@ function paintZoom() {
   });
 }
 
-/* הנקודה הכחולה ועיגול הדיוק. העיגול בק"מ אמיתיים (ביחידות המפה), והנקודה
-   עצמה נשמרת בגודל קבוע על המסך כמו שאר הסמנים. */
+/* סיכת "אתה כאן" ועיגול הדיוק. העיגול בק"מ אמיתיים (ביחידות המפה), והסיכה
+   נשמרת בגודל קבוע על המסך כמו שאר הסמנים. היא סיכה אדומה ולא עיגול:
+   נקודה כחולה בין עשרות נקודות כחולות-כהות לא בלטה (הערת בעל האתר).
+   החוד יושב בדיוק על המיקום, והשכבה מעל השמות - שום שם לא מסתיר אותה. */
 function paintMe(k = Math.max(0.4, cam.h / BASE_H)) {
   const g = $('#me'); if (!g) return;
   if (!near || near.state !== 'ok') { g.innerHTML = ''; return; }
   const { pt, acc, lat, lon } = near;
   // תקרה של 25 ק"מ: עיגול בגודל חצי הארץ (מחשב בלי GPS) רק מסתיר את המפה
   const accR = Math.min(acc / 1000, 25) * pxPerKm(lat, lon);
+  const s = (1.15 * k).toFixed(3);
   g.innerHTML = `<circle class="me-acc" cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="${Math.max(accR, 12 * k).toFixed(1)}"/>
-    <circle class="me-dot" cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="${(9 * k).toFixed(1)}"/>`;
+    <g transform="translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)}) scale(${s})">
+      <ellipse class="me-shadow" cx="0" cy="0" rx="9" ry="3.5"/>
+      <path class="me-pin" d="M0,0 C-4,-10 -15,-18 -15,-29 A15,15 0 1 1 15,-29 C15,-18 4,-10 0,0 Z"/>
+      <circle class="me-core" cx="0" cy="-29" r="6"/>
+    </g>`;
 }
 
 function paintMarks() {
