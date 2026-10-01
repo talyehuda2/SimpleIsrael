@@ -61,7 +61,16 @@ a.ms-opt:hover{background:var(--panel);color:var(--navy)}
 #mapWrap{flex:1;width:100%;min-height:0;max-width:calc((100vh - var(--bar) - 46px) * 1.05);
   position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;
   background:#e6d8b8;box-shadow:0 6px 22px rgb(60 40 0 / .16)}
-#map{display:block;width:100%;height:100%}
+/* המפה מטפלת במגע בעצמה: גרירה וצביטה מזיזות אותה ולא את הדף */
+#map{display:block;width:100%;height:100%;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+#map:active{cursor:grabbing}
+/* +/− - בשמאל במכוון, כמו כפתורי הזום בציר הזמן: הימין שייך ל"מבט מלא" ול"איפה אני" */
+#zoomBtns{position:absolute;bottom:10px;left:10px;z-index:2;display:flex;flex-direction:column;
+  border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 3px 10px rgb(60 40 0 / .22)}
+#zoomBtns button{width:40px;height:40px;border:none;background:rgb(251 245 231 / .95);color:var(--navy);
+  font-size:22px;font-weight:700;line-height:1;cursor:pointer}
+#zoomBtns button+button{border-top:1px solid var(--line)}
+#zoomBtns button:hover{background:var(--panel);color:var(--gold-ink)}
 #mapHint{margin:0;font-size:12px;color:var(--muted);text-align:center;flex:none}
 /* חזרה למבט המלא - צף בפינת המפה, מופיע רק כשהמצלמה אינה במבט הבסיס */
 #reset{position:absolute;top:10px;inset-inline-start:10px;z-index:2;display:none;
@@ -78,6 +87,11 @@ a.ms-opt:hover{background:var(--panel);color:var(--navy)}
   box-shadow:0 3px 10px rgb(60 40 0 / .22)}
 #locate:hover{border-color:var(--gold)}
 #locate.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+#locate.busy{background:var(--navy);color:#fff;border-color:var(--navy);cursor:progress;opacity:1}
+#locate .spin{display:inline-block;width:12px;height:12px;margin-inline-end:4px;vertical-align:-1px;
+  border:2px solid rgb(255 255 255 / .35);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){#locate .spin{animation-duration:2.4s}}
 /* הנקודה הכחולה: הצבע המוכר של "אתה כאן" בכל אפליקציית מפות, ובכוונה
    שונה מהנייבי של המקומות ומהזהב של המקום הנבחר */
 .me-acc{fill:#1a73e8;fill-opacity:.14;stroke:#1a73e8;stroke-opacity:.45;stroke-width:1.5;vector-effect:non-scaling-stroke}

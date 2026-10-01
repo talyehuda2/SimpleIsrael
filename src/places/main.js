@@ -169,7 +169,79 @@ function setCam(to, animate = true) {
   // הייתה נתקעת באמצע. אחרי משך ההנפשה קובעים את היעד בכל מקרה.
   camTO = setTimeout(() => { cancelAnimationFrame(camAF); applyCam(to); }, D + 120);
 }
-const moveCam = (animate = true) => { camFree = false; setCam(camTarget(), animate); };
+const moveCam = (animate = true) => { camFree = false; camManual = false; setCam(camTarget(), animate); };
+
+/* ---------- גרירה וזום ידניים ----------
+   גולש העיר שאי אפשר לזוז על המפה: צביטה הגדילה את כל הדף ולא את המפה.
+   עכשיו המפה מטפלת במגע בעצמה (touch-action:none): אצבע אחת גוררת, שתיים
+   מזיזות ומגדילות, גלגלת מגדילה במחשב, ו-+/− לכל מי שלא נוח לו במחוות.
+   המצלמה היא אותו viewBox, ולכן הסמנים והשמות ממשיכים להתכייל כרגיל. */
+let camManual = false;                    // המצלמה הוזזה ביד - שינוי גודל שומר עליה
+const MIN_ZOOM = 150;                     // מתחת לזה תמונת המפה מטושטשת מדי
+const maxCamH = () => (wrapAR >= 1 ? MAP_SIZE / wrapAR : MAP_SIZE);
+function clampCam(x, y, h) {
+  h = Math.min(Math.max(h, MIN_ZOOM), maxCamH());
+  const w = h * wrapAR;
+  const c = (v, lo, hi) => (hi < lo ? (lo + hi) / 2 : Math.min(Math.max(v, lo), hi));
+  return { x: c(x, 0, MAP_SIZE - w), y: c(y, 0, MAP_SIZE - h), w, h };
+}
+// יחידות מפה לפיקסל מסך, ונקודת המפה שמתחת לנקודת מסך
+const upp = () => cam.w / $('#map').getBoundingClientRect().width;
+function toMap(clientX, clientY) {
+  const r = $('#map').getBoundingClientRect();
+  return { x: cam.x + (clientX - r.left) * upp(), y: cam.y + (clientY - r.top) * upp() };
+}
+// זום סביב נקודה: הנקודה שמתחת לאצבע או לעכבר נשארת במקומה
+function zoomAt(mx, my, f, animate = false) {
+  const h = Math.min(Math.max(cam.h * f, MIN_ZOOM), maxCamH());
+  const k = h / cam.h;
+  camManual = true; camFree = false;
+  setCam(clampCam(mx - (mx - cam.x) * k, my - (my - cam.y) * k, h), animate);
+}
+
+const ptrs = new Map();
+let gesture = null, dragged = false;
+function gestureStart() {
+  const pts = [...ptrs.values()];
+  // עותק ולא הפניה: pts[0] הוא האובייקט החי שמתעדכן בכל תזוזה, והפניה
+  // אליו אפסה את מרחק הגרירה - המפה לא זזה באצבע אחת
+  const mid = pts.length > 1 ? { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 } : { x: pts[0].x, y: pts[0].y };
+  const dist = pts.length > 1 ? Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) : 0;
+  gesture = { cam: { ...cam }, mid, dist, anchor: toMap(mid.x, mid.y), upp: upp(), n: pts.length };
+}
+function onPtrDown(e) {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  cancelAnimationFrame(camAF); clearTimeout(camTO);
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY });
+  if (ptrs.size === 1) dragged = false;
+  gestureStart();
+}
+function onPtrMove(e) {
+  const p = ptrs.get(e.pointerId);
+  if (!p || !gesture) return;
+  p.x = e.clientX; p.y = e.clientY;
+  // סף של 6 פיקסלים: לחיצה רועדת על סמן היא עדיין לחיצה, לא גרירה
+  if (Math.hypot(p.x - p.x0, p.y - p.y0) > 6) dragged = true;
+  if (!dragged) return;
+  const pts = [...ptrs.values()];
+  if (pts.length !== gesture.n) return gestureStart();
+  const g = gesture, r = $('#map').getBoundingClientRect();
+  if (pts.length === 1) {
+    camManual = true; camFree = false;
+    applyCam(clampCam(g.cam.x - (pts[0].x - g.mid.x) * g.upp, g.cam.y - (pts[0].y - g.mid.y) * g.upp, g.cam.h));
+  } else {
+    const mid = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+    const h = Math.min(Math.max(g.cam.h * (g.dist / dist), MIN_ZOOM), maxCamH());
+    const u = g.upp * (h / g.cam.h);
+    camManual = true; camFree = false;
+    applyCam(clampCam(g.anchor.x - (mid.x - r.left) * u, g.anchor.y - (mid.y - r.top) * u, h));
+  }
+}
+function onPtrUp(e) {
+  if (!ptrs.delete(e.pointerId)) return;
+  if (ptrs.size) gestureStart(); else gesture = null;
+}
 
 /* גודל הסמנים והתוויות נקבע ביחידות ה-viewBox, ולכן זום-אין היה מנפח
    אותם. הכיול ההפוך משאיר אותם בערך באותו גודל על המסך, ותוויות
@@ -405,10 +477,22 @@ function closeNear() {
   renderNear(); paintMe(); moveCam();
 }
 
+/* חיווי על הכפתור עצמו בזמן האיתור: GPS יכול לקחת כמה שניות, ובטלפון
+   "קרוב אליך" יושב מתחת למפה - בלי זה הלחיצה נראתה כאילו לא קרה כלום. */
+const LOCATE_LABEL = '📍 איפה אני';
+function setLocateBusy(busy) {
+  const b = $('#locate');
+  b.classList.toggle('busy', busy);
+  b.disabled = busy;
+  b.setAttribute('aria-busy', busy ? 'true' : 'false');
+  b.innerHTML = busy ? '<span class="spin" aria-hidden="true"></span> מאתר מיקום…' : LOCATE_LABEL;
+}
+
 async function locate() {
+  if ($('#locate').disabled) return;
   stopPlay();
   near = { state: 'loading' };
-  $('#locate').classList.add('on');
+  setLocateBusy(true);
   if (sel) select(null); else renderNear();
   let r;
   try {
@@ -429,7 +513,8 @@ async function locate() {
   }
   // רק התוצאה, בלי שום קואורדינטה - ראו את ההערה בראש nearby.js
   mark('geo_locate', { r });
-  if (near.state !== 'ok') $('#locate').classList.remove('on');
+  setLocateBusy(false);
+  $('#locate').classList.toggle('on', near.state === 'ok');
   renderNear(); paintMe(); moveCam();
 }
 
@@ -489,7 +574,8 @@ function measureWrap() {
   wrapAR = ar;
   return true;
 }
-const refit = (animate = false) => setCam(camFree ? fullCam() : camTarget(), animate);
+const refit = (animate = false) =>
+  setCam(camManual ? clampCam(cam.x + cam.w / 2 - (cam.h * wrapAR) / 2, cam.y, cam.h) : camFree ? fullCam() : camTarget(), animate);
 measureWrap();
 openFromUrl();
 moveCam(false);
@@ -499,8 +585,26 @@ addEventListener('resize', () => { if (measureWrap()) refit(false); });
 document.fonts?.ready.then(() => { if (measureWrap()) refit(false); });
 
 $('#locate').addEventListener('click', locate);
+$('#map').addEventListener('pointerdown', onPtrDown);
+addEventListener('pointermove', onPtrMove);
+addEventListener('pointerup', onPtrUp);
+addEventListener('pointercancel', onPtrUp);
+// גרירה שהסתיימה מעל סמן אינה בחירה שלו. מאזין בשלב הלכידה, לפני מאזין הבחירה
+$('#map').addEventListener('click', (e) => {
+  if (dragged) { e.stopImmediatePropagation(); dragged = false; }
+}, true);
+$('#map').addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const m = toMap(e.clientX, e.clientY);
+  zoomAt(m.x, m.y, Math.exp(Math.max(-60, Math.min(60, e.deltaY)) * 0.004));
+}, { passive: false });
+$('#map').addEventListener('dblclick', (e) => { const m = toMap(e.clientX, e.clientY); zoomAt(m.x, m.y, 0.5, true); });
+const zoomCenter = (f) => zoomAt(cam.x + cam.w / 2, cam.y + cam.h / 2, f, true);
+$('#zoomIn').addEventListener('click', () => zoomCenter(0.6));
+$('#zoomOut').addEventListener('click', () => zoomCenter(1 / 0.6));
+
 $('#reset').addEventListener('click', () => {
-  camFree = true;
+  camFree = true; camManual = false;
   setCam(fullCam());
 });
 
