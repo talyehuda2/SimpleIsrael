@@ -92,13 +92,15 @@ const artPage = (s) => {
 *{box-sizing:border-box;margin:0}
 html,body{width:1080px;height:1920px;overflow:hidden;font-family:F,serif}
 .bg{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover}
-.tbox{position:absolute;left:${box.x}px;top:${box.y}px;width:${box.w}px;padding:30px 34px 34px;text-align:right;
-  background:radial-gradient(ellipse at 60% 50%,rgb(251 245 231 / .92),rgb(251 245 231 / .78) 60%,rgb(251 245 231 / 0) 100%);border-radius:40px}
-.ey{font-weight:700;font-size:34px;color:#7a5b16;margin-bottom:10px}
-.tt{font-weight:900;font-size:96px;line-height:1.02;color:#163a57}
-.lb{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-weight:700;font-size:34px;color:#fff;
-  background:rgb(22 58 87 / .9);border:2px solid rgb(231 200 115 / .9);border-radius:999px;padding:4px 20px 8px;
-  box-shadow:0 6px 16px rgb(40 25 0 / .35)}
+.tbox{position:absolute;left:${box.x}px;top:${box.y}px;width:${box.w}px;text-align:right}
+/* כתוב בדיו על האיור עצמו, ולא תווית שמודבקת עליו: חום-ספיה של התחריט,
+   והילה בצבע הקלף סביב האותיות כדי שיקראו גם מעל פרטים */
+.ey{font-weight:700;font-size:36px;color:#6b4c12;margin-bottom:6px;
+  text-shadow:0 0 6px #f7ecd0,0 0 14px #f7ecd0,0 0 22px #f7ecd0}
+.tt{font-weight:900;font-size:104px;line-height:1;color:#3f2a0e;
+  text-shadow:0 0 8px #f7ecd0,0 0 18px #f7ecd0,0 0 32px #f7ecd0,0 0 48px rgb(247 236 208 / .8)}
+.lb{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-weight:900;font-size:44px;color:#3f2a0e;
+  text-shadow:0 0 5px #f7ecd0,0 0 10px #f7ecd0,0 0 18px #f7ecd0,0 0 26px rgb(247 236 208 / .85)}
 </style></head><body>
 <img class="bg" src="file://${img}">
 <div class="tbox">${s.eyebrow ? `<div class="ey">${esc(s.eyebrow)}</div>` : ''}${(s.title || []).map((l) => `<div class="tt">${esc(l)}</div>`).join('')}</div>
