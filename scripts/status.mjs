@@ -29,7 +29,11 @@
               עם כל התחומים והתקופות (ולא האתגר היומי - כדי לא לחשוף את התשובה של היום).
               place: כמה קלפים להניח לפני הצילום. solve: לפתור 5/5 ולצלם את מסך התוצאה
               (wait מ"ש אחרי "בדיקה" - 700 תופס את הקונפטי באוויר).
-     cta    - eyebrow, title, p, url?         סיום עם כתובת האתר (url: למשל simpleisrael.co.il/game) */
+     cta    - eyebrow, title, p, url?         סיום עם כתובת האתר (url: למשל simpleisrael.co.il/game)
+     art    - image, eyebrow?, title[], labels?[]   איור מוכן על כל השקף (למשל מצ'אט GPT), עם כותרת
+              בפינה ותוויות שם. image: נתיב יחסי לשורש הריפו. title: שורות הכותרת. labels:
+              [{t, x, y}] - x/y באחוזים מרוחב/גובה האיור, נקודת העיגון היא מרכז התווית.
+              box: {x, y, w} מיקום הכותרת בפיקסלים של 1080x1920 (ברירת מחדל: פינה שמאלית עליונה). */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, createReadStream, mkdtempSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename, extname } from 'node:path';
@@ -76,7 +80,33 @@ function body(s, shot) {
   throw new Error(`סוג שקף לא מוכר: ${s.type}`);
 }
 
-const page = (s, shot) => `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><style>
+/* שקף איור: התמונה ממלאת את כל השקף (ולא האיש עם המקל), והכותרת יושבת
+   בחלק הריק שלה על שטיפת קלף רכה, כדי שתיקרא גם מעל פרטים באיור */
+const artPage = (s) => {
+  const img = join(ROOT, s.image);
+  const box = { x: 46, y: 70, w: 500, ...(s.box || {}) };
+  const labels = (s.labels || []).map((l) => `<span class="lb" style="left:${l.x}%;top:${l.y}%">${esc(l.t)}</span>`).join('');
+  return `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><style>
+@font-face{font-family:F;font-weight:700;src:url(file://${FD}/700Bold/FrankRuhlLibre_700Bold.ttf)}
+@font-face{font-family:F;font-weight:900;src:url(file://${FD}/900Black/FrankRuhlLibre_900Black.ttf)}
+*{box-sizing:border-box;margin:0}
+html,body{width:1080px;height:1920px;overflow:hidden;font-family:F,serif}
+.bg{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover}
+.tbox{position:absolute;left:${box.x}px;top:${box.y}px;width:${box.w}px;padding:30px 34px 34px;text-align:right;
+  background:radial-gradient(ellipse at 60% 50%,rgb(251 245 231 / .92),rgb(251 245 231 / .78) 60%,rgb(251 245 231 / 0) 100%);border-radius:40px}
+.ey{font-weight:700;font-size:34px;color:#7a5b16;margin-bottom:10px}
+.tt{font-weight:900;font-size:96px;line-height:1.02;color:#163a57}
+.lb{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-weight:700;font-size:34px;color:#fff;
+  background:rgb(22 58 87 / .9);border:2px solid rgb(231 200 115 / .9);border-radius:999px;padding:4px 20px 8px;
+  box-shadow:0 6px 16px rgb(40 25 0 / .35)}
+</style></head><body>
+<img class="bg" src="file://${img}">
+<div class="tbox">${s.eyebrow ? `<div class="ey">${esc(s.eyebrow)}</div>` : ''}${(s.title || []).map((l) => `<div class="tt">${esc(l)}</div>`).join('')}</div>
+${labels}
+</body></html>`;
+};
+
+const page = (s, shot) => s.type === 'art' ? artPage(s) : `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><style>
 @font-face{font-family:F;font-weight:500;src:url(file://${FD}/500Medium/FrankRuhlLibre_500Medium.ttf)}
 @font-face{font-family:F;font-weight:700;src:url(file://${FD}/700Bold/FrankRuhlLibre_700Bold.ttf)}
 @font-face{font-family:F;font-weight:900;src:url(file://${FD}/900Black/FrankRuhlLibre_900Black.ttf)}
@@ -255,7 +285,9 @@ for (const [i, s] of spec.slides.entries()) {
   // צילום מסך צר יושב מימין לאיש ולכן מותר לו לרדת עד מעל שורת הכתובת.
   const m = await pg.evaluate(() => {
     const r = (e) => e && e.getBoundingClientRect();
+    // בשקף איור אין .content - הוא ממלא את כל השקף בכוונה, ואין גבול לבדוק
     const c = r(document.querySelector('.content')), shot = r(document.querySelector('.shot'));
+    if (!c) return { bottom: 0, shot: null };
     return { bottom: Math.round(c.bottom), shot: shot && { left: Math.round(shot.left), bottom: Math.round(shot.bottom) } };
   });
   // צילום רחב (x<310) כבר אינו מימין לאיש עם המקל, ולכן חל עליו הגבול הרגיל
