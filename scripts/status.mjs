@@ -101,10 +101,14 @@ html,body{width:1080px;height:1920px;overflow:hidden;font-family:F,serif}
   text-shadow:0 0 8px #f7ecd0,0 0 18px #f7ecd0,0 0 32px #f7ecd0,0 0 48px rgb(247 236 208 / .8)}
 .lb{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-weight:900;font-size:44px;color:#3f2a0e;
   text-shadow:0 0 5px #f7ecd0,0 0 10px #f7ecd0,0 0 18px #f7ecd0,0 0 26px rgb(247 236 208 / .85)}
+/* חתימה בתחתית, באותה דיו - כתובת האתר ולא לוגו, כדי שמי שרואה יידע לאן להיכנס */
+.ft{position:absolute;left:0;right:0;bottom:46px;text-align:center;direction:ltr;font-weight:900;font-size:58px;color:#3f2a0e;
+  text-shadow:0 0 8px #f7ecd0,0 0 18px #f7ecd0,0 0 30px #f7ecd0,0 0 44px rgb(247 236 208 / .85)}
 </style></head><body>
 <img class="bg" src="file://${img}">
 <div class="tbox">${s.eyebrow ? `<div class="ey">${esc(s.eyebrow)}</div>` : ''}${(s.title || []).map((l) => `<div class="tt">${esc(l)}</div>`).join('')}</div>
 ${labels}
+${s.foot ? `<div class="ft">${esc(s.foot)}</div>` : ''}
 </body></html>`;
 };
 
