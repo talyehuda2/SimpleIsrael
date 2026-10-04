@@ -39,8 +39,23 @@ export function supported() {
    בישראל name הוא כבר עברית; מחוץ לה name:he מחליף "Amman" ב"עמאן". */
 function hebrewLabels(map) {
   for (const layer of map.getStyle().layers) {
-    if (layer.type !== 'symbol' || !map.getLayoutProperty(layer.id, 'text-field')) continue;
+    if (layer.type !== 'symbol') continue;
+    const tf = map.getLayoutProperty(layer.id, 'text-field');
+    // רק שכבות שמציגות שם. מגיני הכבישים מציגים את מספר הכביש (ref), ובגרסה
+    // הראשונה גם הם קיבלו "שם" - וכל מגן הפך למלבן לבן ריק.
+    if (!tf || !JSON.stringify(tf).includes('name')) continue;
     map.setLayoutProperty(layer.id, 'text-field', ['coalesce', ['get', 'name:he'], ['get', 'name']]);
+  }
+}
+
+/* בלי גבולות מדיניים ושמות מדינות: זו מפה של אתרים מקראיים, והקווים
+   והתוויות של היום (גבולות, "השטחים הפלסטיניים", שמות מדינות) אינם חלק
+   מהשאלה שהיא עונה עליה - רק מוסיפים רעש ומחלוקת. הערים, הכבישים והנוף
+   נשארים. ההחלטה של בעל האתר, וקל להחזיר: למחוק את הקריאה. */
+const HIDE = /^(boundary_|label_country_|label_state$)/;
+function hidePolitics(map) {
+  for (const layer of map.getStyle().layers) {
+    if (HIDE.test(layer.id)) map.setLayoutProperty(layer.id, 'visibility', 'none');
   }
 }
 
@@ -76,17 +91,26 @@ export function createModern(el, { places, onSelect, onError }) {
     pitchWithRotate: false,
   });
   map.touchZoomRotate.disableRotation();
-  map.on('style.load', () => { try { hebrewLabels(map); } catch { /* סגנון שהשתנה - לא שוברים את המפה */ } });
+  // לאבחון בלבד: ?mapdebug חושף את המפה ואת השגיאות שלה לקונסולה
+  if (window.__siDebug || new URLSearchParams(location.search).has('mapdebug')) {
+    window.__siMap = map;
+    map.on('error', (e) => console.warn('maplibre:', e.error?.message || e));
+  }
+  map.on('style.load', () => {
+    try { hebrewLabels(map); hidePolitics(map); } catch { /* סגנון שהשתנה - לא שוברים את המפה */ }
+  });
   let failed = false;
   map.on('error', (e) => {
-    // שגיאת אריח בודד אינה כישלון; סגנון שלא נטען - כן
-    if (failed || map.isStyleLoaded()) return;
+    // רק קובץ הסגנון עצמו הוא כישלון. אריח, sprite או גופן שנכשלו (רשת חלשה)
+    // אינם - בגרסה הראשונה sprite אחד שנכשל החזיר את כל המפה ל"עתיקה".
+    if (failed || map.isStyleLoaded() || (e.error?.url && e.error.url !== STYLE_URL)) return;
     failed = true;
     onError?.(e.error || new Error('style'));
   });
 
   // ---- סמני המקומות ----
-  const RAD = (n) => 4 + 2.6 * Math.sqrt(n - 1);
+  // קטנים מהעתיקה: כאן מתחתם מפה אמיתית, ועיגולים בגודל של שם עיר כיסו אותה
+  const RAD = (n) => 3.5 + 1.5 * Math.sqrt(n - 1);
   const markers = new Map();
   for (const p of shown) {
     const b = document.createElement('button');

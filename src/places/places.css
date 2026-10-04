@@ -82,6 +82,9 @@ a.ms-opt:hover{background:var(--panel);color:var(--navy)}
 /* ---- המפה המודרנית ---- */
 #modernMap{position:absolute;inset:0;z-index:1;background:#e9e4d6}
 body.modern #map,body.modern #zoomBtns,body.modern #reset{visibility:hidden}
+#mapHint .mh-modern{display:none}
+body.modern #mapHint .mh-ancient{display:none}
+body.modern #mapHint .mh-modern{display:inline}
 /* מתג עתיקה/מודרנית - בפינה השמאלית העליונה, במכוון: הימין העליון שייך ל"מבט מלא" */
 #mapMode{position:absolute;top:10px;left:10px;z-index:3;display:flex;padding:3px;gap:2px;
   background:rgb(251 245 231 / .95);border:1px solid var(--line);border-radius:16px;box-shadow:0 3px 10px rgb(60 40 0 / .22)}
@@ -90,13 +93,16 @@ body.modern #map,body.modern #zoomBtns,body.modern #reset{visibility:hidden}
 #mapMode button.on{background:var(--navy);color:#fff}
 #mapMode button.busy{cursor:progress;opacity:.6}
 #mapMode[hidden]{display:none}
-/* סמני המקומות במפה המודרנית: אותה שפה של המפה העתיקה - עיגול נייבי, זהב לנבחר */
+/* סמני המקומות במפה המודרנית: עיגול חום (לא נייבי - כחול נבלע בים ובכבישים של
+   המפה), זהב לנבחר כמו במפה העתיקה */
 .mm{position:relative;width:calc(var(--r) * 2);height:calc(var(--r) * 2);padding:0;border:none;background:none;cursor:pointer}
-.mm-dot{position:absolute;inset:0;border-radius:50%;background:rgb(22 58 87 / .8);border:2px solid #fbf5e7;
+.mm-dot{position:absolute;inset:0;border-radius:50%;background:rgb(122 74 20 / .9);border:2px solid #fbf5e7;
   box-shadow:0 1px 3px rgb(0 0 0 / .35)}
-.mm-lb{position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);white-space:nowrap;display:none;
-  font-family:'Heebo',sans-serif;font-size:13px;font-weight:800;color:#2b2113;
-  text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 2px #fff}
+/* שם מקראי בגופן הסריף של האתר ובחום כהה, על רקע קלף: כך "גת" המקראית לא
+   נקראת כעוד עיר של היום ליד "קריית גת" - הבלבול הראשון שעלה בבדיקה. */
+.mm-lb{position:absolute;bottom:calc(100% + 3px);left:50%;transform:translateX(-50%);white-space:nowrap;display:none;
+  font-family:'Frank Ruhl Libre',serif;font-size:14px;font-weight:900;color:#5a2d0c;line-height:1.15;
+  background:rgb(251 245 231 / .9);border:1px solid #c9a96a;border-radius:7px;padding:0 5px 1px}
 .mm.lb-on .mm-lb{display:block}
 .mm.lb-on{z-index:1}
 .mm.off{display:none}
