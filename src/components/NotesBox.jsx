@@ -33,6 +33,7 @@ export default function NotesBox({ open, onClose }) {
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState('');
+  const [noContact, setNoContact] = useState(false);
   const hp = useRef(null);
 
   useEffect(() => {
@@ -63,6 +64,7 @@ export default function NotesBox({ open, onClose }) {
     });
     setSending(false);
     if (!ok) { setErr('השליחה נכשלה - נסו שוב'); return; }
+    setNoContact(!contact);
     setName(''); setEmail(''); setPhone(''); setBody(''); setDone(true);
   };
 
@@ -75,6 +77,7 @@ export default function NotesBox({ open, onClose }) {
             <div className="notes-done-icon" aria-hidden="true">✓</div>
             <h3>ההערה נשלחה - תודה!</h3>
             <p>הפנייה הגיעה ישירות למנהל האתר. תודה שעזרתם לשפר.</p>
+            {noContact && <p className="notes-need">לא השארתם מייל או טלפון, ולכן לא נוכל לחזור אליכם עם תשובה.</p>}
             <button className="notes-submit" onClick={onClose}>סגירה</button>
           </div>
         ) : (
@@ -82,6 +85,8 @@ export default function NotesBox({ open, onClose }) {
             <h3 className="notes-title">✍️ הערה למנהל האתר</h3>
             <p className="notes-sub">הערות, הארות, תיקונים או כל דבר אחר - יגיעו ישירות למנהל ולא יוצגו באתר.</p>
             <form onSubmit={submit}>
+              {/* פניות הגיעו כאנונימיות עם שאלה, ולא הייתה דרך לענות עליהן */}
+              <p className="notes-need">כדי לקבל תשובה או עדכון - השאירו לפחות פרט חזרה אחד: מייל או טלפון.</p>
               <input
                 className="notes-name" type="text" name="name" autoComplete="name"
                 placeholder="שם (אופציונלי)" aria-label="שם (לא חובה)"
