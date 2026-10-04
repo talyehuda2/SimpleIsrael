@@ -93,10 +93,10 @@ const PAGES = [
     click: '#locate', expect: '#near .nmsg >> text=מחוץ לגבולות המפה' },
   { url: '/places', name: 'בלי הרשאה', check: '#list > *', geo: 'denied',
     click: '#locate', expect: '#near .nmsg >> text=לא התקבלה הרשאה' },
-  /* המפה המודרנית (אב טיפוס, מאחורי ?modern=1). האריחים האמיתיים חיצוניים ולכן
+  /* המפה המודרנית. האריחים האמיתיים חיצוניים ולכן
      חסומים כאן; הסגנון מוחלף בסגנון מקומי עם צורה אחת, וכך נבדק מה שבאמת שלנו:
      טעינת הצ'אנק, ה-worker תחת ה-CSP (בלי blob:), וסמני המקומות. */
-  { url: '/places?modern=1', name: 'מפה מודרנית', check: '#list > *', fixtureStyle: true,
+  { url: '/places', name: 'מפה מודרנית', check: '#list > *', fixtureStyle: true,
     click: '#mapMode [data-m="modern"]', expect: '#modernMap .mm[data-id="ירושלים"]' },
   { url: '/privacy', name: 'פרטיות', check: 'body' },
   // שלושת העמודים המשפטיים נבדקים בנפרד: הם נוצרים ב-prerender ואינם

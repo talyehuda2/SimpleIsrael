@@ -584,18 +584,8 @@ async function setMode(m) {
   mark('map_mode', { m: mode });
 }
 $('#mapMode').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.m)));
-/* אב טיפוס: המתג מוצג רק עם ?modern=1 (ונזכר בדפדפן הזה), כדי שבעל האתר יבדוק
-   את המפה על האתר החי לפני שכולם רואים אותה. ?modern=0 מכבה. בהשקה - להסיר
-   את התנאי, ולהוסיף לעמוד הפרטיות את OpenFreeMap (ראו CLAUDE.md). */
-const MODERN_FLAG = (() => {
-  const q = new URLSearchParams(location.search).get('modern');
-  try {
-    if (q === '1') localStorage.setItem('si_modern', '1');
-    if (q === '0') localStorage.removeItem('si_modern');
-    return localStorage.getItem('si_modern') === '1';
-  } catch { return q === '1'; }
-})();
-$('#mapMode').hidden = !MODERN_FLAG;
+// ניקוי הדגל של תקופת אב הטיפוס (?modern=1), שנשמר בדפדפן של מי שבדק אותו
+try { localStorage.removeItem('si_modern'); } catch { /* אחסון חסום - אין מה לנקות */ }
 
 // ==================== הרצת תקופות ====================
 const PLAY_MS = 4200;

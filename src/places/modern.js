@@ -1,4 +1,4 @@
-/* המפה המודרנית של מפת הארץ - אב טיפוס (אוקטובר 2026).
+/* המפה המודרנית של מפת הארץ (אוקטובר 2026).
 
    בעל האתר ביקש מפה "כמו של ארץ קיר": ערים של היום, כבישים ורחובות, ומתג בין
    המפה העתיקה למודרנית. המפה של ארץ קיר עצמה מוגנת בזכויות יוצרים, ולכן זו
@@ -53,9 +53,24 @@ function hebrewLabels(map) {
    מהשאלה שהיא עונה עליה - רק מוסיפים רעש ומחלוקת. הערים, הכבישים והנוף
    נשארים. ההחלטה של בעל האתר, וקל להחזיר: למחוק את הקריאה. */
 const HIDE = /^(boundary_|label_country_|label_state$)/;
+/* בהחלטת בעל האתר: שום אזכור של פלסטין על המפה. מעבר להסתרת הגבולות
+   ושמות המדינות, כל תווית (מקום, אזור, מבנה, דרך) ששמה מזכיר את המילה -
+   בעברית, באנגלית או בערבית, בכל אחד משדות השם - מסוננת בכל שכבות הטקסט. */
+const BANNED = ['פלסטינ', 'פלשתינ', 'Palestin', 'palestin', 'فلسطين'];
+const ALL_NAMES = ['concat', ...['name', 'name:he', 'name:en', 'name:latin', 'name:nonlatin', 'name:ar', 'name_en', 'name_int']
+  .flatMap((k) => [['coalesce', ['get', k], ''], ' '])];
+const NOT_BANNED = ['all', ...BANNED.map((w) => ['!', ['in', w, ALL_NAMES]])];
 function hidePolitics(map) {
   for (const layer of map.getStyle().layers) {
-    if (HIDE.test(layer.id)) map.setLayoutProperty(layer.id, 'visibility', 'none');
+    if (HIDE.test(layer.id)) { map.setLayoutProperty(layer.id, 'visibility', 'none'); continue; }
+    if (layer.type !== 'symbol') continue;
+    const f = map.getFilter(layer.id);
+    try {
+      map.setFilter(layer.id, f ? ['all', f, NOT_BANNED] : NOT_BANNED);
+    } catch {
+      // מסנן בתחביר הישן שאי אפשר לשלב - השכבה כולה יורדת, כדי לא להשאיר פרצה
+      map.setLayoutProperty(layer.id, 'visibility', 'none');
+    }
   }
 }
 
