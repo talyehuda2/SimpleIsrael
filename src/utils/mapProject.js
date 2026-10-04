@@ -48,6 +48,28 @@ export function projectRaw(lon, lat) {
   return { x: a.X + sx / sw, y: a.Y + sy / sw };
 }
 
+/** פיקסלים -> lat/lon: ההיפוך של projectRaw. לתיקון השאריות אין נוסחה הפוכה,
+    ולכן ניוטון עם יעקוביאן מספרי, מנקודת פתיחה של האפיני ההפוך. שלוש-ארבע
+    איטרציות מספיקות לדיוק של שבריר פיקסל. משמש את המעבר בין המפה העתיקה
+    למודרנית, כדי שאותו אזור יישאר במבט. */
+export function unprojectRaw(x, y) {
+  const det = AFF.ax * AFF.by - AFF.bx * AFF.ay;
+  let lon = (AFF.by * (x - AFF.cx) - AFF.bx * (y - AFF.cy)) / det;
+  let lat = (-AFF.ay * (x - AFF.cx) + AFF.ax * (y - AFF.cy)) / det;
+  const h = 1e-4;
+  for (let i = 0; i < 8; i++) {
+    const p = projectRaw(lon, lat);
+    const ex = p.x - x, ey = p.y - y;
+    if (Math.abs(ex) + Math.abs(ey) < 0.01) break;
+    const pl = projectRaw(lon + h, lat), pt = projectRaw(lon, lat + h);
+    const a = (pl.x - p.x) / h, b = (pt.x - p.x) / h, c = (pl.y - p.y) / h, d = (pt.y - p.y) / h;
+    const dd = a * d - b * c;
+    lon -= (d * ex - b * ey) / dd;
+    lat -= (-c * ex + a * ey) / dd;
+  }
+  return { lon, lat };
+}
+
 /** lat/lon -> פיקסלים על המפה המרובעת */
 export function project(lon, lat) {
   const q = projectRaw(lon, lat);

@@ -2,7 +2,7 @@
    ציר הזמן שואל "מתי", מסע הדורות שואל "מי", וכאן שואלים "איפה":
    אותם 275 ביקורים, מסודרים לפי המקום ולא לפי הדמות. הנתונים מגיעים
    מ-src/data/places.json שנוצר בידי scripts/places-data.mjs. */
-import { MAP_SRC, MAP_SIZE } from '../utils/mapProject.js';
+import { MAP_SRC, MAP_SIZE, projectRaw, unprojectRaw } from '../utils/mapProject.js';
 import PLACES from '../data/places.json';
 import PERIODS from '../data/periods.json';
 import { shareLink } from '../lib/share.js';
@@ -551,6 +551,24 @@ function paintMode() {
     b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on));
   });
 }
+/* מעבר חלק: אותו אזור נשאר במבט כשמחליפים מפה. המפה העתיקה היא viewBox בפיקסלים
+   של הציור, המודרנית היא קווי אורך ורוחב - והגשר ביניהן הוא ההיטל של mapProject
+   (והיפוכו). ארבע הפינות עוברות, ולא רק שתיים: הציור מסובב מעט ביחס לצפון,
+   ולכן התיבה המקבילה היא המעטפת של ארבעתן. כשמקום או תקופה נבחרו, המצלמה
+   ממילא ממוקדת בהם בשתי המפות - והסנכרון מיותר. */
+function ancientToBounds() {
+  const pts = [[cam.x, cam.y], [cam.x + cam.w, cam.y], [cam.x, cam.y + cam.h], [cam.x + cam.w, cam.y + cam.h]]
+    .map(([x, y]) => unprojectRaw(x, y));
+  return [[Math.min(...pts.map((p) => p.lon)), Math.min(...pts.map((p) => p.lat))],
+    [Math.max(...pts.map((p) => p.lon)), Math.max(...pts.map((p) => p.lat))]];
+}
+function boundsToAncient([[w, s], [e, n]]) {
+  const pts = [[w, s], [e, s], [w, n], [e, n]].map(([lon, lat]) => projectRaw(lon, lat));
+  return { x0: Math.min(...pts.map((p) => p.x)), x1: Math.max(...pts.map((p) => p.x)),
+    y0: Math.min(...pts.map((p) => p.y)), y1: Math.max(...pts.map((p) => p.y)) };
+}
+const viewFollows = () => !sel && !era;
+
 async function setMode(m) {
   if (m === mode) return;
   if (m === 'modern') {
@@ -566,8 +584,10 @@ async function setMode(m) {
     if (!modernMod.supported()) return toast('המכשיר הזה אינו תומך במפה המודרנית');
     mode = 'modern';
     paintMode();
+    const from = viewFollows() ? ancientToBounds() : null;
     if (!modern) {
       modern = modernMod.createModern($('#modernMap'), {
+        initialBounds: from || undefined,
         places: PLACES,
         onSelect: (id) => select(id),
         onError: () => { toast('המפה המודרנית אינה זמינה כרגע'); setMode('ancient'); },
@@ -576,10 +596,13 @@ async function setMode(m) {
     modern.resize();
     modern.sync(modernState());
     modern.setNear(near);
-    modernFocus();
+    if (from) modern.setView(from); else modernFocus();
   } else {
+    const view = modern && viewFollows() ? modern.getView() : null;
     mode = 'ancient';
     paintMode();
+    // אותו אזור בציור. המצלמה "ידנית" מעכשיו, כמו אחרי גרירה: שינוי גודל שומר עליה
+    if (view) { camManual = true; camFree = false; setCam(fitBox(boundsToAncient(view), 0), false); }
   }
   mark('map_mode', { m: mode });
 }

@@ -123,7 +123,7 @@ function addRelief(map) {
  * @param {(id:string)=>void} onSelect
  * @param {(err:Error)=>void} onError
  */
-export function createModern(el, { places, onSelect, onError }) {
+export function createModern(el, { places, onSelect, onError, initialBounds }) {
   if (!rtlRequested) {
     rtlRequested = true;
     // lazy=true: התוסף נטען רק כשבאמת צריך לצייר טקסט מימין לשמאל
@@ -141,8 +141,9 @@ export function createModern(el, { places, onSelect, onError }) {
   const map = new maplibregl.Map({
     container: el,
     style: STYLE_URL,
-    bounds,
-    fitBoundsOptions: { padding: 30 },
+    // מבט פתיחה: האזור שהיה על המסך במפה העתיקה, אם נמסר; אחרת מבט הבסיס
+    bounds: initialBounds || bounds,
+    fitBoundsOptions: { padding: initialBounds ? 0 : 30 },
     maxBounds: [[31.5, 27.5], [38.5, 35.5]],   // ארץ ישראל וסביבתה, לא כל העולם
     attributionControl: { compact: true },
     dragRotate: false,
@@ -256,6 +257,9 @@ export function createModern(el, { places, onSelect, onError }) {
 
   return {
     sync, focus, setNear,
+    /** [[מערב, דרום], [מזרח, צפון]] של מה שעל המסך */
+    getView: () => { const b = map.getBounds(); return [[b.getWest(), b.getSouth()], [b.getEast(), b.getNorth()]]; },
+    setView: (bb) => map.fitBounds(bb, { padding: 0, animate: false }),
     resize: () => map.resize(),
     destroy: () => map.remove(),
     get map() { return map; },
