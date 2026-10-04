@@ -59,6 +59,49 @@ function hidePolitics(map) {
   }
 }
 
+/* תבליט בסגנון מפת קיר: צבע לפי גובה (ירוק בשפלה ובבקעה, צהוב-חום בהרים)
+   והצללה מצפון-מערב, כך שהרי יהודה, הכרמל והגלבוע בולטים כמו על הקיר.
+   הגבהים הם Terrain Tiles הפתוחים של AWS (קידוד terrarium, כולל מתחת לפני
+   הים - ים המלח יורד ל-430 מטר מתחת). השכבות נכנסות מתחת לפארקים, לכבישים
+   ולשמות, וכיסויי הקרקע של הסגנון מתעמעמים כדי שהתבליט ייראה דרכם. */
+export const DEM_TILES = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
+function addRelief(map) {
+  if (map.getSource('dem')) return;
+  map.addSource('dem', {
+    type: 'raster-dem', tiles: [DEM_TILES], encoding: 'terrarium', tileSize: 256, maxzoom: 12,
+    // באנגלית: מילה עברית בתוך שורת הקרדיטים האנגלית התהפכה לקצה השני
+    attribution: 'Terrain: Mapzen / AWS',
+  });
+  const before = map.getLayer('park') ? 'park' : undefined;
+  map.addLayer({
+    id: 'si-relief', type: 'color-relief', source: 'dem',
+    paint: {
+      'color-relief-opacity': 0.9,
+      'color-relief-color': ['interpolate', ['linear'], ['elevation'],
+        -450, '#7fb383', 0, '#a9d39a', 150, '#cfe1a0', 400, '#ebe2a6',
+        700, '#e2c584', 1000, '#c9a06c', 1400, '#ad8259', 2200, '#8f6e57'],
+    },
+  }, before);
+  map.addLayer({
+    id: 'si-hillshade', type: 'hillshade', source: 'dem',
+    paint: {
+      'hillshade-exaggeration': 0.55,
+      'hillshade-illumination-direction': 315,
+      'hillshade-shadow-color': '#4a3824',
+      'hillshade-highlight-color': '#fffbea',
+      'hillshade-accent-color': '#6b5233',
+    },
+  }, before);
+  // הצל של Natural Earth (רסטר גס לזום רחוק) מיותר כשיש תבליט אמיתי
+  if (map.getLayer('natural_earth')) map.setLayoutProperty('natural_earth', 'visibility', 'none');
+  // כיסויי הקרקע שקופים יותר, וחול הנגב יורד - הוא כיסה את התבליט במלבן צהוב אחיד
+  for (const [id, prop, v] of [['park', 'fill-opacity', 0.35], ['landcover_wood', 'fill-opacity', 0.35],
+    ['landcover_grass', 'fill-opacity', 0.3], ['landuse_residential', 'fill-opacity', 0.55]]) {
+    if (map.getLayer(id)) map.setPaintProperty(id, prop, v);
+  }
+  if (map.getLayer('landcover_sand')) map.setLayoutProperty('landcover_sand', 'visibility', 'none');
+}
+
 /**
  * @param {HTMLElement} el      המכל של המפה
  * @param {object[]} places      places.json
@@ -91,6 +134,16 @@ export function createModern(el, { places, onSelect, onError }) {
     pitchWithRotate: false,
   });
   map.touchZoomRotate.disableRotation();
+  /* שורת הקרדיטים נפתחת מורחבת, ובטלפון כיסתה את תחתית המפה. MapLibre פותח
+     אותה מחדש בכל פעם שמקור חדש (הגבהים) מוסיף קרדיט - ולכן סוגרים בכל
+     sourcedata, עד שהגולש לוחץ בעצמו על ⓘ. */
+  let attribTouched = false;
+  const collapseAttrib = () => {
+    if (!attribTouched) el.querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show');
+  };
+  map.on('load', collapseAttrib);
+  map.on('sourcedata', collapseAttrib);
+  el.addEventListener('click', (e) => { if (e.target.closest?.('.maplibregl-ctrl-attrib-button')) attribTouched = true; }, true);
   // לאבחון בלבד: ?mapdebug חושף את המפה ואת השגיאות שלה לקונסולה
   if (window.__siDebug || new URLSearchParams(location.search).has('mapdebug')) {
     window.__siMap = map;
@@ -98,6 +151,7 @@ export function createModern(el, { places, onSelect, onError }) {
   }
   map.on('style.load', () => {
     try { hebrewLabels(map); hidePolitics(map); } catch { /* סגנון שהשתנה - לא שוברים את המפה */ }
+    try { addRelief(map); } catch { /* בלי תבליט המפה עדיין עובדת */ }
   });
   let failed = false;
   map.on('error', (e) => {
