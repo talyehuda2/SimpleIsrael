@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { formatRange, formatRangeAM, formatRangeSecular } from '../utils/dates.js';
 import { shareLink, itemPageUrl } from '../lib/share.js';
+import { researchRange } from '../utils/research.js';
 import { sourceSegments } from '../utils/sefaria.js';
 import { periodOf } from '../data/items.js';
 import maps from '../data/maps.json';
@@ -41,6 +42,14 @@ export default function DetailCard({
   /* הסבר הכרונולוגיה - סגור כברירת מחדל. לא title, כי רמז שמופיע
      בריחוף אינו קיים במגע, ורוב הגולשים בטלפון. */
   const [chronoOpen, setChronoOpen] = useState(false);
+  const research = researchRange(item.id);
+  const chronoBtn = (
+    <button
+      type="button" className="chrono-q" aria-expanded={chronoOpen}
+      aria-label="למה השנים שונות ממה שמוכר לי?"
+      onClick={() => setChronoOpen((v) => !v)}
+    >?</button>
+  );
   const [showComments, setShowComments] = useState(openComments);
 
   useEffect(() => {
@@ -138,19 +147,26 @@ export default function DetailCard({
       </div>
       {mode !== 'academic' && (
         <>
+          {/* כשיש לפריט שנה מחקרית, שתי השורות מקבלות תווית - "לפי סדר עולם"
+              מול "לפי המחקר" - כדי שיהיה ברור שאלה שתי שיטות ולא טעות.
+              ה-? יושב בשורה האחרונה, זו שמעוררת את השאלה. */}
           <div className="detail-years-sec">
+            {research && <span className="dyr-k">לפי סדר עולם: </span>}
             {formatRangeSecular(item.start, item.end)}
-            <button
-              type="button" className="chrono-q" aria-expanded={chronoOpen}
-              aria-label="למה השנים שונות ממה שמוכר לי?"
-              onClick={() => setChronoOpen((v) => !v)}
-            >?</button>
+            {!research && chronoBtn}
           </div>
+          {research && (
+            <div className="detail-years-sec detail-years-res">
+              <span className="dyr-k">לפי המחקר: </span>{research}
+              {chronoBtn}
+            </div>
+          )}
           {chronoOpen && (
             <p className="chrono-note">
-              השנים באתר נמנות לפי <strong>סדר עולם</strong>, הכרונולוגיה של חז״ל.
-              המניין המחקרי המקובל מוקדם בכ-163 שנה, והפער כולו מרוכז בתקופה
-              הפרסית: סדר עולם מונה בה 58 שנה, והמחקר כ-206.
+              השנים באתר נמנות לפי <strong>סדר עולם</strong>, הכרונולוגיה של חז״ל שעליה מבוסס
+              הלוח העברי.{research && <> <strong>לפי המחקר</strong> הוא המניין המקובל באקדמיה
+              ובקורסים, על פי רשימות אשור ובבל.</>} בימי בית ראשון הפער הוא כ-160 שנה, וכולו
+              מרוכז בתקופה הפרסית: סדר עולם מונה בה 58 שנה, והמחקר כ-206.
             </p>
           )}
         </>
