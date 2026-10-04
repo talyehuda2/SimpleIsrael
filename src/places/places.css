@@ -79,9 +79,38 @@ a.ms-opt:hover{background:var(--panel);color:var(--navy)}
   box-shadow:0 3px 10px rgb(60 40 0 / .2)}
 #reset.show{display:block}
 #reset:hover{border-color:var(--gold)}
+/* ---- המפה המודרנית ---- */
+#modernMap{position:absolute;inset:0;z-index:1;background:#e9e4d6}
+body.modern #map,body.modern #zoomBtns,body.modern #reset{visibility:hidden}
+/* מתג עתיקה/מודרנית - בפינה השמאלית העליונה, במכוון: הימין העליון שייך ל"מבט מלא" */
+#mapMode{position:absolute;top:10px;left:10px;z-index:3;display:flex;padding:3px;gap:2px;
+  background:rgb(251 245 231 / .95);border:1px solid var(--line);border-radius:16px;box-shadow:0 3px 10px rgb(60 40 0 / .22)}
+#mapMode button{border:none;background:none;font-size:12.5px;font-weight:700;color:var(--muted);
+  padding:6px 10px;border-radius:13px;cursor:pointer}
+#mapMode button.on{background:var(--navy);color:#fff}
+#mapMode button.busy{cursor:progress;opacity:.6}
+#mapMode[hidden]{display:none}
+/* סמני המקומות במפה המודרנית: אותה שפה של המפה העתיקה - עיגול נייבי, זהב לנבחר */
+.mm{position:relative;width:calc(var(--r) * 2);height:calc(var(--r) * 2);padding:0;border:none;background:none;cursor:pointer}
+.mm-dot{position:absolute;inset:0;border-radius:50%;background:rgb(22 58 87 / .8);border:2px solid #fbf5e7;
+  box-shadow:0 1px 3px rgb(0 0 0 / .35)}
+.mm-lb{position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);white-space:nowrap;display:none;
+  font-family:'Heebo',sans-serif;font-size:13px;font-weight:800;color:#2b2113;
+  text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 2px #fff}
+.mm.lb-on .mm-lb{display:block}
+.mm.lb-on{z-index:1}
+.mm.off{display:none}
+.mm.on{z-index:2}
+.mm.on .mm-dot{background:var(--gold);border-color:#fff;transform:scale(1.35)}
+.mm.near .mm-dot{border-color:#d62828;border-width:3px}
+.mm.near .mm-lb{color:#7a1414}
+body.mm-has-sel .mm:not(.on){opacity:.35}
+.mm-pin{pointer-events:none}
+.maplibregl-ctrl-attrib{font-size:10px}
+
 /* "איפה אני" - צף בפינה התחתונה של המפה, כמו כפתור המיקום במפות אחרות.
    בכוונה על המפה ולא בסרגל העליון: פיצ'ר חדש אינו מקבל כפתור בבר. */
-#locate{position:absolute;bottom:10px;inset-inline-start:10px;z-index:2;
+#locate{position:absolute;bottom:10px;inset-inline-start:10px;z-index:3;
   font-size:13px;font-weight:700;color:var(--navy);background:rgb(251 245 231 / .95);
   border:1px solid var(--line);border-radius:16px;padding:8px 13px;cursor:pointer;
   box-shadow:0 3px 10px rgb(60 40 0 / .22)}
