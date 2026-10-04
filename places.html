@@ -85,6 +85,12 @@
   <section id="mapCol">
     <div id="mapWrap">
       <svg id="map" viewBox="0 0 1254 1254" role="group" aria-label="מפת המקומות ההיסטוריים"></svg>
+      <!-- המפה המודרנית (MapLibre) - נבנית רק בלחיצה על "מודרנית", ראו modern.js -->
+      <div id="modernMap" hidden></div>
+      <div id="mapMode" role="group" aria-label="סוג המפה">
+        <button data-m="ancient" class="on" aria-pressed="true">🏺 עתיקה</button>
+        <button data-m="modern" aria-pressed="false">🗺️ מודרנית</button>
+      </div>
       <button id="reset">↺ מבט מלא</button>
       <button id="locate" title="אילו מקומות היסטוריים קרובים אליי">📍 איפה אני</button>
       <div id="zoomBtns" role="group" aria-label="זום">
@@ -92,7 +98,7 @@
         <button id="zoomOut" aria-label="הקטנה">−</button>
       </div>
     </div>
-    <p id="mapHint">גודל הנקודה = כמה דמויות עברו במקום. לחיצה פותחת את מה שקרה שם; גרירה וצביטה מזיזות את המפה.</p>
+    <p id="mapHint"><span class="mh-ancient">גודל הנקודה = כמה דמויות עברו במקום. לחיצה פותחת את מה שקרה שם; גרירה וצביטה מזיזות את המפה.</span><span class="mh-modern">הנקודות החומות הן האתרים המקראיים, ולא תמיד העיר של היום באותו שם: גת המקראית היא תל צפית, ולא קריית גת.</span></p>
   </section>
 </main>
 

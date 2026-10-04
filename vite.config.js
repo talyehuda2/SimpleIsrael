@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
@@ -21,8 +22,37 @@ const cleanUrls = {
   },
 };
 
+/* MapLibre (המפה המודרנית במפת הארץ) מריץ worker, וברירת המחדל שלו בבאנדל היא
+   worker מ-blob: - וה-CSP שלנו חוסם blob:. לכן ה-worker, הקוד המשותף שלו ותוסף
+   ה-RTL מוגשים כקבצים רגילים מאותו דומיין, תחת /vendor/maplibre/, ו-modern.js
+   מצביע אליהם ב-setWorkerUrl / setRTLTextPlugin. הסיומת .js ולא .mjs, כי לא כל
+   שרת מגיש .mjs כ-JavaScript - ו-worker מסוג module נופל בשקט על MIME שגוי. */
+const MAPLIBRE_DIST = resolve(__dirname, 'node_modules/maplibre-gl/dist');
+const VENDOR = {
+  'maplibre-gl-worker.js': () => readFileSync(resolve(MAPLIBRE_DIST, 'maplibre-gl-worker.mjs'), 'utf8')
+    .replaceAll('./maplibre-gl-shared.mjs', './maplibre-gl-shared.js'),
+  'maplibre-gl-shared.js': () => readFileSync(resolve(MAPLIBRE_DIST, 'maplibre-gl-shared.mjs'), 'utf8'),
+  'rtl-text.js': () => readFileSync(resolve(__dirname, 'node_modules/@mapbox/mapbox-gl-rtl-text/dist/mapbox-gl-rtl-text.js'), 'utf8'),
+};
+const maplibreVendor = {
+  name: 'maplibre-vendor',
+  configureServer(server) {
+    server.middlewares.use((req, res, next) => {
+      const m = req.url.match(/^\/vendor\/maplibre\/([\w.-]+)$/);
+      if (!m || !VENDOR[m[1]]) return next();
+      res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+      res.end(VENDOR[m[1]]());
+    });
+  },
+  generateBundle() {
+    for (const [name, read] of Object.entries(VENDOR)) {
+      this.emitFile({ type: 'asset', fileName: `vendor/maplibre/${name}`, source: read() });
+    }
+  },
+};
+
 export default defineConfig({
-  plugins: [react(), cleanUrls],
+  plugins: [react(), cleanUrls, maplibreVendor],
   build: {
     // שלושה עמודי כניסה: ציר הזמן, מסע הדורות ומפת המקומות. שני הראשונים
     // חולקים את אותם רכיבי React (כרטיס הפריט, המפה, התגובות) במקום שני

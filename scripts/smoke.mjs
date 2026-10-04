@@ -93,6 +93,11 @@ const PAGES = [
     click: '#locate', expect: '#near .nmsg >> text=מחוץ לגבולות המפה' },
   { url: '/places', name: 'בלי הרשאה', check: '#list > *', geo: 'denied',
     click: '#locate', expect: '#near .nmsg >> text=לא התקבלה הרשאה' },
+  /* המפה המודרנית (אב טיפוס, מאחורי ?modern=1). האריחים האמיתיים חיצוניים ולכן
+     חסומים כאן; הסגנון מוחלף בסגנון מקומי עם צורה אחת, וכך נבדק מה שבאמת שלנו:
+     טעינת הצ'אנק, ה-worker תחת ה-CSP (בלי blob:), וסמני המקומות. */
+  { url: '/places?modern=1', name: 'מפה מודרנית', check: '#list > *', fixtureStyle: true,
+    click: '#mapMode [data-m="modern"]', expect: '#modernMap .mm[data-id="ירושלים"]' },
   { url: '/privacy', name: 'פרטיות', check: 'body' },
   // שלושת העמודים המשפטיים נבדקים בנפרד: הם נוצרים ב-prerender ואינם
   // ב-sitemap, ולכן שום בדיקה אחרת לא הייתה מגלה ש-rewrite חסר ב-vercel.json
@@ -227,6 +232,15 @@ for (const page of PAGES) {
   });
   // חסימת כל היעדים החיצוניים: ריצה זהה בכל פעם, ובלי לזהם את si_trail
   await ctx.route('**', (route) => (route.request().url().startsWith(BASE) ? route.continue() : route.abort()));
+  if (page.fixtureStyle) {
+    await ctx.route('https://tiles.openfreemap.org/styles/**', (route) => route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ version: 8, sources: { land: { type: 'geojson', data: { type: 'Feature', properties: {},
+        geometry: { type: 'Polygon', coordinates: [[[34.2, 29.5], [35.9, 29.5], [35.9, 33.3], [34.2, 33.3], [34.2, 29.5]]] } } } },
+        layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#cfe3f0' } },
+          { id: 'land', type: 'fill', source: 'land', paint: { 'fill-color': '#efe6cf' } }] }),
+    }));
+  }
   const tab = await ctx.newPage();
   // לדפדפן אוטומטי אין דרך "לסרב": בלי הרשאה הבקשה פשוט תלויה. לכן הסירוב
   // מדומה בשגיאה עצמה, קוד 1 (PERMISSION_DENIED), כמו שהדפדפן מחזיר לגולש שסירב

@@ -169,7 +169,10 @@ function setCam(to, animate = true) {
   // הייתה נתקעת באמצע. אחרי משך ההנפשה קובעים את היעד בכל מקרה.
   camTO = setTimeout(() => { cancelAnimationFrame(camAF); applyCam(to); }, D + 120);
 }
-const moveCam = (animate = true) => { camFree = false; camManual = false; setCam(camTarget(), animate); };
+const moveCam = (animate = true) => {
+  camFree = false; camManual = false; setCam(camTarget(), animate);
+  if (mode === 'modern') modernFocus();
+};
 
 /* ---------- גרירה וזום ידניים ----------
    גולש העיר שאי אפשר לזוז על המפה: צביטה הגדילה את כל הדף ולא את המפה.
@@ -301,6 +304,7 @@ function paintMarks() {
   if (topPin) topPin.parentNode.insertBefore(topPin, $('#labels'));
   if (topLabel) topLabel.parentNode.appendChild(topLabel);
   paintZoom();
+  modern?.sync(modernState());
 }
 
 // ==================== סינון ורשימה ====================
@@ -481,6 +485,7 @@ function renderNear() {
 function closeNear() {
   near = null;
   $('#locate').classList.remove('on');
+  modern?.setNear(near);
   renderNear(); paintMe(); moveCam();
 }
 
@@ -522,8 +527,75 @@ async function locate() {
   mark('geo_locate', { r });
   setLocateBusy(false);
   $('#locate').classList.toggle('on', near.state === 'ok');
+  modern?.setNear(near);
   renderNear(); paintMe(); moveCam();
 }
+
+// ==================== מפה מודרנית ====================
+/* מתג "עתיקה | מודרנית". המפה המודרנית נבנית בפעם הראשונה שבוחרים בה, ומשם
+   נשארת חיה ברקע: מעבר חוזר מיידי. הרשימה, הסינון, הבחירה ו"קרוב אליך"
+   משותפים לשתיהן - main.js נשאר מקור האמת, ו-modern.js רק מצייר. */
+let mode = 'ancient', modern = null, modernMod = null;
+const modernState = () => ({ shownIds: new Set(filtered().map((p) => p.id)), selId: sel });
+function modernFocus() {
+  if (!modern) return;
+  // "איפה אני" אינו מזיז את המפה המודרנית אל הגולש - ראו את ההערה ב-modern.js
+  if (!sel && near && near.state === 'ok') return;
+  modern.focus({ selId: sel, list: era ? PLACES.filter((p) => inEra(p, era)) : null });
+}
+function paintMode() {
+  document.body.classList.toggle('modern', mode === 'modern');
+  $('#modernMap').hidden = mode !== 'modern';
+  $('#mapMode').querySelectorAll('button').forEach((b) => {
+    const on = b.dataset.m === mode;
+    b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on));
+  });
+}
+async function setMode(m) {
+  if (m === mode) return;
+  if (m === 'modern') {
+    const btn = $('#mapMode [data-m="modern"]');
+    btn.classList.add('busy');
+    try {
+      modernMod ||= await import('./modern.js');
+    } catch {
+      btn.classList.remove('busy');
+      return toast('לא הצלחנו לטעון את המפה המודרנית - רעננו את הדף');
+    }
+    btn.classList.remove('busy');
+    if (!modernMod.supported()) return toast('המכשיר הזה אינו תומך במפה המודרנית');
+    mode = 'modern';
+    paintMode();
+    if (!modern) {
+      modern = modernMod.createModern($('#modernMap'), {
+        places: PLACES,
+        onSelect: (id) => select(id),
+        onError: () => { toast('המפה המודרנית אינה זמינה כרגע'); setMode('ancient'); },
+      });
+    }
+    modern.resize();
+    modern.sync(modernState());
+    modern.setNear(near);
+    modernFocus();
+  } else {
+    mode = 'ancient';
+    paintMode();
+  }
+  mark('map_mode', { m: mode });
+}
+$('#mapMode').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.m)));
+/* אב טיפוס: המתג מוצג רק עם ?modern=1 (ונזכר בדפדפן הזה), כדי שבעל האתר יבדוק
+   את המפה על האתר החי לפני שכולם רואים אותה. ?modern=0 מכבה. בהשקה - להסיר
+   את התנאי, ולהוסיף לעמוד הפרטיות את OpenFreeMap (ראו CLAUDE.md). */
+const MODERN_FLAG = (() => {
+  const q = new URLSearchParams(location.search).get('modern');
+  try {
+    if (q === '1') localStorage.setItem('si_modern', '1');
+    if (q === '0') localStorage.removeItem('si_modern');
+    return localStorage.getItem('si_modern') === '1';
+  } catch { return q === '1'; }
+})();
+$('#mapMode').hidden = !MODERN_FLAG;
 
 // ==================== הרצת תקופות ====================
 const PLAY_MS = 4200;
@@ -586,7 +658,7 @@ const refit = (animate = false) =>
 measureWrap();
 openFromUrl();
 moveCam(false);
-new ResizeObserver(() => { if (measureWrap()) refit(false); }).observe($('#mapWrap'));
+new ResizeObserver(() => { if (measureWrap()) refit(false); modern?.resize(); }).observe($('#mapWrap'));
 addEventListener('resize', () => { if (measureWrap()) refit(false); });
 // הגופן העברי מחליף את גופן הגיבוי אחרי הציור הראשון ומשנה גבהים בטור
 document.fonts?.ready.then(() => { if (measureWrap()) refit(false); });
