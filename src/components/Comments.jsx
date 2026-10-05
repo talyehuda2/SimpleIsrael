@@ -229,7 +229,7 @@ function Comment({
   useEffect(() => {
     if (!isFresh || !ref.current) return;
     const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    ref.current.scrollIntoView({ block: 'nearest', behavior: still ? 'auto' : 'smooth' });
+    ref.current.scrollIntoView({ block: 'center', behavior: still ? 'auto' : 'smooth' });
   }, [isFresh]);
 
   return (
@@ -298,7 +298,7 @@ function Comment({
   );
 }
 
-export default function Comments({ targetKey, targetLabel }) {
+export default function Comments({ targetKey, targetLabel, focusId = null }) {
   const [list, setList] = useState([]);
   const [status, setStatus] = useState('loading'); // loading | ready | error
   const [replyTo, setReplyTo] = useState(null);
@@ -329,9 +329,11 @@ export default function Comments({ targetKey, targetLabel }) {
         if (error) { setStatus('error'); return; }
         setList(data || []);
         setStatus('ready');
+        // נחיתה מקישור לתגובה מסוימת: אותה גלילה והבהוב של תגובה חדשה
+        if (focusId != null && (data || []).some((c) => c.id === focusId)) setFresh(focusId);
       });
     return () => { alive = false; };
-  }, [targetKey]);
+  }, [targetKey, focusId]);
 
   /* הדיווח נשלח כפנייה רגילה למנהל, ולכן הוא נוחת בתיבה הקיימת ב-/admin
      ומקבל שם מחיקה וסימון "טופל" בלי שום צנרת חדשה. הוא גם עובר דרך

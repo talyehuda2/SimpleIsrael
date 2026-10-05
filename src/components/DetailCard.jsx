@@ -36,7 +36,7 @@ export default function DetailCard({
   onClose, onOpenMap, contemporariesOn, onToggleContemporaries,
   prevItem, nextItem, onNav, axisStart, axisEnd, contemporaries = [],
   commentCount = 0, collections = [], onOpenCollection,
-  switchHref, switchLabel, openComments = false,
+  switchHref, switchLabel, openComments = false, focusComment = null,
 }) {
   const [shareMsg, setShareMsg] = useState('');
   /* הסבר הכרונולוגיה - סגור כברירת מחדל. לא title, כי רמז שמופיע
@@ -295,6 +295,7 @@ export default function DetailCard({
               key={`${item.kind}:${item.id}`}
               targetKey={`${item.kind}:${item.id}`}
               targetLabel={item.name}
+              focusId={focusComment}
             />
           </Suspense>
         </ChunkBoundary>

@@ -49,6 +49,9 @@ function parseUrl() {
     // ?comments=1 - נחיתה עם התגובות פתוחות. מסע הדורות אינו טוען את
     // Supabase, ולכן כפתור התגובות שם מקשר לכאן.
     comments: p.get('comments') === '1',
+    // ?c=<id> - תגובה מסוימת. הקישור במייל "ענו לך" נוחת עליה, עם התגובות
+    // פתוחות, גלילה אליה והבהוב (supabase/comment_reply_deeplink.sql)
+    c: /^\d+$/.test(p.get('c') || '') ? Number(p.get('c')) : null,
     // ?era / ?coll - שער הכניסה בדפי-הנחיתה (/p/period, /p/collection)
     // שולח לכאן, וכדי שהמעבר יהיה רציף הציר נפתח כבר על אותה תקופה
     // או עם אותו אוסף פתוח, ולא בתצוגת ברירת המחדל.
@@ -1174,7 +1177,8 @@ export default function App() {
             collections={collectionsById[selected.id] || []}
             onOpenCollection={openCollection}
             commentCount={selected ? (commentCounts[itemKey(selected)] || 0) : 0}
-            openComments={INITIAL.comments}
+            openComments={INITIAL.comments || (INITIAL.c != null && itemKey(selected) === INITIAL.sel)}
+            focusComment={INITIAL.c != null && itemKey(selected) === INITIAL.sel ? INITIAL.c : null}
           />
           {!isMobile && maps[selected.id] && (
             <JourneyMap

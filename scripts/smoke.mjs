@@ -98,9 +98,10 @@ const PAGES = [
      טעינת הצ'אנק, ה-worker תחת ה-CSP (בלי blob:), וסמני המקומות. */
   { url: '/places', name: 'מפה מודרנית', check: '#list > *', fixtureStyle: true,
     click: '#mapMode [data-m="modern"]', expect: '#modernMap .mm[data-id="ירושלים"]' },
-  /* התגובות, עם שלוש תגובות לדוגמה במקום Supabase. נפתח גם הטופס המקופל,
+  /* התגובות, עם שלוש תגובות לדוגמה במקום Supabase. הכניסה כמו מהמייל "ענו לך"
+     (?c=), ולכן נבדק גם שהתגובה המבוקשת סומנה. נפתח גם הטופס המקופל,
      כך ש-axe עובר על הרשימה ועל השדות - ניגודיות, תוויות, גודל מטרות לחיצה. */
-  { url: '/?sel=leader:avraham&comments=1', name: 'תגובות', check: '.comment', fixtureComments: true,
+  { url: '/?sel=leader:avraham&c=2', name: 'תגובות', check: '.comment.fresh', fixtureComments: true,
     click: '.comments > .comment-form .comment-body', expect: '.comment-mail' },
   { url: '/privacy', name: 'פרטיות', check: 'body' },
   // שלושת העמודים המשפטיים נבדקים בנפרד: הם נוצרים ב-prerender ואינם
