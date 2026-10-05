@@ -39,13 +39,14 @@ button{font-family:inherit}
 @media (max-width:420px){ .gm-bar h1{font-size:22px} .gm-home{padding:7px 10px} }
 @media (max-width:345px){ .gm-bar{gap:6px;padding:0 8px} .gm-bar h1{font-size:19px} .gm-num{font-size:12px} }
 /* ----- "ממשיכים באתר" בתחתית ----- */
-.gm-site{display:flex;flex-direction:column;gap:8px;margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
-.gm-site h2{margin:0 0 2px;font-family:'Frank Ruhl Libre',serif;font-size:19px;color:var(--navy)}
-.gm-site a{display:flex;flex-direction:column;gap:2px;text-decoration:none;padding:11px 14px;border:1px solid var(--line);
-  border-radius:14px;background:var(--panel)}
+/* שורה אחת של קישורים קטנים. היו כאן שלושה קלפים גדולים עם תיאור, שתפסו מסך שלם בטלפון */
+.gm-site{margin-top:28px;padding-top:16px;border-top:1px solid var(--line)}
+.gm-site h2{margin:0 0 8px;font-size:14px;font-weight:700;color:var(--muted)}
+.gm-site-row{display:flex;flex-wrap:wrap;gap:6px}
+.gm-site a{flex:1 1 auto;text-align:center;white-space:nowrap;text-decoration:none;font-size:14px;font-weight:700;
+  color:var(--navy);padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
 .gm-site a:hover,.gm-site a:focus-visible{border-color:var(--gold)}
-.gm-site b{font-size:15.5px;color:var(--navy)}
-.gm-site span{font-size:13px;color:var(--muted)}
+.gm-site a:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
 
 /* ----- תוכן ----- */
 .gm-main{max-width:560px;margin:0 auto;padding:18px 16px 40px}
@@ -90,11 +91,22 @@ button{font-family:inherit}
 .gm-btn:disabled{opacity:.45;cursor:not-allowed}
 
 /* ----- הסדר הנכון ----- */
-.gm-answer{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
-.gm-answer a{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;
+/* רשימה אחת: הסדר הנכון, ועל כל פריט ✓ או ✗ - כמו בעמודת הציר של המשחק */
+.gm-ans-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;
+  margin-top:22px;padding-top:14px;border-top:1px solid var(--line)}
+.gm-ans-head .gm-sub{margin:0}
+.gm-ans-head .gm-years{margin-top:0}
+.gm-answer{margin-top:10px}
+.gm-answer li{display:flex;align-items:stretch;gap:8px}
+.gm-answer li.ok .gm-n{color:var(--ok)}
+.gm-answer li.bad .gm-n{color:var(--bad)}
+.gm-answer a{flex:1;min-width:0;position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;
   padding-block:10px;padding-inline:14px 40px;
   border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);text-decoration:none}
+.gm-answer li.ok a{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.gm-answer li.bad a{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
 .gm-answer a:hover{border-color:var(--gold)}
+.gm-was{font-size:12px;font-weight:700;color:var(--bad);background:#fbeee9;padding:1px 8px;border-radius:999px;white-space:nowrap}
 /* החץ בקצה השורה (שמאל ב-RTL), כדי ששורת השנים תקבל רוחב מלא ולא תישבר */
 .gm-go{position:absolute;inset-inline-end:14px;top:50%;transform:translateY(-50%);color:var(--gold-ink);font-weight:700}
 /* טווח מספרי לא נשבר באמצע */
@@ -105,6 +117,15 @@ button{font-family:inherit}
 .gm-streak b{font-size:19px;color:#b3261e;font-variant-numeric:tabular-nums}
 .gm-streak.pre{margin:0 0 10px;text-align:start;font-size:14px;font-weight:600}
 .gm-streak.pre b{font-size:16px}
+/* שורת התגיות בתוצאה: רצף, נקודות, ספירה לאחור - במקום שלוש שורות טקסט */
+.gm-chips{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:12px 0 0;padding:0}
+.gm-chips li{font-size:13.5px;font-weight:700;color:var(--ink);padding:5px 11px;border-radius:999px;
+  background:var(--bg);border:1px solid var(--line);white-space:nowrap}
+.gm-chips b{color:var(--navy);font-variant-numeric:tabular-nums}
+.gm-chips [dir="ltr"]{unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+.gm-more{display:block;margin:14px auto 0;font:inherit;font-size:14px;font-weight:700;color:var(--gold-ink);
+  background:none;border:0;padding:4px 6px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.gm-more:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
 .gm-msg{margin:8px 0 0;font-size:13px;font-weight:700;color:var(--ok);min-height:1em}
 
 @media (prefers-reduced-motion:reduce){ .gm-card{transition:none} .gm-card:hover:not(:disabled){transform:none} }

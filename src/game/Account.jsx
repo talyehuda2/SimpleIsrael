@@ -331,13 +331,12 @@ export function SaveInvite({ score, onOpen }) {
   );
 }
 
-/** שורת המצב במסך התוצאה, לשחקן מחובר */
-export function SavedLine({ state, me }) {
+/** שורת המצב במסך התוצאה, לשחקן מחובר - רק בזמן שמירה או כשנכשלה. שמירה
+    שהצליחה מוצגת כתגית ⭐ בשורת התגיות של המשחק, ולא כשורה נוספת */
+export function SavedLine({ state }) {
   if (state === 'saving') return <p className="ac-saved">שומר את התוצאה…</p>;
   if (state && state !== 'saved') return <p className="ac-saved bad" role="alert">{state}</p>;
-  if (!me) return null;
-  // בלי רצף כאן: שורת הרצף של המשחק (gm-streak) כבר מציגה את רצף החשבון למי שמחובר
-  return <p className="ac-saved">✓ נשמר · סה״כ <b>{me.total}</b> נקודות</p>;
+  return null;
 }
 
 export function Leaderboard({ acc, version, onOpen }) {
@@ -357,9 +356,13 @@ export function Leaderboard({ acc, version, onOpen }) {
     return () => { live = false; };
   }, [range, acc.user, version]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // חמישה ראשונים, והשאר בלחיצה: הטבלה יושבת מיד אחרי התוצאה ולא צריכה לדחוק את התשובות
+  const [all, setAll] = useState(false);
+
   // אם השרת לא זמין, הטבלה פשוט לא מופיעה - המשחק עצמו לא תלוי בה
   if (failed && !data) return null;
-  const meOut = data?.me && !data.top.some((r) => r.me);
+  const rows = all ? data?.top || [] : (data?.top || []).slice(0, 5);
+  const meOut = data?.me && !rows.some((r) => r.me);
 
   return (
     <section className="ac-board" aria-labelledby="ac-board-h">
@@ -376,7 +379,7 @@ export function Leaderboard({ acc, version, onOpen }) {
         <p className="ac-small">{range === 'week' ? 'השבוע עוד לא נרשמו נקודות. הראשון בטבלה יכול להיות אתם.' : 'עוד אין שחקנים רשומים.'}</p>
       ) : (
         <ol className="ac-rows">
-          {data.top.map((r) => (
+          {rows.map((r) => (
             <li key={`${r.rank}-${r.nickname}`} className={r.me ? 'me' : ''}>
               <span className="ac-rank">{r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : r.rank}</span>
               <span className="ac-nick">{r.nickname}</span>
@@ -391,6 +394,11 @@ export function Leaderboard({ acc, version, onOpen }) {
             </li>
           )}
         </ol>
+      )}
+      {data?.top.length > 5 && (
+        <button type="button" className="gm-all" onClick={() => setAll((v) => !v)}>
+          {all ? 'פחות' : `הצגת כל ה-${data.top.length}`}
+        </button>
       )}
       {range === 'week' && <p className="ac-small">השבוע מתחיל ביום ראשון. רק האתגר היומי נספר.</p>}
       {acc.known && !acc.user && (

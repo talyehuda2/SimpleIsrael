@@ -231,6 +231,24 @@ function Summary({ applied, onEdit }) {
   );
 }
 
+/* כמה נשאר עד האתגר הבא - חצות בשעון ישראל, כמו israelDay. ספירה לאחור
+   במקום "מחר בחצות": מספר שזז נותן סיבה מוחשית לחזור. מתעדכן כל חצי דקה */
+function untilMidnight() {
+  const [h, m] = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  }).format(new Date()).split(':').map(Number);
+  const left = 24 * 60 - (h * 60 + m);
+  return left >= 60
+    ? { n: `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`, unit: 'שע׳' }
+    : { n: String(left), unit: 'דק׳' };
+}
+function Countdown() {
+  const [t, setT] = useState(untilMidnight);
+  useEffect(() => { const id = setInterval(() => setT(untilMidnight()), 30000); return () => clearInterval(id); }, []);
+  // "3:07" ב-ltr: בתוך שורה עברית הנקודתיים הופכות את הסדר ל-"07:3"
+  return <><span dir="ltr">{t.n}</span> {t.unit}</>;
+}
+
 function Chip({ kind }) {
   return <span className={`gm-chip ${kind}`}>{KIND_LABEL[kind]}</span>;
 }
@@ -475,22 +493,32 @@ function Game() {
                 <li key={i} className={ok ? 'ok' : 'bad'} aria-hidden="true">{ok ? '✓' : '✗'}</li>
               ))}
             </ol>
+            {/* שיתוף הוא הפעולה היחידה בגודל מלא. "סבב נוסף" באתגר היומי הוא קישור
+                קטן - שני כפתורים שווים התחרו זה בזה. במשחק החופשי סבב נוסף הוא הלולאה
+                עצמה, ולכן שם הוא נשאר כפתור */}
             <div className="gm-r-actions">
               <button type="button" className="gm-btn primary big" onClick={share}>📤 שיתוף התוצאה</button>
-              <button type="button" className="gm-btn" onClick={next}>סבב נוסף</button>
+              {!daily && <button type="button" className="gm-btn" onClick={next}>סבב נוסף</button>}
             </div>
             <p className="gm-msg" role="status">{shareMsg}</p>
+            {/* שלוש שורות קטנות (רצף, "נשמר", "אתגר חדש מחר") הפכו לשורת תגיות אחת */}
             {daily && (
-              <p className="gm-streak">
-                {run.now >= 2
-                  ? <><span aria-hidden="true">🔥</span> <b>{run.now}</b> ימים ברצף{run.best > run.now ? ` · השיא שלכם: ${run.best}` : ''}</>
-                  : <><span aria-hidden="true">🔥</span> יום ראשון ברצף - חזרו מחר כדי להמשיך</>}
-              </p>
+              <ul className="gm-chips">
+                <li>
+                  <span aria-hidden="true">🔥</span>{' '}
+                  {run.now >= 2 ? <><b>{run.now}</b> ימים ברצף</> : <>יום <b>1</b> ברצף</>}
+                  {run.best > run.now && <> · שיא {run.best}</>}
+                </li>
+                {ACCOUNTS && acc.me && saveState === 'saved' && (
+                  <li><span aria-hidden="true">⭐</span> <b>{acc.me.total}</b> נק׳</li>
+                )}
+                <li><span aria-hidden="true">⏱</span> הבא בעוד <Countdown /></li>
+              </ul>
             )}
             {ACCOUNTS && daily && (acc.user
-              ? <SavedLine state={saveState} me={acc.me} />
+              ? <SavedLine state={saveState} />
               : acc.known && <SaveInvite score={score} onOpen={open} />)}
-            {daily && <p className="gm-note">אתגר חדש מחר בחצות.</p>}
+            {daily && <button type="button" className="gm-more" onClick={next}>סבב נוסף במשחק החופשי ←</button>}
           </section>
         ) : (
           <>
@@ -500,8 +528,10 @@ function Game() {
           <p className="gm-lead">סדרו מהמוקדם למאוחר. לחיצה על פריט מכניסה אותו למקום הפנוי הבא, ולחיצה חוזרת מוציאה אותו.</p>
           </>
         )}
-        {checked && <h2 className="gm-sub">הציר שלכם</h2>}
+        {/* אחרי "כמה קיבלתי" השאלה הבאה היא "איפה אני", ולא רשימת התשובות */}
+        {ACCOUNTS && checked && <Leaderboard acc={acc} version={boardV} onOpen={open} />}
 
+        {!checked && (
         <ol className="gm-slots" aria-label="הציר שלכם, מהמוקדם למאוחר">
           {Array.from({ length: HAND }, (_, i) => {
             const it = placed[i];
@@ -531,6 +561,7 @@ function Game() {
             );
           })}
         </ol>
+        )}
 
         {!checked && left.length > 0 && (
           <div className="gm-pool" role="group" aria-label="פריטים שעוד לא סודרו">
@@ -554,38 +585,49 @@ function Game() {
           </div>
         )}
 
+        {/* רשימה אחת ולא שתיים: הסדר הנכון, ועל כל פריט אם הונח במקומו. קודם היו
+            "הציר שלכם" ו"הסדר הנכון" זו אחר זו - וב-5/5 הן היו זהות לגמרי */}
         {checked && (
           <>
-            <h2 className="gm-sub">הסדר הנכון</h2>
-            <ol className="gm-answer" aria-label="הסדר הנכון">
-              {answer.map((it) => (
-                <li key={itemKey(it)}>
-                  <a href={`/?sel=${itemKey(it)}&src=game`}>
-                    <span className="gm-name">{it.name}</span>
-                    <Chip kind={it.kind} />
-                    <When it={it} mode={years} />
-                    <span className="gm-go" aria-hidden="true">←</span>
-                  </a>
-                </li>
-              ))}
-            </ol>
-            <YearSwitch mode={years} onChange={changeYears} />
-            <p className="gm-note">{YEAR_NOTE[years]} לחיצה על פריט פותחת אותו בציר הזמן.</p>
-            <div className="gm-actions">
-              <button type="button" className="gm-btn" onClick={next}>סבב נוסף</button>
+            <div className="gm-ans-head">
+              <h2 className="gm-sub">הסדר הנכון</h2>
+              <YearSwitch mode={years} onChange={changeYears} />
             </div>
+            <ol className="gm-answer" aria-label="הסדר הנכון">
+              {answer.map((it, i) => {
+                const at = placed.findIndex((p) => itemKey(p) === itemKey(it));
+                const ok = at === i;
+                return (
+                  <li key={itemKey(it)} className={ok ? 'ok' : 'bad'}>
+                    <span className="gm-n" aria-hidden="true">{ok ? '✓' : '✗'}</span>
+                    <a href={`/?sel=${itemKey(it)}&src=game`}
+                      aria-label={`${it.name}, ${ok ? 'במקום' : `שמתם במקום ${at + 1}`}`}>
+                      <span className="gm-name">{it.name}</span>
+                      <Chip kind={it.kind} />
+                      {!ok && at >= 0 && <span className="gm-was">שמתם במקום {at + 1}</span>}
+                      <When it={it} mode={years} />
+                      <span className="gm-go" aria-hidden="true">←</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ol>
+            <p className="gm-note">{YEAR_NOTE[years]} לחיצה על פריט פותחת אותו בציר הזמן.</p>
           </>
         )}
           </>
         )}
-        {ACCOUNTS && <Leaderboard acc={acc} version={boardV} onOpen={open} />}
+        {ACCOUNTS && !checked && <Leaderboard acc={acc} version={boardV} onOpen={open} />}
         {/* מי שהגיע למשחק מקישור בוואטסאפ לא ראה את האתר מעולם. בסוף העמוד - שלוש
-            הדלתות אליו, באותן מילים ואייקונים של מתג המבטים בשאר המסכים */}
+            הדלתות אליו, באותן מילים ואייקונים של מתג המבטים בשאר המסכים. שורה אחת
+            של קישורים קטנים: שלושה קלפים גדולים תפסו מסך שלם בטלפון */}
         <nav className="gm-site" aria-label="ממשיכים באתר">
           <h2>ממשיכים באתר</h2>
-          <a href="/?src=game"><b>📜 ציר הזמן</b><span>מי חי מתי, ומי לצד מי</span></a>
-          <a href="/atlas?src=game"><b>🗺️ מסע הדורות</b><span>דמות אחר דמות, עם המפה והסיפור</span></a>
-          <a href="/places?src=game"><b>📍 מפת הארץ</b><span>מה קרה בכל מקום</span></a>
+          <div className="gm-site-row">
+            <a href="/?src=game" title="מי חי מתי, ומי לצד מי">📜 ציר הזמן</a>
+            <a href="/atlas?src=game" title="דמות אחר דמות, עם המפה והסיפור">🗺️ מסע הדורות</a>
+            <a href="/places?src=game" title="מה קרה בכל מקום">📍 מפת הארץ</a>
+          </div>
         </nav>
       </main>
       {ACCOUNTS && <AccountDialog acc={acc} view={view} onClose={() => setView(null)} onView={setView} onChanged={changed} />}

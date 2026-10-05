@@ -80,7 +80,9 @@
 .ac-saved.bad{color:var(--bad,#a3342a)}
 
 /* ----- טבלת המובילים ----- */
-.ac-board{margin-top:28px;padding:14px;border:1px solid var(--line,#dcc9a3);border-radius:16px;background:var(--panel,#fbf5e7)}
+/* אחרי פתרון הטבלה יושבת צמוד מתחת לכרטיס התוצאה; לפני פתרון - מתחת לכפתורים */
+.gm-actions + .ac-board{margin-top:28px}
+.ac-board{margin:0 0 4px;padding:14px;border:1px solid var(--line,#dcc9a3);border-radius:16px;background:var(--panel,#fbf5e7)}
 .ac-board-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .ac-board h2{margin:0;font-family:'Frank Ruhl Libre',serif;font-size:20px;color:var(--navy,#163a57)}
 .ac-tabs{display:flex;gap:2px;padding:2px;border:1px solid var(--line,#dcc9a3);border-radius:999px;background:var(--bg,#efe4cb)}
