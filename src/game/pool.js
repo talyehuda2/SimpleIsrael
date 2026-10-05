@@ -148,8 +148,10 @@ export function israelDay(now = new Date()) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(now);
 }
 
-// מספר האתגר: 1 ביום ההשקה. מחושב מהתאריך, ולכן זהה בכל מכשיר
-const EPOCH = Date.UTC(2026, 8, 28);
+// מספר האתגר: 1 ביום ההשקה. מחושב מהתאריך, ולכן זהה בכל מכשיר.
+// הספירה אופסה ל-5.10.2026 (במקום 28.9), יום הפרסום הרחב בסטטוס, יחד עם מחיקת
+// נתוני המשחק עד אז. משנה רק את המספר: היד נגזרת מהתאריך (seedOf(day)) ולא ממנו
+const EPOCH = Date.UTC(2026, 9, 5);
 export function dayNumber(day) {
   const [y, m, d] = day.split('-').map(Number);
   return Math.round((Date.UTC(y, m - 1, d) - EPOCH) / 86400000) + 1;
