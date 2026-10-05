@@ -102,6 +102,10 @@ npm run data       # מייצר מחדש את atlas-data.json ואת places.json
 npm run preview    # הגשת dist, לבדיקת התוצר הסופי
 ```
 
+**דחיפה ל-`main` לא תמיד מגיעה לייצור.** באוקטובר 2026 אותו קומיט נדחף לענף ול-`main` בהפרש של
+שניות, ו-Vercel בנה ממנו רק Preview - בלי Production. בדיקה: `gh api repos/talyehuda2/SimpleIsrael/deployments`
+צריך להראות `Production` עם ה-sha של `main`. אם חסר - קומיט חדש ל-`main` מפעיל פריסה.
+
 `.claude/launch.json` מגדיר שתי תצורות: `simpleisrael` (פיתוח) ו-`simpleisrael-dist` (preview).
 
 **אין בפרויקט מבחני יחידה ואין לינטר.** `npm run build` עובר גם על קוד שנופל בדפדפן —
