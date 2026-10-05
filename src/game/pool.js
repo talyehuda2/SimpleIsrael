@@ -143,6 +143,13 @@ export function deal(random, pool = POOL) {
   return shuffle(safe, random).slice(0, HAND);
 }
 
+// זרע מספרי מתוך מחרוזת התאריך. כאן ולא ב-main.jsx: גם api/game.js מחשב
+// ממנו את היד של היום, וזרע שונה בשני הצדדים היה פוסל כל סדר נכון
+export const seedOf = (s) => [...s].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261);
+
+// היד של האתגר היומי, בסדר הנכון
+export const dailyAnswer = (day) => [...deal(rng(seedOf(day)))].sort(byTime);
+
 // היום לפי שעון ישראל - האתגר מתחלף בחצות כאן, לא ב-UTC
 export function israelDay(now = new Date()) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(now);

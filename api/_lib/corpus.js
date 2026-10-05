@@ -15,8 +15,8 @@ import collections from '../../src/data/collections.json' with { type: 'json' };
 import places from '../../src/data/places.json' with { type: 'json' };
 import maps from '../../src/data/maps.json' with { type: 'json' };
 
-// זהה ל-src/data/items.js - אותו מקור אמת, אבל עם ייבוא תקני של Node
-// (items.js מייבא JSON בלי import attributes, מה שעובד רק דרך Vite)
+// זהה ל-src/data/items.js. נכתב כשזה ייבא JSON בלי import attributes ולכן
+// עבד רק דרך Vite; מאוקטובר 2026 items.js נטען גם ב-Node (ראו api/game.js)
 export const ALL_ITEMS = [
   ...leaders.map((x) => ({ ...x, kind: 'leader' })),
   ...judges.map((x) => ({ ...x, kind: 'judge' })),

@@ -129,6 +129,57 @@ export default function Game({ token, onBadToken }) {
           </details>
         </>
       )}
+      <Players token={token} />
     </main>
+  );
+}
+
+/* שחקנים רשומים (supabase/game_accounts.sql). הסתרה ולא מחיקה: כינוי פוגעני
+   יוצא מטבלת המובילים, והשחקן ממשיך לצבור לעצמו. נטען בנפרד מהסטטיסטיקה,
+   כי הוא לא תלוי בטווח התאריכים - ושגיאה בו לא מסתירה את השאר. */
+function Players({ token }) {
+  const [rows, setRows] = useState(null);
+  const [err, setErr] = useState('');
+  const load = useCallback(async () => {
+    const { data, error } = await supabase.rpc('admin_game_players', { p_token: token });
+    if (error) {
+      setErr(error.code === 'PGRST202' || /admin_game_players/.test(error.message || '')
+        ? 'הפונקציה admin_game_players אינה קיימת. להריץ את supabase/game_accounts.sql ב-Supabase.'
+        : (error.message || 'שגיאה בטעינה'));
+      return;
+    }
+    setRows(data || []); setErr('');
+  }, [token]);
+  useEffect(() => { load(); }, [load]);
+
+  const toggle = async (r) => {
+    const { error } = await supabase.rpc('admin_game_hide', { p_token: token, p_user: r.user_id, p_hidden: !r.hidden });
+    if (error) { setErr(error.message || 'שגיאה'); return; }
+    load();
+  };
+
+  return (
+    <section className="ad-card ad-table">
+      <h3>שחקנים רשומים{rows ? ` (${rows.length})` : ''}</h3>
+      {err && <p className="ad-msg ad-err">{err}</p>}
+      {rows && !rows.length && <p className="ad-note">עוד אין שחקנים רשומים.</p>}
+      {rows?.length > 0 && (
+        <table>
+          <thead><tr><th>כינוי</th><th>מייל</th><th>נקודות</th><th>ימים</th><th>אחרון</th><th /></tr></thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.user_id} style={r.hidden ? { opacity: 0.5 } : undefined}>
+                <td>{r.nickname}</td>
+                <td dir="ltr">{r.email}</td>
+                <td>{r.points}</td><td>{r.days}</td>
+                <td>{r.last_day ? longDate(String(r.last_day).slice(0, 10)) : '-'}</td>
+                <td><button type="button" onClick={() => toggle(r)}>{r.hidden ? 'החזרה לטבלה' : 'הסתרה'}</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      <p className="ad-note">מוסתר = לא מופיע בטבלת המובילים. הנקודות שלו נשמרות.</p>
+    </section>
   );
 }

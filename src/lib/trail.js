@@ -43,6 +43,10 @@
                             הונח במקומו (מאוקטובר 2026) - "איפה טועים" במסך הניהול
      game_share  {mode,score,via}  שיתוף תוצאה שהושלם: native (חלון השיתוף
                             של הטלפון) או copy (העתקה). ביטול לא נספר
+     game_auth   {step,via?} חשבון שחקן - open (חלון ההתחברות נפתח, via = מאיפה),
+                            code_sent, login (via = email / google), nickname, delete
+                            (mark, לא once). בלי מייל ובלי מזהה משתמש - si_trail
+                            פתוחה לכתיבה מהדפדפן, ואין סיבה לקשר אותה לזהות
 
      page_view   {src?}     כל מסך     - ספירת תנועה בלתי-תלויה ב-Vercel.
                                         src מגיע מ-?src= בקישור (למשל status),

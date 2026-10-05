@@ -1,16 +1,18 @@
 // מקור אמת יחיד לרשימת הפריטים. שני המסכים - ציר הזמן ומסע הדורות -
 // טוענים מכאן את אותם אובייקטים, כך שכרטיס הפריט מקבל בשניהם בדיוק את
 // אותם שדות ואין צורך במתאם או בשכפול.
-import leaders from './leaders.json';
-import judges from './judges.json';
-import kings from './kings.json';
-import prophets from './prophets.json';
-import books from './books.json';
-import world from './world.json';
-import events from './events.json';
-import empires from './empires.json';
-import periods from './periods.json';
-import collections from './collections.json';
+// ה-with { type: 'json' } הוא מה שמאפשר לטעון את הקובץ גם ב-Node ולא רק דרך
+// Vite: api/game.js מחשב את היד היומית מ-pool.js, שנשען על הקובץ הזה.
+import leaders from './leaders.json' with { type: 'json' };
+import judges from './judges.json' with { type: 'json' };
+import kings from './kings.json' with { type: 'json' };
+import prophets from './prophets.json' with { type: 'json' };
+import books from './books.json' with { type: 'json' };
+import world from './world.json' with { type: 'json' };
+import events from './events.json' with { type: 'json' };
+import empires from './empires.json' with { type: 'json' };
+import periods from './periods.json' with { type: 'json' };
+import collections from './collections.json' with { type: 'json' };
 
 export const ALL_ITEMS = [
   ...leaders.map((x) => ({ ...x, kind: 'leader' })),

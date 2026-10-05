@@ -9,17 +9,18 @@
  *
  * האתגר היומי זהה לכל מי שמשחק באותו יום (זרע מהתאריך בשעון ישראל),
  * וזה מה שהופך את התוצאה לדבר ששווה לשתף: "4 מתוך 5, תצליחו?" */
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { itemKey } from '../data/items.js';
 import { hebrewYearLetters } from '../utils/dates.js';
 import { startTrail, mark, markOnce } from '../lib/trail.js';
 import {
-  HAND, deal, rng, israelDay, dayNumber, byTime, poolFor, availableTopics, availablePeriods,
+  HAND, deal, rng, seedOf, israelDay, dayNumber, byTime, poolFor, availableTopics, availablePeriods,
   TOPICS, PERIODS,
 } from './pool.js';
 import { confetti } from './confetti.js';
 import './game.css';
+import { useAccount, AccountButton, AccountDialog, SaveInvite, SavedLine, Leaderboard } from './Account.jsx';
 
 const KIND_LABEL = {
   leader: 'מנהיג', judge: 'שופט', united: 'מלך', judah: 'מלך יהודה',
@@ -93,9 +94,6 @@ const YEAR_NOTE = {
   num: 'השנים לבריאה, לפי סדר עולם.',
   sec: 'השנים לפי מניינם, מחושבות מהשנה לבריאה לפי סדר עולם.',
 };
-
-// זרע מספרי מתוך מחרוזת התאריך
-const seedOf = (s) => [...s].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261);
 
 /* התוצאה של היום נשמרת בדפדפן, כדי שמי שחוזר לאתגר שכבר פתר יראה את
    התוצאה ולא יפתור שוב. אם האחסון חסום - פשוט משחקים מחדש. */
@@ -252,6 +250,56 @@ function Game() {
 
   useEffect(() => { markOnce('game_start', { mode: daily ? 'daily' : 'free' }); }, [daily]);
 
+  /* ----- חשבון: נקודות, רצף וטבלה (Account.jsx). רק האתגר היומי נספר ----- */
+  const acc = useAccount();
+  const [view, setView] = useState(null);         // החלון הפתוח: signin / nick / profile
+  const [saveState, setSaveState] = useState(null); // null / 'saving' / 'saved' / הודעת שגיאה
+  const [boardV, setBoardV] = useState(0);        // מרענן את הטבלה אחרי שינוי
+  const open = (v, via) => { if (v === 'signin') mark('game_auth', { step: 'open', via }); setView(v); };
+  const changed = () => { acc.refresh(); setBoardV((n) => n + 1); };
+  const byKeys = (keys) => keys.map((k) => hand.find((h) => itemKey(h) === k)).filter(Boolean);
+
+  /* הסדר נשלח לשרת, שמחשב את הציון ושומר. התשובה היא מה שנשמר: אם כבר שוחק
+     היום ממכשיר אחר, הציון ההוא קובע ולא זה. */
+  const submit = useCallback(async (keys) => {
+    setSaveState('saving');
+    try {
+      const res = await (await acc.load()).submitDaily(day, keys);
+      saveDaily(day, res.placed);
+      setSaveState('saved');
+      acc.refresh(); setBoardV((n) => n + 1);
+      return res;
+    } catch (e) {
+      setSaveState(e?.message || 'השמירה נכשלה');
+      return null;
+    }
+  }, [acc.load, acc.refresh, day]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!daily || !acc.me) return;
+    const keys = new Set(hand.map(itemKey));
+    const server = acc.me.today?.placed;
+    if (server) {
+      // כבר פתר היום, אולי במכשיר אחר: מציגים את מה שנשמר ולא נותנים ניסיון נוסף
+      if (!checked && server.every((k) => keys.has(k))) {
+        setPlaced(byKeys(server)); setChecked(true); saveDaily(day, server); setSaveState('saved');
+      }
+      return;
+    }
+    /* פתר כאורח ואז נרשם, או שהשמירה הקודמת נכשלה: שולחים את הסדר ששמור
+       בדפדפן - אותו סדר שנבחר לפני שהתשובה נחשפה, ולא סדר חדש */
+    const local = loadDaily(day);
+    if (local && saveState === null && local.every((k) => keys.has(k))) submit(local);
+  }, [acc.me, daily]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // מי שנכנס בלי כינוי מתבקש לבחור אחד - גם בחזרה מגוגל, כשהחלון לא היה פתוח
+  useEffect(() => {
+    if (!acc.user || !acc.me) return;
+    if (!acc.me.nickname) setView('nick');
+    else if (view === 'signin') setView(null);
+  }, [acc.user, acc.me]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!acc.user) setSaveState(null); }, [acc.user]);
+
   const reset = () => { setPlaced([]); setChecked(false); setShareMsg(''); };
   const start = () => {
     setApplied({ ...draft, periods: [...draft.periods].sort((x, y) => x - y) });
@@ -290,7 +338,13 @@ function Game() {
     };
     if (daily) {
       markOnce('game_done', { mode: 'daily', score: s, n: num, ...facts });
-      saveDaily(day, placed.map(itemKey));
+      const keys = placed.map(itemKey);
+      saveDaily(day, keys);
+      if (acc.user) {
+        submit(keys).then((res) => {
+          if (res && res.placed.join() !== keys.join()) setPlaced(byKeys(res.placed));
+        });
+      }
     } else {
       // כל סבב חופשי נספר, יחד עם הבחירה - כך רואים אילו תחומים מעניינים
       mark('game_done', {
@@ -351,7 +405,10 @@ function Game() {
           <span className="gm-home-s">לאתר</span><span className="gm-home-l">ציר הזמן של עם ישראל</span>
         </a>
         <h1>סדר את הציר</h1>
-        <span className="gm-num">{daily ? `אתגר #${num}` : 'משחק חופשי'}</span>
+        <div className="gm-end">
+          <span className="gm-num">{daily ? `אתגר #${num}` : 'משחק חופשי'}</span>
+          <AccountButton acc={acc} onOpen={open} />
+        </div>
       </header>
 
       <main className="gm-main" id="main">
@@ -386,6 +443,9 @@ function Game() {
               <button type="button" className="gm-btn" onClick={next}>סבב נוסף</button>
             </div>
             <p className="gm-msg" role="status">{shareMsg}</p>
+            {daily && (acc.user
+              ? <SavedLine state={saveState} me={acc.me} />
+              : acc.known && <SaveInvite score={score} onOpen={open} />)}
             {daily && <p className="gm-note">אתגר חדש מחר בחצות.</p>}
           </section>
         ) : (
@@ -469,6 +529,7 @@ function Game() {
         )}
           </>
         )}
+        <Leaderboard acc={acc} version={boardV} onOpen={open} />
         {/* מי שהגיע למשחק מקישור בוואטסאפ לא ראה את האתר מעולם. בסוף העמוד - שלוש
             הדלתות אליו, באותן מילים ואייקונים של מתג המבטים בשאר המסכים */}
         <nav className="gm-site" aria-label="ממשיכים באתר">
@@ -478,6 +539,7 @@ function Game() {
           <a href="/places?src=game"><b>📍 מפת הארץ</b><span>מה קרה בכל מקום</span></a>
         </nav>
       </main>
+      <AccountDialog acc={acc} view={view} onClose={() => setView(null)} onView={setView} onChanged={changed} />
     </>
   );
 }

@@ -1,0 +1,99 @@
+/* חשבון השחקן - בבעלות Account.jsx. נשען על משתני :root של game.css (אותו מסך
+   בדיוק), עם ערכי גיבוי למקרה שהרכיב ייטען פעם במקום אחר. */
+
+/* ----- כפתור בסרגל ----- */
+.ac-btn{display:inline-flex;align-items:center;gap:5px;line-height:1;font-size:14px;font-weight:700;
+  padding:8px 12px;border:1px solid var(--line,#dcc9a3);border-radius:14px;background:var(--bg,#efe4cb);
+  color:var(--navy,#163a57);cursor:pointer;white-space:nowrap}
+.ac-btn:hover{border-color:var(--gold,#b28a2b)}
+.ac-btn:focus-visible{outline:3px solid var(--navy,#163a57);outline-offset:2px}
+.ac-btn.in b{font-size:15px}
+.ac-streak{font-size:12.5px;color:var(--gold-ink,#7a5b16)}
+/* מקום שמור בזמן שבודקים אם יש התחברות - בלי קפיצה של הסרגל */
+.ac-ghost{visibility:hidden;width:44px;height:32px;padding:0}
+@media (max-width:640px){ .ac-btn-l{display:none} }
+@media (max-width:420px){ .ac-btn{padding:7px 9px} }
+
+/* ----- החלון ----- */
+.ac-dlg{width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:0;border:0;border-radius:18px;
+  background:var(--panel,#fbf5e7);color:var(--ink,#33281a);box-shadow:0 18px 50px rgb(40 25 0 / .35)}
+.ac-dlg::backdrop{background:rgb(30 20 5 / .45)}
+.ac-dlg[open]{animation:acIn .2s ease-out}
+@keyframes acIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.ac-body{position:relative;padding:22px 20px 20px}
+.ac-x{position:absolute;inset-inline-end:10px;top:10px;width:36px;height:36px;border:0;border-radius:50%;
+  background:transparent;color:var(--muted,#6d5c42);font-size:17px;cursor:pointer}
+.ac-x:hover{background:rgb(30 20 5 / .06)}
+.ac-x:focus-visible{outline:3px solid var(--navy,#163a57)}
+.ac-dlg h2:focus{outline:none}
+.ac-dlg h2{margin:0 0 8px;padding-inline-end:36px;font-family:'Frank Ruhl Libre',serif;font-size:24px;font-weight:900;color:var(--navy,#163a57)}
+.ac-p{margin:0 0 14px;font-size:15px;line-height:1.55}
+.ac-small{margin:6px 0 0;font-size:13px;line-height:1.5;color:var(--muted,#6d5c42)}
+.ac-legal{margin-top:14px}
+.ac-legal a{color:var(--navy,#163a57)}
+.ac-err{margin:8px 0 0;font-size:13.5px;font-weight:700;color:var(--bad,#a3342a)}
+.ac-lbl{display:block;margin:0 0 5px;font-size:13.5px;font-weight:700;color:var(--navy,#163a57)}
+.ac-in{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line,#dcc9a3);border-radius:12px;
+  background:#fff;color:var(--ink,#33281a)}
+.ac-in:focus{outline:3px solid var(--navy,#163a57);outline-offset:1px;border-color:var(--navy,#163a57)}
+/* כתובת מייל נכתבת משמאל לימין - בלי dir="ltr" ה-@ והנקודות קופצים לצד הלא נכון */
+.ac-in[dir="ltr"]{text-align:left}
+.ac-in.ac-code{font-size:24px;letter-spacing:.3em;text-align:center}
+.ac-wide{width:100%;margin-top:14px}
+
+.ac-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font:inherit;font-size:15.5px;font-weight:700;
+  padding:12px 16px;border:1px solid #c9c2b3;border-radius:14px;background:#fff;color:#2b2b2b;cursor:pointer}
+.ac-google:hover:not(:disabled){border-color:var(--gold,#b28a2b)}
+.ac-google:focus-visible{outline:3px solid var(--navy,#163a57);outline-offset:2px}
+.ac-google:disabled{opacity:.5}
+.ac-or{display:flex;align-items:center;gap:10px;margin:16px 0 12px;font-size:12.5px;color:var(--muted,#6d5c42)}
+.ac-or::before,.ac-or::after{content:'';flex:1;height:1px;background:var(--line,#dcc9a3)}
+
+/* ----- האזור האישי ----- */
+.ac-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0 14px}
+.ac-stats div{padding:10px 4px;border:1px solid var(--line,#dcc9a3);border-radius:12px;background:var(--bg,#efe4cb);text-align:center}
+.ac-stats dt{font-size:12px;font-weight:700;color:var(--muted,#6d5c42)}
+.ac-stats dd{margin:2px 0 0;font-family:'Frank Ruhl Libre',serif;font-size:26px;font-weight:900;color:var(--navy,#163a57)}
+.ac-h3{margin:0 0 6px;font-size:13.5px;font-weight:700;color:var(--navy,#163a57)}
+.ac-recent{list-style:none;display:flex;flex-wrap:wrap;gap:5px;margin:0;padding:0}
+.ac-recent li{display:flex;flex-direction:column;align-items:center;width:30px;gap:2px}
+.ac-recent b{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;
+  background:#fbeee9;color:var(--bad,#a3342a);border:1.5px solid var(--bad,#a3342a)}
+.ac-recent li.good b{background:#fff3d6;color:var(--gold-ink,#7a5b16);border-color:var(--gold,#b28a2b)}
+.ac-recent li.top b{background:var(--ok,#3f6628);color:#fff;border-color:var(--ok,#3f6628)}
+.ac-recent span{font-size:11px;color:var(--muted,#6d5c42)}
+.ac-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.ac-del{display:block;margin-top:18px;color:var(--bad,#a3342a)}
+.ac-confirm{margin-top:16px;padding:12px;border:1.5px solid var(--bad,#a3342a);border-radius:12px;background:#fdf3ef}
+.ac-confirm p{margin:0;font-size:14px}
+.ac-confirm .ac-row{margin-top:10px}
+.gm-btn.ac-danger{background:var(--bad,#a3342a);border-color:var(--bad,#a3342a);color:#fff}
+
+/* ----- במסך התוצאה ----- */
+.ac-invite{margin:14px 0 0;padding:12px 14px;border:1.5px dashed var(--gold,#b28a2b);border-radius:14px;background:#fff8e6}
+.ac-invite p{margin:0 0 10px;font-size:14.5px;line-height:1.5}
+.ac-saved{margin:12px 0 0;font-size:14px;color:var(--ok,#3f6628);font-weight:700}
+.ac-saved b{color:var(--navy,#163a57)}
+.ac-saved.bad{color:var(--bad,#a3342a)}
+
+/* ----- טבלת המובילים ----- */
+.ac-board{margin-top:28px;padding:14px;border:1px solid var(--line,#dcc9a3);border-radius:16px;background:var(--panel,#fbf5e7)}
+.ac-board-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.ac-board h2{margin:0;font-family:'Frank Ruhl Libre',serif;font-size:20px;color:var(--navy,#163a57)}
+.ac-tabs{display:flex;gap:2px;padding:2px;border:1px solid var(--line,#dcc9a3);border-radius:999px;background:var(--bg,#efe4cb)}
+.ac-tabs button{font:inherit;font-size:12.5px;font-weight:700;padding:5px 11px;border:0;border-radius:999px;cursor:pointer;
+  background:transparent;color:var(--muted,#6d5c42)}
+.ac-tabs button[aria-selected="true"]{background:var(--navy,#163a57);color:#fff}
+.ac-tabs button:focus-visible{outline:3px solid var(--navy,#163a57);outline-offset:1px}
+.ac-rows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.ac-rows li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:var(--bg,#efe4cb)}
+.ac-rows li.me{background:#fff3d6;box-shadow:inset 0 0 0 1.5px var(--gold,#b28a2b)}
+.ac-rows li.gap{margin-top:8px}
+.ac-rank{flex:none;width:26px;text-align:center;font-weight:700;color:var(--muted,#6d5c42)}
+.ac-nick{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.ac-pts{flex:none;font-size:13px;color:var(--muted,#6d5c42)}
+.ac-pts b{font-size:15px;color:var(--navy,#163a57)}
+.ac-board .gm-all{margin-top:8px;padding-inline:0}
+
+@media (prefers-reduced-motion:reduce){ .ac-dlg[open]{animation:none} }
+@media (max-width:380px){ .ac-stats{grid-template-columns:repeat(2,1fr)} }
