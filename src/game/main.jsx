@@ -20,7 +20,10 @@ import {
 } from './pool.js';
 import { confetti } from './confetti.js';
 import './game.css';
-import { useAccount, AccountButton, AccountDialog, SaveInvite, SavedLine, Leaderboard } from './Account.jsx';
+import { useAccount, accountsEnabled, AccountButton, AccountDialog, SaveInvite, SavedLine, Leaderboard } from './Account.jsx';
+
+// עד ההשקה ההרשמה כולה מוסתרת - ראו OPEN ב-Account.jsx
+const ACCOUNTS = accountsEnabled();
 
 const KIND_LABEL = {
   leader: 'מנהיג', judge: 'שופט', united: 'מלך', judah: 'מלך יהודה',
@@ -251,7 +254,7 @@ function Game() {
   useEffect(() => { markOnce('game_start', { mode: daily ? 'daily' : 'free' }); }, [daily]);
 
   /* ----- חשבון: נקודות, רצף וטבלה (Account.jsx). רק האתגר היומי נספר ----- */
-  const acc = useAccount();
+  const acc = useAccount(ACCOUNTS);
   const [view, setView] = useState(null);         // החלון הפתוח: signin / nick / profile
   const [saveState, setSaveState] = useState(null); // null / 'saving' / 'saved' / הודעת שגיאה
   const [boardV, setBoardV] = useState(0);        // מרענן את הטבלה אחרי שינוי
@@ -407,7 +410,7 @@ function Game() {
         <h1>סדר את הציר</h1>
         <div className="gm-end">
           <span className="gm-num">{daily ? `אתגר #${num}` : 'משחק חופשי'}</span>
-          <AccountButton acc={acc} onOpen={open} />
+          {ACCOUNTS && <AccountButton acc={acc} onOpen={open} />}
         </div>
       </header>
 
@@ -443,7 +446,7 @@ function Game() {
               <button type="button" className="gm-btn" onClick={next}>סבב נוסף</button>
             </div>
             <p className="gm-msg" role="status">{shareMsg}</p>
-            {daily && (acc.user
+            {ACCOUNTS && daily && (acc.user
               ? <SavedLine state={saveState} me={acc.me} />
               : acc.known && <SaveInvite score={score} onOpen={open} />)}
             {daily && <p className="gm-note">אתגר חדש מחר בחצות.</p>}
@@ -529,7 +532,7 @@ function Game() {
         )}
           </>
         )}
-        <Leaderboard acc={acc} version={boardV} onOpen={open} />
+        {ACCOUNTS && <Leaderboard acc={acc} version={boardV} onOpen={open} />}
         {/* מי שהגיע למשחק מקישור בוואטסאפ לא ראה את האתר מעולם. בסוף העמוד - שלוש
             הדלתות אליו, באותן מילים ואייקונים של מתג המבטים בשאר המסכים */}
         <nav className="gm-site" aria-label="ממשיכים באתר">
@@ -539,7 +542,7 @@ function Game() {
           <a href="/places?src=game"><b>📍 מפת הארץ</b><span>מה קרה בכל מקום</span></a>
         </nav>
       </main>
-      <AccountDialog acc={acc} view={view} onClose={() => setView(null)} onView={setView} onChanged={changed} />
+      {ACCOUNTS && <AccountDialog acc={acc} view={view} onClose={() => setView(null)} onView={setView} onChanged={changed} />}
     </>
   );
 }

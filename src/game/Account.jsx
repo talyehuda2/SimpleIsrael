@@ -9,6 +9,19 @@ import { mark } from '../lib/trail.js';
 import { AUTH_KEY, fetchBoard } from './board.js';
 import './account.css';
 
+/* דגל השקה, כמו ?modern=1 של המפה המודרנית: עד שההגדרות בדשבורד של Supabase
+   ו-Google מוכנות, ההרשמה גלויה רק למי שנכנס עם ?accounts=1. הדגל נשמר בדפדפן,
+   כי בחזרה מגוגל הכתובת מתחלפת. השקה לכולם = OPEN ל-true. */
+const OPEN = false;
+const FLAG = 'si_game_accounts';
+export function accountsEnabled() {
+  if (OPEN) return true;
+  try {
+    if (new URLSearchParams(location.search).has('accounts')) localStorage.setItem(FLAG, '1');
+    return localStorage.getItem(FLAG) === '1';
+  } catch { return false; }
+}
+
 const hasStoredSession = () => {
   try { return !!localStorage.getItem(AUTH_KEY); } catch { return false; }
 };
@@ -16,11 +29,11 @@ const hasStoredSession = () => {
 const hasAuthParams = () => /[?&#](code|error_description)=/.test(location.search + location.hash);
 
 /** מצב החשבון. account.js נטען רק כשיש סיבה - ראו שם. */
-export function useAccount() {
+export function useAccount(enabled = true) {
   const mod = useRef(null);
   const [user, setUser] = useState(null);
   const [me, setMe] = useState(null);
-  const [known, setKnown] = useState(() => !hasStoredSession() && !hasAuthParams());
+  const [known, setKnown] = useState(() => !enabled || (!hasStoredSession() && !hasAuthParams()));
 
   const load = useCallback(async () => {
     if (mod.current) return mod.current;
