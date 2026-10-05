@@ -252,6 +252,14 @@ body {
 .gm-bar-t i { display: block; height: 100%; background: #245c93; border-radius: 7px; }
 .gm-bar-n { font-variant-numeric: tabular-nums; min-width: 64px; text-align: start; }
 .gm-bar-n small { color: var(--ad-muted); }
+/* מקורות הכניסה: תוויות ארוכות מ-"5/5", ולכן עמודת תווית רחבה */
+.ad-src { display: flex; flex-direction: column; gap: 8px; }
+.ad-src .gm-bar { grid-template-columns: minmax(96px, 36%) 1fr auto; }
+.ad-src .gm-bar-l { font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }
+.ad-src-more { margin-top: 10px; font-size: 13px; }
+.ad-src-more summary { cursor: pointer; color: var(--ad-navy); font-weight: 700; }
+.ad-src-more ul { margin: 6px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; }
+.ad-src-more small { color: var(--ad-muted); font-variant-numeric: tabular-nums; }
 .gm-hard { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .gm-hard li { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: baseline; font-size: 14px;
   padding-bottom: 6px; border-bottom: 1px solid var(--ad-line); }

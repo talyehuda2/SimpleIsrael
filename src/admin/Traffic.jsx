@@ -40,6 +40,68 @@ function colPath(x, y, w, h, r) {
   return `M${x},${y + h}V${y + rr}Q${x},${y} ${x + rr},${y}H${x + w - rr}Q${x + w},${y} ${x + w},${y + rr}V${y + h}Z`;
 }
 
+/* מקורות: src מהקישור קובע, ואם אין - הדומיין המפנה. השיוך לקבוצות כאן ולא
+   ב-SQL (admin_sources.sql), כדי שמקור חדש לא ידרוש הרצה במסד. */
+const SRC_LABEL = {
+  status: 'סטטוס בוואטסאפ',
+  'card-share': 'שיתוף כרטיס',
+  'game-share': 'שיתוף משחק',
+  'reply-mail': 'מייל "ענו לך"',
+  mail: 'מייל התראה אליך',
+  game: 'מהמשחק',
+};
+const OTHER_SITES = 'אתרים אחרים';
+function sourceOf(src, ref) {
+  if (src) return SRC_LABEL[src] || `src=${src}`;
+  if (!ref) return 'ישיר';
+  if (/(^|\.)google\./.test(ref)) return 'גוגל';
+  if (/(bing|duckduckgo|yahoo|yandex|ecosia)\./.test(ref)) return 'מנועי חיפוש אחרים';
+  if (/(whatsapp|wa\.me)/.test(ref)) return 'וואטסאפ (בלי src)';
+  if (/(facebook|fb\.|instagram|(^|\.)t\.co$|twitter|(^|\.)x\.com$|linkedin|tiktok|reddit|telegram)/.test(ref)) return 'רשתות חברתיות';
+  return OTHER_SITES;
+}
+
+function Sources({ data }) {
+  const groups = useMemo(() => {
+    const m = new Map();
+    for (const r of data) {
+      const k = sourceOf(r.src, r.ref);
+      const g = m.get(k) || { label: k, n: 0, refs: new Map() };
+      g.n += r.visits;
+      if (r.ref) g.refs.set(r.ref, (g.refs.get(r.ref) || 0) + r.visits);
+      m.set(k, g);
+    }
+    return [...m.values()].sort((a, b) => b.n - a.n);
+  }, [data]);
+  const total = groups.reduce((s, g) => s + g.n, 0);
+  const max = Math.max(1, ...groups.map((g) => g.n));
+  const others = groups.find((g) => g.label === OTHER_SITES);
+  if (!total) return <p className="ad-note">אין כניסות בטווח הזה.</p>;
+  return (
+    <>
+      <div className="ad-src">
+        {groups.map((g) => (
+          <div className="gm-bar" key={g.label}>
+            <span className="gm-bar-l">{g.label}</span>
+            <span className="gm-bar-t"><i style={{ width: `${(g.n / max) * 100}%` }} /></span>
+            <span className="gm-bar-n">{g.n.toLocaleString('he-IL')} <small>{Math.round((g.n / total) * 100)}%</small></span>
+          </div>
+        ))}
+      </div>
+      {others && (
+        <details className="ad-src-more">
+          <summary>אילו אתרים</summary>
+          <ul>
+            {[...others.refs].sort((a, b) => b[1] - a[1]).map(([d, n]) => (
+              <li key={d}><span dir="ltr">{d}</span> <small>{n}</small></li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </>
+  );
+}
+
 function Chart({ rows }) {
   const wrapRef = useRef(null);
   const [width, setWidth] = useState(360);
@@ -127,9 +189,13 @@ export default function Traffic({ token, onBadToken }) {
   const [rows, setRows] = useState([]);
   const [status, setStatus] = useState('loading');
   const [err, setErr] = useState('');
+  // null = הפונקציה עוד לא הורצה במסד; הלשונית עובדת גם בלעדיה
+  const [sources, setSources] = useState([]);
 
   const load = useCallback(async () => {
     setStatus('loading'); setErr('');
+    supabase.rpc('admin_sources', { p_token: token, p_from: from, p_to: to })
+      .then(({ data, error }) => setSources(error ? null : (data || [])));
     const { data, error } = await supabase.rpc('admin_traffic', { p_token: token, p_from: from, p_to: to });
     if (error) {
       const msg = error.message || '';
@@ -191,6 +257,17 @@ export default function Traffic({ token, onBadToken }) {
             <p className="ad-note">
               ביקור הוא טאב אחד שבו נטען מסך באתר. עמודי השער (<code dir="ltr">/p/…</code>) אינם
               נספרים, ו״מהסטטוס״ נספר רק מקישורים עם <code dir="ltr">src=status</code>.
+            </p>
+          </section>
+
+          <section className="ad-card">
+            <h3>מאיפה מגיעים</h3>
+            {sources === null
+              ? <p className="ad-note">כדי לראות את הפירוט צריך להריץ את <code dir="ltr">supabase/admin_sources.sql</code> ב-Supabase.</p>
+              : <Sources data={sources} />}
+            <p className="ad-note">
+              כל ביקור נספר פעם אחת, לפי הכניסה הראשונה שלו. "ישיר" כולל גם קישור שנשלח בוואטסאפ
+              בלי סימון מקור - וואטסאפ לא מספר לאתר מאיפה הגיעו.
             </p>
           </section>
 
