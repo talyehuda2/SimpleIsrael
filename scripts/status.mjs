@@ -47,6 +47,8 @@ const FD = join(ROOT, 'node_modules', '@expo-google-fonts', 'frank-ruhl-libre');
 const BG = join(ROOT, 'build-assets', 'og-base.jpg');
 const DIST = join(ROOT, 'dist');
 const CHANNEL_NAME = 'ציר הזמן של עם ישראל';
+// הקישור הולך לכיתוב ולא לתמונה - בתמונה אי אפשר ללחוץ עליו
+const CHANNEL_URL = 'https://whatsapp.com/channel/0029Vb95vDvKAwElqCPM8T2L';
 
 const specPath = process.argv[2];
 if (!specPath) { console.error('שימוש: node scripts/status.mjs scripts/status/<שם>.json'); process.exit(1); }
@@ -330,4 +332,5 @@ for (const [i, s] of spec.slides.entries()) {
 await browser.close();
 srv?.close();
 console.log(`\n${spec.slides.length} תמונות ב-${OUT}`);
+console.log(`לכיתוב, בשורה מתחת לקישור לאתר:\n📢 הערוץ: ${CHANNEL_URL}`);
 process.exit(bad ? 1 : 0);
