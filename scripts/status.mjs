@@ -124,7 +124,8 @@ body{position:relative;background:#ead7ab url(file://${BG}) right top/auto 1920p
   -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 34%);mask-image:linear-gradient(to bottom,transparent 0,#000 34%)}
 .content{position:relative;padding:230px 84px 0;display:flex;flex-direction:column}
 .rule{width:180px;height:4px;background:#a8842c;margin-bottom:34px}
-.eyebrow{font-weight:700;font-size:40px;color:#7a5b16;padding-bottom:22px;margin-bottom:36px;border-bottom:3px solid rgb(168 132 44 / .45)}
+/* שורת הגג בחום: 40px היו קטנים מדי לקריאה במבט ראשון בטלפון (הערת בעל האתר) */
+.eyebrow{font-weight:800;font-size:54px;line-height:1.2;color:#6b4a0f;padding-bottom:24px;margin-bottom:36px;border-bottom:3px solid rgb(168 132 44 / .45)}
 h1{font-weight:900;font-size:98px;line-height:1.08;color:#163a57;margin-bottom:44px;text-wrap:balance}
 h1.sm{font-size:74px;margin-bottom:40px}
 p{font-weight:500;font-size:47px;line-height:1.5;margin-bottom:30px;text-wrap:pretty}
