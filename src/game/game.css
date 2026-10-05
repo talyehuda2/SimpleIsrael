@@ -100,6 +100,11 @@ button{font-family:inherit}
 /* טווח מספרי לא נשבר באמצע */
 .gm-when [dir="ltr"]{white-space:nowrap;unicode-bidi:isolate}
 .gm-note{margin:10px 0 0;font-size:13px;color:var(--muted)}
+/* רצף ימים: בתוצאה - מתחת לכפתורים; לפני הפתרון - תזכורת שיש מה להפסיד */
+.gm-streak{margin:12px 0 0;font-size:15px;font-weight:700;color:var(--ink);text-align:center}
+.gm-streak b{font-size:19px;color:#b3261e;font-variant-numeric:tabular-nums}
+.gm-streak.pre{margin:0 0 10px;text-align:start;font-size:14px;font-weight:600}
+.gm-streak.pre b{font-size:16px}
 .gm-msg{margin:8px 0 0;font-size:13px;font-weight:700;color:var(--ok);min-height:1em}
 
 @media (prefers-reduced-motion:reduce){ .gm-card{transition:none} .gm-card:hover:not(:disabled){transform:none} }

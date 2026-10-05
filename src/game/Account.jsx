@@ -318,12 +318,8 @@ export function SavedLine({ state, me }) {
   if (state === 'saving') return <p className="ac-saved">שומר את התוצאה…</p>;
   if (state && state !== 'saved') return <p className="ac-saved bad" role="alert">{state}</p>;
   if (!me) return null;
-  return (
-    <p className="ac-saved">
-      ✓ נשמר · סה״כ <b>{me.total}</b> נקודות
-      {me.streak > 0 && <> · <span aria-hidden="true">🔥</span> רצף של <b>{me.streak}</b> {me.streak === 1 ? 'יום' : 'ימים'}</>}
-    </p>
-  );
+  // בלי רצף כאן: שורת הרצף של המשחק (gm-streak) כבר מציגה את רצף החשבון למי שמחובר
+  return <p className="ac-saved">✓ נשמר · סה״כ <b>{me.total}</b> נקודות</p>;
 }
 
 export function Leaderboard({ acc, version, onOpen }) {

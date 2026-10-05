@@ -102,6 +102,61 @@ function Sources({ data }) {
   );
 }
 
+/* עומק ביקור: כמה דמויות ומקומות שונים נפתחו בביקור אחד (admin_engagement.sql).
+   השאלה שהוא עונה עליה: נכנסים לכרטיס אחד ועוזבים, או ממשיכים? */
+const DEPTH = [
+  ['0', 'רק נכנסו'],
+  ['1', 'כרטיס אחד'],
+  ['2', 'שניים'],
+  ['3-5', '3 עד 5'],
+  ['6+', '6 ומעלה'],
+];
+function Engagement({ data }) {
+  const [resolve, setResolve] = useState(null);
+  useEffect(() => { import('../data/items.js').then((m) => setResolve(() => m.resolveKey)); }, []);
+  const d = data.depth || {};
+  const total = data.visits || 0;
+  const max = Math.max(1, ...DEPTH.map(([k]) => d[k] || 0));
+  const more = (d['2'] || 0) + (d['3-5'] || 0) + (d['6+'] || 0);
+  const opened = total - (d['0'] || 0);
+  if (!total) return <p className="ad-note">אין ביקורים בטווח הזה.</p>;
+  return (
+    <>
+      <p className="ad-lead">
+        <b>{Math.round((more / total) * 100)}%</b> מהביקורים פתחו יותר מכרטיס אחד
+        {opened > 0 && <> · מתוך מי שפתח כרטיס, <b>{Math.round((more / opened) * 100)}%</b> המשיכו לעוד</>}
+      </p>
+      <div className="ad-src">
+        {DEPTH.map(([k, label]) => (
+          <div className="gm-bar" key={k}>
+            <span className="gm-bar-l">{label}</span>
+            <span className="gm-bar-t"><i style={{ width: `${((d[k] || 0) / max) * 100}%` }} /></span>
+            <span className="gm-bar-n">{(d[k] || 0).toLocaleString('he-IL')} <small>{Math.round(((d[k] || 0) / total) * 100)}%</small></span>
+          </div>
+        ))}
+      </div>
+      <div className="ad-top">
+        <div>
+          <h4>הדמויות והאירועים שהכי נפתחו</h4>
+          <ol>
+            {(data.items || []).map((x) => (
+              <li key={x.key}><span>{resolve?.(x.key)?.name || x.key}</span> <small>{x.n}</small></li>
+            ))}
+          </ol>
+        </div>
+        {(data.places || []).length > 0 && (
+          <div>
+            <h4>המקומות שהכי נפתחו</h4>
+            <ol>
+              {data.places.map((x) => <li key={x.id}><span>{x.id}</span> <small>{x.n}</small></li>)}
+            </ol>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 function Chart({ rows }) {
   const wrapRef = useRef(null);
   const [width, setWidth] = useState(360);
@@ -191,11 +246,14 @@ export default function Traffic({ token, onBadToken }) {
   const [err, setErr] = useState('');
   // null = הפונקציה עוד לא הורצה במסד; הלשונית עובדת גם בלעדיה
   const [sources, setSources] = useState([]);
+  const [engagement, setEngagement] = useState({});
 
   const load = useCallback(async () => {
     setStatus('loading'); setErr('');
     supabase.rpc('admin_sources', { p_token: token, p_from: from, p_to: to })
       .then(({ data, error }) => setSources(error ? null : (data || [])));
+    supabase.rpc('admin_engagement', { p_token: token, p_from: from, p_to: to })
+      .then(({ data, error }) => setEngagement(error ? null : (data || {})));
     const { data, error } = await supabase.rpc('admin_traffic', { p_token: token, p_from: from, p_to: to });
     if (error) {
       const msg = error.message || '';
@@ -268,6 +326,17 @@ export default function Traffic({ token, onBadToken }) {
             <p className="ad-note">
               כל ביקור נספר פעם אחת, לפי הכניסה הראשונה שלו. "ישיר" כולל גם קישור שנשלח בוואטסאפ
               בלי סימון מקור - וואטסאפ לא מספר לאתר מאיפה הגיעו.
+            </p>
+          </section>
+
+          <section className="ad-card">
+            <h3>עומק ביקור</h3>
+            {engagement === null
+              ? <p className="ad-note">כדי לראות את הנתון צריך להריץ את <code dir="ltr">supabase/admin_engagement.sql</code> ב-Supabase.</p>
+              : <Engagement data={engagement} />}
+            <p className="ad-note">
+              כמה דמויות ומקומות שונים נפתחו בביקור אחד. "רק נכנסו" - העמוד נטען ולא נפתח בו כרטיס.
+              במסע הדורות נספרים כרטיסים רק מאוקטובר 2026, ונספר כרטיס שנלחץ - לא כזה שהגלילה עברה לידו.
             </p>
           </section>
 

@@ -111,6 +111,7 @@ function renderStory() {
   $('#story').innerHTML = html.join('');
   // בדסקטופ הלחיצה ממרכזת בציר; במובייל היא פותחת את הכרטיס כגיליון
   document.querySelectorAll('.card').forEach(el => el.addEventListener('click', () => {
+    markItem(+el.dataset.i);
     if (isNarrow()) openSheet(+el.dataset.i); else centerCard(el);
   }));
   $('#filters').querySelectorAll('.fbtn,.fname').forEach(b => b.addEventListener('click', () => {
@@ -180,6 +181,12 @@ function markActive(i) {
   active = i; render(); markEra(i);
 }
 // ===== מובייל: גיליון הכרטיס ושכבת המפה =====
+/* אותו item_open של ציר הזמן, כדי ש"עומק ביקור" במסך הניהול יכלול גם את
+   מסע הדורות. רק לחיצה או נחיתה מקישור - לא כרטיס שהגלילה עברה לידו. */
+function markItem(i) {
+  const it = items[i];
+  if (it) markOnce('item_open', { kind: it.kind, id: it.id });
+}
 function openSheet(i) {
   markActive(i);
   document.body.classList.add('sheet-open');
@@ -451,6 +458,7 @@ let navIdx = null;
 function goCard(el) {
   if (!el) return;
   const i = +el.dataset.i;
+  markItem(i);
   if (isNarrow()) { openSheet(i); el.scrollIntoView({ block: 'center' }); }
   else { markActive(i); centerCard(el); }
 }

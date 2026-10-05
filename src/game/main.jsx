@@ -111,6 +111,27 @@ function saveDaily(day, order) {
   try { localStorage.setItem(SAVE, JSON.stringify({ day, order })); } catch { /* לא נורא */ }
 }
 
+/* רצף ימים באתגר היומי - מה שגורם לחזור מחר. נספר כל יום שבו האתגר נפתר,
+   בלי קשר לציון: רצף שנשבר על 2/5 היה מעניש דווקא את מי שעוד לומד. נשמר
+   במכשיר בלבד, לפי מספר האתגר (dayNumber) ולא לפי שעון הטלפון. */
+const STREAK = 'si_game_streak';
+function loadStreak() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STREAK) || 'null');
+    return s && Number.isInteger(s.last) ? s : { last: 0, count: 0, best: 0 };
+  } catch { return { last: 0, count: 0, best: 0 }; }
+}
+// הרצף "חי" אם האתגר האחרון שנפתר הוא של היום או של אתמול
+const liveStreak = (s, num) => (s.last === num || s.last === num - 1 ? s.count : 0);
+function bumpStreak(num) {
+  const s = loadStreak();
+  if (s.last === num) return s;
+  const count = s.last === num - 1 ? s.count + 1 : 1;
+  const next = { last: num, count, best: Math.max(s.best || 0, count) };
+  try { localStorage.setItem(STREAK, JSON.stringify(next)); } catch { /* מצב פרטי - בלי רצף */ }
+  return next;
+}
+
 /* הבחירה במשחק החופשי מתחילה ריקה, ונכנסת לתוקף רק בלחיצה על "הפעל".
    בגרסה הקודמת כל לחיצה על תחום ערבבה יד חדשה מיד - ולחיצה בטעות באמצע
    משחק מחקה אותו. עכשיו הבחירה היא טיוטה, והמשחק הרץ לא נוגע בה.
@@ -239,6 +260,8 @@ function Game() {
   const [placed, setPlaced] = useState([]);
   const [checked, setChecked] = useState(false);
   const [shareMsg, setShareMsg] = useState('');
+  const [streak, setStreak] = useState(loadStreak);
+  const streakNow = liveStreak(streak, num);
 
   // שחזור האתגר היומי אם כבר נפתר היום
   useEffect(() => {
@@ -303,6 +326,14 @@ function Game() {
   }, [acc.user, acc.me]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!acc.user) setSaveState(null); }, [acc.user]);
 
+  /* רצף אחד על המסך, לא שניים: של החשבון למי שמחובר (נכון בכל מכשיר שבו
+     ישחק), ושל המכשיר לאורח. בלי זה שחקן מחובר ראה שני מספרים שונים -
+     למשל אחרי ששיחק אתמול בטלפון והיום במחשב. fromYesterday = הרצף נמשך
+     עד אתמול והיום עוד לא נפתר, כלומר יש מה להפסיד. */
+  const run = acc.me
+    ? { now: acc.me.streak, best: acc.me.best, fromYesterday: !acc.me.today }
+    : { now: streakNow, best: streak.best, fromYesterday: streak.last === num - 1 };
+
   const reset = () => { setPlaced([]); setChecked(false); setShareMsg(''); };
   const start = () => {
     setApplied({ ...draft, periods: [...draft.periods].sort((x, y) => x - y) });
@@ -340,7 +371,9 @@ function Game() {
       miss: placed.filter((it, i) => itemKey(it) !== itemKey(answer[i])).map(itemKey).join(','),
     };
     if (daily) {
-      markOnce('game_done', { mode: 'daily', score: s, n: num, ...facts });
+      const st = bumpStreak(num);
+      setStreak(st);
+      markOnce('game_done', { mode: 'daily', score: s, n: num, streak: st.count, ...facts });
       const keys = placed.map(itemKey);
       saveDaily(day, keys);
       if (acc.user) {
@@ -368,7 +401,8 @@ function Game() {
      מיד למשחק - ראו prerender. */
   const share = async () => {
     const squares = right.map((ok) => (ok ? '🟩' : '🟥')).join('');
-    const head = daily ? `🧭 *סדר את הציר* · אתגר #${num}` : '🧭 *סדר את הציר* · משחק חופשי';
+    const fire = daily && run.now >= 2 ? ` · 🔥 ${run.now} ימים ברצף` : '';
+    const head = daily ? `🧭 *סדר את הציר* · אתגר #${num}${fire}` : '🧭 *סדר את הציר* · משחק חופשי';
     const text = `${head}\n${squares}  ${score}/${HAND} - ${result.head}\nמה קרה קודם? נסו לנצח אותי 👇`;
     const url = `${location.origin}/game-result/${score}`;
     const touch = window.matchMedia?.('(pointer: coarse)').matches;
@@ -446,13 +480,25 @@ function Game() {
               <button type="button" className="gm-btn" onClick={next}>סבב נוסף</button>
             </div>
             <p className="gm-msg" role="status">{shareMsg}</p>
+            {daily && (
+              <p className="gm-streak">
+                {run.now >= 2
+                  ? <><span aria-hidden="true">🔥</span> <b>{run.now}</b> ימים ברצף{run.best > run.now ? ` · השיא שלכם: ${run.best}` : ''}</>
+                  : <><span aria-hidden="true">🔥</span> יום ראשון ברצף - חזרו מחר כדי להמשיך</>}
+              </p>
+            )}
             {ACCOUNTS && daily && (acc.user
               ? <SavedLine state={saveState} me={acc.me} />
               : acc.known && <SaveInvite score={score} onOpen={open} />)}
             {daily && <p className="gm-note">אתגר חדש מחר בחצות.</p>}
           </section>
         ) : (
+          <>
+          {daily && run.now >= 1 && run.fromYesterday && (
+            <p className="gm-streak pre"><span aria-hidden="true">🔥</span> רצף של <b>{run.now}</b> {run.now === 1 ? 'יום' : 'ימים'} - פתרו היום כדי להמשיך אותו</p>
+          )}
           <p className="gm-lead">סדרו מהמוקדם למאוחר. לחיצה על פריט מכניסה אותו למקום הפנוי הבא, ולחיצה חוזרת מוציאה אותו.</p>
+          </>
         )}
         {checked && <h2 className="gm-sub">הציר שלכם</h2>}
 
