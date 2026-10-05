@@ -144,6 +144,23 @@ function SignIn({ acc }) {
   };
   const google = () => run((m) => m.signInGoogle());
 
+  /* הכפתור הרשמי של גוגל (google.js), שמציג לשחקן simpleisrael.co.il ולא את
+     הכתובת של Supabase. עד שהוא מצויר - ואם לא נטען בכלל - מוצג כפתור ההפניה */
+  const gRef = useRef(null);
+  const [gsi, setGsi] = useState(false);
+  useEffect(() => {
+    if (step !== 'pick') return;
+    let live = true;
+    import('./google.js')
+      .then((g) => g.renderGoogleButton(gRef.current, (token, nonce) => run(async (m) => {
+        await m.signInGoogleToken(token, nonce);
+        mark('game_auth', { step: 'login', via: 'google' });
+      })))
+      .then(() => { if (live) setGsi(true); })
+      .catch(() => { /* נשאר כפתור ההפניה */ });
+    return () => { live = false; };
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (step === 'code') {
     return (
       <form onSubmit={verify}>
@@ -171,7 +188,8 @@ function SignIn({ acc }) {
         כל אתגר יומי שווה עד 5 נקודות. נרשמים פעם אחת, ואז הנקודות נצברות, הרצף נספר
         ואתם מופיעים בטבלת המובילים - מכל מכשיר.
       </p>
-      <button type="button" className="ac-google" onClick={google} disabled={busy}>
+      <div ref={gRef} className="ac-gsi" hidden={!gsi} />
+      <button type="button" className="ac-google" onClick={google} disabled={busy} hidden={gsi}>
         <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true" focusable="false">
           <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z" />
           <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17z" />

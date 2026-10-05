@@ -66,6 +66,12 @@ export async function signInGoogle() {
   if (error) throw error;
 }
 
+// האישור מהכפתור של גוגל (google.js) - בלי הפניה דרך השרת של Supabase
+export async function signInGoogleToken(token, nonce) {
+  const { error } = await sb.auth.signInWithIdToken({ provider: 'google', token, nonce });
+  if (error) throw error;
+}
+
 export const signOut = () => sb.auth.signOut();
 
 async function rpc(name, args) {

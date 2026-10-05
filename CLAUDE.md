@@ -414,6 +414,13 @@ execute def;                              -- והכל חוזר כפי שהיה
 - **התחברות: קוד במייל ו-Google.** קוד ולא קישור קסם - באייפון קישור נפתח בדפדפן של אפליקציית
   המייל, וההתחברות נשארת שם. Google בהפניה ולא בחלון קופץ (COOP חוסם, וספארי ממילא). Apple
   נדחה: דורש חשבון מפתח בתשלום, וגוגל ומייל עובדים באייפון.
+- **Google בכפתור הרשמי שלו, לא בהפניה של Supabase** (`google.js`). בהפניה מסך ההסכמה של גוגל
+  אמר "כניסה אל qexatjrxbduysvmstfnk.supabase.co" - נראה כמו פישינג. הכפתור (Google Identity Services)
+  מוסר ID token ישירות לדף, שמעביר אותו ב-`signInWithIdToken` עם nonce, וגוגל מציג simpleisrael.co.il.
+  החלופה הייתה דומיין מותאם ב-Supabase, בתשלום חודשי. הסקריפט נטען **רק בפתיחת חלון ההתחברות**;
+  אם לא נטען - כפתור ההפניה הישן נשאר ועובד. בשביל זה: ה-CSP פתוח ל-`accounts.google.com/gsi/`
+  (script, style, connect, frame), ו-COOP הוא `same-origin-allow-popups` (באתר כולו, כדי ששער ה-smoke
+  יבדוק אותו - הוא מחיל רק את הכותרות הגלובליות). ה-Client ID ב-`GOOGLE_CLIENT_ID` ציבורי; ה-secret רק ב-Supabase.
 - **`account.js` נטען בעצלות** - רק אם יש התחברות שמורה (`si_game_auth`), חזרה מגוגל (`?code=`),
   או לחיצה. אורח לא מוריד את supabase-js. טבלת המובילים (`board.js`) היא `fetch` אחד, בלי הספרייה.
   לקוח Supabase נפרד מזה של התגובות, עם `persistSession`.
