@@ -14,6 +14,27 @@ const NAME_KEY = 'si_cname';
 // שמות ששמורים למנהל האתר. גם השרת חוסם אותם (supabase/admin_badge.sql); כאן
 // זה רק כדי לתת הסבר לפני שליחה ולא "השליחה נכשלה"
 const RESERVED = /(מנהל|אדמין|admin|simpleisrael)/i;
+/* "♥" (לב): מזהה אקראי של המכשיר (לא של אדם) ורשימת התגובות שכבר הודה
+   עליהן, שתיהן במכשיר בלבד. השרת סופר תודה אחת למכשיר לכל תגובה
+   (supabase/comment_thanks.sql). בלי אחסון (מצב פרטי) המזהה חי עד הרענון. */
+const VOTER_KEY = 'si_voter';
+const THANKED_KEY = 'si_thanked';
+const VOTER = (() => {
+  const fresh = () => (crypto.randomUUID?.() || Math.random().toString(36).slice(2) + Date.now().toString(36)).toLowerCase();
+  try {
+    let v = localStorage.getItem(VOTER_KEY);
+    if (!v || !/^[a-z0-9-]{8,40}$/.test(v)) { v = fresh(); localStorage.setItem(VOTER_KEY, v); }
+    return v;
+  } catch { return fresh(); }
+})();
+const loadThanked = () => {
+  try { return new Set(JSON.parse(localStorage.getItem(THANKED_KEY) || '[]')); } catch { return new Set(); }
+};
+const saveThanked = (set) => {
+  // 500 האחרונות מספיקות - הרשימה רק מציירת את הלב המלא
+  try { localStorage.setItem(THANKED_KEY, JSON.stringify([...set].slice(-500))); } catch { /* מצב פרטי */ }
+};
+
 const loadName = () => { try { return localStorage.getItem(NAME_KEY) || ''; } catch { return ''; } };
 const saveName = (v) => {
   try { if (v) localStorage.setItem(NAME_KEY, v); else localStorage.removeItem(NAME_KEY); } catch { /* מצב פרטי */ }
@@ -223,6 +244,7 @@ function Comment({
   replyTo, setReplyTo,
   reported, reportId, setReportId, reportWhy, setReportWhy, reportBusy, sendReport,
   adminToken, busyId, remove,
+  canThank, thanked, toggleThanks,
 }) {
   const ref = useRef(null);
   // תגובה שהגולש פרסם זה עתה: גלילה אליה והבהוב קצר, כדי שיראה שהיא שם
@@ -245,6 +267,17 @@ function Comment({
           </div>
           <div className="comment-text"><Linked text={c.body} /></div>
           <div className="comment-tools">
+            {canThank && (
+              <button
+                type="button" className={`comment-thanks${thanked.has(c.id) ? ' on' : ''}`}
+                aria-pressed={thanked.has(c.id)}
+                aria-label={`סימון לב לתגובה${c.thanks ? ` (${c.thanks})` : ''}`}
+                onClick={() => toggleThanks(c)}
+              >
+                <span aria-hidden="true">{thanked.has(c.id) ? '♥' : '♡'}</span>
+                {c.thanks > 0 && <b aria-hidden="true">{c.thanks}</b>}
+              </button>
+            )}
             {!isReply && (
               <button
                 type="button" className="comment-link"
@@ -310,6 +343,9 @@ export default function Comments({ targetKey, targetLabel, focusId = null }) {
   const [reportBusy, setReportBusy] = useState(false);
   const [reported, setReported] = useState([]);
   const [fresh, setFresh] = useState(null);
+  // הכפתור מופיע רק כשהעמודה thanks קיימת - כלומר אחרי ש-comment_thanks.sql רץ
+  const [canThank, setCanThank] = useState(false);
+  const [thanked, setThanked] = useState(loadThanked);
   const adminToken = getAdminToken();
 
   useEffect(() => {
@@ -320,13 +356,18 @@ export default function Comments({ targetKey, targetLabel, focusId = null }) {
       .select(cols)
       .eq('target_key', targetKey)
       .order('created_at', { ascending: true });
-    /* by_admin נוספה ב-admin_badge.sql. עד שהקובץ רץ העמודה לא קיימת והשאילתה
-       נכשלת, ולכן ניסיון שני בלעדיה - כך האתר לא תלוי בסדר הפריסה וההרצה. */
-    load('id, created_at, author, body, parent_id, by_admin')
-      .then((r) => (r.error?.code === '42703' ? load('id, created_at, author, body, parent_id') : r))
-      .then(({ data, error }) => {
+    /* by_admin (admin_badge.sql) ו-thanks (comment_thanks.sql) הן עמודות
+       שנוספו במסד. עד שקובץ רץ העמודה לא קיימת והשאילתה נכשלת (42703), ולכן
+       יורדים לרשימה הבאה - כך האתר לא תלוי בסדר הפריסה וההרצה. */
+    const BASE = 'id, created_at, author, body, parent_id';
+    const tries = [`${BASE}, by_admin, thanks`, `${BASE}, by_admin`, BASE];
+    const attempt = (i) => load(tries[i]).then((r) => (
+      r.error?.code === '42703' && i < tries.length - 1 ? attempt(i + 1) : { ...r, cols: tries[i] }));
+    attempt(0)
+      .then(({ data, error, cols }) => {
         if (!alive) return;
         if (error) { setStatus('error'); return; }
+        setCanThank(cols.includes('thanks'));
         setList(data || []);
         setStatus('ready');
         // נחיתה מקישור לתגובה מסוימת: אותה גלילה והבהוב של תגובה חדשה
@@ -361,6 +402,23 @@ export default function Comments({ targetKey, targetLabel, focusId = null }) {
     if (error) { window.alert('הדיווח לא נשלח - נסו שוב'); return; }
     setReported((r) => [...r, c.id]);
     setReportId(null); setReportWhy('');
+  };
+
+  /* אופטימי: הלב מתמלא מיד, והספירה מתעדכנת מהשרת. כישלון מחזיר את
+     המצב הקודם - עדיף לב שחוזר לריק על פני ספירה שקרית. */
+  const toggleThanks = async (c) => {
+    const on = !thanked.has(c.id);
+    const flip = (set) => { const n = new Set(set); if (on) n.add(c.id); else n.delete(c.id); return n; };
+    const bump = (d) => setList((l) => l.map((x) => (x.id === c.id ? { ...x, thanks: Math.max(0, (x.thanks || 0) + d) } : x)));
+    setThanked((t) => { const n = flip(t); saveThanked(n); return n; });
+    bump(on ? 1 : -1);
+    const { data, error } = await supabase.rpc('thank_comment', { p_comment: c.id, p_voter: VOTER, p_on: on });
+    if (error) {
+      setThanked((t) => { const n = new Set(t); if (on) n.delete(c.id); else n.add(c.id); saveThanked(n); return n; });
+      bump(on ? -1 : 1);
+      return;
+    }
+    if (typeof data === 'number') setList((l) => l.map((x) => (x.id === c.id ? { ...x, thanks: data } : x)));
   };
 
   const remove = async (id) => {
@@ -399,6 +457,7 @@ export default function Comments({ targetKey, targetLabel, focusId = null }) {
         {roots.map((c) => {
           const replies = repliesOf(c.id);
           const shared = {
+            canThank, thanked, toggleThanks,
             replyTo, setReplyTo,
             reported, reportId, setReportId, reportWhy, setReportWhy, reportBusy, sendReport,
             adminToken, busyId, remove,
