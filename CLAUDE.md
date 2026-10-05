@@ -102,6 +102,10 @@ npm run data       # מייצר מחדש את atlas-data.json ואת places.json
 npm run preview    # הגשת dist, לבדיקת התוצר הסופי
 ```
 
+**דחיפה ל-`main` לא תמיד מגיעה לייצור.** באוקטובר 2026 אותו קומיט נדחף לענף ול-`main` בהפרש של
+שניות, ו-Vercel בנה ממנו רק Preview - בלי Production. בדיקה: `gh api repos/talyehuda2/SimpleIsrael/deployments`
+צריך להראות `Production` עם ה-sha של `main`. אם חסר - קומיט חדש ל-`main` מפעיל פריסה.
+
 `.claude/launch.json` מגדיר שתי תצורות: `simpleisrael` (פיתוח) ו-`simpleisrael-dist` (preview).
 
 **אין בפרויקט מבחני יחידה ואין לינטר.** `npm run build` עובר גם על קוד שנופל בדפדפן —
@@ -469,3 +473,7 @@ execute def;                              -- והכל חוזר כפי שהיה
 - **`?c=<id>` נוחת על תגובה מסוימת** (התגובות נפתחות, גלילה והבהוב). הקישור במייל "ענו לך" נושא אותו
   ו-`src=reply-mail` (`supabase/comment_reply_deeplink.sql`). הסיומת נכנסה לפונקציות המייל בשיטת
   "לשלוף, להחליף ולהחזיר", ו-`safe_site_url` מתירה אותה רק בצורה המדויקת `&c=<מספר>&src=<אותיות>`.
+- **לב "♥" על תגובה** (לב ומספר, בלי המילה "תודה" - בהחלטת בעל האתר; `supabase/comment_thanks.sql`): הספירה היא עמודה `comments.thanks` שנקראת עם התגובות, ורק
+  `thank_comment` (security definer) כותבת אליה; `comment_thanks` שומרת זוג (תגובה, מכשיר) בלי שום גישה מהדפדפן.
+  "מכשיר" = מזהה אקראי `si_voter` ב-localStorage, לא אדם. מכסה 30 לדקה למכשיר ו-300 לכל האתר. עד שהקובץ רץ
+  הכפתור פשוט לא מופיע (השאילתה יורדת ברשימת עמודות - `tries` ב-`Comments.jsx`). מופיע בעמוד הפרטיות.
