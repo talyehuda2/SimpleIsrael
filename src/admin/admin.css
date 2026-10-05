@@ -241,3 +241,21 @@ body {
 .ad-table table { width: 100%; margin-top: 10px; border-collapse: collapse; font-size: 13px; }
 .ad-table th, .ad-table td { padding: 5px 6px; text-align: start; border-bottom: 1px solid var(--ad-line); white-space: nowrap; }
 .ad-table td:not(:first-child), .ad-table th:not(:first-child) { text-align: center; font-variant-numeric: tabular-nums; }
+
+/* ---- לשונית "משחק" ---- */
+.ad-stat small { font-size: 12px; color: var(--ad-muted); }
+.ad-card h3 { margin: 0 0 10px; font-size: 15px; color: var(--ad-navy); }
+.gm-dist { display: flex; flex-direction: column; gap: 6px; }
+.gm-bar { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 8px; font-size: 13px; }
+.gm-bar-l { font-weight: 700; color: var(--ad-navy); font-variant-numeric: tabular-nums; }
+.gm-bar-t { height: 14px; background: var(--ad-line); border-radius: 7px; overflow: hidden; }
+.gm-bar-t i { display: block; height: 100%; background: #245c93; border-radius: 7px; }
+.gm-bar-n { font-variant-numeric: tabular-nums; min-width: 64px; text-align: start; }
+.gm-bar-n small { color: var(--ad-muted); }
+.gm-hard { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.gm-hard li { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: baseline; font-size: 14px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--ad-line); }
+.gm-hard li:last-child { border-bottom: none; }
+.gm-hard-n { font-weight: 700; }
+.gm-hard-r { font-weight: 800; color: #a3271b; font-variant-numeric: tabular-nums; }
+.gm-hard small { color: var(--ad-muted); font-variant-numeric: tabular-nums; }

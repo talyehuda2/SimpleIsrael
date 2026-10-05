@@ -25,7 +25,7 @@
               css: סגנון שמוזרק לצילום בלבד, למשל פריסת רשימה שנגללת באתר
               (".map-legend{max-height:none}") כדי שכל הפריטים ייראו. בלי crop נשמר מסך טלפון שלם, ואז הוא
               מוקטן לחצי מרוחב התמונה והטקסט שבו כמעט לא נקרא.
-              game: {free?, place?, correct?, solve?, wait?} - צילום מהמשחק (/game). free: משחק חופשי
+              game: {free?, place?, correct?, solve?, wait?, pick?} - צילום מהמשחק (/game). free: משחק חופשי
               עם כל התחומים והתקופות (ולא האתגר היומי - כדי לא לחשוף את התשובה של היום).
               place: כמה קלפים להניח לפני הצילום. solve: לפתור 5/5 ולצלם את מסך התוצאה
               (wait מ"ש אחרי "בדיקה" - 700 תופס את הקונפטי באוויר).
@@ -187,6 +187,16 @@ async function playGame(pg, g) {
     await pg.locator('.gm-group').nth(1).locator('.gm-all').click();
     await pg.getByRole('button', { name: 'הפעל' }).click();
   };
+  /* pick: {topics:[...], periods:[...]} - מסך הבחירה של המשחק החופשי, עם בחירה
+     מסומנת ובלי "הפעל": צילום של "משחק מותאם אישית". התוויות כפי שהן על הכפתורים */
+  if (g.pick) {
+    await pg.getByRole('tab', { name: 'משחק חופשי' }).click();
+    for (const [i, labels] of [[0, g.pick.topics || []], [1, g.pick.periods || []]]) {
+      for (const l of labels) await pg.locator('.gm-group').nth(i).locator('.gm-topic', { hasText: l }).first().click();
+    }
+    await pg.waitForTimeout(300);
+    return;
+  }
   if (g.free) await startFree();
   // "exact" - "יהושע" לא יתפוס את "יהושע בן נון"
   const exact = (n) => new RegExp(`^${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);

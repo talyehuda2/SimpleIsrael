@@ -15,6 +15,7 @@ import { createRoot } from 'react-dom/client';
 import { supabase } from '../lib/supabase.js';
 import { getAdminToken, setAdminToken, adminTokenDaysLeft } from '../lib/admin.js';
 import Traffic from './Traffic.jsx';
+import Game from './Game.jsx';
 import './admin.css';
 
 const NOTES = 'admin:notes';
@@ -216,11 +217,13 @@ function Admin() {
           תגובות {roots.length > 0 && <span className="ad-count">{roots.length}</span>}
         </button>
         <button className={tab === 'traffic' ? 'on' : ''} onClick={() => setTab('traffic')}>כניסות</button>
+        <button className={tab === 'game' ? 'on' : ''} onClick={() => setTab('game')}>משחק</button>
       </nav>
 
-      {tab !== 'traffic' && status === 'loading' && <p className="ad-msg">טוען…</p>}
-      {tab !== 'traffic' && status === 'error' && <p className="ad-msg ad-err">{err}</p>}
+      {tab !== 'traffic' && tab !== 'game' && status === 'loading' && <p className="ad-msg">טוען…</p>}
+      {tab !== 'traffic' && tab !== 'game' && status === 'error' && <p className="ad-msg ad-err">{err}</p>}
       {tab === 'traffic' && <Traffic token={token} onBadToken={badToken} />}
+      {tab === 'game' && <Game token={token} onBadToken={badToken} />}
 
       {status === 'ready' && tab === 'notes' && (
         <main className="ad-list">

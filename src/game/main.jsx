@@ -281,14 +281,21 @@ function Game() {
     window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
     if (s === HAND) confetti(170);
     else if (s >= 3) confetti(60);
+    /* "איפה טועים": היד כולה בסדר הנכון, ומה שלא הונח במקומו. בלי היד אי אפשר
+       לדעת אם פריט נכשל הרבה כי הוא קשה או רק כי הופיע הרבה - מסך הניהול
+       מחלק טעויות בהופעות. מפתחות ולא שמות, כדי שיישארו קצרים ויציבים. */
+    const facts = {
+      hand: answer.map(itemKey).join(','),
+      miss: placed.filter((it, i) => itemKey(it) !== itemKey(answer[i])).map(itemKey).join(','),
+    };
     if (daily) {
-      markOnce('game_done', { mode: 'daily', score: s });
+      markOnce('game_done', { mode: 'daily', score: s, n: num, ...facts });
       saveDaily(day, placed.map(itemKey));
     } else {
       // כל סבב חופשי נספר, יחד עם הבחירה - כך רואים אילו תחומים מעניינים
       mark('game_done', {
         mode: 'free', score: s, topics: applied.topics.join(','),
-        periods: applied.periods.map((i) => PERIODS[i].id).join(','),
+        periods: applied.periods.map((i) => PERIODS[i].id).join(','), ...facts,
       });
     }
   };
@@ -308,12 +315,15 @@ function Game() {
     const text = `${head}\n${squares}  ${score}/${HAND} - ${result.head}\nמה קרה קודם? נסו לנצח אותי 👇`;
     const url = `${location.origin}/game-result/${score}`;
     const touch = window.matchMedia?.('(pointer: coarse)').matches;
+    const mode = daily ? 'daily' : 'free';
     if (touch && navigator.share) {
-      try { await navigator.share({ text: `${text}\n${url}` }); } catch { /* נסגר */ }
+      // נספר רק שיתוף שהושלם: ביטול חלון השיתוף זורק, ואז לא נרשם דבר
+      try { await navigator.share({ text: `${text}\n${url}` }); mark('game_share', { mode, score, via: 'native' }); } catch { /* נסגר */ }
       return;
     }
     try {
       await navigator.clipboard.writeText(`${text}\n${url}`);
+      mark('game_share', { mode, score, via: 'copy' });
       setShareMsg('✓ התוצאה הועתקה - הדביקו בוואטסאפ');
     } catch {
       setShareMsg('ההעתקה נכשלה');

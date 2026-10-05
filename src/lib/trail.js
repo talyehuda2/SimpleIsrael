@@ -36,9 +36,13 @@
                                         denied / error (mark, לא once). בכוונה בלי
                                         קואורדינטה: המיקום אינו יוצא מהמכשיר
      game_start  {mode}     סדר את הציר - daily או free
-     game_done   {mode,score,topics?,range?}
+     game_done   {mode,score,n?,hand,miss,topics?,periods?}
                             האתגר היומי פעם אחת (markOnce), וכל סבב חופשי
-                            בנפרד (mark) יחד עם התחומים והתקופות שנבחרו
+                            בנפרד (mark) יחד עם התחומים והתקופות שנבחרו.
+                            hand = חמשת המפתחות בסדר הנכון, miss = מה שלא
+                            הונח במקומו (מאוקטובר 2026) - "איפה טועים" במסך הניהול
+     game_share  {mode,score,via}  שיתוף תוצאה שהושלם: native (חלון השיתוף
+                            של הטלפון) או copy (העתקה). ביטול לא נספר
 
      page_view   {src?}     כל מסך     - ספירת תנועה בלתי-תלויה ב-Vercel.
                                         src מגיע מ-?src= בקישור (למשל status),
