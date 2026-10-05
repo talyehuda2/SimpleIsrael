@@ -340,7 +340,11 @@ function Game() {
   return (
     <>
       <header className="gm-bar">
-        <a className="gm-home" href="/" title="לציר הזמן">📜 <span>ציר הזמן</span></a>
+        {/* בטלפון היה כאן רק 📜 בלי מילה, ומי שהגיע מקישור לא הבין שזו הדרך לאתר.
+            עכשיו חץ חזרה ומילה גם במסך הצר */}
+        <a className="gm-home" href="/?src=game" aria-label="חזרה לאתר - ציר הזמן של עם ישראל">
+          <span aria-hidden="true">→</span> <span className="gm-home-s">לאתר</span><span className="gm-home-l">ציר הזמן של עם ישראל</span>
+        </a>
         <h1>סדר את הציר</h1>
         <span className="gm-num">{daily ? `אתגר #${num}` : 'משחק חופשי'}</span>
       </header>
@@ -460,6 +464,14 @@ function Game() {
         )}
           </>
         )}
+        {/* מי שהגיע למשחק מקישור בוואטסאפ לא ראה את האתר מעולם. בסוף העמוד - שלוש
+            הדלתות אליו, באותן מילים ואייקונים של מתג המבטים בשאר המסכים */}
+        <nav className="gm-site" aria-label="ממשיכים באתר">
+          <h2>ממשיכים באתר</h2>
+          <a href="/?src=game"><b>📜 ציר הזמן</b><span>מי חי מתי, ומי לצד מי</span></a>
+          <a href="/atlas?src=game"><b>🗺️ מסע הדורות</b><span>דמות אחר דמות, עם המפה והסיפור</span></a>
+          <a href="/places?src=game"><b>📍 מפת הארץ</b><span>מה קרה בכל מקום</span></a>
+        </nav>
       </main>
     </>
   );

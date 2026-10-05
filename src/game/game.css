@@ -29,7 +29,18 @@ button{font-family:inherit}
   border-radius:14px;background:var(--bg)}
 .gm-home:hover{border-color:var(--gold)}
 .gm-num{justify-self:end;font-size:13px;font-weight:700;color:var(--gold-ink)}
-@media (max-width:420px){ .gm-home span{display:none} .gm-bar h1{font-size:22px} }
+.gm-home-s{display:none}
+@media (max-width:640px){ .gm-home-l{display:none} .gm-home-s{display:inline} }
+@media (max-width:420px){ .gm-bar h1{font-size:22px} .gm-home{padding:7px 10px} }
+@media (max-width:345px){ .gm-bar{gap:6px;padding:0 8px} .gm-bar h1{font-size:19px} .gm-num{font-size:12px} }
+/* ----- "ממשיכים באתר" בתחתית ----- */
+.gm-site{display:flex;flex-direction:column;gap:8px;margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
+.gm-site h2{margin:0 0 2px;font-family:'Frank Ruhl Libre',serif;font-size:19px;color:var(--navy)}
+.gm-site a{display:flex;flex-direction:column;gap:2px;text-decoration:none;padding:11px 14px;border:1px solid var(--line);
+  border-radius:14px;background:var(--panel)}
+.gm-site a:hover,.gm-site a:focus-visible{border-color:var(--gold)}
+.gm-site b{font-size:15.5px;color:var(--navy)}
+.gm-site span{font-size:13px;color:var(--muted)}
 
 /* ----- תוכן ----- */
 .gm-main{max-width:560px;margin:0 auto;padding:18px 16px 40px}
