@@ -343,7 +343,12 @@ function Game() {
         {/* בטלפון היה כאן רק 📜 בלי מילה, ומי שהגיע מקישור לא הבין שזו הדרך לאתר.
             עכשיו חץ חזרה ומילה גם במסך הצר */}
         <a className="gm-home" href="/?src=game" aria-label="חזרה לאתר - ציר הזמן של עם ישראל">
-          <span aria-hidden="true">→</span> <span className="gm-home-s">לאתר</span><span className="gm-home-l">ציר הזמן של עם ישראל</span>
+          {/* החץ מצויר ולא תו "→": כל טלפון מצייר את התו בגופן אחר ובגובה אחר, והוא
+              ישב מעל או מתחת למילה. אייקון ב-flex מתמרכז בדיוק */}
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" focusable="false">
+            <path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span className="gm-home-s">לאתר</span><span className="gm-home-l">ציר הזמן של עם ישראל</span>
         </a>
         <h1>סדר את הציר</h1>
         <span className="gm-num">{daily ? `אתגר #${num}` : 'משחק חופשי'}</span>

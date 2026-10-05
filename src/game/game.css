@@ -24,11 +24,12 @@ button{font-family:inherit}
   gap:10px;height:56px;padding:0 14px;background:var(--panel);border-bottom:2px solid var(--gold);
   box-shadow:0 2px 10px rgb(60 40 0 / .12)}
 .gm-bar h1{margin:0;font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:26px;color:var(--navy);white-space:nowrap}
-.gm-home{justify-self:start;display:inline-flex;align-items:center;gap:5px;text-decoration:none;
-  font-size:13px;font-weight:700;color:var(--navy);padding:7px 12px;border:1px solid var(--line);
+.gm-home{justify-self:start;display:inline-flex;align-items:center;gap:6px;text-decoration:none;line-height:1;
+  font-size:14px;font-weight:700;color:var(--navy);padding:8px 12px;border:1px solid var(--line);
   border-radius:14px;background:var(--bg)}
 .gm-home:hover{border-color:var(--gold)}
 .gm-num{justify-self:end;font-size:13px;font-weight:700;color:var(--gold-ink)}
+.gm-home svg{flex:none;display:block}
 .gm-home-s{display:none}
 @media (max-width:640px){ .gm-home-l{display:none} .gm-home-s{display:inline} }
 @media (max-width:420px){ .gm-bar h1{font-size:22px} .gm-home{padding:7px 10px} }
