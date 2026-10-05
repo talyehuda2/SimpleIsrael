@@ -29,7 +29,8 @@
               עם כל התחומים והתקופות (ולא האתגר היומי - כדי לא לחשוף את התשובה של היום).
               place: כמה קלפים להניח לפני הצילום. solve: לפתור 5/5 ולצלם את מסך התוצאה
               (wait מ"ש אחרי "בדיקה" - 700 תופס את הקונפטי באוויר).
-     cta    - eyebrow, title, p, url?         סיום עם כתובת האתר (url: למשל simpleisrael.co.il/game)
+     cta    - eyebrow, title, p, url?, channel?   סיום עם כתובת האתר (url: למשל simpleisrael.co.il/game)
+              וקופסת ערוץ הוואטסאפ מתחתיה (channel:false מסיר אותה)
      art    - image, eyebrow?, title[], labels?[]   איור מוכן על כל השקף (למשל מצ'אט GPT), עם כותרת
               בפינה ותוויות שם. image: נתיב יחסי לשורש הריפו. title: שורות הכותרת. labels:
               [{t, x, y}] - x/y באחוזים מרוחב/גובה האיור, נקודת העיגון היא מרכז התווית.
@@ -45,6 +46,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FD = join(ROOT, 'node_modules', '@expo-google-fonts', 'frank-ruhl-libre');
 const BG = join(ROOT, 'build-assets', 'og-base.jpg');
 const DIST = join(ROOT, 'dist');
+const CHANNEL_NAME = 'ציר הזמן של עם ישראל';
+// הקישור הולך לכיתוב ולא לתמונה - בתמונה אי אפשר ללחוץ עליו
+const CHANNEL_URL = 'https://whatsapp.com/channel/0029Vb95vDvKAwElqCPM8T2L';
 
 const specPath = process.argv[2];
 if (!specPath) { console.error('שימוש: node scripts/status.mjs scripts/status/<שם>.json'); process.exit(1); }
@@ -76,7 +80,11 @@ function body(s, shot) {
   if (s.type === 'intro') return `${head}<h1 class="xl">${esc(s.title)}</h1><p>${fmt(s.p)}</p>`
     + `<ol class="steps">${s.steps.map((t) => `<li>${fmt(t)}</li>`).join('')}</ol>`
     + (s.hint ? `<div class="hint">${esc(s.hint)}</div>` : '');
-  if (s.type === 'cta') return `${head}<h1>${esc(s.title)}</h1><p>${fmt(s.p)}</p><div class="urlbox">${esc(s.url || 'simpleisrael.co.il')}<small>בחינם, בלי הרשמה</small></div>`;
+  /* ערוץ הוואטסאפ בכל שקף סיום (אוקטובר 2026, בקשת בעל האתר): סטטוס נעלם אחרי
+     יממה, וערוץ הוא הדרך של מי שנהנה להמשיך לקבל. בתמונה אין קישור לחיצה, ולכן
+     השם שמחפשים בלשונית "עדכונים"; הקישור עצמו הולך לכיתוב. channel:false מכבה. */
+  if (s.type === 'cta') return `${head}<h1>${esc(s.title)}</h1><p>${fmt(s.p)}</p><div class="urlbox">${esc(s.url || 'simpleisrael.co.il')}<small>בחינם, בלי הרשמה</small></div>`
+    + (s.channel === false ? '' : `<div class="chan"><b>📢 ערוץ הוואטסאפ</b><span>${esc(CHANNEL_NAME)}</span><small>דמות מהתנ״ך מדי פעם, ישר לטלפון</small></div>`);
   throw new Error(`סוג שקף לא מוכר: ${s.type}`);
 }
 
@@ -156,6 +164,10 @@ h1.xl{font-size:118px;line-height:1.04}
   display:flex;align-items:center;justify-content:center;font-weight:900;font-size:40px}
 .hint{margin-top:40px;font-weight:700;font-size:38px;color:#7a5b16}
 .urlbox{margin-top:40px;background:#163a57;color:#fff;border-radius:28px;padding:40px;text-align:center;direction:ltr;font-weight:700;font-size:64px}
+.chan{margin-top:26px;border:4px solid #25a35a;background:rgb(251 245 231 / .85);border-radius:28px;padding:26px 34px;text-align:center}
+.chan b{display:block;font-size:40px;color:#1d7a45}
+.chan span{display:block;font-weight:900;font-size:56px;color:#163a57;margin-top:4px}
+.chan small{display:block;font-size:34px;font-weight:500;color:#6d5c42;margin-top:6px}
 .urlbox small{display:block;direction:rtl;font-size:36px;font-weight:500;color:#e7d9ba;margin-top:10px}
 .url{position:absolute;right:84px;bottom:230px;font-weight:700;font-size:36px;color:#163a57;direction:ltr}
 </style></head><body>
@@ -320,4 +332,5 @@ for (const [i, s] of spec.slides.entries()) {
 await browser.close();
 srv?.close();
 console.log(`\n${spec.slides.length} תמונות ב-${OUT}`);
+console.log(`לכיתוב, בשורה מתחת לקישור לאתר:\n📢 הערוץ: ${CHANNEL_URL}`);
 process.exit(bad ? 1 : 0);
