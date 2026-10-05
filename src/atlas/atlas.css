@@ -115,29 +115,6 @@ button{font-family:inherit}
   .tour-bar.jtour{top:calc(var(--bar) + 6px);bottom:auto;right:50%;transform:translateX(50%);z-index:50}
 }
 
-/* תגובות בתוך המסע - אותה יכולת כמו בציר הזמן, בלי לעבור מסך */
-.cmt{margin:6px 0 8px}
-.cmt-empty{margin:6px 2px;font-size:11.5px;color:var(--muted)}
-.cmt-list{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:6px}
-.cmt-item{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:7px 9px}
-.cmt-item.reply{margin-inline-start:14px;background:transparent;border-style:dashed}
-.cmt-head{display:flex;gap:7px;align-items:baseline;margin-bottom:3px}
-.cmt-head b{font-size:12px;color:var(--navy)}
-.cmt-head span{font-size:10.5px;color:var(--muted)}
-.cmt-text{font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.cmt-reply{margin-top:4px;font-family:inherit;font-size:11px;font-weight:700;color:var(--gold-ink);
-  background:none;border:none;padding:0;cursor:pointer;text-decoration:underline}
-.cmt-form{display:flex;flex-direction:column;gap:5px;margin-top:6px}
-.cmt-form input,.cmt-form textarea{font-family:inherit;font-size:12px;color:var(--ink);background:var(--panel);
-  border:1px solid var(--line);border-radius:8px;padding:6px 8px;outline:none;resize:vertical}
-.cmt-form input:focus,.cmt-form textarea:focus{border-color:var(--gold)}
-.cmt-hp{position:absolute!important;width:1px;height:1px;opacity:0;pointer-events:none}
-.cmt-act{display:flex;gap:6px;justify-content:flex-end}
-.cmt-act button{font-family:inherit;font-size:11.5px;font-weight:700;border-radius:14px;padding:5px 12px;cursor:pointer}
-.cmt-send{background:var(--navy);border:1px solid var(--navy);color:#fff}
-.cmt-send:disabled{opacity:.5;cursor:default}
-.cmt-cancel{background:var(--bg);border:1px solid var(--line);color:var(--ink)}
-.cmt-err{font-size:11.5px;color:var(--wine)}
 button.blink{width:100%;text-align:start;font-family:inherit;cursor:pointer}
 
 /* גשר לציר הזמן ולדף המידע - שני המבטים על אותה דמות */

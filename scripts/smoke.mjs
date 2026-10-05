@@ -98,6 +98,10 @@ const PAGES = [
      טעינת הצ'אנק, ה-worker תחת ה-CSP (בלי blob:), וסמני המקומות. */
   { url: '/places', name: 'מפה מודרנית', check: '#list > *', fixtureStyle: true,
     click: '#mapMode [data-m="modern"]', expect: '#modernMap .mm[data-id="ירושלים"]' },
+  /* התגובות, עם שלוש תגובות לדוגמה במקום Supabase. נפתח גם הטופס המקופל,
+     כך ש-axe עובר על הרשימה ועל השדות - ניגודיות, תוויות, גודל מטרות לחיצה. */
+  { url: '/?sel=leader:avraham&comments=1', name: 'תגובות', check: '.comment', fixtureComments: true,
+    click: '.comments > .comment-form .comment-body', expect: '.comment-mail' },
   { url: '/privacy', name: 'פרטיות', check: 'body' },
   // שלושת העמודים המשפטיים נבדקים בנפרד: הם נוצרים ב-prerender ואינם
   // ב-sitemap, ולכן שום בדיקה אחרת לא הייתה מגלה ש-rewrite חסר ב-vercel.json
@@ -239,6 +243,17 @@ for (const page of PAGES) {
         geometry: { type: 'Polygon', coordinates: [[[34.2, 29.5], [35.9, 29.5], [35.9, 33.3], [34.2, 33.3], [34.2, 29.5]]] } } } },
         layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#cfe3f0' } },
           { id: 'land', type: 'fill', source: 'land', paint: { 'fill-color': '#efe6cf' } }] }),
+    }));
+  }
+  if (page.fixtureComments) {
+    const ago = (h) => new Date(Date.now() - h * 3600e3).toISOString();
+    await ctx.route(/supabase\.co\/rest\/v1\/comments\?/, (route) => route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify([
+        { id: 1, created_at: ago(70), author: 'יוסי', body: 'יש מקור לכך שאברהם נולד באור כשדים?', parent_id: null },
+        { id: 2, created_at: ago(50), author: 'טל', body: 'בראשית י"א, כ"ח. ראו גם https://www.sefaria.org.il/Genesis.11.28', parent_id: 1 },
+        { id: 3, created_at: ago(5), author: null, body: 'תודה על האתר!', parent_id: null },
+      ]),
     }));
   }
   const tab = await ctx.newPage();

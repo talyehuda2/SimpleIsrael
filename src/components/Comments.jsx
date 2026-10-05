@@ -1,23 +1,100 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { getAdminToken } from '../lib/admin.js';
+// הסגנון בבעלות הרכיב ולא ב-styles.css - המלכודת מספר אחת ב-CLAUDE.md
+import './Comments.css';
 
 const MAX_LEN = 1000;
 const MAX_NAME = 40;
+// המונה מופיע רק כשמתקרבים לגבול. 0/1000 קבוע מתחת לכל טופס היה רעש
+const COUNT_FROM = MAX_LEN - 200;
+// השם נשמר במכשיר כדי שלא יוקלד מחדש בכל תגובה. המייל לא: זה מידע אישי,
+// ומי שמגיב ממחשב משותף לא היה מצפה שיופיע לבא אחריו.
+const NAME_KEY = 'si_cname';
+const loadName = () => { try { return localStorage.getItem(NAME_KEY) || ''; } catch { return ''; } };
+const saveName = (v) => {
+  try { if (v) localStorage.setItem(NAME_KEY, v); else localStorage.removeItem(NAME_KEY); } catch { /* מצב פרטי */ }
+};
 
-function fmtDate(iso) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
+function fullDate(iso) {
+  return new Date(iso).toLocaleString('he-IL', {
+    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
 }
 
-// טופס כתיבה - משמש גם לתגובה חדשה וגם לתשובה בתוך שרשור
+/* "לפני 3 שעות" במקום "5 באוקטובר 2026". מעבר לשבוע - תאריך, והשנה רק
+   כשהיא לא השנה הנוכחית. התאריך המלא נשאר ב-title. */
+function relTime(iso) {
+  const d = new Date(iso);
+  const min = Math.round((Date.now() - d) / 60000);
+  if (min < 1) return 'עכשיו';
+  if (min < 60) return min === 1 ? 'לפני דקה' : `לפני ${min} דקות`;
+  const h = Math.round(min / 60);
+  if (h < 24) return h === 1 ? 'לפני שעה' : h === 2 ? 'לפני שעתיים' : `לפני ${h} שעות`;
+  const days = Math.round(h / 24);
+  if (days === 1) return 'אתמול';
+  if (days === 2) return 'לפני יומיים';
+  if (days < 7) return `לפני ${days} ימים`;
+  const sameYear = d.getFullYear() === new Date().getFullYear();
+  return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', ...(sameYear ? {} : { year: 'numeric' }) });
+}
+
+/* עיגול עם האות הראשונה. הצבע נגזר מהשם, כך שאותו מגיב מקבל אותו צבע
+   בכל השרשור. כולם כהים מספיק לאות לבנה (מעל 6:1). */
+const AV_COLORS = ['#163a57', '#7a5b16', '#2f6b34', '#8b2f3c', '#4f4380', '#7a3f1d'];
+function Avatar({ name, small }) {
+  const n = (name || '').trim();
+  let h = 0;
+  for (const ch of n) h = (h * 31 + ch.codePointAt(0)) % 997;
+  return (
+    <span
+      className={`comment-av${small ? ' small' : ''}${n ? '' : ' anon'}`}
+      style={n ? { background: AV_COLORS[h % AV_COLORS.length] } : undefined}
+      aria-hidden="true"
+    >{n ? [...n][0] : '?'}</span>
+  );
+}
+
+/* קישורים לחיצים - אנשים מביאים מקורות. nofollow ו-ugc אומרים לגוגל שזה
+   תוכן גולשים, וכך לספאמר אין מה להרוויח מקישור כאן. פיסוק בסוף הכתובת
+   (נקודה, סוגריים, מירכאות) אינו חלק ממנה. */
+const URL_RE = /(https?:\/\/[^\s<>"]+|www\.[^\s<>"]+)/g;
+function Linked({ text }) {
+  return String(text).split(URL_RE).map((part, i) => {
+    if (i % 2 === 0) return part;
+    const m = part.match(/^(.*?)([.,;:!?)\]'"״׳]*)$/);
+    const url = m[1];
+    const shown = url.replace(/^https?:\/\//, '');
+    return (
+      <span key={i}>
+        <a
+          href={url.startsWith('www.') ? `https://${url}` : url}
+          target="_blank" rel="nofollow ugc noopener noreferrer" dir="ltr"
+        >{shown.length > 42 ? `${shown.slice(0, 40)}…` : shown}</a>{m[2]}
+      </span>
+    );
+  });
+}
+
+/* טופס כתיבה - משמש גם לתגובה חדשה וגם לתשובה בתוך שרשור.
+   הטופס הראשי מקופל לשורה אחת עד שנוגעים בו: קודם שלושה שדות וכפתור ישבו
+   בין הגולש לתגובות, ובטלפון התגובות התחילו רק בחצי המסך השני. */
 function CommentForm({ targetKey, targetLabel, parentId = null, compact = false, onDone, onCancel }) {
-  const [author, setAuthor] = useState('');
+  const [open, setOpen] = useState(compact);
+  const [author, setAuthor] = useState(loadName);
   const [email, setEmail] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const [err, setErr] = useState('');
+  const [posted, setPosted] = useState(false);
   const hp = useRef(null); // honeypot
+  const hintId = useRef(`cmh-${Math.random().toString(36).slice(2, 8)}`).current;
+
+  useEffect(() => {
+    if (!posted) return undefined;
+    const t = setTimeout(() => setPosted(false), 5000);
+    return () => clearTimeout(t);
+  }, [posted]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -26,13 +103,14 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
     if (!text) return;
     if (text.length > MAX_LEN) { setErr(`מקסימום ${MAX_LEN} תווים`); return; }
     setSending(true);
+    const name = author.trim().slice(0, MAX_NAME);
     const { data, error } = await supabase
       .from('comments')
       .insert({
         target_key: targetKey,
         target_label: targetLabel || null,
         parent_id: parentId,
-        author: author.trim().slice(0, MAX_NAME) || null,
+        author: name || null,
         body: text,
         // נשלח רק אם מולא. העמודה חסומה לקריאה מהדפדפן ברמת בסיס
         // הנתונים, ולכן כתובת של מגיב אחד אינה נחשפת למגיב הבא.
@@ -43,45 +121,62 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
       .single();
     setSending(false);
     if (error) { setErr('שליחת התגובה נכשלה, נסו שוב'); return; }
-    setBody(''); setAuthor(''); setEmail('');
+    saveName(name);
+    setBody(''); setEmail('');
+    if (!compact) { setOpen(false); setPosted(true); }
     onDone(data);
   };
 
+  const cancel = () => {
+    if (onCancel) { onCancel(); return; }
+    setBody(''); setErr(''); setOpen(false);
+  };
+
   return (
-    <form className={`comment-form${compact ? ' compact' : ''}`} onSubmit={submit}>
-      <div className="comment-ids">
-        <input
-          className="comment-name" type="text" placeholder="שם (אופציונלי)" aria-label="שם (לא חובה)"
-          name="name" autoComplete="name"
-          value={author} maxLength={MAX_NAME} onChange={(e) => setAuthor(e.target.value)}
-        />
-        {/* type ו-autoComplete תקניים כדי שהדפדפן ישלים לבד. הכתובת
-            אינה מוצגת לאיש ומשמשת רק להודעה על תשובה לתגובה הזו. */}
-        <input
-          className="comment-mail" type="email" inputMode="email"
-          name="email" autoComplete="email"
-          placeholder="מייל לעדכון אם יגיבו לך (לא יוצג)"
-          aria-label="כתובת מייל לעדכון אם יגיבו לך. לא מוצגת באתר"
-          value={email} maxLength={120} onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-      {/* honeypot - נסתר מבני-אדם, בוטים ממלאים אותו */}
-      <input ref={hp} className="comment-hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+    <form className={`comment-form${compact ? ' compact' : ''}${open ? ' open' : ''}`} onSubmit={submit}>
       <textarea
         className="comment-body"
         placeholder={parentId ? 'תשובה…' : 'הוסיפו הערה, מקור או תיקון…'}
         aria-label={parentId ? 'תשובה לתגובה' : 'הערה, מקור או תיקון'}
-        value={body} maxLength={MAX_LEN} rows={2}
+        value={body} maxLength={MAX_LEN} rows={open ? 3 : 1}
+        autoFocus={compact}
+        onFocus={() => { setOpen(true); setPosted(false); }}
         onChange={(e) => setBody(e.target.value)}
       />
-      <div className="comment-actions">
-        <span className="comment-count">{body.length}/{MAX_LEN}</span>
-        {onCancel && <button type="button" className="comment-cancel" onClick={onCancel}>ביטול</button>}
-        <button className="comment-submit" type="submit" disabled={sending || !body.trim()}>
-          {sending ? 'שולח…' : parentId ? 'שליחת תשובה' : 'פרסום'}
-        </button>
-      </div>
+      {/* honeypot - נסתר מבני-אדם, בוטים ממלאים אותו */}
+      <input ref={hp} className="comment-hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+      {open && (
+        <>
+          <div className="comment-ids">
+            <input
+              className="comment-name" type="text" placeholder="שם (לא חובה)" aria-label="שם (לא חובה)"
+              name="name" autoComplete="name"
+              value={author} maxLength={MAX_NAME} onChange={(e) => setAuthor(e.target.value)}
+            />
+            {/* type ו-autoComplete תקניים כדי שהדפדפן ישלים לבד. ההסבר יושב
+                מתחת ולא ב-placeholder: בטלפון ה-placeholder נחתך באמצע
+                ו"לא יוצג" - החלק החשוב - נעלם. */}
+            <input
+              className="comment-mail" type="email" inputMode="email"
+              name="email" autoComplete="email"
+              placeholder="מייל (לא חובה)" aria-label="מייל (לא חובה)" aria-describedby={hintId}
+              value={email} maxLength={120} onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <p className="comment-hint" id={hintId}>
+            המייל לא מוצג באתר - רק לעדכון כשעונים לכם.
+          </p>
+          <div className="comment-actions">
+            {body.length > COUNT_FROM && <span className="comment-count">{body.length}/{MAX_LEN}</span>}
+            <button type="button" className="comment-cancel" onClick={cancel}>ביטול</button>
+            <button className="comment-submit" type="submit" disabled={sending || !body.trim()}>
+              {sending ? 'שולח…' : parentId ? 'שליחת תשובה' : 'פרסום'}
+            </button>
+          </div>
+        </>
+      )}
       {err && <div className="comment-err">{err}</div>}
+      <div className="comment-posted" role="status">{posted ? '✓ התגובה פורסמה' : ''}</div>
     </form>
   );
 }
@@ -99,63 +194,80 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
    כל התלויות עוברות כ-props במפורש. זה ארוך יותר, וזה בדיוק מה שמונע
    את החזרה. */
 function Comment({
-  c, isReply = false,
+  c, isReply = false, isFresh = false,
   replyTo, setReplyTo,
   reported, reportId, setReportId, reportWhy, setReportWhy, reportBusy, sendReport,
   adminToken, busyId, remove,
 }) {
-  return (
-      <div className={`comment${isReply ? ' reply' : ''}`}>
-        <div className="comment-head">
-          <span className="comment-author">{c.author || 'אנונימי'}</span>
-          <span className="comment-date">{fmtDate(c.created_at)}</span>
-        </div>
-        <div className="comment-text">{c.body}</div>
-        <div className="comment-tools">
-          {!isReply && (
-            <button type="button" className="comment-link" onClick={() => setReplyTo(replyTo === c.id ? null : c.id)}>
-              {replyTo === c.id ? 'ביטול' : 'השב'}
-            </button>
-          )}
-          {reported.includes(c.id) ? (
-            <span className="comment-reported">✓ הדיווח נשלח</span>
-          ) : (
-            <button
-              type="button" className="comment-link"
-              onClick={() => { setReportId(reportId === c.id ? null : c.id); setReportWhy(''); }}
-            >
-              {reportId === c.id ? 'ביטול' : '⚑ דיווח'}
-            </button>
-          )}
-          {adminToken && (
-            <button
-              type="button" className="comment-link danger"
-              disabled={busyId === c.id} onClick={() => remove(c.id)}
-            >
-              {busyId === c.id ? 'מוחק…' : '🗑 מחיקה'}
-            </button>
-          )}
-        </div>
+  const ref = useRef(null);
+  // תגובה שהגולש פרסם זה עתה: גלילה אליה והבהוב קצר, כדי שיראה שהיא שם
+  useEffect(() => {
+    if (!isFresh || !ref.current) return;
+    const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    ref.current.scrollIntoView({ block: 'nearest', behavior: still ? 'auto' : 'smooth' });
+  }, [isFresh]);
 
-        {reportId === c.id && (
-          <div className="comment-report">
-            <p className="comment-report-lead">
-              מה הבעיה בתגובה הזו? התיאור עוזר לי לטפל מהר, ואפשר גם לשלוח בלעדיו.
-            </p>
-            <input
-              className="comment-report-why" type="text" maxLength={300}
-              placeholder="למשל: פוגעני, לשון הרע, ספאם, פרטים אישיים"
-              aria-label="סיבת הדיווח (לא חובה)"
-              value={reportWhy} onChange={(e) => setReportWhy(e.target.value)}
-            />
-            <button
-              type="button" className="comment-report-send"
-              disabled={reportBusy} onClick={() => sendReport(c)}
-            >
-              {reportBusy ? 'שולח…' : 'שליחת הדיווח'}
-            </button>
+  return (
+      <div ref={ref} className={`comment${isReply ? ' reply' : ''}${isFresh ? ' fresh' : ''}`}>
+        <Avatar name={c.author} small={isReply} />
+        <div className="comment-main">
+          <div className="comment-head">
+            <span className="comment-author">{c.author || 'אנונימי'}</span>
+            <time className="comment-date" dateTime={c.created_at} title={fullDate(c.created_at)}>
+              {relTime(c.created_at)}
+            </time>
           </div>
-        )}
+          <div className="comment-text"><Linked text={c.body} /></div>
+          <div className="comment-tools">
+            {!isReply && (
+              <button
+                type="button" className="comment-link"
+                aria-expanded={replyTo === c.id}
+                onClick={() => setReplyTo(replyTo === c.id ? null : c.id)}
+              >
+                {replyTo === c.id ? 'ביטול' : '↩ השב'}
+              </button>
+            )}
+            {reported.includes(c.id) ? (
+              <span className="comment-reported">✓ הדיווח נשלח</span>
+            ) : (
+              <button
+                type="button" className="comment-link"
+                onClick={() => { setReportId(reportId === c.id ? null : c.id); setReportWhy(''); }}
+              >
+                {reportId === c.id ? 'ביטול' : '⚑ דיווח'}
+              </button>
+            )}
+            {adminToken && (
+              <button
+                type="button" className="comment-link danger"
+                disabled={busyId === c.id} onClick={() => remove(c.id)}
+              >
+                {busyId === c.id ? 'מוחק…' : '🗑 מחיקה'}
+              </button>
+            )}
+          </div>
+
+          {reportId === c.id && (
+            <div className="comment-report">
+              <p className="comment-report-lead">
+                מה הבעיה בתגובה הזו? התיאור עוזר לי לטפל מהר, ואפשר גם לשלוח בלעדיו.
+              </p>
+              <input
+                className="comment-report-why" type="text" maxLength={300}
+                placeholder="למשל: פוגעני, לשון הרע, ספאם, פרטים אישיים"
+                aria-label="סיבת הדיווח (לא חובה)"
+                value={reportWhy} onChange={(e) => setReportWhy(e.target.value)}
+              />
+              <button
+                type="button" className="comment-report-send"
+                disabled={reportBusy} onClick={() => sendReport(c)}
+              >
+                {reportBusy ? 'שולח…' : 'שליחת הדיווח'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
   );
 }
@@ -171,6 +283,7 @@ export default function Comments({ targetKey, targetLabel }) {
   const [reportWhy, setReportWhy] = useState('');
   const [reportBusy, setReportBusy] = useState(false);
   const [reported, setReported] = useState([]);
+  const [fresh, setFresh] = useState(null);
   const adminToken = getAdminToken();
 
   useEffect(() => {
@@ -241,7 +354,7 @@ export default function Comments({ targetKey, targetLabel }) {
 
       <CommentForm
         targetKey={targetKey} targetLabel={targetLabel}
-        onDone={(row) => setList((l) => [...l, row])}
+        onDone={(row) => { setList((l) => [...l, row]); setFresh(row.id); }}
       />
 
       {status === 'loading' && <div className="comments-empty">טוען תגובות…</div>}
@@ -251,35 +364,31 @@ export default function Comments({ targetKey, targetLabel }) {
       )}
 
       <ul className="comment-list">
-        {roots.map((c) => (
-          <li key={c.id} className="comment-thread">
-            <Comment
-              c={c}
-              replyTo={replyTo} setReplyTo={setReplyTo}
-              reported={reported} reportId={reportId} setReportId={setReportId}
-              reportWhy={reportWhy} setReportWhy={setReportWhy}
-              reportBusy={reportBusy} sendReport={sendReport}
-              adminToken={adminToken} busyId={busyId} remove={remove}
-            />
-            {repliesOf(c.id).map((r) => <Comment
-              key={r.id} c={r} isReply
-              replyTo={replyTo} setReplyTo={setReplyTo}
-              reported={reported} reportId={reportId} setReportId={setReportId}
-              reportWhy={reportWhy} setReportWhy={setReportWhy}
-              reportBusy={reportBusy} sendReport={sendReport}
-              adminToken={adminToken} busyId={busyId} remove={remove}
-            />)}
-            {replyTo === c.id && (
-              <div className="reply-box">
-                <CommentForm
-                  targetKey={targetKey} targetLabel={targetLabel} parentId={c.id} compact
-                  onCancel={() => setReplyTo(null)}
-                  onDone={(row) => { setList((l) => [...l, row]); setReplyTo(null); }}
-                />
-              </div>
-            )}
-          </li>
-        ))}
+        {roots.map((c) => {
+          const replies = repliesOf(c.id);
+          const shared = {
+            replyTo, setReplyTo,
+            reported, reportId, setReportId, reportWhy, setReportWhy, reportBusy, sendReport,
+            adminToken, busyId, remove,
+          };
+          return (
+            <li key={c.id} className="comment-thread">
+              <Comment c={c} isFresh={fresh === c.id} {...shared} />
+              {(replies.length > 0 || replyTo === c.id) && (
+                <div className="comment-replies">
+                  {replies.map((r) => <Comment key={r.id} c={r} isReply isFresh={fresh === r.id} {...shared} />)}
+                  {replyTo === c.id && (
+                    <CommentForm
+                      targetKey={targetKey} targetLabel={targetLabel} parentId={c.id} compact
+                      onCancel={() => setReplyTo(null)}
+                      onDone={(row) => { setList((l) => [...l, row]); setReplyTo(null); setFresh(row.id); }}
+                    />
+                  )}
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

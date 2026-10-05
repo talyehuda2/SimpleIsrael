@@ -1360,90 +1360,7 @@ a.card-action { text-decoration: none; }
   margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft);
   font-size: 13px; color: var(--muted);
 }
-.comments { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
-.comments-title { margin: 0 0 10px; font-size: 15px; font-weight: 900; color: var(--navy); }
-.comment-form { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
-.comment-name, .comment-mail, .comment-body {
-  width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13.5px;
-  color: var(--ink); background: var(--panel);
-  border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 10px;
-}
-.comment-name::placeholder, .comment-mail::placeholder, .comment-body::placeholder { color: var(--muted); }
-.comment-name:focus, .comment-mail:focus, .comment-body:focus {
-  outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgb(178 138 43 / .15);
-}
-.comment-body { resize: vertical; min-height: 44px; line-height: 1.5; }
-/* honeypot - מוסתר לחלוטין מבני-אדם, בלי ליצור גלילה אופקית */
-.comment-hp {
-  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; opacity: 0;
-}
-.comment-actions { display: flex; align-items: center; gap: 10px; }
-.comment-count { font-size: 11px; color: var(--muted); }
-.comment-submit {
-  margin-inline-start: auto; background: var(--navy); color: #fff; border: none;
-  border-radius: 18px; padding: 7px 18px; font-family: inherit; font-size: 13px;
-  font-weight: 700; cursor: pointer; transition: background .12s, transform .1s;
-}
-.comment-submit:hover:not(:disabled) { background: var(--navy-2); transform: translateY(-1px); }
-.comment-submit:disabled { opacity: .5; cursor: default; }
-.comment-err { font-size: 12.5px; color: #a5321f; }
-.comments-empty { font-size: 13px; color: var(--muted); padding: 4px 0; }
-.comment-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.comment {
-  background: var(--bg-2); border: 1px solid var(--line-soft);
-  border-radius: 12px; padding: 9px 12px;
-}
-/* שרשורים */
-.comment-thread { display: flex; flex-direction: column; gap: 7px; }
-.comment.reply {
-  margin-inline-start: 20px; background: var(--panel);
-  border-inline-end: 3px solid var(--gold);
-}
-.reply-box { margin-inline-start: 20px; }
-.comment-form.compact { margin-bottom: 4px; gap: 6px; }
-.comment-tools { display: flex; gap: 12px; margin-top: 6px; }
-.comment-link {
-  background: none; border: none; padding: 0; cursor: pointer;
-  font-family: inherit; font-size: 12px; font-weight: 700; color: var(--navy);
-  text-decoration: underline;
-}
-.comment-link:hover { color: var(--gold-ink); }
-.comment-link.danger { color: #a5321f; }
-.comment-link:disabled { opacity: .5; cursor: default; }
-
-/* טופס הדיווח. רקע --panel ולא --bg-2 של הכרטיס: גם כדי שייקרא כאזור
-   נפרד, וגם כי על הכרטיס הכהה --muted נותן 4.61:1 - עובר, אבל בלי
-   שוליים. על --panel הוא 5.93:1. */
-.comment-report {
-  display: flex; flex-direction: column; gap: 6px;
-  margin-top: 8px; padding: 9px 10px;
-  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
-}
-.comment-report-lead { margin: 0; font-size: 12px; line-height: 1.5; color: var(--muted); }
-.comment-report-why {
-  width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px;
-  color: var(--ink); background: #fff;
-  border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 9px;
-}
-.comment-report-send {
-  align-self: flex-start; font-family: inherit; font-size: 12.5px; font-weight: 700;
-  color: #fff; background: var(--navy); border: none; border-radius: 8px;
-  padding: 7px 14px; cursor: pointer;
-}
-.comment-report-send:disabled { opacity: .55; cursor: default; }
-/* ירוק כהה ולא הירוק של האתר: 4.59:1 על כרטיס התגובה, ועובר AA */
-.comment-reported { font-size: 12px; font-weight: 700; color: #2f6b34; }
-.comment-cancel {
-  background: none; border: none; padding: 0; cursor: pointer;
-  font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--muted);
-  text-decoration: underline;
-}
-
-.comment-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 3px; }
-.comment-author { font-weight: 700; font-size: 13px; color: var(--navy); }
-.comment-date { font-size: 11px; color: var(--muted); margin-inline-start: auto; }
-.comment-text { font-size: 13.5px; line-height: 1.55; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+/* שאר עיצוב התגובות ב-src/components/Comments.css, בבעלות הרכיב */
 
 /* צ'יפ ביטול הדגשת בני-הזמן - מופיע כשההדגשה פעילה והכרטיס סגור */
 .contemp-clear {
@@ -2046,8 +1963,6 @@ button.ins-lrow:hover .ins-lname { color: var(--gold-ink); }
   color: var(--navy); background: var(--panel); border: 1px solid var(--line);
 }
 .chunk-reload:hover { border-color: var(--gold); }
-.comment-ids { display: flex; gap: 8px; flex-wrap: wrap; }
-.comment-ids > * { flex: 1 1 160px; min-width: 0; }
 .about-legal { margin: 12px 0 0; text-align: center; font-size: 12.5px; }
 .about-legal a { color: var(--muted); text-decoration: underline; }
 .about-legal a:hover { color: var(--gold); }

@@ -1,0 +1,128 @@
+/* תגובות קהילה. הרכיב מגיע לציר הזמן ולמסע הדורות (lazy מתוך DetailCard),
+   ולכן הסגנון יושב כאן ולא ב-styles.css - ראו "המלכודת מספר אחת" ב-CLAUDE.md.
+   משתנים שמוגדרים רק ב-styles.css מקבלים ערך גיבוי. */
+
+.comments { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft, #e8dcc0); }
+.comments-title { margin: 0 0 10px; font-size: 15px; font-weight: 900; color: var(--navy); }
+.comments-empty { font-size: 13px; color: var(--muted); padding: 4px 0; }
+
+/* ---------- הטופס ---------- */
+.comment-form { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+.comment-name, .comment-mail, .comment-body {
+  width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13.5px;
+  color: var(--ink); background: var(--panel);
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 10px;
+}
+.comment-name::placeholder, .comment-mail::placeholder, .comment-body::placeholder { color: var(--muted); }
+.comment-name:focus, .comment-mail:focus, .comment-body:focus {
+  outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgb(178 138 43 / .15);
+}
+/* מקופל: שורה אחת שנראית כמו שדה. נפתח לשלוש שורות בנגיעה */
+.comment-body { resize: none; min-height: 40px; line-height: 1.5; display: block; }
+.comment-form.open .comment-body { resize: vertical; min-height: 78px; }
+.comment-form.compact .comment-body { min-height: 62px; }
+.comment-ids { display: flex; gap: 8px; flex-wrap: wrap; }
+.comment-ids > * { flex: 1 1 160px; min-width: 0; }
+.comment-hint { margin: -2px 2px 0; font-size: 11.5px; line-height: 1.5; color: var(--muted); }
+/* honeypot - מוסתר לחלוטין מבני-אדם, בלי ליצור גלילה אופקית */
+.comment-hp {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; opacity: 0;
+}
+.comment-actions { display: flex; align-items: center; gap: 12px; justify-content: flex-end; }
+.comment-count { font-size: 11px; color: var(--muted); margin-inline-end: auto; font-variant-numeric: tabular-nums; }
+.comment-submit {
+  background: var(--navy); color: #fff; border: none;
+  border-radius: 18px; padding: 7px 18px; font-family: inherit; font-size: 13px;
+  font-weight: 700; cursor: pointer; transition: background .12s, transform .1s;
+}
+.comment-submit:hover:not(:disabled) { background: var(--navy-2, #1d4b70); transform: translateY(-1px); }
+.comment-submit:disabled { opacity: .5; cursor: default; }
+.comment-cancel {
+  background: none; border: none; padding: 4px 2px; cursor: pointer;
+  font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--muted);
+}
+.comment-cancel:hover { text-decoration: underline; }
+.comment-err { font-size: 12.5px; color: #a5321f; }
+/* ירוק כהה: 5.9:1 על --panel */
+.comment-posted { font-size: 12.5px; font-weight: 700; color: #2f6b34; }
+.comment-posted:empty { display: none; }
+
+/* ---------- הרשימה ---------- */
+.comment-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.comment-thread { padding: 12px 0; }
+.comment-thread:first-child { padding-top: 2px; }
+.comment-thread + .comment-thread { border-top: 1px solid var(--line-soft, #e8dcc0); }
+
+/* עיגול האות מימין (תחילת השורה ב-RTL), הטקסט לצדו */
+.comment {
+  display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: 10px;
+  border-radius: 10px;
+}
+.comment-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 15px; font-weight: 800; line-height: 1; color: #fff;
+}
+.comment-av.anon { background: var(--bg-2, #e7d9ba); color: var(--navy); }
+.comment-av.small { width: 26px; height: 26px; font-size: 13px; }
+.comment.reply { grid-template-columns: 26px minmax(0, 1fr); }
+
+.comment-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.comment-author { font-weight: 800; font-size: 13.5px; color: var(--navy); }
+.comment-date { font-size: 11.5px; color: var(--muted); }
+.comment-text {
+  margin-top: 2px; font-size: 14px; line-height: 1.6; color: var(--ink);
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.comment-text a { color: var(--navy); text-decoration: underline; text-underline-offset: 2px; }
+.comment-text a:hover { color: var(--gold-ink); }
+
+/* כלים שקטים: לא קו תחתון קבוע מתחת לכל תגובה, רק במעבר עכבר */
+.comment-tools { display: flex; gap: 14px; margin-top: 3px; }
+.comment-link {
+  background: none; border: none; padding: 4px 0; cursor: pointer;
+  font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--muted);
+}
+.comment-link:hover:not(:disabled) { color: var(--navy); text-decoration: underline; }
+.comment-link[aria-expanded="true"] { color: var(--navy); }
+.comment-link.danger { color: #a5321f; }
+.comment-link:disabled { opacity: .5; cursor: default; }
+.comment-reported { font-size: 12px; font-weight: 700; color: #2f6b34; padding: 4px 0; }
+
+/* תשובות: מוזחות אל מתחת לעיגול, עם קו שמחבר אותן לתגובה שעליה ענו.
+   הקו בצד ההתחלה (ימין ב-RTL) ובלי פינות מעוגלות - ראו RTL ב-CLAUDE.md */
+.comment-replies {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-top: 8px; margin-inline-start: 15px; padding-inline-start: 15px;
+  border-inline-start: 2px solid var(--line);
+}
+.comment-replies .comment-form { margin-bottom: 0; }
+
+/* תגובה שפורסמה זה עתה - הבהוב זהב קצר */
+.comment.fresh { animation: cmFresh 2.6s ease-out; }
+@keyframes cmFresh {
+  0%, 35% { background: rgb(178 138 43 / .2); box-shadow: 0 0 0 6px rgb(178 138 43 / .2); }
+  100% { background: transparent; box-shadow: 0 0 0 6px transparent; }
+}
+@media (prefers-reduced-motion: reduce) { .comment.fresh { animation: none; } }
+
+/* ---------- דיווח ---------- */
+/* רקע --panel: גם כדי שייקרא כאזור נפרד, וגם כי --muted עליו נותן 5.93:1 */
+.comment-report {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-top: 6px; padding: 9px 10px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+}
+.comment-report-lead { margin: 0; font-size: 12px; line-height: 1.5; color: var(--muted); }
+.comment-report-why {
+  width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px;
+  color: var(--ink); background: #fff;
+  border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 9px;
+}
+.comment-report-send {
+  align-self: flex-start; font-family: inherit; font-size: 12.5px; font-weight: 700;
+  color: #fff; background: var(--navy); border: none; border-radius: 8px;
+  padding: 7px 14px; cursor: pointer;
+}
+.comment-report-send:disabled { opacity: .55; cursor: default; }
