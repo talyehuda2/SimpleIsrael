@@ -480,7 +480,7 @@ function shareRedirect(key) {
 
 function shell({ title, description, canonical, jsonld, body, ogImage, crumbs, prefetch = 'main',
   wide = false, bare = false, bodyClass = '', robots = '', head = '' }) {
-  const img = ogImage || `${SITE}/og-image.jpg`;
+  const img = ogImage || `${SITE}/og-image.jpg?v=2`;
   // פירורי לחם: גם ניווט גלוי וגם BreadcrumbList לגוגל (מוצג בתוצאות החיפוש)
   const crumbLd = crumbs && crumbs.length ? {
     '@context': 'https://schema.org',
