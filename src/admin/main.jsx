@@ -79,7 +79,7 @@ function Login({ onToken, notice }) {
 }
 
 /* ---------- תיבת תשובה לתגובה ציבורית ---------- */
-function ReplyForm({ row, onSent }) {
+function ReplyForm({ row, token, onSent }) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -89,15 +89,20 @@ function ReplyForm({ row, onSent }) {
     const body = text.trim();
     if (!body) return;
     setBusy(true); setErr('');
-    // הוספה רגילה בדיוק כמו של גולש: הטריגר notify_comment_reply מזהה
-    // parent_id ושולח מייל למגיב, בלי שנצטרך לגעת בו
-    const { error } = await supabase.from('comments').insert({
-      target_key: row.target_key,
-      target_label: row.target_label,
-      parent_id: row.id,
-      author: 'מנהל האתר',
-      body,
-    });
+    // admin_post_comment (supabase/admin_badge.sql) בודקת את הטוקן ומסמנת
+    // by_admin - זה מה שמציג את התג "מהאתר". הטריגר notify_comment_reply רץ
+    // גם שם ושולח מייל למגיב. עד שהקובץ רץ הפונקציה לא קיימת (PGRST202),
+    // ואז הוספה רגילה כמו קודם.
+    let { error } = await supabase.rpc('admin_post_comment', { p_token: token, p_body: body, p_parent: row.id });
+    if (error?.code === 'PGRST202') {
+      ({ error } = await supabase.from('comments').insert({
+        target_key: row.target_key,
+        target_label: row.target_label,
+        parent_id: row.id,
+        author: 'מנהל האתר',
+        body,
+      }));
+    }
     setBusy(false);
     if (error) { setErr('השליחה נכשלה'); return; }
     setText(''); onSent();
@@ -291,7 +296,7 @@ function Admin() {
                 </button>
                 <button className="ad-btn danger" disabled={busyId === r.id} onClick={() => remove(r.id)}>🗑</button>
               </div>
-              {openReply === r.id && <ReplyForm row={r} onSent={() => { setOpenReply(null); load(); }} />}
+              {openReply === r.id && <ReplyForm row={r} token={token} onSent={() => { setOpenReply(null); load(); }} />}
             </article>
           ))}
         </main>

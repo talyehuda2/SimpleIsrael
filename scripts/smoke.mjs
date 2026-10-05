@@ -251,7 +251,7 @@ for (const page of PAGES) {
       contentType: 'application/json',
       body: JSON.stringify([
         { id: 1, created_at: ago(70), author: 'יוסי', body: 'יש מקור לכך שאברהם נולד באור כשדים?', parent_id: null },
-        { id: 2, created_at: ago(50), author: 'טל', body: 'בראשית י"א, כ"ח. ראו גם https://www.sefaria.org.il/Genesis.11.28', parent_id: 1 },
+        { id: 2, created_at: ago(50), author: 'מנהל האתר', body: 'בראשית י"א, כ"ח. ראו גם https://www.sefaria.org.il/Genesis.11.28', parent_id: 1, by_admin: true },
         { id: 3, created_at: ago(5), author: null, body: 'תודה על האתר!', parent_id: null },
       ]),
     }));

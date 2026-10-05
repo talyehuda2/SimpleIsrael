@@ -11,6 +11,9 @@ const COUNT_FROM = MAX_LEN - 200;
 // השם נשמר במכשיר כדי שלא יוקלד מחדש בכל תגובה. המייל לא: זה מידע אישי,
 // ומי שמגיב ממחשב משותף לא היה מצפה שיופיע לבא אחריו.
 const NAME_KEY = 'si_cname';
+// שמות ששמורים למנהל האתר. גם השרת חוסם אותם (supabase/admin_badge.sql); כאן
+// זה רק כדי לתת הסבר לפני שליחה ולא "השליחה נכשלה"
+const RESERVED = /(מנהל|אדמין|admin|simpleisrael)/i;
 const loadName = () => { try { return localStorage.getItem(NAME_KEY) || ''; } catch { return ''; } };
 const saveName = (v) => {
   try { if (v) localStorage.setItem(NAME_KEY, v); else localStorage.removeItem(NAME_KEY); } catch { /* מצב פרטי */ }
@@ -42,7 +45,10 @@ function relTime(iso) {
 /* עיגול עם האות הראשונה. הצבע נגזר מהשם, כך שאותו מגיב מקבל אותו צבע
    בכל השרשור. כולם כהים מספיק לאות לבנה (מעל 6:1). */
 const AV_COLORS = ['#163a57', '#7a5b16', '#2f6b34', '#8b2f3c', '#4f4380', '#7a3f1d'];
-function Avatar({ name, small }) {
+function Avatar({ name, small, admin }) {
+  if (admin) {
+    return <span className={`comment-av admin${small ? ' small' : ''}`} aria-hidden="true">📜</span>;
+  }
   const n = (name || '').trim();
   let h = 0;
   for (const ch of n) h = (h * 31 + ch.codePointAt(0)) % 997;
@@ -79,7 +85,7 @@ function Linked({ text }) {
 /* טופס כתיבה - משמש גם לתגובה חדשה וגם לתשובה בתוך שרשור.
    הטופס הראשי מקופל לשורה אחת עד שנוגעים בו: קודם שלושה שדות וכפתור ישבו
    בין הגולש לתגובות, ובטלפון התגובות התחילו רק בחצי המסך השני. */
-function CommentForm({ targetKey, targetLabel, parentId = null, compact = false, onDone, onCancel }) {
+function CommentForm({ targetKey, targetLabel, parentId = null, compact = false, adminToken, onDone, onCancel }) {
   const [open, setOpen] = useState(compact);
   const [author, setAuthor] = useState(loadName);
   const [email, setEmail] = useState('');
@@ -102,15 +108,16 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
     const text = body.trim();
     if (!text) return;
     if (text.length > MAX_LEN) { setErr(`מקסימום ${MAX_LEN} תווים`); return; }
-    setSending(true);
     const name = author.trim().slice(0, MAX_NAME);
-    const { data, error } = await supabase
+    if (!adminToken && RESERVED.test(name)) { setErr('השם הזה שמור למנהל האתר. בחרו שם אחר.'); return; }
+    setSending(true);
+    const insert = (who) => supabase
       .from('comments')
       .insert({
         target_key: targetKey,
         target_label: targetLabel || null,
         parent_id: parentId,
-        author: name || null,
+        author: who || null,
         body: text,
         // נשלח רק אם מולא. העמודה חסומה לקריאה מהדפדפן ברמת בסיס
         // הנתונים, ולכן כתובת של מגיב אחד אינה נחשפת למגיב הבא.
@@ -119,9 +126,23 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
       })
       .select('id, created_at, author, body, parent_id')
       .single();
+    // מנהל (טוקן שמור בדפדפן) כותב דרך הפונקציה שבודקת את הטוקן - רק כך
+    // התגובה מקבלת את התג "מהאתר". עד שהורץ admin_badge.sql הפונקציה לא
+    // קיימת (PGRST202), ואז הוספה רגילה בשם "מנהל האתר" כמו קודם.
+    let res = adminToken
+      ? await supabase.rpc('admin_post_comment', {
+        p_token: adminToken, p_body: text, p_parent: parentId,
+        p_target_key: targetKey, p_target_label: targetLabel || null,
+      }).single()
+      : await insert(name);
+    if (adminToken && res.error?.code === 'PGRST202') res = await insert('מנהל האתר');
+    const { data, error } = res;
     setSending(false);
-    if (error) { setErr('שליחת התגובה נכשלה, נסו שוב'); return; }
-    saveName(name);
+    if (error) {
+      setErr(/שמור|דקה|כבר נשלחה/.test(error.message || '') ? error.message : 'שליחת התגובה נכשלה, נסו שוב');
+      return;
+    }
+    if (!adminToken) saveName(name);
     setBody(''); setEmail('');
     if (!compact) { setOpen(false); setPosted(true); }
     onDone(data);
@@ -147,6 +168,9 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
       <input ref={hp} className="comment-hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" />
       {open && (
         <>
+          {adminToken ? (
+            <p className="comment-hint">תפורסם בשם מנהל האתר, עם התג "מהאתר".</p>
+          ) : (<>
           <div className="comment-ids">
             <input
               className="comment-name" type="text" placeholder="שם (לא חובה)" aria-label="שם (לא חובה)"
@@ -166,6 +190,7 @@ function CommentForm({ targetKey, targetLabel, parentId = null, compact = false,
           <p className="comment-hint" id={hintId}>
             המייל לא מוצג באתר - רק לעדכון כשעונים לכם.
           </p>
+          </>)}
           <div className="comment-actions">
             {body.length > COUNT_FROM && <span className="comment-count">{body.length}/{MAX_LEN}</span>}
             <button type="button" className="comment-cancel" onClick={cancel}>ביטול</button>
@@ -208,11 +233,12 @@ function Comment({
   }, [isFresh]);
 
   return (
-      <div ref={ref} className={`comment${isReply ? ' reply' : ''}${isFresh ? ' fresh' : ''}`}>
-        <Avatar name={c.author} small={isReply} />
+      <div ref={ref} className={`comment${isReply ? ' reply' : ''}${c.by_admin ? ' by-admin' : ''}${isFresh ? ' fresh' : ''}`}>
+        <Avatar name={c.author} small={isReply} admin={c.by_admin} />
         <div className="comment-main">
           <div className="comment-head">
             <span className="comment-author">{c.author || 'אנונימי'}</span>
+            {c.by_admin && <span className="comment-badge" title="תגובה של מנהל האתר">✓ מהאתר</span>}
             <time className="comment-date" dateTime={c.created_at} title={fullDate(c.created_at)}>
               {relTime(c.created_at)}
             </time>
@@ -289,11 +315,15 @@ export default function Comments({ targetKey, targetLabel }) {
   useEffect(() => {
     let alive = true;
     setStatus('loading');
-    supabase
+    const load = (cols) => supabase
       .from('comments')
-      .select('id, created_at, author, body, parent_id')
+      .select(cols)
       .eq('target_key', targetKey)
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: true });
+    /* by_admin נוספה ב-admin_badge.sql. עד שהקובץ רץ העמודה לא קיימת והשאילתה
+       נכשלת, ולכן ניסיון שני בלעדיה - כך האתר לא תלוי בסדר הפריסה וההרצה. */
+    load('id, created_at, author, body, parent_id, by_admin')
+      .then((r) => (r.error?.code === '42703' ? load('id, created_at, author, body, parent_id') : r))
       .then(({ data, error }) => {
         if (!alive) return;
         if (error) { setStatus('error'); return; }
@@ -353,7 +383,7 @@ export default function Comments({ targetKey, targetLabel }) {
       </h3>
 
       <CommentForm
-        targetKey={targetKey} targetLabel={targetLabel}
+        targetKey={targetKey} targetLabel={targetLabel} adminToken={adminToken}
         onDone={(row) => { setList((l) => [...l, row]); setFresh(row.id); }}
       />
 
@@ -380,6 +410,7 @@ export default function Comments({ targetKey, targetLabel }) {
                   {replyTo === c.id && (
                     <CommentForm
                       targetKey={targetKey} targetLabel={targetLabel} parentId={c.id} compact
+                      adminToken={adminToken}
                       onCancel={() => setReplyTo(null)}
                       onDone={(row) => { setList((l) => [...l, row]); setReplyTo(null); setFresh(row.id); }}
                     />

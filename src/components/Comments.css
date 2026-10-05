@@ -67,6 +67,14 @@
 .comment-av.anon { background: var(--bg-2, #e7d9ba); color: var(--navy); }
 .comment-av.small { width: 26px; height: 26px; font-size: 13px; }
 .comment.reply { grid-template-columns: 26px minmax(0, 1fr); }
+/* מנהל האתר: מגילה במקום אות, ותג. התג נקבע במסד (by_admin) ולא לפי השם,
+   שכל אחד יכול להקליד - ראו supabase/admin_badge.sql */
+.comment-av.admin { background: var(--panel); border: 1.5px solid var(--gold); font-size: 15px; }
+.comment-av.admin.small { font-size: 12px; }
+.comment-badge {
+  align-self: center; font-size: 11px; font-weight: 800; line-height: 1.5;
+  color: #fff; background: var(--navy); border-radius: 999px; padding: 0 8px;
+}
 
 .comment-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .comment-author { font-weight: 800; font-size: 13.5px; color: var(--navy); }
