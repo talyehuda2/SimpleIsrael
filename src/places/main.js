@@ -2,7 +2,7 @@
    ציר הזמן שואל "מתי", מסע הדורות שואל "מי", וכאן שואלים "איפה":
    אותם 275 ביקורים, מסודרים לפי המקום ולא לפי הדמות. הנתונים מגיעים
    מ-src/data/places.json שנוצר בידי scripts/places-data.mjs. */
-import { MAP_SRC, MAP_SIZE, projectRaw, unprojectRaw } from '../utils/mapProject.js';
+import { MAP_SRC, MAP_SIZE, projectRaw, unprojectRaw, offMapPin } from '../utils/mapProject.js';
 import PLACES from '../data/places.json';
 import { offMapName } from '../utils/placeNote.js';
 import PERIODS from '../data/periods.json';
@@ -50,17 +50,9 @@ function labelAt(x, y, r, off, k) {
   return { x, y: y - r - 8 * k, anchor: 'middle' };
 }
 
-/* החץ של מקום מחוץ למסגרת: בצד החיצוני של העיגול, מצביע לכיוון שבו המקום
-   נמצא באמת - "← ● מצרים". קודם החץ היה תו בתוך השם, ולכן ישב בין העיגול
-   לשם והצביע על העיגול עצמו (הערת בעל האתר). הגודל ביחידות המפה כפול k,
-   כמו הסמנים, כדי שיישאר באותו גודל על המסך בכל זום. */
-function offArrow(x, y, dir, r, k) {
-  const [dx, dy] = { w: [-1, 0], e: [1, 0], n: [0, -1], s: [0, 1] }[dir] || [0, 0];
-  const base = r + 5 * k, len = 13 * k, half = 8 * k;
-  const bx = x + dx * base, by = y + dy * base, tx = x + dx * (base + len), ty = y + dy * (base + len);
-  const px = -dy * half, py = dx * half, f = (n) => n.toFixed(1);
-  return `M${f(bx + px)},${f(by + py)} L${f(tx)},${f(ty)} L${f(bx - px)},${f(by - py)}`;
-}
+/* סמן של מקום מחוץ למסגרת: עיגול עם חוד קטן החוצה (offMapPin), "◀ מצרים".
+   החוד בין 3.5 ל-7 יחידות מסך (כפול k, כמו הסמנים), ותמיד קטן מהעיגול. */
+const pinPath = (x, y, dir, r, k) => offMapPin(x, y, dir, r, 3.5 * k, 7 * k);
 
 function drawMap() {
   const marks = [...PLACES]
@@ -73,14 +65,14 @@ function drawMap() {
         ${p.off ? `data-dir="${p.off}"` : ''} data-v="${p.visits.length}" role="button" tabindex="0"
         aria-label="${esc(p.name)}${p.off ? ' (מחוץ למפה)' : ''} - ${p.visits.length} ביקורים">
         <title>${esc(p.name)}${p.off ? ' · מחוץ למפה' : ''} · ${p.visits.length} ביקורים</title>
-        ${p.off ? `<path class="oa" d="${offArrow(p.x, p.y, p.off, r, 1)}" stroke-width="4"/>` : ''}
-        <circle class="dot" cx="${p.x}" cy="${p.y}" r="${r.toFixed(1)}"/>
+        ${p.off ? `<path class="dot" cx="${p.x}" cy="${p.y}" d="${pinPath(p.x, p.y, p.off, r, 1)}"/>`
+          : `<circle class="dot" cx="${p.x}" cy="${p.y}" r="${r.toFixed(1)}"/>`}
         <circle class="hit" cx="${p.x}" cy="${p.y}" r="${(r * 1.25).toFixed(1)}"/></g>`;
     }).join('');
   /* השמות יושבים בשכבה נפרדת מעל כל הסמנים. כשהם היו בתוך קבוצת הסמן,
      סמן זעיר שמצויר אחריה כיסה אותם, ולחיצה על "ירושלים" בחרה מקום אחר. */
   /* מקום מחוץ למסגרת (off: מצרים, בבל...) יושב בשולי המפה: השם צמוד לעיגול
-     מבפנים, והחץ (offArrow) מחוצה לו. paintZoom מעדכן את שניהם עם הזום */
+     מבפנים, והחוד של הסמן (pinPath) מחוצה לו. paintZoom מעדכן את שניהם עם הזום */
   const labels = PLACES.map((p) => {
     const r = RAD(p.visits.length);
     const name = p.off ? offMapName(p.name) : p.name;
@@ -282,17 +274,27 @@ function onPtrUp(e) {
 function paintZoom() {
   const k = Math.max(0.4, cam.h / BASE_H);
   const need = k > 0.75 ? 4 : k > 0.5 ? 3 : k > 0.3 ? 2 : 1;
+  /* עובי הטבעת יחסי לגודל העיגול על המסך, בין 0.75 ל-2 פיקסלים (הטבעת היא
+     non-scaling-stroke, ולכן בפיקסלים). טבעת קבועה של 2 פיקסלים כיסתה את רוב
+     הנקודה במקום עם ביקור אחד, ובחוד של סמן "מחוץ למפה" לא נשאר צבע בכלל
+     (הערת בעל האתר). ppu = פיקסלי מסך ליחידת מפה */
+  const ppu = ($('#map').clientHeight || 1) / cam.h;
   $('#map').querySelectorAll('.pm').forEach((g) => {
     const on = g.classList.contains('on');
     const r = +g.dataset.r * k * (on ? 1.3 : 1);
-    g.querySelector('.dot').setAttribute('r', r.toFixed(1));
+    const dot = g.querySelector('.dot');
+    const sw = Math.min(on ? 2.5 : 2, Math.max(0.75, r * ppu * 0.3));
+    /* בסמן עם חוד הטבעת מצוירת מתחת למילוי (paint-order ב-CSS), ולכן חציה
+       מוסתר - כפול רוחב כדי שתיראה כמו בעיגול הרגיל */
+    if (g.dataset.dir) {
+      dot.setAttribute('d', pinPath(+g.dataset.x, +g.dataset.y, g.dataset.dir, r, k));
+      dot.style.strokeWidth = (sw * 2).toFixed(2);
+    } else {
+      dot.setAttribute('r', r.toFixed(1));
+      dot.style.strokeWidth = sw.toFixed(2);
+    }
     // הגדלה מתונה בלבד: אזור פגיעה נדיב של סמן קטן היה מכסה את שכנו
     g.querySelector('.hit').setAttribute('r', Math.max(r * 1.25, 9 * k).toFixed(1));
-    const oa = g.querySelector('.oa');
-    if (oa) {
-      oa.setAttribute('d', offArrow(+g.dataset.x, +g.dataset.y, g.dataset.dir, r, k));
-      oa.setAttribute('stroke-width', (4 * k).toFixed(1));
-    }
   });
   paintMe(k);
   // שמות המקומות שברשימת "קרוב אליך" גלויים תמיד - אחרת "יפו · 4.9 ק״מ"

@@ -122,20 +122,25 @@ function toEdge(q, dir, lat) {
   return q;
 }
 
-/** הגיאומטריה של סימון "מחוץ למפה" סביב עיגול ברדיוס r: חץ (path) שיוצא
-    מהעיגול לכיוון השוליים, ומיקום לשם המקום - בצד הפנימי, כי העיגול צמוד
+/** סמן "מחוץ למפה": העיגול עצמו מקבל חוד קטן החוצה, כמו סיכת מפה שהוטתה על
+    צדה - צורה אחת ולא עיגול וחץ. קודם החץ היה צורה נפרדת בגודל קבוע, ועל
+    מקום קטן הוא יצא כפול מהנקודה והיה הדבר הראשון שהעין ראתה (הערת בעל
+    האתר, אוקטובר 2026). החוד בולט 0.4 מהרדיוס, בין min ל-max, ולכן תמיד קטן
+    מהעיגול. הצלעות משיקות לעיגול (α = acos(r/D)), כך שאין שבר בחיבור.
+    משותף לציר הזמן, למסע הדורות, למפת הארץ ולתמונות השיתוף. */
+export function offMapPin(x, y, dir, r, min = 3.5, max = 7) {
+  const th = { w: Math.PI, e: 0, n: -Math.PI / 2, s: Math.PI / 2 }[dir] ?? 0;
+  const D = r + Math.min(max, Math.max(min, 0.4 * r));
+  const a = Math.acos(r / D);
+  const P = (t, d = r) => `${(x + d * Math.cos(t)).toFixed(1)},${(y + d * Math.sin(t)).toFixed(1)}`;
+  return `M${P(th + a)} A${r.toFixed(1)},${r.toFixed(1)} 0 1 1 ${P(th - a)} L${P(th, D)} Z`;
+}
+
+/** מיקום שם המקום ליד סמן "מחוץ למפה" ברדיוס r - בצד הפנימי, כי הסמן צמוד
     לשוליים ושם ממורכז היה נחתך בקצה התמונה. anchor מניח direction="rtl":
-    ‏end הוא הקצה השמאלי, ולכן במערב השם נמתח ימינה מהעיגול. משותף לציר
-    הזמן, למסע הדורות ולתמונות השיתוף, כדי שהסימון ייראה אותו דבר בכולם. */
+    ‏end הוא הקצה השמאלי, ולכן במערב השם נמתח ימינה מהעיגול. */
 export function offMapMark(x, y, dir, r = 16) {
-  const [dx, dy] = { w: [-1, 0], e: [1, 0], n: [0, -1], s: [0, 1] }[dir] || [0, 0];
-  const base = r + 5, len = r * 0.9, half = r * 0.55;
-  const bx = x + dx * base, by = y + dy * base;
-  const tx = x + dx * (base + len), ty = y + dy * (base + len);
-  const px = -dy * half, py = dx * half;
-  const f = (n) => n.toFixed(1);
   return {
-    arrow: `M${f(bx + px)},${f(by + py)} L${f(tx)},${f(ty)} L${f(bx - px)},${f(by - py)}`,
     label: dir === 'w' ? { x: x + r * 1.5, y: y + r * 0.4, anchor: 'end' }
       : dir === 'e' ? { x: x - r * 1.5, y: y + r * 0.4, anchor: 'start' }
       : dir === 'n' ? { x, y: y + r * 2.6, anchor: 'middle' }

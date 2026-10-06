@@ -1463,6 +1463,9 @@ a.card-action { text-decoration: none; }
   stroke-linecap: round; opacity: .75;
 }
 .marker circle { transition: r .1s; filter: drop-shadow(0 1px 2px rgb(0 0 0 / .4)); }
+/* סמן "מחוץ למפה" הוא path (עיגול עם חוד, offMapPin) ולא circle */
+.marker .marker-pin { filter: drop-shadow(0 1px 2px rgb(0 0 0 / .4)); stroke-linejoin: round; }
+.marker.active .marker-pin { stroke: var(--gold); stroke-width: 5; }
 .marker:hover circle { r: 21; }
 .marker.active circle { stroke: var(--gold); stroke-width: 5; }
 .marker-num { fill: #fff; font-size: 22px; font-weight: 700; pointer-events: none; }

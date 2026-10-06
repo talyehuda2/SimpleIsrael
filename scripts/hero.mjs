@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { Resvg } from '@resvg/resvg-js';
 import jpeg from 'jpeg-js';
-import { MAP_SIZE, offMapMark } from '../src/utils/mapProject.js';
+import { MAP_SIZE, offMapMark, offMapPin } from '../src/utils/mapProject.js';
 import { offMapName } from '../src/utils/placeNote.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -61,9 +61,12 @@ function windowFor(pts, ar) {
   return { x, y, w, h };
 }
 
-/* "מחוץ למפה" (מצרים, בבל...): חץ החוצה ושם המקום בצד הפנימי - אותה
-   גיאומטריה של מפת המסע (offMapMark). החץ הוא צורה ולא התו "←" בתוך
-   הטקסט: resvg אינו מריץ bidi מלא, ותו כזה בשורה עברית נוחת בצד הלא נכון */
+/* "מחוץ למפה" (מצרים, בבל...): שם המקום בצד הפנימי - אותה גיאומטריה של
+   מפת המסע (offMapMark). הכיוון הוא החוד של הסמן עצמו (dotOf), צורה ולא
+   התו "←": resvg אינו מריץ bidi מלא, ותו כזה בשורה עברית נוחת בצד הלא נכון */
+const dotOf = (p, r, attrs) => (p.off
+  ? `<path d="${offMapPin(p.x, p.y, p.off, r, r * 0.3, r * 0.6)}" stroke-linejoin="round" ${attrs}/>`
+  : `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r.toFixed(1)}" ${attrs}/>`);
 function offMark(p, r, fs, lw) {
   const m = offMapMark(p.x, p.y, p.off, r);
   const name = esc(offMapName(p.name));
@@ -73,9 +76,7 @@ function offMark(p, r, fs, lw) {
   const anchor = { start: 'end', end: 'start' }[m.label.anchor] || m.label.anchor;
   const t = (paint) => `<text x="${m.label.x.toFixed(1)}" y="${m.label.y.toFixed(1)}" text-anchor="${anchor}" `
     + `font-size="${fs.toFixed(1)}" font-weight="700" direction="rtl" ${paint}>${name}</text>`;
-  return `<path d="${m.arrow}" fill="none" stroke="#fdf6e6" stroke-width="${(lw * 2.6).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"/>`
-    + `<path d="${m.arrow}" fill="none" stroke="#16385c" stroke-width="${(lw * 1.2).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"/>`
-    + t(`fill="#fdf6e6" stroke="#fdf6e6" stroke-width="${(fs * 0.34).toFixed(1)}" stroke-linejoin="round"`)
+  return t(`fill="#fdf6e6" stroke="#fdf6e6" stroke-width="${(fs * 0.34).toFixed(1)}" stroke-linejoin="round"`)
     + t('fill="#16385c"');
 }
 
@@ -106,7 +107,7 @@ export function heroSvg(allPts, { w = 1080, h = 608 } = {}) {
 <image href="data:image/png;base64,${mapData()}" x="0" y="0" width="${MAP_SIZE}" height="${MAP_SIZE}" preserveAspectRatio="none"/>
 <path d="${path}" fill="none" stroke="#fdf6e6" stroke-width="${(lw * 2.1).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
 <path d="${path}" fill="none" stroke="#16385c" stroke-width="${lw.toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="${(lw * 2.4).toFixed(1)} ${(lw * 2.4).toFixed(1)}"/>
-${pts.map((p) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r.toFixed(1)}" fill="#b28a2b" stroke="#fdf6e6" stroke-width="${(lw * 0.9).toFixed(2)}"/>`).join('\n')}
+${pts.map((p) => dotOf(p, r, `fill="#b28a2b" stroke="#fdf6e6" stroke-width="${(lw * 0.9).toFixed(2)}"`)).join('\n')}
 ${pts.map((p, i) => (
     // תחנה מחוץ למסגרת מקבלת חץ ושם משלה (offMark), גם כשהיא על השפה
     p.off ? offMark(p, r, fs, lw)
@@ -139,7 +140,7 @@ export function placeHeroSvg(place, { w = 1080, h = 608 } = {}) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${box.x.toFixed(1)} ${box.y.toFixed(1)} ${box.w.toFixed(1)} ${box.h.toFixed(1)}">
 <image href="data:image/png;base64,${mapData()}" x="0" y="0" width="${MAP_SIZE}" height="${MAP_SIZE}" preserveAspectRatio="none"/>
 <circle cx="${place.x.toFixed(1)}" cy="${place.y.toFixed(1)}" r="${(r * 1.5).toFixed(1)}" fill="#b28a2b" opacity="0.28"/>
-<circle cx="${place.x.toFixed(1)}" cy="${place.y.toFixed(1)}" r="${r.toFixed(1)}" fill="#b28a2b" stroke="#fdf6e6" stroke-width="${(r * 0.34).toFixed(2)}"/>
+${dotOf(place, r, `fill="#b28a2b" stroke="#fdf6e6" stroke-width="${(r * 0.34).toFixed(2)}"`)}
 ${place.off ? offMark({ ...place }, r, fs, r * 0.34) : label}
 </svg>`;
 }
