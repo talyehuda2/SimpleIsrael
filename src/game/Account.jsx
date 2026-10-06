@@ -12,7 +12,7 @@ import './account.css';
 /* דגל השקה, כמו ?modern=1 של המפה המודרנית: עד שההגדרות בדשבורד של Supabase
    ו-Google מוכנות, ההרשמה גלויה רק למי שנכנס עם ?accounts=1. הדגל נשמר בדפדפן,
    כי בחזרה מגוגל הכתובת מתחלפת. השקה לכולם = OPEN ל-true. */
-const OPEN = false;
+const OPEN = true; // הושק לכולם ב-5.10.2026, אחרי בדיקה מקצה לקצה במייל ובגוגל
 const FLAG = 'si_game_accounts';
 export function accountsEnabled() {
   if (OPEN) return true;
