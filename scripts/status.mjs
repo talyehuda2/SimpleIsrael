@@ -25,11 +25,12 @@
               css: סגנון שמוזרק לצילום בלבד, למשל פריסת רשימה שנגללת באתר
               (".map-legend{max-height:none}") כדי שכל הפריטים ייראו. בלי crop נשמר מסך טלפון שלם, ואז הוא
               מוקטן לחצי מרוחב התמונה והטקסט שבו כמעט לא נקרא.
-              game: {free?, place?, correct?, solve?, wait?, pick?} - צילום מהמשחק (/game). free: משחק חופשי
+              game: {free?, place?, correct?, solve?, wait?, pick?, streak?} - צילום מהמשחק (/game). free: משחק חופשי
               עם כל התחומים והתקופות (ולא האתגר היומי - כדי לא לחשוף את התשובה של היום).
               place: כמה קלפים להניח לפני הצילום. solve: לפתור 5/5 ולצלם את מסך התוצאה
               (wait מ"ש אחרי "בדיקה" - 700 תופס את הקונפטי באוויר).
-     cta    - eyebrow, title, p, url?, channel?   סיום עם כתובת האתר (url: למשל simpleisrael.co.il/game)
+     cta    - eyebrow, title, p, url?, urlNote?, channel?   סיום עם כתובת האתר (url: למשל simpleisrael.co.il/game).
+              urlNote מחליף את "בחינם, בלי הרשמה" שמתחת לכתובת - למשל כשהשקף מזכיר הרשמה במשחק
               וקופסת ערוץ הוואטסאפ מתחתיה (channel:false מסיר אותה)
      art    - image, eyebrow?, title[], labels?[]   איור מוכן על כל השקף (למשל מצ'אט GPT), עם כותרת
               בפינה ותוויות שם. image: נתיב יחסי לשורש הריפו. title: שורות הכותרת. labels:
@@ -67,6 +68,9 @@ const fmt = (s) => esc(s)
   .replace(/"([^"]+)"/g, '<q>״$1״</q>')
   .replace(/ - /g, ' - ');
 
+// כותרת: \n בטקסט = שבירת שורה מכוונת ("הירשמו.\nצברו נקודות.\nנצחו."), כשהשבירה האוטומטית חותכת באמצע
+const ttl = (t) => esc(t).replace(/\n/g, '<br>');
+
 const block = (b) => b.v
   ? `<blockquote><span class="vt">״${esc(b.v)}״</span><cite>${esc(b.ref)}</cite></blockquote>`
   : b.cite ? `<cite class="solo">${esc(b.cite)}</cite>`
@@ -74,8 +78,8 @@ const block = (b) => b.v
 
 function body(s, shot) {
   const head = s.eyebrow ? `<div class="eyebrow">${esc(s.eyebrow)}</div>` : '<div class="rule"></div>';
-  if (s.type === 'text') return `${head}<h1>${esc(s.title)}</h1>${s.paras.map((p) => `<p>${fmt(p)}</p>`).join('')}${s.question ? `<div class="qn">${esc(s.question)}</div>` : ''}`;
-  if (s.type === 'verses') return `${head}<h1>${esc(s.title)}</h1><main>${s.blocks.map(block).join('')}</main>`;
+  if (s.type === 'text') return `${head}<h1>${ttl(s.title)}</h1>${s.paras.map((p) => `<p>${fmt(p)}</p>`).join('')}${s.question ? `<div class="qn">${esc(s.question)}</div>` : ''}`;
+  if (s.type === 'verses') return `${head}<h1>${ttl(s.title)}</h1><main>${s.blocks.map(block).join('')}</main>`;
   if (s.type === 'site') return `${head}<h1 class="sm">${esc(s.title)}</h1><img class="shot${s.crop ? ' crop' : ''}" src="file://${shot}">`;
   if (s.type === 'intro') return `${head}<h1 class="xl">${esc(s.title)}</h1><p>${fmt(s.p)}</p>`
     + `<ol class="steps">${s.steps.map((t) => `<li>${fmt(t)}</li>`).join('')}</ol>`
@@ -83,7 +87,7 @@ function body(s, shot) {
   /* ערוץ הוואטסאפ בכל שקף סיום (אוקטובר 2026, בקשת בעל האתר): סטטוס נעלם אחרי
      יממה, וערוץ הוא הדרך של מי שנהנה להמשיך לקבל. בתמונה אין קישור לחיצה, ולכן
      השם שמחפשים בלשונית "עדכונים"; הקישור עצמו הולך לכיתוב. channel:false מכבה. */
-  if (s.type === 'cta') return `${head}<h1>${esc(s.title)}</h1><p>${fmt(s.p)}</p><div class="urlbox">${esc(s.url || 'simpleisrael.co.il')}<small>בחינם, בלי הרשמה</small></div>`
+  if (s.type === 'cta') return `${head}<h1>${ttl(s.title)}</h1><p>${fmt(s.p)}</p><div class="urlbox">${esc(s.url || 'simpleisrael.co.il')}<small>${esc(s.urlNote || 'בחינם, בלי הרשמה')}</small></div>`
     + (s.channel === false ? '' : `<div class="chan"><b>📢 ערוץ הוואטסאפ</b><span>${esc(CHANNEL_NAME)}</span><small>דמות מהתנ״ך מדי פעם, ישר לטלפון</small></div>`);
   throw new Error(`סוג שקף לא מוכר: ${s.type}`);
 }
@@ -252,6 +256,16 @@ async function siteShot(browser, base, s, i) {
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
       };
     });
+  }
+  /* streak: N - רצף פעיל של N ימים שמסתיים אתמול, כדי לצלם את התזכורת "רצף של N ימים -
+     פתרו היום כדי להמשיך". רצף לדוגמה של המכשיר המצלם בלבד, לא נתון של אף שחקן */
+  if (s.game?.streak) {
+    await ctx.addInitScript((n) => {
+      const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date());
+      const [y, m, d] = day.split('-').map(Number);
+      const num = Math.round((Date.UTC(y, m - 1, d) - Date.UTC(2026, 9, 5)) / 864e5) + 1;
+      try { localStorage.setItem('si_game_streak', JSON.stringify({ last: num - 1, count: n, best: n })); } catch { /* */ }
+    }, s.game.streak);
   }
   const pg = await ctx.newPage();
   await pg.goto(base + s.path, { waitUntil: 'networkidle' });

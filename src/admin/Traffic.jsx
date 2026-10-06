@@ -44,6 +44,7 @@ function colPath(x, y, w, h, r) {
    ב-SQL (admin_sources.sql), כדי שמקור חדש לא ידרוש הרצה במסד. */
 const SRC_LABEL = {
   status: 'סטטוס בוואטסאפ',
+  channel: 'ערוץ הוואטסאפ',
   'card-share': 'שיתוף כרטיס',
   'game-share': 'שיתוף משחק',
   'reply-mail': 'מייל "ענו לך"',
