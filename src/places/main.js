@@ -4,6 +4,7 @@
    מ-src/data/places.json שנוצר בידי scripts/places-data.mjs. */
 import { MAP_SRC, MAP_SIZE, projectRaw, unprojectRaw } from '../utils/mapProject.js';
 import PLACES from '../data/places.json';
+import { offMapLabel } from '../utils/placeNote.js';
 import PERIODS from '../data/periods.json';
 import { shareLink } from '../lib/share.js';
 import { startTrail, markOnce, mark } from '../lib/trail.js';
@@ -38,6 +39,17 @@ let near = null;
 // ==================== מפה ====================
 const RAD = (n) => 5 + 3.6 * Math.sqrt(n - 1);
 
+/* היכן יושב שם המקום ביחס לנקודה. רגיל: מעליה וממורכז. מחוץ למפה: הנקודה
+   צמודה לשוליים, ושם ממורכז היה נחתך בחציו בקצה התמונה - ולכן השם נמתח
+   פנימה. ב-RTL ‏end הוא הקצה השמאלי: במערב הטקסט מתחיל מימין לנקודה ונמשך
+   ימינה, ובמזרח מסתיים משמאל לה. בצפון השם מתחת לנקודה. k = מקדם הזום */
+function labelAt(x, y, r, off, k) {
+  if (off === 'w') return { x: x + r + 6 * k, y: y + 7 * k, anchor: 'end' };
+  if (off === 'e') return { x: x - r - 6 * k, y: y + 7 * k, anchor: 'start' };
+  if (off === 'n') return { x, y: y + r + 21 * k, anchor: 'middle' };
+  return { x, y: y - r - 8 * k, anchor: 'middle' };
+}
+
 function drawMap() {
   const marks = [...PLACES]
     // הגדולים נצבעים ראשונים ולכן יושבים מתחת: כך נקודה קטנה וסמוכה
@@ -47,17 +59,23 @@ function drawMap() {
       const r = RAD(p.visits.length);
       return `<g class="pm" data-id="${esc(p.id)}" data-r="${r.toFixed(1)}" data-y="${p.y}"
         data-v="${p.visits.length}" role="button" tabindex="0"
-        aria-label="${esc(p.name)} - ${p.visits.length} ביקורים">
-        <title>${esc(p.name)} · ${p.visits.length} ביקורים</title>
+        aria-label="${esc(p.name)}${p.off ? ' (מחוץ למפה)' : ''} - ${p.visits.length} ביקורים">
+        <title>${esc(p.name)}${p.off ? ' · מחוץ למפה' : ''} · ${p.visits.length} ביקורים</title>
         <circle class="dot" cx="${p.x}" cy="${p.y}" r="${r.toFixed(1)}"/>
         <circle class="hit" cx="${p.x}" cy="${p.y}" r="${(r * 1.25).toFixed(1)}"/></g>`;
     }).join('');
   /* השמות יושבים בשכבה נפרדת מעל כל הסמנים. כשהם היו בתוך קבוצת הסמן,
      סמן זעיר שמצויר אחריה כיסה אותם, ולחיצה על "ירושלים" בחרה מקום אחר. */
+  /* מקום מחוץ למסגרת (off: מצרים, בבל...) יושב בשולי המפה, והחץ בשם שלו
+     אומר לאן הוא ממשיך - "מצרים ←". חץ בתוך הטקסט ולא צורה נפרדת: paintZoom
+     מגדיל ומזיז את השם עם הזום, וצורה נפרדת הייתה נשארת מאחור */
   const labels = PLACES.map((p) => {
     const r = RAD(p.visits.length);
-    return `<text class="lb" data-id="${esc(p.id)}" data-v="${p.visits.length}" data-y="${p.y}"
-      x="${p.x}" y="${(p.y - r - 7).toFixed(1)}" text-anchor="middle" font-size="21">${esc(p.name)}</text>`;
+    const name = p.off ? offMapLabel(p.name, p.off) : p.name;
+    const at = labelAt(p.x, p.y, r, p.off, 1);
+    return `<text class="lb" data-id="${esc(p.id)}" data-v="${p.visits.length}" data-x="${p.x}" data-y="${p.y}"
+      ${p.off ? `data-off="${p.off}" direction="rtl"` : ''}
+      x="${at.x.toFixed(1)}" y="${at.y.toFixed(1)}" text-anchor="${at.anchor}" font-size="21">${esc(name)}</text>`;
   }).join('');
   $('#map').innerHTML =
     `<image href="${MAP_SRC}" x="0" y="0" width="${MAP_SIZE}" height="${MAP_SIZE}"/>
@@ -267,7 +285,9 @@ function paintZoom() {
     const on = t.classList.contains('on');
     const r = RAD(+t.dataset.v) * k * (on ? 1.3 : 1);
     t.setAttribute('font-size', ((on ? 24 : 21) * k).toFixed(1));
-    t.setAttribute('y', (+t.dataset.y - r - 8 * k).toFixed(1));
+    const at = labelAt(+t.dataset.x, +t.dataset.y, r, t.dataset.off, k);
+    t.setAttribute('x', at.x.toFixed(1));
+    t.setAttribute('y', at.y.toFixed(1));
     t.style.display = (+t.dataset.v >= need || on || nearIds.has(t.dataset.id)) ? '' : 'none';
   });
 }

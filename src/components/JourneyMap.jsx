@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { stationNoteText } from '../utils/placeNote.js';
+import { stationNoteText, offMapLabel } from '../utils/placeNote.js';
 import maps from '../data/maps.json';
-import { MAP_SRC, MAP_SIZE, journeyStations } from '../utils/mapProject.js';
+import { MAP_SRC, MAP_SIZE, journeyStations, offMapMark } from '../utils/mapProject.js';
 
 /* מפת המסע - רכיב אחד לשני המסכים.
    variant='timeline': חלונית לצד הכרטיס (או שכבה מלאה במובייל).
@@ -275,6 +275,21 @@ export default function JourneyMap({
                   strokeWidth={isActive ? undefined : 3} />
                 <text x={p.x} y={p.y} dy=".33em" textAnchor="middle" className="marker-num"
                   fill={isFuture ? color : undefined}>{p.order}</text>
+                {/* מחוץ למסגרת (מצרים, בבל...): חץ החוצה ושם המקום, כדי שהנקודה
+                    בשוליים לא תיקרא כמקום שעליו היא יושבת. מאפיינים בשורה ולא
+                    מחלקות - הרכיב מגיע לשני מסכים עם שני גיליונות */}
+                {p.off && (() => {
+                  const m = offMapMark(p.x, p.y, p.off);
+                  return (
+                    <>
+                      <path d={m.arrow} fill="none" stroke={color} strokeWidth="5"
+                        strokeLinecap="round" strokeLinejoin="round" />
+                      <text x={m.label.x} y={m.label.y} textAnchor={m.label.anchor} direction="rtl"
+                        fontSize="20" fontWeight="700" fill="#163a57" stroke="#fbf5e7" strokeWidth="5"
+                        paintOrder="stroke" strokeLinejoin="round">{offMapLabel(p.name, p.off)}</text>
+                    </>
+                  );
+                })()}
               </g>
             );
           })}

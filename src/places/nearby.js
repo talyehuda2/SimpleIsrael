@@ -23,7 +23,7 @@ export function km(lat1, lon1, lat2, lon2) {
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-/* "מיקום מקורב" (מצרים, בבל, חרן...) נשאר מחוץ לחישוב: הנקודה שלהם על
+/* "מחוץ למפה" (מצרים, בבל, חרן...) נשאר מחוץ לחישוב: הנקודה שלהם על
    המפה מציינת כיוון ולא מקום, ומרחק אליה היה שקר. */
 export function nearest(places, lat, lon, n = NEAR_COUNT) {
   return places
