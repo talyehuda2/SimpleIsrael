@@ -339,8 +339,18 @@ export function SavedLine({ state }) {
   return null;
 }
 
+/* שם החודש העברי של היום, לפי שעון ישראל - "חשוון", "אדר ב׳". הטבלה החודשית מתאפסת
+   בראש חודש עברי (supabase/game_board_month.sql), ולכן גם הלשונית נקראת בשמו.
+   דפדפן בלי לוח עברי ב-Intl - "החודש". */
+function hebrewMonth() {
+  try {
+    return new Intl.DateTimeFormat('he-u-ca-hebrew', { month: 'long', timeZone: 'Asia/Jerusalem' }).format(new Date());
+  } catch { return ''; }
+}
+
 export function Leaderboard({ acc, version, onOpen }) {
-  // חודשית ולא שבועית, בהחלטת בעל האתר: שבוע קצר מדי להתקדם בו (supabase/game_board_month.sql)
+  const month = hebrewMonth();
+  // חודשית ולא שבועית, בהחלטת בעל האתר: שבוע קצר מדי להתקדם בו. לפי החודש העברי
   const [range, setRange] = useState('month');
   const [data, setData] = useState(null);
   const [failed, setFailed] = useState(false);
@@ -370,7 +380,7 @@ export function Leaderboard({ acc, version, onOpen }) {
       <div className="ac-board-head">
         <h2 id="ac-board-h">🏆 טבלת המובילים</h2>
         <div className="ac-tabs" role="tablist" aria-label="טווח">
-          <button type="button" role="tab" aria-selected={range === 'month'} onClick={() => setRange('month')}>החודש</button>
+          <button type="button" role="tab" aria-selected={range === 'month'} onClick={() => setRange('month')}>{month ? `חודש ${month}` : 'החודש'}</button>
           <button type="button" role="tab" aria-selected={range === 'all'} onClick={() => setRange('all')}>מאז ומעולם</button>
         </div>
       </div>
@@ -401,7 +411,7 @@ export function Leaderboard({ acc, version, onOpen }) {
           {all ? 'פחות' : `הצגת כל ה-${data.top.length}`}
         </button>
       )}
-      {range === 'month' && <p className="ac-small">הטבלה מתאפסת ב-1 לכל חודש. רק האתגר היומי נספר.</p>}
+      {range === 'month' && <p className="ac-small">הטבלה מתאפסת בכל ראש חודש עברי. רק האתגר היומי נספר.</p>}
       {acc.known && !acc.user && (
         <button type="button" className="gm-all" onClick={() => onOpen('signin', 'board')}>להצטרף לטבלה</button>
       )}
