@@ -11,7 +11,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { journeyStations, oldPixelToLatLon } from '../src/utils/mapProject.js';
-import { stationNote } from '../src/utils/placeNote.js';
+import { stationNote, offMapDir } from '../src/utils/placeNote.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f) => JSON.parse(readFileSync(join(ROOT, 'src', 'data', f), 'utf8'));
@@ -96,6 +96,7 @@ for (const [itemId, m] of Object.entries(maps)) {
     if (ll.lat != null && ll.lon != null) { p.lats.push(ll.lat); p.lons.push(ll.lon); }
     const note = stationNote(st.name.trim());
     if (note) p.notes.add(note);
+    p.off ||= offMapDir(st.name);
     if (st.name.trim() !== name) p.aka.add(st.name.trim());
     p.visits.push({
       id: item.id, kind: item.kind, name: item.name,
@@ -121,9 +122,10 @@ const out = [...places.values()].map((p) => {
     x: +med(p.xs).toFixed(1),
     y: +med(p.ys).toFixed(1),
     ...(p.lats.length ? { lat: +med(p.lats).toFixed(4), lon: +med(p.lons).toFixed(4) } : {}),
-    // "מיקום מקורב" = הנקודה מציינת כיוון בלבד (מחוץ למסגרת המפה), ולכן
-    // אין למדוד אליה מרחק. "זיהוי שנוי במחלוקת" נמדד, אבל מסומן.
-    ...(p.notes.has('מיקום מקורב') ? { approx: true } : {}),
+    // "מחוץ למפה" = הנקודה מציינת כיוון בלבד, ולכן אין למדוד אליה מרחק.
+    // off = הצד של המפה (n/s/e/w), שבו היא מצוירת כחץ החוצה.
+    // "זיהוי שנוי במחלוקת" נמדד, אבל מסומן.
+    ...(p.notes.has('מחוץ למפה') ? { approx: true, off: p.off } : {}),
     ...(p.notes.has('זיהוי שנוי במחלוקת') ? { disputed: true } : {}),
     from: years.length ? Math.min(...years) : null,
     to: years.length ? Math.max(...years) : null,

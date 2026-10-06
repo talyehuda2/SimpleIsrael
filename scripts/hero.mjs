@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { Resvg } from '@resvg/resvg-js';
 import jpeg from 'jpeg-js';
-import { MAP_SIZE } from '../src/utils/mapProject.js';
+import { MAP_SIZE, offMapMark } from '../src/utils/mapProject.js';
+import { offMapName } from '../src/utils/placeNote.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -60,10 +61,35 @@ function windowFor(pts, ar) {
   return { x, y, w, h };
 }
 
-export function heroSvg(pts, { w = 1080, h = 608 } = {}) {
-  const box = windowFor(pts, w / h);
+/* "מחוץ למפה" (מצרים, בבל...): חץ החוצה ושם המקום בצד הפנימי - אותה
+   גיאומטריה של מפת המסע (offMapMark). החץ הוא צורה ולא התו "←" בתוך
+   הטקסט: resvg אינו מריץ bidi מלא, ותו כזה בשורה עברית נוחת בצד הלא נכון */
+function offMark(p, r, fs, lw) {
+  const m = offMapMark(p.x, p.y, p.off, r);
+  const name = esc(offMapName(p.name));
+  /* offMapMark נותן anchor לדפדפן, שבו direction="rtl" הופך start ו-end.
+     resvg מתעלם מ-direction ביישור (כמו בשאר התוויות כאן, שבהן start =
+     הקצה השמאלי), ולכן מחליפים - אחרת השם נמתח החוצה ונחתך בשוליים */
+  const anchor = { start: 'end', end: 'start' }[m.label.anchor] || m.label.anchor;
+  const t = (paint) => `<text x="${m.label.x.toFixed(1)}" y="${m.label.y.toFixed(1)}" text-anchor="${anchor}" `
+    + `font-size="${fs.toFixed(1)}" font-weight="700" direction="rtl" ${paint}>${name}</text>`;
+  return `<path d="${m.arrow}" fill="none" stroke="#fdf6e6" stroke-width="${(lw * 2.6).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"/>`
+    + `<path d="${m.arrow}" fill="none" stroke="#16385c" stroke-width="${(lw * 1.2).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"/>`
+    + t(`fill="#fdf6e6" stroke="#fdf6e6" stroke-width="${(fs * 0.34).toFixed(1)}" stroke-linejoin="round"`)
+    + t('fill="#16385c"');
+}
+
+export function heroSvg(allPts, { w = 1080, h = 608 } = {}) {
+  const box = windowFor(allPts, w / h);
   const k = box.w / w;                       // יחידות מפה לפיקסל תצוגה
   const r = 9 * k, lw = 3.4 * k, fs = 20 * k;
+  /* התמונה היא חיתוך של המפה, ושולי המפה (שם יושבת מצרים) נופלים לרוב מחוץ
+     לו - הסימון נחתך. כאן "מחוץ למפה" פירושו מחוץ לתמונה: התחנה עוברת
+     לשולי החיתוך, בתוספת מרווח לחץ ולשם, והקו מגיע עד אליה */
+  const pad = r * 4;
+  const clampTo = (v, lo, hi) => Math.max(lo + pad, Math.min(hi - pad, v));
+  const pts = allPts.map((p) => (p.off
+    ? { ...p, x: clampTo(p.x, box.x, box.x + box.w), y: clampTo(p.y, box.y, box.y + box.h) } : p));
   const path = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
   // תווית לצד הנקודה, ולכיוון פנימה כשהיא קרובה לשפה
   const label = (p, i) => {
@@ -82,9 +108,11 @@ export function heroSvg(pts, { w = 1080, h = 608 } = {}) {
 <path d="${path}" fill="none" stroke="#16385c" stroke-width="${lw.toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="${(lw * 2.4).toFixed(1)} ${(lw * 2.4).toFixed(1)}"/>
 ${pts.map((p) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r.toFixed(1)}" fill="#b28a2b" stroke="#fdf6e6" stroke-width="${(lw * 0.9).toFixed(2)}"/>`).join('\n')}
 ${pts.map((p, i) => (
+    // תחנה מחוץ למסגרת מקבלת חץ ושם משלה (offMark), גם כשהיא על השפה
+    p.off ? offMark(p, r, fs, lw)
     // תווית נכתבת רק לתחנה שיושבת בנוחות בתוך הפריים; תחנה על השפה
     // הייתה נחתכת באמצע המילה
-    p.x > box.x + fs && p.x < box.x + box.w - fs
+    : p.x > box.x + fs && p.x < box.x + box.w - fs
       && p.y > box.y + fs && p.y < box.y + box.h - fs ? label(p, i) : '')).join('\n')}
 </svg>`;
 }
@@ -112,7 +140,7 @@ export function placeHeroSvg(place, { w = 1080, h = 608 } = {}) {
 <image href="data:image/png;base64,${mapData()}" x="0" y="0" width="${MAP_SIZE}" height="${MAP_SIZE}" preserveAspectRatio="none"/>
 <circle cx="${place.x.toFixed(1)}" cy="${place.y.toFixed(1)}" r="${(r * 1.5).toFixed(1)}" fill="#b28a2b" opacity="0.28"/>
 <circle cx="${place.x.toFixed(1)}" cy="${place.y.toFixed(1)}" r="${r.toFixed(1)}" fill="#b28a2b" stroke="#fdf6e6" stroke-width="${(r * 0.34).toFixed(2)}"/>
-${label}
+${place.off ? offMark({ ...place }, r, fs, r * 0.34) : label}
 </svg>`;
 }
 
