@@ -340,7 +340,8 @@ export function SavedLine({ state }) {
 }
 
 export function Leaderboard({ acc, version, onOpen }) {
-  const [range, setRange] = useState('week');
+  // חודשית ולא שבועית, בהחלטת בעל האתר: שבוע קצר מדי להתקדם בו (supabase/game_board_month.sql)
+  const [range, setRange] = useState('month');
   const [data, setData] = useState(null);
   const [failed, setFailed] = useState(false);
 
@@ -369,14 +370,14 @@ export function Leaderboard({ acc, version, onOpen }) {
       <div className="ac-board-head">
         <h2 id="ac-board-h">🏆 טבלת המובילים</h2>
         <div className="ac-tabs" role="tablist" aria-label="טווח">
-          <button type="button" role="tab" aria-selected={range === 'week'} onClick={() => setRange('week')}>השבוע</button>
+          <button type="button" role="tab" aria-selected={range === 'month'} onClick={() => setRange('month')}>החודש</button>
           <button type="button" role="tab" aria-selected={range === 'all'} onClick={() => setRange('all')}>מאז ומעולם</button>
         </div>
       </div>
       {!data ? (
         <p className="ac-small">טוען…</p>
       ) : data.top.length === 0 ? (
-        <p className="ac-small">{range === 'week' ? 'השבוע עוד לא נרשמו נקודות. הראשון בטבלה יכול להיות אתם.' : 'עוד אין שחקנים רשומים.'}</p>
+        <p className="ac-small">{range === 'month' ? 'החודש עוד לא נרשמו נקודות. הראשון בטבלה יכול להיות אתם.' : 'עוד אין שחקנים רשומים.'}</p>
       ) : (
         <ol className="ac-rows">
           {rows.map((r) => (
@@ -400,7 +401,7 @@ export function Leaderboard({ acc, version, onOpen }) {
           {all ? 'פחות' : `הצגת כל ה-${data.top.length}`}
         </button>
       )}
-      {range === 'week' && <p className="ac-small">השבוע מתחיל ביום ראשון. רק האתגר היומי נספר.</p>}
+      {range === 'month' && <p className="ac-small">הטבלה מתאפסת ב-1 לכל חודש. רק האתגר היומי נספר.</p>}
       {acc.known && !acc.user && (
         <button type="button" className="gm-all" onClick={() => onOpen('signin', 'board')}>להצטרף לטבלה</button>
       )}
