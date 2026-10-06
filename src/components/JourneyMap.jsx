@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { stationNoteText, offMapLabel } from '../utils/placeNote.js';
+import { stationNoteText, offMapName } from '../utils/placeNote.js';
 import maps from '../data/maps.json';
 import { MAP_SRC, MAP_SIZE, journeyStations, offMapMark } from '../utils/mapProject.js';
 
@@ -286,7 +286,7 @@ export default function JourneyMap({
                         strokeLinecap="round" strokeLinejoin="round" />
                       <text x={m.label.x} y={m.label.y} textAnchor={m.label.anchor} direction="rtl"
                         fontSize="20" fontWeight="700" fill="#163a57" stroke="#fbf5e7" strokeWidth="5"
-                        paintOrder="stroke" strokeLinejoin="round">{offMapLabel(p.name, p.off)}</text>
+                        paintOrder="stroke" strokeLinejoin="round">{offMapName(p.name)}</text>
                     </>
                   );
                 })()}

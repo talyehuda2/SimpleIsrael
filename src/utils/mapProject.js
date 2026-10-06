@@ -6,7 +6,7 @@
    שלבים: אפיני בסיסי שהותאם בריבועים-פחותים, ומעליו תיקון שאריות IDW
    שמאפס את השגיאה ב-11 עוגני הערים שזוהו בתמונה. */
 
-import { offMapDir } from './placeNote.js';
+import { offMapDir, offMapLat } from './placeNote.js';
 
 /* ?v= משתנה בכל עריכה של התמונה, אחרת דפדפן שכבר טען אותה ממשיך להציג
    את הישנה. v=2 (אוקטובר 2026): הכיתוב "מצרים" שצויר על חצי האי סיני
@@ -99,9 +99,24 @@ export const oldPixelToLatLon = (x, y) => ({
    הצפוני של סיני - והמפה טענה בכך שסיני הוא מצרים. EDGE משאיר את העיגול
    (רדיוס 16) ואת החץ שמעבר לו בתוך התמונה. */
 const EDGE = 44;
-function toEdge(q, dir) {
-  if (dir === 'w') return { x: EDGE, y: q.y };
-  if (dir === 'e') return { x: MAP_SIZE - EDGE, y: q.y };
+
+/* הגובה בשולי המפה שבו עובר קו הרוחב lat. הציור מסובב מעט, ולכן לא
+   מספיק y של ההיטל במקום עצמו - מחפשים (חיפוש בינארי) את הנקודה על קו
+   השוליים x שקו הרוחב שלה הוא lat. מחוץ לטווח - נצמד לפינה. */
+function edgeYForLat(x, lat) {
+  let lo = EDGE, hi = MAP_SIZE - EDGE;
+  if (unprojectRaw(x, hi).lat >= lat) return hi;
+  if (unprojectRaw(x, lo).lat <= lat) return lo;
+  for (let i = 0; i < 30; i++) {
+    const mid = (lo + hi) / 2;
+    if (unprojectRaw(x, mid).lat > lat) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+function toEdge(q, dir, lat) {
+  if (dir === 'w') return { x: EDGE, y: lat != null ? edgeYForLat(EDGE, lat) : q.y };
+  if (dir === 'e') return { x: MAP_SIZE - EDGE, y: lat != null ? edgeYForLat(MAP_SIZE - EDGE, lat) : q.y };
   if (dir === 'n') return { x: q.x, y: EDGE };
   if (dir === 's') return { x: q.x, y: MAP_SIZE - EDGE };
   return q;
@@ -135,7 +150,7 @@ export function journeyStations(mapEntry) {
   const pts = mapEntry.points.slice().sort((a, b) => a.order - b.order).map((p) => {
     const ll = p.x != null ? oldPixelToLatLon(p.x, p.y) : { lon: p.lon, lat: p.lat };
     const off = offMapDir(p.name);
-    const q = toEdge(project(ll.lon, ll.lat), off);
+    const q = toEdge(project(ll.lon, ll.lat), off, offMapLat(p.name));
     return { ...p, x: q.x, y: q.y, ...(off ? { off } : {}) };
   });
   let total = 0;

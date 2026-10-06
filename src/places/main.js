@@ -4,7 +4,7 @@
    מ-src/data/places.json שנוצר בידי scripts/places-data.mjs. */
 import { MAP_SRC, MAP_SIZE, projectRaw, unprojectRaw } from '../utils/mapProject.js';
 import PLACES from '../data/places.json';
-import { offMapLabel } from '../utils/placeNote.js';
+import { offMapName } from '../utils/placeNote.js';
 import PERIODS from '../data/periods.json';
 import { shareLink } from '../lib/share.js';
 import { startTrail, markOnce, mark } from '../lib/trail.js';
@@ -50,6 +50,18 @@ function labelAt(x, y, r, off, k) {
   return { x, y: y - r - 8 * k, anchor: 'middle' };
 }
 
+/* החץ של מקום מחוץ למסגרת: בצד החיצוני של העיגול, מצביע לכיוון שבו המקום
+   נמצא באמת - "← ● מצרים". קודם החץ היה תו בתוך השם, ולכן ישב בין העיגול
+   לשם והצביע על העיגול עצמו (הערת בעל האתר). הגודל ביחידות המפה כפול k,
+   כמו הסמנים, כדי שיישאר באותו גודל על המסך בכל זום. */
+function offArrow(x, y, dir, r, k) {
+  const [dx, dy] = { w: [-1, 0], e: [1, 0], n: [0, -1], s: [0, 1] }[dir] || [0, 0];
+  const base = r + 5 * k, len = 13 * k, half = 8 * k;
+  const bx = x + dx * base, by = y + dy * base, tx = x + dx * (base + len), ty = y + dy * (base + len);
+  const px = -dy * half, py = dx * half, f = (n) => n.toFixed(1);
+  return `M${f(bx + px)},${f(by + py)} L${f(tx)},${f(ty)} L${f(bx - px)},${f(by - py)}`;
+}
+
 function drawMap() {
   const marks = [...PLACES]
     // הגדולים נצבעים ראשונים ולכן יושבים מתחת: כך נקודה קטנה וסמוכה
@@ -57,21 +69,21 @@ function drawMap() {
     .sort((a, b) => b.visits.length - a.visits.length)
     .map((p) => {
       const r = RAD(p.visits.length);
-      return `<g class="pm" data-id="${esc(p.id)}" data-r="${r.toFixed(1)}" data-y="${p.y}"
-        data-v="${p.visits.length}" role="button" tabindex="0"
+      return `<g class="pm" data-id="${esc(p.id)}" data-r="${r.toFixed(1)}" data-x="${p.x}" data-y="${p.y}"
+        ${p.off ? `data-dir="${p.off}"` : ''} data-v="${p.visits.length}" role="button" tabindex="0"
         aria-label="${esc(p.name)}${p.off ? ' (מחוץ למפה)' : ''} - ${p.visits.length} ביקורים">
         <title>${esc(p.name)}${p.off ? ' · מחוץ למפה' : ''} · ${p.visits.length} ביקורים</title>
+        ${p.off ? `<path class="oa" d="${offArrow(p.x, p.y, p.off, r, 1)}" stroke-width="4"/>` : ''}
         <circle class="dot" cx="${p.x}" cy="${p.y}" r="${r.toFixed(1)}"/>
         <circle class="hit" cx="${p.x}" cy="${p.y}" r="${(r * 1.25).toFixed(1)}"/></g>`;
     }).join('');
   /* השמות יושבים בשכבה נפרדת מעל כל הסמנים. כשהם היו בתוך קבוצת הסמן,
      סמן זעיר שמצויר אחריה כיסה אותם, ולחיצה על "ירושלים" בחרה מקום אחר. */
-  /* מקום מחוץ למסגרת (off: מצרים, בבל...) יושב בשולי המפה, והחץ בשם שלו
-     אומר לאן הוא ממשיך - "מצרים ←". חץ בתוך הטקסט ולא צורה נפרדת: paintZoom
-     מגדיל ומזיז את השם עם הזום, וצורה נפרדת הייתה נשארת מאחור */
+  /* מקום מחוץ למסגרת (off: מצרים, בבל...) יושב בשולי המפה: השם צמוד לעיגול
+     מבפנים, והחץ (offArrow) מחוצה לו. paintZoom מעדכן את שניהם עם הזום */
   const labels = PLACES.map((p) => {
     const r = RAD(p.visits.length);
-    const name = p.off ? offMapLabel(p.name, p.off) : p.name;
+    const name = p.off ? offMapName(p.name) : p.name;
     const at = labelAt(p.x, p.y, r, p.off, 1);
     return `<text class="lb" data-id="${esc(p.id)}" data-v="${p.visits.length}" data-x="${p.x}" data-y="${p.y}"
       ${p.off ? `data-off="${p.off}" direction="rtl"` : ''}
@@ -276,6 +288,11 @@ function paintZoom() {
     g.querySelector('.dot').setAttribute('r', r.toFixed(1));
     // הגדלה מתונה בלבד: אזור פגיעה נדיב של סמן קטן היה מכסה את שכנו
     g.querySelector('.hit').setAttribute('r', Math.max(r * 1.25, 9 * k).toFixed(1));
+    const oa = g.querySelector('.oa');
+    if (oa) {
+      oa.setAttribute('d', offArrow(+g.dataset.x, +g.dataset.y, g.dataset.dir, r, k));
+      oa.setAttribute('stroke-width', (4 * k).toFixed(1));
+    }
   });
   paintMe(k);
   // שמות המקומות שברשימת "קרוב אליך" גלויים תמיד - אחרת "יפו · 4.9 ק״מ"

@@ -64,8 +64,11 @@ a.ms-opt:hover{background:var(--panel);color:var(--navy)}
 /* המפה מטפלת במגע בעצמה: גרירה וצביטה מזיזות אותה ולא את הדף */
 #map{display:block;width:100%;height:100%;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 #map:active{cursor:grabbing}
-/* +/− - בשמאל במכוון, כמו כפתורי הזום בציר הזמן: הימין שייך ל"מבט מלא" ול"איפה אני" */
-#zoomBtns{position:absolute;bottom:10px;left:10px;z-index:2;display:flex;flex-direction:column;
+/* +/− - בשמאל במכוון, כמו כפתורי הזום בציר הזמן: הימין שייך ל"מבט מלא" ול"איפה אני".
+   למעלה, מתחת למתג עתיקה/מודרנית ולא בפינה התחתונה: שם יושבת עכשיו מצרים
+   (דרומית לתחתית המפה, ולכן נצמדת לפינה הדרומית-מערבית) והכפתורים כיסו אותה.
+   הצפון-מערב הוא ים, ואין בו מקומות. */
+#zoomBtns{position:absolute;top:58px;left:10px;z-index:2;display:flex;flex-direction:column;
   border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 3px 10px rgb(60 40 0 / .22)}
 #zoomBtns button{width:40px;height:40px;border:none;background:rgb(251 245 231 / .95);color:var(--navy);
   font-size:22px;font-weight:700;line-height:1;cursor:pointer}
@@ -143,6 +146,9 @@ body.mm-has-sel .mm:not(.on){opacity:.35}
 .pm .dot{fill:var(--navy);fill-opacity:.72;stroke:#fbf5e7;stroke-width:2;
   vector-effect:non-scaling-stroke;transition:fill-opacity .15s}
 .pm .hit{fill:transparent;stroke:none}
+/* חץ "מחוץ למפה" - בצד החיצוני של העיגול (offArrow ב-main.js) */
+.pm .oa{fill:none;stroke:var(--navy);stroke-opacity:.8;stroke-linecap:round;stroke-linejoin:round}
+.pm.on .oa{stroke:var(--gold);stroke-opacity:1}
 .pm:hover .dot{fill-opacity:.95}
 /* שכבת השמות - מעל כל הסמנים, ולחיצה עליהם בוחרת את המקום */
 .lb{font-family:'Heebo',sans-serif;font-weight:700;fill:#2b2113;paint-order:stroke;
