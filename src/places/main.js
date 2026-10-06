@@ -274,12 +274,25 @@ function onPtrUp(e) {
 function paintZoom() {
   const k = Math.max(0.4, cam.h / BASE_H);
   const need = k > 0.75 ? 4 : k > 0.5 ? 3 : k > 0.3 ? 2 : 1;
+  /* עובי הטבעת יחסי לגודל העיגול על המסך, בין 0.75 ל-2 פיקסלים (הטבעת היא
+     non-scaling-stroke, ולכן בפיקסלים). טבעת קבועה של 2 פיקסלים כיסתה את רוב
+     הנקודה במקום עם ביקור אחד, ובחוד של סמן "מחוץ למפה" לא נשאר צבע בכלל
+     (הערת בעל האתר). ppu = פיקסלי מסך ליחידת מפה */
+  const ppu = ($('#map').clientHeight || 1) / cam.h;
   $('#map').querySelectorAll('.pm').forEach((g) => {
     const on = g.classList.contains('on');
     const r = +g.dataset.r * k * (on ? 1.3 : 1);
     const dot = g.querySelector('.dot');
-    if (g.dataset.dir) dot.setAttribute('d', pinPath(+g.dataset.x, +g.dataset.y, g.dataset.dir, r, k));
-    else dot.setAttribute('r', r.toFixed(1));
+    const sw = Math.min(on ? 2.5 : 2, Math.max(0.75, r * ppu * 0.3));
+    /* בסמן עם חוד הטבעת מצוירת מתחת למילוי (paint-order ב-CSS), ולכן חציה
+       מוסתר - כפול רוחב כדי שתיראה כמו בעיגול הרגיל */
+    if (g.dataset.dir) {
+      dot.setAttribute('d', pinPath(+g.dataset.x, +g.dataset.y, g.dataset.dir, r, k));
+      dot.style.strokeWidth = (sw * 2).toFixed(2);
+    } else {
+      dot.setAttribute('r', r.toFixed(1));
+      dot.style.strokeWidth = sw.toFixed(2);
+    }
     // הגדלה מתונה בלבד: אזור פגיעה נדיב של סמן קטן היה מכסה את שכנו
     g.querySelector('.hit').setAttribute('r', Math.max(r * 1.25, 9 * k).toFixed(1));
   });

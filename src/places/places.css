@@ -147,7 +147,9 @@ body.mm-has-sel .mm:not(.on){opacity:.35}
   vector-effect:non-scaling-stroke;transition:fill-opacity .15s}
 .pm .hit{fill:transparent;stroke:none}
 /* סמן "מחוץ למפה" הוא path (עיגול עם חוד) ולא circle - stroke-linejoin עגול לחוד */
-.pm path.dot{stroke-linejoin:round}
+.pm path.dot{stroke-linejoin:round;paint-order:stroke}
+/* מילוי שקוף חלקית היה מראה דרכו את חצי הטבעת שמתחתיו */
+.pm path.dot,.pm:hover path.dot{fill-opacity:1}
 .pm:hover .dot{fill-opacity:.95}
 /* שכבת השמות - מעל כל הסמנים, ולחיצה עליהם בוחרת את המקום */
 .lb{font-family:'Heebo',sans-serif;font-weight:700;fill:#2b2113;paint-order:stroke;
