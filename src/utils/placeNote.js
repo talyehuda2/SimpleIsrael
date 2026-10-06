@@ -69,15 +69,9 @@ export const offMapLat = (name) => OFFMAP_LAT[String(name || '').trim()] ?? null
 /** @returns {'n'|'s'|'e'|'w'|null} הצד של המפה שאליו המקום יוצא, או null אם הוא בתוך המסגרת */
 export const offMapDir = (name) => OFFMAP[String(name || '').trim()] || null;
 
-/* השם על המפה, עם חץ לכיוון. הטקסט עברי (RTL): התו הראשון בסדר הלוגי
-   נוחת מימין. לכן במערב החץ בסוף ("מצרים ←" = ← משמאל), ובמזרח בהתחלה */
-export function offMapLabel(name, dir) {
-  const short = offMapName(name);
-  return dir === 'w' ? `${short} ←` : dir === 'e' ? `→ ${short}` : dir === 'n' ? `↑ ${short}` : `↓ ${short}`;
-}
-
 /* השם הקצר, בלי הסוגריים ובלי התוספת אחרי המקף: על המפה "גושן (מצרים)"
-   ארוך מדי לשוליים, והחץ כבר אומר לאן */
+   ארוך מדי לשוליים, והחץ כבר אומר לאן. השם צמוד לעיגול מבפנים, והחץ הוא
+   צורה בצד החיצוני של העיגול - לא תו בתוך השם, שישב בין העיגול לשם */
 export const offMapName = (name) => String(name).replace(/\s*\(.*\)\s*$/, '').replace(/\s*-.*$/, '').trim();
 
 /** @returns {string|null} נוסח ההערה, או null אם התחנה מדויקת */
