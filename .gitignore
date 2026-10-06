@@ -4,6 +4,8 @@ dist
 
 Pictures/
 og-preview/
+# חומרי הסטטוס לוואטסאפ - נכסים מקומיים, לא חלק מהאתר
+SimpleIsrael-status/
 
 # עותקים מקומיים של קבצי SQL אחרי מילוי מפתחות - לעולם לא בגיט
 *.local.sql*
