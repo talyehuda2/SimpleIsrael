@@ -28,6 +28,7 @@ import maps from './data/maps.json';
 import tours from './data/tours.json';
 import collections from './data/collections.json';
 import { buildPlaceIndex, relatedByEra, relatedByPlace } from './utils/related.js';
+import ChannelCard from './components/ChannelCard.jsx';
 
 // ----- מצב באמצעות כתובת ה-URL: מאפשר שיתוף קישור, סימנייה, וכפתור "אחורה" -----
 const itemKey = (it) => `${it.kind}:${it.id}`;
@@ -1240,6 +1241,7 @@ export default function App() {
             <button className="feedback-btn" onClick={() => { setAboutOpen(false); setNotesOpen(true); }}>
               💬 משוב · דיווח על תקלה · הצעת תיקון
             </button>
+            <ChannelCard from="about" />
             {/* חובה נגישה ולא הערת שוליים: האתר אוסף סטטיסטיקה ושומר
                 פניות עם פרטי קשר, ומי שרוצה לדעת מה נאסף צריך למצוא זאת. */}
             <p className="about-legal"><a href="/privacy">מדיניות פרטיות</a> · <a href="/terms">תנאי שימוש</a> · <a href="/accessibility">נגישות</a></p>

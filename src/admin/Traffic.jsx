@@ -103,6 +103,35 @@ function Sources({ data }) {
   );
 }
 
+/* ערוץ הוואטסאפ: מאיפה באתר לוחצים על הקישור (admin_channel.sql), ובכיוון
+   ההפוך - כמה ביקורים הגיעו מהערוץ, מתוך admin_sources שכבר נטען */
+const CH_FROM = { menu: 'תפריט "עוד באתר"', about: 'חלונית "אודות"', game: 'תוצאת האתגר היומי' };
+
+function Channel({ clicks, sources }) {
+  const total = clicks.reduce((n, r) => n + r.clicks, 0);
+  const max = Math.max(1, ...clicks.map((r) => r.clicks));
+  const back = (sources || []).filter((r) => r.src === 'channel').reduce((n, r) => n + r.visits, 0);
+  return (
+    <>
+      <p className="ad-lead">
+        <b>{total.toLocaleString('he-IL')}</b> לחיצות על הקישור לערוץ
+        {sources && <> · <b>{back.toLocaleString('he-IL')}</b> ביקורים הגיעו מהערוץ</>}
+      </p>
+      {total > 0 && (
+        <div className="ad-src">
+          {clicks.map((r) => (
+            <div className="gm-bar" key={r.src}>
+              <span className="gm-bar-l">{CH_FROM[r.src] || r.src}</span>
+              <span className="gm-bar-t"><i style={{ width: `${(r.clicks / max) * 100}%` }} /></span>
+              <span className="gm-bar-n">{r.clicks.toLocaleString('he-IL')}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 /* עומק ביקור: כמה דמויות ומקומות שונים נפתחו בביקור אחד (admin_engagement.sql).
    השאלה שהוא עונה עליה: נכנסים לכרטיס אחד ועוזבים, או ממשיכים? */
 const DEPTH = [
@@ -248,6 +277,7 @@ export default function Traffic({ token, onBadToken }) {
   // null = הפונקציה עוד לא הורצה במסד; הלשונית עובדת גם בלעדיה
   const [sources, setSources] = useState([]);
   const [engagement, setEngagement] = useState({});
+  const [channel, setChannel] = useState([]);
 
   const load = useCallback(async () => {
     setStatus('loading'); setErr('');
@@ -255,6 +285,8 @@ export default function Traffic({ token, onBadToken }) {
       .then(({ data, error }) => setSources(error ? null : (data || [])));
     supabase.rpc('admin_engagement', { p_token: token, p_from: from, p_to: to })
       .then(({ data, error }) => setEngagement(error ? null : (data || {})));
+    supabase.rpc('admin_channel', { p_token: token, p_from: from, p_to: to })
+      .then(({ data, error }) => setChannel(error ? null : (data || [])));
     const { data, error } = await supabase.rpc('admin_traffic', { p_token: token, p_from: from, p_to: to });
     if (error) {
       const msg = error.message || '';
@@ -338,6 +370,17 @@ export default function Traffic({ token, onBadToken }) {
             <p className="ad-note">
               כמה דמויות ומקומות שונים נפתחו בביקור אחד. "רק נכנסו" - העמוד נטען ולא נפתח בו כרטיס.
               במסע הדורות נספרים כרטיסים רק מאוקטובר 2026, ונספר כרטיס שנלחץ - לא כזה שהגלילה עברה לידו.
+            </p>
+          </section>
+
+          <section className="ad-card">
+            <h3>ערוץ הוואטסאפ</h3>
+            {channel === null
+              ? <p className="ad-note">כדי לראות את הנתון צריך להריץ את <code dir="ltr">supabase/admin_channel.sql</code> ב-Supabase.</p>
+              : <Channel clicks={channel} sources={sources} />}
+            <p className="ad-note">
+              לחיצות על הקישור לערוץ, לפי המקום באתר. לחיצה אינה הצטרפות - את מספר העוקבים רואים
+              בוואטסאפ. "הגיעו מהערוץ" - ביקורים מקישור עם <code dir="ltr">src=channel</code>.
             </p>
           </section>
 

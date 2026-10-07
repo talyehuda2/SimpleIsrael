@@ -196,6 +196,8 @@ button{font-family:inherit}
 .gm-result .gm-msg,.gm-result .gm-note{text-align:center}
 .gm-sub{margin:18px 0 8px;font-size:15px;font-weight:700;color:var(--navy)}
 @media (prefers-reduced-motion:reduce){ .gm-result{animation:none} }
+/* הערוץ: בתוך התוצאה הממורכזת, ברוחב של כרטיס ולא של כל המסך */
+.gm-result .ch-card{max-width:420px;margin:16px auto 0}
 /* שורת "הועתק" ריקה עד השיתוף - בלי זה נשאר חור בין הכפתורים ל"אתגר חדש מחר" */
 .gm-result .gm-msg:empty{min-height:0;margin:0}
 /* אישור ההעתקה (במחשב, שם אין תפריט שיתוף): תגית בצבע המותג ולא שורת טקסט ירוקה */

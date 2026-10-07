@@ -14,6 +14,7 @@ import { createRoot } from 'react-dom/client';
 import { itemKey } from '../data/items.js';
 import { hebrewYearLetters } from '../utils/dates.js';
 import { startTrail, mark, markOnce } from '../lib/trail.js';
+import ChannelCard from '../components/ChannelCard.jsx';
 import {
   HAND, deal, rng, seedOf, israelDay, dayNumber, byTime, poolFor, availableTopics, availablePeriods,
   TOPICS, PERIODS,
@@ -519,6 +520,9 @@ function Game() {
               ? <SavedLine state={saveState} />
               : acc.known && <SaveInvite score={score} onOpen={open} />)}
             {daily && <button type="button" className="gm-more" onClick={next}>סבב נוסף במשחק החופשי ←</button>}
+            {/* מי שפתר את האתגר כבר אמר שהוא רוצה לחזור מחר - הרגע הנכון להציע את הערוץ.
+                רק באתגר היומי: בחופשי זה היה חוזר בכל סבב */}
+            {daily && <ChannelCard from="game" title="הצטרפו לערוץ בוואטסאפ" />}
           </section>
         ) : (
           <>

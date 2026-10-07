@@ -10,6 +10,7 @@ import { shareLink } from '../lib/share.js';
 import { startTrail, markOnce, mark } from '../lib/trail.js';
 import { nearest, locateOnMap, pxPerKm, fmtKm, getPosition, MAX_KM } from './nearby.js';
 import { mountSiteMenu } from '../components/siteMenu.js';
+import { channelCardHtml } from '../components/channel.js';
 
 startTrail();
 /* תפריט "עוד באתר" המשותף. במסך הזה אין חלוניות משלו, ולכן כל פריט הוא
@@ -765,6 +766,7 @@ $('#mAbout').addEventListener('click', () => {
     <p class="oabout">הפרויקט נבנה באהבה בידי חובב תנ״ך, מתוך רצון לתרום לקהילה ולעזור לכולנו
     לעשות סדר בתולדות עם ישראל. ייתכנו אי-דיוקים בתאריכים, במפות, במיקומים ובפרטים -
     ואשמח לכל תיקון והערה. שימוש נעים! 📖</p>
+    ${channelCardHtml('about')}
     <p class="oabout"><a href="/privacy">מדיניות פרטיות</a> · <a href="/terms">תנאי שימוש</a> · <a href="/accessibility">נגישות</a></p></div>`;
   el.addEventListener('click', (e) => {
     if (e.target === el || e.target.classList.contains('ovclose')) el.remove();

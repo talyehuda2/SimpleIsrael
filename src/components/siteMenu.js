@@ -13,6 +13,7 @@
    לשלושה מסכים לא יכול להסתמך על גיליון של אחד מהם. */
 import './siteMenu.css';
 import { mark } from '../lib/trail.js';
+import { CHANNEL_URL, CHANNEL_TAG } from './channel.js';
 
 /* action: מזהה פעולה שהמסך יכול לבצע במקום (פתיחת חלונית). מסך שאין לו
    את הפעולה מקבל קישור - href - שפותח אותה בציר הזמן. */
@@ -21,6 +22,8 @@ const ITEMS = [
   { id: 'tree', icon: '👑', title: 'בית דוד', desc: 'אילן היוחסין של מלכי בית דוד', href: '/?tree=1' },
   { id: 'kings', icon: '🏰', title: 'שתי הממלכות', desc: 'מלכי יהודה מול מלכי ישראל, לפי אורך המלוכה', href: '/?kings=1' },
   { id: 'game', icon: '🎯', title: 'סדר את הציר', desc: 'משחק: מה קרה קודם? אתגר יומי ומשחק חופשי', href: '/game', badge: 'חדש' },
+  // ext: יוצא מהאתר - נפתח בלשונית חדשה, ונספר גם כ-channel_click (data-ch)
+  { id: 'channel', icon: '📢', title: 'הערוץ בוואטסאפ', desc: CHANNEL_TAG, href: CHANNEL_URL, ext: 'menu' },
 ];
 
 let seq = 0;
@@ -55,6 +58,7 @@ export function mountSiteMenu(host, { actions = {} } = {}) {
     const el = document.createElement(act ? 'button' : 'a');
     el.className = 'sm-item';
     if (act) el.type = 'button'; else el.href = it.href;
+    if (it.ext) { el.target = '_blank'; el.rel = 'noopener'; el.dataset.ch = it.ext; }
     el.innerHTML = `<span class="sm-i" aria-hidden="true">${it.icon}</span>`
       + `<span class="sm-t"><span class="sm-h"><b>${it.title}</b>${it.badge ? `<span class="sm-badge">${it.badge}</span>` : ''}</span>`
       + `<span class="sm-d">${it.desc}</span></span>`;

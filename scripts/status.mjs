@@ -49,6 +49,7 @@ const BG = join(ROOT, 'build-assets', 'og-base.jpg');
 const DIST = join(ROOT, 'dist');
 const CHANNEL_NAME = 'ציר הזמן של עם ישראל';
 // הקישור הולך לכיתוב ולא לתמונה - בתמונה אי אפשר ללחוץ עליו
+// אותו קישור ב-src/components/channel.js (האתר) - שינוי כאן = שינוי שם
 const CHANNEL_URL = 'https://whatsapp.com/channel/0029Vb95vDvKAwElqCPM8T2L';
 
 const specPath = process.argv[2];

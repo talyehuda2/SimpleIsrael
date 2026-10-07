@@ -5,6 +5,7 @@ import TOURS from '../data/tours.json';
 import { shareLink } from '../lib/share.js';
 import { startTrail, markOnce } from '../lib/trail.js';
 import { mountSiteMenu } from '../components/siteMenu.js';
+import { channelCardHtml } from '../components/channel.js';
 startTrail();
 
 const $ = (s) => document.querySelector(s);
@@ -746,6 +747,7 @@ $('#mAbout').addEventListener('click', () => {
     `<div class="icard"><p class="oabout">הפרויקט נבנה באהבה בידי חובב תנ״ך, מתוך רצון לתרום לקהילה
       ולעזור לכולנו לעשות סדר בתולדות עם ישראל. ייתכנו אי-דיוקים בתאריכים, במפות, במיקומים
       ובפרטים - ואשמח לכל תיקון והערה. שימוש נעים! 📖</p>
+      ${channelCardHtml('about')}
       <p class="oabout"><a href="/privacy">מדיניות פרטיות</a> · <a href="/terms">תנאי שימוש</a> · <a href="/accessibility">נגישות</a></p></div>`);
 });
 $('#mTour').addEventListener('click', () => startTour());
