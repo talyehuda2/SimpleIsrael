@@ -105,7 +105,7 @@ function Sources({ data }) {
 
 /* ערוץ הוואטסאפ: מאיפה באתר לוחצים על הקישור (admin_channel.sql), ובכיוון
    ההפוך - כמה ביקורים הגיעו מהערוץ, מתוך admin_sources שכבר נטען */
-const CH_FROM = { menu: 'תפריט "עוד באתר"', about: 'חלונית "אודות"', game: 'תוצאת האתגר היומי' };
+const CH_FROM = { menu: 'תפריט "עוד באתר"', about: 'חלונית "אודות"', game: 'תוצאת האתגר היומי', board: 'טבלת המובילים' };
 
 function Channel({ clicks, sources }) {
   const total = clicks.reduce((n, r) => n + r.clicks, 0);

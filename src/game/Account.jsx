@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { mark } from '../lib/trail.js';
 import { AUTH_KEY, fetchBoard } from './board.js';
 import './account.css';
+import { CHANNEL_URL } from '../components/channel.js';
 
 /* דגל השקה, כמו ?modern=1 של המפה המודרנית: עד שההגדרות בדשבורד של Supabase
    ו-Google מוכנות, ההרשמה גלויה רק למי שנכנס עם ?accounts=1. הדגל נשמר בדפדפן,
@@ -186,7 +187,7 @@ function SignIn({ acc }) {
       <h2 id="ac-title" tabIndex={-1}>שומרים את הנקודות</h2>
       <p className="ac-p">
         כל אתגר יומי שווה עד 5 נקודות. נרשמים פעם אחת, ואז הנקודות נצברות, הרצף נספר
-        ואתם מופיעים בטבלת המובילים - מכל מכשיר.
+        ואתם מופיעים בטבלת המובילים - מכל מכשיר. המנצחים בכל חודש מתפרסמים בערוץ הוואטסאפ שלנו.
       </p>
       <div ref={gRef} className="ac-gsi" hidden={!gsi} />
       <button type="button" className="ac-google" onClick={google} disabled={busy} hidden={gsi}>
@@ -239,7 +240,7 @@ function Nickname({ acc, onDone }) {
   return (
     <form onSubmit={save}>
       <h2 id="ac-title" tabIndex={-1}>{first ? 'איך לקרוא לכם בטבלה?' : 'שינוי כינוי'}</h2>
-      {first && <p className="ac-p">הכינוי מופיע בטבלת המובילים, לכל מי שנכנס למשחק. לא חייב להיות השם האמיתי.</p>}
+      {first && <p className="ac-p">הכינוי מופיע בטבלת המובילים, לכל מי שנכנס למשחק, ושל המנצחים בכל חודש - גם בערוץ הוואטסאפ שלנו. לא חייב להיות השם האמיתי.</p>}
       <label className="ac-lbl" htmlFor="ac-nick">כינוי</label>
       <input id="ac-nick" className="ac-in" maxLength={20} value={nick} autoComplete="nickname"
         onChange={(e) => setNick(e.target.value)} data-autofocus required />
@@ -326,6 +327,7 @@ export function SaveInvite({ score, onOpen }) {
   return (
     <div className="ac-invite">
       <p>{what} נרשמים, והתוצאה נשמרת - יחד עם רצף ימים ומקום בטבלה.</p>
+      <p className="ac-prize-inv"><span aria-hidden="true">🏆</span> המנצחים של כל חודש מתפרסמים בערוץ</p>
       <button type="button" className="gm-btn" onClick={() => onOpen('signin', 'result')}>שמירת הנקודות</button>
     </div>
   );
@@ -384,6 +386,12 @@ export function Leaderboard({ acc, version, onOpen }) {
           <button type="button" role="tab" aria-selected={range === 'all'} onClick={() => setRange('all')}>מאז ומעולם</button>
         </div>
       </div>
+      {/* הפרס של הטבלה: פרסום בערוץ (בהחלטת בעל האתר, אוקטובר 2026). הכינוי של המנצחים
+          יוצא מהאתר - ולכן זה כתוב גם במסך בחירת הכינוי, במדיניות הפרטיות ובתנאי השימוש */}
+      <p className="ac-prize">
+        <span aria-hidden="true">📢</span> המנצחים בכל חודש מתפרסמים{' '}
+        <a href={CHANNEL_URL} target="_blank" rel="noopener" data-ch="board">בערוץ הוואטסאפ שלנו</a>
+      </p>
       {!data ? (
         <p className="ac-small">טוען…</p>
       ) : data.top.length === 0 ? (

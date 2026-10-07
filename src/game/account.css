@@ -99,6 +99,11 @@
 .ac-pts{flex:none;font-size:13px;color:var(--muted,#6d5c42)}
 .ac-pts b{font-size:15px;color:var(--navy,#163a57)}
 .ac-board .gm-all{margin-top:8px;padding-inline:0}
+/* "המנצחים מתפרסמים בערוץ" - המוטיבציה להירשם. ירוק כהה כמו כרטיס הערוץ (channel.css), 6.4:1 על --panel */
+.ac-prize{margin:-2px 0 10px;padding:7px 10px;border-radius:10px;font-size:13.5px;font-weight:600;line-height:1.5;
+  color:var(--ink,#33281a);background:rgb(37 163 90 / .08);border:1px solid rgb(37 163 90 / .35)}
+.ac-prize a{color:#17663a;font-weight:800;text-decoration:underline;text-underline-offset:2px}
+.ac-prize-inv{margin:6px 0 0;font-size:14px;font-weight:700;color:#17663a}
 
 @media (prefers-reduced-motion:reduce){ .ac-dlg[open]{animation:none} }
 @media (max-width:380px){ .ac-stats{grid-template-columns:repeat(2,1fr)} }

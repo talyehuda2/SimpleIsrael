@@ -32,7 +32,7 @@
      tree_open / tours_open / guide_open   - שימוש בפיצ'רים
      kings_open            שני המסכים - "שתי הממלכות" נפתח
      menu_pick   {id}       תפריט "עוד באתר" - איזה פריט נבחר (mark, לא once)
-     channel_click {from}   קישור לערוץ הוואטסאפ נלחץ: menu / about / game
+     channel_click {from}   קישור לערוץ הוואטסאפ נלחץ: menu / about / game / board
                             (mark, לא once; components/channel.js)
      map_mode    {m}        מפת הארץ   - מעבר בין המפה העתיקה למודרנית (mark, לא once)
      geo_locate  {r}        מפת הארץ   - "איפה אני" הופעל, ומה יצא: ok / outside /
