@@ -9,7 +9,7 @@
   { "id": "yehuda-levad", "name": "ממלכת יהודה לבדה", "start": 3205, "end": 3338 },
   { "id": "galut-bavel", "name": "גלות בבל", "start": 3338, "end": 3390 },
   { "id": "parsit", "name": "התקופה הפרסית", "start": 3390, "end": 3448 },
-  { "id": "yevanit", "name": "התקופה היוונית", "start": 3448, "end": 3597 },
-  { "id": "chashmonaim", "name": "ימי החשמונאים", "start": 3597, "end": 3700 },
+  { "id": "yevanit", "name": "התקופה היוונית", "start": 3448, "end": 3622 },
+  { "id": "chashmonaim", "name": "ימי החשמונאים", "start": 3622, "end": 3700 },
   { "id": "roma", "name": "הורדוס ורומא", "start": 3700, "end": 3828 }
 ]
