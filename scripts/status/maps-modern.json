@@ -21,10 +21,11 @@
         "path": "/places?p=%D7%92%D7%AA",
         "crop": {
           "from": "#mapWrap",
-          "h": 330,
+          "to": "#mapWrap",
           "pad": 0
         },
-        "css": "#mapMode,#reset,#locate,#zoomBtns{opacity:0}"
+        "css": "#mapMode,#reset,#locate,#zoomBtns{opacity:0}",
+        "vh": 1150
       },
       {
         "label": "🗺️ מודרנית",
@@ -39,10 +40,11 @@
         "wait": 4000,
         "crop": {
           "from": "#mapWrap",
-          "h": 330,
+          "to": "#mapWrap",
           "pad": 0
         },
-        "css": "#mapMode,#reset,#locate,#zoomBtns{opacity:0}"
+        "css": "#mapMode,#reset,#locate,#zoomBtns{opacity:0}",
+        "vh": 1150
       }
     ]
   },
