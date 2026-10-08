@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/check-data.mjs && vite build && node scripts/prerender.mjs",
+    "build": "node scripts/check-data.mjs && node scripts/check-quotes.mjs && vite build && node scripts/prerender.mjs",
     "prerender": "node scripts/prerender.mjs",
     "preview": "vite preview",
     "smoke": "node scripts/smoke.mjs",
