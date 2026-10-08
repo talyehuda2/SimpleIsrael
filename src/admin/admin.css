@@ -273,3 +273,11 @@ body {
 .gm-hard-n { font-weight: 700; }
 .gm-hard-r { font-weight: 800; color: #a3271b; font-variant-numeric: tabular-nums; }
 .gm-hard small { color: var(--ad-muted); font-variant-numeric: tabular-nums; }
+/* מנצחי החודש */
+.gm-win .ad-presets { margin-bottom: 4px; }
+.gm-win-l { margin-top: 10px; }
+.gm-win-p { font-weight: 800; color: var(--ad-navy); font-variant-numeric: tabular-nums; }
+.gm-copy {
+  margin-top: 10px; min-height: 44px; padding: 0 16px; font: inherit; font-size: 15px; font-weight: 700;
+  background: #17663a; color: #fff; border: none; border-radius: 10px; cursor: pointer;
+}

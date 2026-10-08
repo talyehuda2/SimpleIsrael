@@ -129,8 +129,100 @@ export default function Game({ token, onBadToken }) {
           </details>
         </>
       )}
+      <Winners />
       <Players token={token} />
     </main>
+  );
+}
+
+/* מנצחי החודש - לפרסום בערוץ הוואטסאפ בסוף כל חודש עברי (בהחלטת בעל האתר).
+   בראש החודש הטבלה באתר מתאפסת, ולכן 'prev' (supabase/game_board_prev.sql) מחזיר
+   את החודש שהסתיים. אותה game_board של טבלת המובילים, בלי טוקן - היא ממילא פומבית.
+   "העתקת הודעה" מכינה את הטקסט לערוץ, ובו קישור למשחק עם src=channel. */
+const MEDALS = ['🥇', '🥈', '🥉'];
+const SITE = 'simpleisrael.co.il';
+const monthName = (s) => {
+  try {
+    return new Intl.DateTimeFormat('he-u-ca-hebrew', { month: 'long', timeZone: 'UTC' })
+      .format(new Date(`${String(s).slice(0, 10)}T12:00:00Z`));
+  } catch { return ''; }
+};
+function channelText(b) {
+  const month = monthName(b.since);
+  const top = (b.top || []).filter((r) => r.rank <= 3);
+  return [
+    `🏆 מנצחי חודש ${month} ב"סדר את הציר"`,
+    '',
+    ...top.map((r) => `${MEDALS[r.rank - 1]} ${r.nickname} - ${r.points} נקודות (${r.days} ימים)`),
+    '',
+    `כל הכבוד! ${b.players} שחקנים השתתפו החודש.`,
+    'הטבלה התאפסה והמרוץ החדש כבר התחיל - אתגר יומי אחד, עד 5 נקודות ביום:',
+    `https://${SITE}/game?src=channel`,
+  ].join('\n');
+}
+
+function Winners() {
+  const [range, setRange] = useState('prev');
+  const [board, setBoard] = useState(null);
+  const [err, setErr] = useState('');
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    let live = true;
+    setBoard(null); setErr(''); setCopied(false);
+    supabase.rpc('game_board', { p_range: range }).then(({ data, error }) => {
+      if (!live) return;
+      if (error) { setErr(error.message || 'שגיאה בטעינה'); return; }
+      // לפני game_board_prev.sql הפונקציה לא מכירה את 'prev' ומחזירה את החודש הנוכחי
+      if (range === 'prev' && !data?.until) {
+        setErr('צריך להריץ את supabase/game_board_prev.sql ב-Supabase.'); return;
+      }
+      setBoard(data);
+    });
+    return () => { live = false; };
+  }, [range]);
+
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(channelText(board)); setCopied(true); }
+    catch { setErr('ההעתקה נחסמה בדפדפן'); }
+  };
+  const last = board?.until ? addDays(String(board.until).slice(0, 10), -1) : null;
+
+  return (
+    <section className="ad-card gm-win">
+      <h3>מנצחי החודש{board ? ` - ${monthName(board.since)}` : ''}</h3>
+      <div className="ad-presets" role="group" aria-label="חודש">
+        <button className={range === 'prev' ? 'on' : ''} onClick={() => setRange('prev')}>החודש הקודם</button>
+        <button className={range === 'month' ? 'on' : ''} onClick={() => setRange('month')}>החודש הנוכחי</button>
+      </div>
+      {err && <p className="ad-msg ad-err">{err}</p>}
+      {!board && !err && <p className="ad-note">טוען…</p>}
+      {board && (
+        <>
+          <p className="ad-note">
+            {longDate(String(board.since).slice(0, 10))}{last ? ` עד ${longDate(last)}` : ''} · {board.players} שחקנים
+            {range === 'month' ? ' · החודש עוד לא נגמר' : ''}
+          </p>
+          {board.top?.length ? (
+            <ol className="gm-hard gm-win-l">
+              {board.top.slice(0, 10).map((r) => (
+                <li key={r.nickname}>
+                  <span className="gm-hard-n">{MEDALS[r.rank - 1] || `${r.rank}.`} {r.nickname}</span>
+                  <span className="gm-win-p">{r.points}</span>
+                  <small>{r.days} ימים</small>
+                </li>
+              ))}
+            </ol>
+          ) : <p className="ad-note">אין תוצאות בחודש הזה.</p>}
+          {range === 'prev' && board.top?.length > 0 && (
+            <button type="button" className="gm-copy" onClick={copy}>
+              {copied ? '✓ הועתק - להדביק בערוץ' : '📋 העתקת הודעה לערוץ'}
+            </button>
+          )}
+          <p className="ad-note">שוויון בנקודות: מי ששיחק פחות ימים ראשון. שחקן מוסתר לא נספר.
+            לתמונת סטטוס: scripts/status/winners.json.</p>
+        </>
+      )}
+    </section>
   );
 }
 

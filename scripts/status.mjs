@@ -35,7 +35,10 @@
      art    - image, eyebrow?, title[], labels?[]   איור מוכן על כל השקף (למשל מצ'אט GPT), עם כותרת
               בפינה ותוויות שם. image: נתיב יחסי לשורש הריפו. title: שורות הכותרת. labels:
               [{t, x, y}] - x/y באחוזים מרוחב/גובה האיור, נקודת העיגון היא מרכז התווית.
-              box: {x, y, w} מיקום הכותרת בפיקסלים של 1080x1920 (ברירת מחדל: פינה שמאלית עליונה). */
+              box: {x, y, w} מיקום הכותרת בפיקסלים של 1080x1920 (ברירת מחדל: פינה שמאלית עליונה).
+     winners - eyebrow, title, podium[], p?   מנצחי החודש במשחק, לערוץ הוואטסאפ בסוף כל חודש עברי.
+              podium: [{n, pts, days?}] - כינוי, נקודות וימים, לפי הסדר (עד שלושה). המספרים
+              ממסך הניהול, לשונית "משחק" -> "מנצחי החודש". תבנית: scripts/status/winners.json. */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, createReadStream, mkdtempSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename, extname } from 'node:path';
@@ -90,6 +93,12 @@ function body(s, shot) {
      השם שמחפשים בלשונית "עדכונים"; הקישור עצמו הולך לכיתוב. channel:false מכבה. */
   if (s.type === 'cta') return `${head}<h1>${ttl(s.title)}</h1><p>${fmt(s.p)}</p><div class="urlbox">${esc(s.url || 'simpleisrael.co.il')}<small>${esc(s.urlNote || 'בחינם, בלי הרשמה')}</small></div>`
     + (s.channel === false ? '' : `<div class="chan"><b>📢 ערוץ הוואטסאפ</b><span>${esc(CHANNEL_NAME)}</span><small>דמות מהתנ״ך מדי פעם, ישר לטלפון</small></div>`);
+  /* מנצחי החודש: עיגול זהב/כסף/ארד עם המקום, ולא אמוג'י מדליה - הגופן של הצילום
+     אינו מבטיח אמוג'י, והעיגול יושב בפלטה של הקלף. הראשון גדול יותר. */
+  if (s.type === 'winners') return `${head}<h1>${ttl(s.title)}</h1><ol class="podium">${s.podium.slice(0, 3).map((w, i) =>
+    `<li class="pd pd${i + 1}"><span class="md">${i + 1}</span><span class="nm">${esc(w.n)}</span>`
+    + `<span class="pt">${esc(w.pts)}<small>${w.days ? `נקודות · ${esc(w.days)} ימים` : 'נקודות'}</small></span></li>`).join('')}</ol>`
+    + (s.p ? `<p class="after">${fmt(s.p)}</p>` : '');
   throw new Error(`סוג שקף לא מוכר: ${s.type}`);
 }
 
@@ -174,6 +183,20 @@ h1.xl{font-size:118px;line-height:1.04}
 .chan span{display:block;font-weight:900;font-size:56px;color:#163a57;margin-top:4px}
 .chan small{display:block;font-size:34px;font-weight:500;color:#6d5c42;margin-top:6px}
 .urlbox small{display:block;direction:rtl;font-size:36px;font-weight:500;color:#e7d9ba;margin-top:10px}
+.podium{list-style:none;padding:0;margin:0 0 40px;display:flex;flex-direction:column;gap:24px}
+.pd{display:flex;align-items:center;gap:30px;background:rgb(251 245 231 / .8);border-radius:28px;padding:26px 34px}
+.pd1{border:5px solid #c9a227;padding:36px 38px;box-shadow:0 18px 40px rgb(60 40 0 / .18)}
+.md{flex:none;width:96px;height:96px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:54px;color:#fff;box-shadow:inset 0 -6px 0 rgb(0 0 0 / .15)}
+.pd1 .md{width:120px;height:120px;font-size:68px;background:#c9a227;color:#3f2a0e}
+.pd2 .md{background:#9aa3ab;color:#24303a}
+.pd3 .md{background:#b4733a}
+.nm{flex:1;min-width:0;font-weight:900;font-size:60px;line-height:1.15;color:#163a57;overflow-wrap:anywhere}
+.pd1 .nm{font-size:74px}
+.pt{flex:none;text-align:center;font-weight:900;font-size:62px;line-height:1;color:#7a5410;font-variant-numeric:tabular-nums}
+.pd1 .pt{font-size:78px}
+.pt small{display:block;font-size:30px;font-weight:500;color:#6d5c42;margin-top:8px}
+p.after{font-size:44px}
 .url{position:absolute;right:84px;bottom:230px;font-weight:700;font-size:36px;color:#163a57;direction:ltr}
 </style></head><body>
 <div class="wash"></div>
