@@ -8,3 +8,5 @@
 .jmm.active{border:3px solid var(--gold,#c9a227);transform:scale(1.25);z-index:2}
 .jmm.future{background:#fbf5e7;color:var(--c,#9c2b50);border-color:var(--c,#9c2b50);opacity:.75}
 .jmm-n{pointer-events:none}
+.jmm.tiny{width:11px;height:11px;border-width:1.5px;transform:none;opacity:.9}
+.jmm.tiny .jmm-n{display:none}

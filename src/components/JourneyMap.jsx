@@ -37,17 +37,9 @@ const RING_C = 2 * Math.PI * RING_R;
 
 const clampN = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 
-/* המפה המודרנית של המסע (journeyModern.js) - שלב ראשון, מאחורי דגל עד שגם
-   המקומות שמחוץ למפה יקבלו מיקום אמיתי: ?jmodern=1 פעם אחת, והדפדפן זוכר.
-   ?jmodern=0 מכבה. */
-const MODERN_ON = (() => {
-  try {
-    const q = new URLSearchParams(location.search).get('jmodern');
-    if (q === '1') localStorage.setItem('si_jmodern', '1');
-    if (q === '0') localStorage.removeItem('si_jmodern');
-    return localStorage.getItem('si_jmodern') === '1';
-  } catch { return false; }
-})();
+/* המפה המודרנית של המסע (journeyModern.js) הושקה לכולם ב-10.2026, אחרי תקופה
+   מאחורי ?jmodern=1. ניקוי הדגל ששמר הדפדפן של מי שבדק אותה. */
+try { localStorage.removeItem('si_jmodern'); } catch { /* אחסון חסום - אין מה לנקות */ }
 
 /* חלון תצוגה ביחס-הגובה-רוחב של המכל, ממורכז סביב נקודה וחסום לגבולות
    התמונה. היחס חשוב: התמונה ריבועית, ואם ה-viewBox ריבועי בזמן שהמכל
@@ -288,16 +280,18 @@ export default function JourneyMap({
         <span className="jc-progress">{step < 0 ? 'סקירה כללית' : `תחנה ${step + 1} מתוך ${pts.length}`}</span>
       </div>
 
+      {/* המתג בשורה משלו מעל המפה ולא צף עליה: בטלפון הוא כיסה את כרטיס התחנה */}
+      <div className="jm-mode-row">
+        <div className="jm-mode" role="group" aria-label="סוג המפה">
+          <button type="button" className={mode === 'ancient' ? 'on' : ''} aria-pressed={mode === 'ancient'}
+            onClick={() => switchMode('ancient')}>🏺 עתיקה</button>
+          <button type="button" className={`${mode === 'modern' ? 'on' : ''}${busy ? ' busy' : ''}`}
+            aria-pressed={mode === 'modern'} onClick={() => switchMode('modern')}>🗺️ מודרנית</button>
+        </div>
+      </div>
+
       <div className={`map-wrap${mode === 'modern' ? ' is-modern' : ''}`} ref={wrapRef}>
-        {MODERN_ON && (
-          <div className="jm-mode" role="group" aria-label="סוג המפה">
-            <button type="button" className={mode === 'ancient' ? 'on' : ''} aria-pressed={mode === 'ancient'}
-              onClick={() => switchMode('ancient')}>🏺 עתיקה</button>
-            <button type="button" className={`${mode === 'modern' ? 'on' : ''}${busy ? ' busy' : ''}`}
-              aria-pressed={mode === 'modern'} onClick={() => switchMode('modern')}>🗺️ מודרנית</button>
-          </div>
-        )}
-        {MODERN_ON && <div className="jm-modern" ref={modernElRef} hidden={mode !== 'modern'} />}
+        <div className="jm-modern" ref={modernElRef} hidden={mode !== 'modern'} />
         <svg
           viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`} className="map-svg"
           preserveAspectRatio="xMidYMid slice"

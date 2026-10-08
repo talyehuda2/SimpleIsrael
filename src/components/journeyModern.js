@@ -1,4 +1,4 @@
-/* המפה המודרנית של מפת המסע (אוקטובר 2026, מאחורי ?jmodern=1 עד ההשקה).
+/* המפה המודרנית של מפת המסע (אוקטובר 2026).
 
    אותו מסע של JourneyMap.jsx, על OpenStreetMap במקום על הציור: תחנות ממוספרות,
    קו המסלול, והמצלמה עפה מתחנה לתחנה. הבסיס (סגנון, עברית, סינון הגבולות,
@@ -72,6 +72,26 @@ export function createJourneyModern(el, { onPick, onError, onPos }) {
     });
   }
 
+  /* תחנות צפופות: במבט-העל של אברהם (מאור כשדים ועד מצרים) שש התחנות בכנען
+     נערמו זו על זו לגוש אחד של מספרים. סמן שנופל קרוב מדי לסמן שכבר הוצג
+     מתכווץ לנקודה קטנה בלי מספר (tiny); כשמתקרבים הם נפרדים והמספרים חוזרים.
+     התחנה הפעילה תמיד במלואה, ונבדקת ראשונה. */
+  const NEAR_PX = 20;
+  let dcFrame = 0;
+  function declutter() {
+    dcFrame = 0;
+    const order = [...markers].sort((a, b) => (b.i === step) - (a.i === step) || a.i - b.i);
+    const kept = [];
+    for (const mk of order) {
+      const pt = map.project(mk.m.getLngLat());
+      const crowded = mk.i !== step && kept.some((q) => Math.hypot(q.x - pt.x, q.y - pt.y) < NEAR_PX);
+      mk.b.classList.toggle('tiny', crowded);
+      if (!crowded) kept.push(pt);
+    }
+  }
+  const queueDeclutter = () => { if (!dcFrame) dcFrame = requestAnimationFrame(declutter); };
+  map.on('move', queueDeclutter);
+
   function report() {
     const p = stations[step];
     if (!onPos) return;
@@ -106,7 +126,7 @@ export function createJourneyModern(el, { onPick, onError, onPos }) {
         const m = new maplibregl.Marker({ element: b, anchor: 'center' }).setLngLat([p.lon, p.lat]).addTo(map);
         markers.push({ m, b, i });
       });
-      paintRoute(); paintMarkers(); fitAll(false); report();
+      paintRoute(); paintMarkers(); fitAll(false); report(); queueDeclutter();
     },
     /** -1 = מבט-על; אחרת אינדקס התחנה ב-stations */
     setStep(i) {
@@ -115,9 +135,9 @@ export function createJourneyModern(el, { onPick, onError, onPos }) {
       const p = stations[step];
       if (step < 0 || !p || p.lat == null) fitAll(true);
       else map.flyTo({ center: [p.lon, p.lat], zoom: STATION_ZOOM, speed: 1.3 });
-      report();
+      report(); queueDeclutter();
     },
-    resize: () => { map.resize(); report(); },
+    resize: () => { map.resize(); report(); queueDeclutter(); },
     destroy: () => map.remove(),
   };
 }

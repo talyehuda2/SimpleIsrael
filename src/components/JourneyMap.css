@@ -1,9 +1,9 @@
 /* מתג "עתיקה | מודרנית" של מפת המסע, והמכל של המפה המודרנית. בבעלות הרכיב
    ולא ב-styles.css: JourneyMap מגיע גם למסע הדורות (ראו CLAUDE.md, "המלכודת
    מספר אחת"). הסמנים עצמם ב-JourneyModern.css, שנטען רק עם המפה. */
-.jm-mode{position:absolute;top:8px;left:8px;z-index:4;display:flex;padding:3px;gap:2px;
-  background:rgb(251 245 231 / .95);border:1px solid var(--line,#e2d3b0);border-radius:14px;
-  box-shadow:0 2px 8px rgb(60 40 0 / .2)}
+.jm-mode-row{display:flex;justify-content:flex-end;margin:0 0 6px}
+.jm-mode{display:flex;padding:3px;gap:2px;
+  background:rgb(251 245 231 / .95);border:1px solid var(--line,#e2d3b0);border-radius:14px}
 .jm-mode button{border:none;background:none;font:700 12px/1.2 inherit;font-family:inherit;color:var(--muted,#6b5a3e);
   padding:5px 9px;border-radius:11px;cursor:pointer}
 .jm-mode button.on{background:var(--navy,#163a57);color:#fff}
@@ -12,5 +12,5 @@
 .map-wrap > .jm-modern{position:absolute;inset:0;border-radius:8px;overflow:hidden;background:#e9e4d6}
 .jm-modern[hidden]{display:none}
 .map-wrap.is-modern .map-svg{visibility:hidden}
-/* תחנה בלי מיקום במפה המודרנית (מחוץ למפה, עד השלב הבא): הכרטיס בראש המפה */
-.map-popup.unpinned{left:50% !important;top:46px !important;transform:translateX(-50%) !important}
+/* תחנה שאין לה מיקום על המפה המודרנית, או שיצאה מהמסגרת: הכרטיס בראש המפה */
+.map-popup.unpinned{left:50% !important;top:8px !important;transform:translateX(-50%) !important}
