@@ -342,6 +342,12 @@ async function launch() {
   process.exit(1);
 }
 
+/* גובה הדמות בתחתית השקף לפי x, נמדד על התמונות (אוקטובר 2026): העץ עד x=160 מתחיל ב-1550,
+   ראש המקל עד x=300 ב-1579. מימין לאיש אין כלום עד שורת הכתובת (1650).
+   קודם היה קו אחד ב-x=310, וצילום שהתחיל ב-298 נמדד כאילו העץ מתחתיו - אזהרת שווא שהפילה את הריצה. */
+const FIGURE = [{ to: 160, top: 1550 }, { to: 300, top: 1575 }];
+const shotLimit = (left) => FIGURE.find((z) => left < z.to)?.top ?? 1650;
+
 /* ---------- הרצה ---------- */
 const needsSite = spec.slides.some((s) => s.type === 'site');
 if (needsSite && !existsSync(join(DIST, 'index.html'))) { console.error('אין dist - קודם npm run build'); process.exit(1); }
@@ -365,10 +371,9 @@ for (const [i, s] of spec.slides.entries()) {
     if (!c) return { bottom: 0, shot: null };
     return { bottom: Math.round(c.bottom), shot: shot && { left: Math.round(shot.left), bottom: Math.round(shot.bottom) } };
   });
-  // צילום רחב (x<310) כבר אינו מימין לאיש עם המקל, ולכן חל עליו הגבול הרגיל
-  const wide = m.shot && m.shot.left < 310;
+  // צילום יכול לרדת עד ראש הדמות שמתחתיו, וזה תלוי עד כמה שמאלה הוא מגיע
   const bottom = m.bottom;
-  const limit = s.type === 'site' && !wide ? 1650 : 1560;
+  const limit = s.type === 'site' && m.shot ? shotLimit(m.shot.left) : 1560;
   if (process.env.STATUS_DEBUG) console.log(JSON.stringify(m));
   const name = `${String(i + 1).padStart(2, '0')}.jpg`;
   if (bottom > limit) { bad++; console.log(`⚠ ${name}: התוכן נגמר ב-${bottom}px, עולה על האיור - לקצר`); }
