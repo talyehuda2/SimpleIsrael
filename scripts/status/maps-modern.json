@@ -1,0 +1,112 @@
+{
+  "note": "השקת המפה המודרנית במפת הארץ (הושקה ב-5.10.2026): מתג עתיקה/מודרנית, ערים וכבישים של היום עם המקומות המקראיים עליהם. הדוגמה: גת המקראית = תל צפית, ולא קריית גת. השקפים לסטטוס (עם קופסת הערוץ), post לערוץ. צילומי המפה המודרנית טוענים אריחים אמיתיים מ-OpenFreeMap (net). קישור בכיתוב: simpleisrael.co.il/places?src=status | בערוץ: simpleisrael.co.il/places?src=channel",
+  "post": {
+    "eyebrow": "חדש באתר · מפת הארץ",
+    "title": "שתי מפות,\nאותה ארץ",
+    "blocks": [
+      {
+        "p": "🏺 עתיקה - הארץ כמו בימי התנ״ך"
+      },
+      {
+        "p": "🗺️ מודרנית - ערים, כבישים ויישובים של היום, עם המקומות המקראיים עליהם"
+      },
+      {
+        "p": "גת של גלית? תל צפית, ליד קריית גת."
+      }
+    ],
+    "footUrl": "simpleisrael.co.il/places",
+    "shots": [
+      {
+        "label": "🏺 עתיקה",
+        "path": "/places?p=%D7%92%D7%AA",
+        "crop": {
+          "from": "#mapWrap",
+          "h": 330,
+          "pad": 0
+        },
+        "css": "#mapMode,#reset,#locate,#zoomBtns{opacity:0}"
+      },
+      {
+        "label": "🗺️ מודרנית",
+        "path": "/places?p=%D7%92%D7%AA",
+        "click": [
+          "#mapMode [data-m=\"modern\"]"
+        ],
+        "net": [
+          "tiles.openfreemap.org",
+          "s3.amazonaws.com"
+        ],
+        "wait": 4000,
+        "crop": {
+          "from": "#mapWrap",
+          "h": 330,
+          "pad": 0
+        },
+        "css": "#mapMode,#reset,#locate,#zoomBtns{opacity:0}"
+      }
+    ]
+  },
+  "slides": [
+    {
+      "type": "text",
+      "eyebrow": "חדש באתר · מפת הארץ",
+      "title": "שתי מפות, אותה ארץ",
+      "paras": [
+        "🏺 מפה עתיקה - הארץ כמו בימי התנ״ך, עם 129 מקומות שדמויות התנ״ך עברו בהם.",
+        "🗺️ מפה מודרנית - ערים, כבישים ויישובים של היום, והמקומות המקראיים עליהם.",
+        "עוברים בלחיצה אחת, ונשארים באותו אזור."
+      ],
+      "question": "יודעים איפה הייתה גת של גלית?",
+      "footUrl": "simpleisrael.co.il/places"
+    },
+    {
+      "type": "site",
+      "eyebrow": "🏺 במפה העתיקה",
+      "title": "גת - עיר הפלשתים",
+      "path": "/places?p=%D7%92%D7%AA",
+      "crop": {
+        "from": "#mapWrap",
+        "h": 330
+      },
+      "footUrl": "simpleisrael.co.il/places"
+    },
+    {
+      "type": "site",
+      "eyebrow": "🗺️ ובמפה של היום",
+      "title": "תל צפית, ליד קריית גת",
+      "path": "/places?p=%D7%92%D7%AA",
+      "click": [
+        "#mapMode [data-m=\"modern\"]"
+      ],
+      "net": [
+        "tiles.openfreemap.org",
+        "s3.amazonaws.com"
+      ],
+      "wait": 4000,
+      "crop": {
+        "from": "#mapWrap",
+        "to": "#mapHint"
+      },
+      "footUrl": "simpleisrael.co.il/places"
+    },
+    {
+      "type": "text",
+      "eyebrow": "ועוד במפת הארץ",
+      "title": "מה קרה ליד הבית?",
+      "paras": [
+        "📍 \"איפה אני\" - חמשת המקומות מהתנ״ך הכי קרובים אליכם, עם המרחק בק״מ. המיקום לא יוצא מהטלפון.",
+        "🕰️ בוחרים תקופה - ורואים רק את המקומות שקרה בהם משהו באותה תקופה.",
+        "👆 לוחצים על מקום - ומקבלים את כל מי שעבר בו, ומה קרה שם."
+      ],
+      "question": "מה הכי קרוב אליכם?",
+      "footUrl": "simpleisrael.co.il/places"
+    },
+    {
+      "type": "cta",
+      "eyebrow": "ציר הזמן של עם ישראל",
+      "title": "נסו את המפה החדשה",
+      "p": "מפת הארץ - עתיקה ומודרנית, בטלפון ובמחשב.",
+      "url": "simpleisrael.co.il/places"
+    }
+  ]
+}

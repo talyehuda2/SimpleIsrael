@@ -29,6 +29,9 @@
               עם כל התחומים והתקופות (ולא האתגר היומי - כדי לא לחשוף את התשובה של היום).
               place: כמה קלפים להניח לפני הצילום. solve: לפתור 5/5 ולצלם את מסך התוצאה
               (wait מ"ש אחרי "בדיקה" - 700 תופס את הקונפטי באוויר).
+              click: [סלקטורים] - לחיצות לפני הצילום, למשל מתג המפה ('#mapMode [data-m="modern"]').
+              net: [שרתים] - מותר לפנות אליהם בצילום הזה (כל השאר חסום, כולל Supabase). למפה המודרנית:
+              ["tiles.openfreemap.org", "s3.amazonaws.com"]. wait: מ"ש נוספים אחרי הלחיצות (ברירת מחדל 1500).
      cta    - eyebrow, title, p, url?, urlNote?, channel?   סיום עם כתובת האתר (url: למשל simpleisrael.co.il/game).
               urlNote מחליף את "בחינם, בלי הרשמה" שמתחת לכתובת - למשל כשהשקף מזכיר הרשמה במשחק
               וקופסת ערוץ הוואטסאפ מתחתיה (channel:false מסיר אותה)
@@ -40,7 +43,7 @@
    תמונה לפוסט בערוץ (שדה post בראש הקובץ, לצד slides): eyebrow, title, blocks[] - אותם בלוקים
    של verses, ו-\n בתוך p שובר שורה. הפלט status-out/<שם>/post.jpg, לרוחב (1200x630, כמו תמונות
    השיתוף של האתר): בערוץ תמונה לאורך נחתכת בפיד, ולרוחב מוצגת במלואה. האיש עם המקל משמאל,
-   הטקסט מימין. */
+   הטקסט מימין. shots: [{...שדות של site, label}] - עד שני צילומים מהאתר בצד שמאל, למשל לפני/אחרי. */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, createReadStream, mkdtempSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename, extname } from 'node:path';
@@ -189,7 +192,11 @@ ${s.type === 'cta' ? '' : `<div class="url">${esc(s.footUrl || 'simpleisrael.co.
 
 /* ---------- תמונה לפוסט בערוץ ---------- */
 const postBlock = (b) => b.p ? `<p>${fmt(b.p).replace(/\n/g, '<br>')}</p>` : block(b);
-const postPage = (s) => `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><style>
+/* shots: עד שני צילומים מהאתר (אותם שדות של שקף site, ועוד label) - נכנסים בצד שמאל במקום
+   האיש עם המקל, והטקסט מצטמצם לימין */
+const postShots = (s, files) => `<div class="shots">${files.map((f, i) =>
+  `<figure><figcaption>${esc(s.shots[i].label || '')}</figcaption><img src="file://${f}"></figure>`).join('')}</div>`;
+const postPage = (s, files = []) => `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><style>
 @font-face{font-family:F;font-weight:500;src:url(file://${FD}/500Medium/FrankRuhlLibre_500Medium.ttf)}
 @font-face{font-family:F;font-weight:700;src:url(file://${FD}/700Bold/FrankRuhlLibre_700Bold.ttf)}
 @font-face{font-family:F;font-weight:900;src:url(file://${FD}/900Black/FrankRuhlLibre_900Black.ttf)}
@@ -208,7 +215,16 @@ p{font-weight:700;font-size:29px;line-height:1.4;color:#163a57;margin-bottom:14p
 q{quotes:none;color:#7a5410}
 .url{position:absolute;left:88px;bottom:44px;font-weight:700;font-size:28px;color:#163a57;direction:ltr;
   background:rgb(251 245 231 / .8);padding:4px 14px;border-radius:10px}
-</style></head><body>
+body.has-shots .content{width:500px;right:56px}
+body.has-shots h1{font-size:60px}
+body.has-shots .url{left:auto;right:56px;bottom:34px}
+.shots{position:absolute;left:40px;top:40px;bottom:40px;width:580px;display:flex;gap:18px}
+.shots figure{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}
+.shots figcaption{font-weight:900;font-size:28px;color:#163a57;margin-bottom:10px;direction:rtl}
+.shots img{width:100%;max-height:480px;object-fit:cover;border-radius:18px;border:4px solid #fbf5e7;
+  box-shadow:0 14px 34px rgb(60 40 0 / .35)}
+</style></head><body${files.length ? ' class="has-shots"' : ''}>
+${files.length ? postShots(s, files) : ''}
 <div class="content">${s.eyebrow ? `<div class="eyebrow">${esc(s.eyebrow)}</div>` : ''}<h1>${ttl(s.title)}</h1>${(s.blocks || []).map(postBlock).join('')}</div>
 <div class="url">${esc(s.footUrl || 'simpleisrael.co.il')}</div>
 </body></html>`;
@@ -273,10 +289,14 @@ async function playGame(pg, g) {
 
 async function siteShot(browser, base, s, i) {
   // מסך טלפון (390x844) בצפיפות 3 - כמו צילום מסך אמיתי מאייפון
-  const ctx = await browser.newContext({ viewport: { width: 390, height: s.vh || 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
+  // ignoreHTTPSErrors רק כשיש net: בקונטיינר ענן התעבורה עוברת דרך פרוקסי עם תעודה משלו
+  const ctx = await browser.newContext({ viewport: { width: 390, height: s.vh || 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, ignoreHTTPSErrors: !!s.net });
   await ctx.addInitScript(() => { try { localStorage.setItem('si_seen_intro', '1'); } catch { /* */ } });
-  // בלי תעבורה החוצה - וגם בלי שורות אמיתיות ב-si_trail
-  await ctx.route('**', (r) => (r.request().url().startsWith(base) ? r.continue() : r.abort()));
+  /* בלי תעבורה החוצה - וגם בלי שורות אמיתיות ב-si_trail. net: רשימת שרתים שמותר לפנות אליהם בצילום
+     הזה בלבד (המפה המודרנית צריכה את האריחים של OpenFreeMap ואת הגבהים של AWS). רשימה ולא "הכל",
+     כדי ש-Supabase יישאר חסום */
+  const allowed = (u) => u.startsWith(base) || (s.net || []).some((h) => new URL(u).hostname === h);
+  await ctx.route('**', (r) => (allowed(r.request().url()) ? r.continue() : r.abort()));
   /* במשחק: Math.random עם זרע קבוע, בצילום בלבד. כך אותה יד חוזרת אחרי רענון -
      סבב ראשון שגוי חושף את הסדר הנכון, ובשני מסדרים אותו ומקבלים 5/5 */
   if (s.game) {
@@ -306,11 +326,19 @@ async function siteShot(browser, base, s, i) {
   if (s.css) await pg.addStyleTag({ content: s.css });
   if (s.openMap) { await pg.locator('.dc-map-cta').first().click(); await pg.waitForTimeout(1200); }
   if (s.stop) { await pg.locator('.map-legend li').filter({ hasText: s.stop }).first().click(); await pg.waitForTimeout(1200); }
+  for (const sel of s.click || []) { await pg.locator(sel).first().click(); await pg.waitForTimeout(800); }
+  // אחרי לחיצות שטוענות משהו מבחוץ (אריחי מפה) - לחכות שהרשת תירגע, ועוד wait מ"ש
+  if (s.click) { await pg.waitForLoadState('networkidle').catch(() => {}); await pg.waitForTimeout(s.wait ?? 1500); }
   const file = join(TMP, `shot-${i}.png`);
   let clip = { x: 0, y: 0, width: 390, height: s.vh || 844 };
   if (s.crop) {
     const { from, to, h, pad = 8 } = s.crop;
     clip = await pg.evaluate(({ from, to, h, pad }) => {
+      /* אם הגלישה הזיזה את היעד מהמסך (במפת הארץ בחירת מקום גוללת אל הפרטים) - לגלול אליו, למרכז
+         ולא לראש המסך, שם הסרגל הדביק מכסה אותו. יעד שכבר כולו על המסך לא זז, ולכן צילומים
+         קיימים נשארים כמו שהם */
+      const el = document.querySelector(from), r0 = el?.getBoundingClientRect();
+      if (r0 && (r0.top < 0 || r0.bottom > innerHeight)) el.scrollIntoView({ block: 'center' });
       const rects = (sel) => (sel ? [...document.querySelectorAll(sel)] : [])
         .map((e) => e.getBoundingClientRect()).filter((r) => r.width && r.height);
       const a = rects(from), b = rects(to), all = [...a, ...b];
@@ -349,7 +377,7 @@ const FIGURE = [{ to: 160, top: 1550 }, { to: 300, top: 1575 }];
 const shotLimit = (left) => FIGURE.find((z) => left < z.to)?.top ?? 1650;
 
 /* ---------- הרצה ---------- */
-const needsSite = spec.slides.some((s) => s.type === 'site');
+const needsSite = spec.slides.some((s) => s.type === 'site') || !!spec.post?.shots;
 if (needsSite && !existsSync(join(DIST, 'index.html'))) { console.error('אין dist - קודם npm run build'); process.exit(1); }
 const browser = await launch();
 const srv = needsSite ? await serveDist() : null;
@@ -383,7 +411,9 @@ for (const [i, s] of spec.slides.entries()) {
 if (spec.post) {
   const pp = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 2 });
   const html = join(TMP, 'post.html');
-  writeFileSync(html, postPage(spec.post));
+  const files = [];
+  for (const [k, sh] of (spec.post.shots || []).entries()) files.push(await siteShot(browser, base, sh, `post${k}`));
+  writeFileSync(html, postPage(spec.post, files));
   await pp.goto(`file://${html}`, { waitUntil: 'load' });
   await pp.evaluate(() => document.fonts.ready);
   // מעל 590 התוכן נוגע בשולי התמונה
