@@ -107,3 +107,10 @@
 
 @media (prefers-reduced-motion:reduce){ .ac-dlg[open]{animation:none} }
 @media (max-width:380px){ .ac-stats{grid-template-columns:repeat(2,1fr)} }
+
+/* גוגל מסתיר את הרכיב שמכריז לקורא מסך על ההתחברות בכך שהוא דוחף אותו
+   10,000 פיקסלים שמאלה (בגיליון שלו: #g_a11y_announcement{left:-10000px}). בעמוד
+   מימין לשמאל אפשר לגלול שמאלה, ולכן אחרי התחברות עם גוגל העמוד התרחב
+   והדפדפן הזיז אותו הצידה - גולש שלח צילום, אוקטובר 2026. ימינה לא גוללים
+   בעמוד RTL, ולכן אותו הסתרה בצד ימין. ראו CLAUDE.md, "RTL". */
+#g_a11y_announcement{left:auto !important;right:-10000px !important}
