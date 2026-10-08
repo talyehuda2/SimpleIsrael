@@ -96,7 +96,10 @@ const misses = [];
 for (const file of FILES) {
   const data = JSON.parse(readFileSync(root(file), 'utf8'));
   for (const [path, s] of strings(data, '')) {
-    for (const quote of extract(s)) {
+    // שדה verse הוא פסוק בלי מירכאות - כולו ציטוט. בלי זה עברו "ייתן נא פי שניים
+    // ברוחך לי" ו"ועשה ה' לאדוני" (באוקטובר 2026), כי הבדיקה חיפשה רק מירכאות
+    const quotes = /\.verse$|^verse$/.test(path) ? [/^(["״]).*\1$/.test(s) ? s.slice(1, -1) : s, ...extract(s)] : extract(s);
+    for (const quote of quotes) {
       const parts = quote.split(/\.{3}|…/).map(skeleton).filter((p) => p.split(' ').length >= 2);
       if (!parts.length) continue;
       checked++;
