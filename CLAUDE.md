@@ -95,7 +95,7 @@
 
 ```
 npm run dev        # שרת פיתוח, פורט 5173
-npm run build      # vite build && node scripts/prerender.mjs
+npm run build      # check-data + vite build + prerender
 npm run smoke      # שער האיכות: טוען את dist בדפדפן ונופל על כל שגיאה
 npm run verify     # build + smoke, מה שרץ ב-CI
 npm run data       # מייצר מחדש את atlas-data.json ואת places.json
@@ -107,6 +107,11 @@ npm run preview    # הגשת dist, לבדיקת התוצר הסופי
 צריך להראות `Production` עם ה-sha של `main`. אם חסר - קומיט חדש ל-`main` מפעיל פריסה.
 
 `.claude/launch.json` מגדיר שתי תצורות: `simpleisrael` (פיתוח) ו-`simpleisrael-dist` (preview).
+
+**בדיקת תוכן במסעות (`scripts/check-data.mjs`) רצה ראשונה ב-`npm run build`**, ולכן גם ב-Vercel: מסע
+שבו `order` אינו 1..n, או שתחנת מוות/קבורה של בעל המסע אינה האחרונה, עוצר את הבנייה. נוספה באוקטובר 2026
+אחרי שגולש מצא את המסע למואב של יורם אחרי מותו - התחנות נכתבו לפי מקום (הבירה ראשונה) ולא לפי זמן.
+הבדיקה תופסת רק את סוג הטעות הזה; סדר שגוי בין שתי תחנות באמצע החיים עדיין דורש קריאה מול הכתוב.
 
 **אין בפרויקט מבחני יחידה ואין לינטר.** `npm run build` עובר גם על קוד שנופל בדפדפן —
 זה קרה פעמיים (`treeOpen` לפני אתחול, הערת בלוק שבלעה שתי שורות import). **בנייה שעברה
