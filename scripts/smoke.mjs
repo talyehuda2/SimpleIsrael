@@ -98,10 +98,11 @@ const PAGES = [
      טעינת הצ'אנק, ה-worker תחת ה-CSP (בלי blob:), וסמני המקומות. */
   { url: '/places', name: 'מפה מודרנית', check: '#list > *', fixtureStyle: true,
     click: '#mapMode [data-m="modern"]', expect: '#modernMap .mm[data-id="ירושלים"]' },
-  /* המפה המודרנית של מפת המסע (שלב ראשון, מאחורי ?jmodern=1): אותו בסיס, צ'אנק
-     נפרד, ותחנות ממוספרות. בציר הזמן ב-1280 המפה נפתחת עם הכרטיס. */
-  { url: '/?sel=united:david&jmodern=1', name: 'מסע מודרני', check: '.map-legend li', fixtureStyle: true,
-    click: '.jm-mode button:nth-child(2)', expect: '.jm-modern .jmm' },
+  /* המפה המודרנית של מפת המסע (מאחורי ?jmodern=1 עד ההשקה): אותו בסיס, צ'אנק
+     נפרד, ותחנות ממוספרות. משה - כי במסע שלו מצרים, שמחוץ למפה המצוירת ומוצגת
+     כאן במקומה האמיתי (offMapReal). בציר הזמן ב-1280 המפה נפתחת עם הכרטיס. */
+  { url: '/?sel=leader:moshe&jmodern=1', name: 'מסע מודרני', check: '.map-legend li', fixtureStyle: true,
+    click: '.jm-mode button:nth-child(2)', expect: '.jm-modern .jmm[aria-label="4. מצרים"]' },
   /* התגובות, עם שלוש תגובות לדוגמה במקום Supabase. הכניסה כמו מהמייל "ענו לך"
      (?c=), ולכן נבדק גם שהתגובה המבוקשת סומנה. נפתח גם הטופס המקופל,
      כך ש-axe עובר על הרשימה ועל השדות - ניגודיות, תוויות, גודל מטרות לחיצה. */

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { stationNoteText, offMapName } from '../utils/placeNote.js';
+import { stationNoteText, offMapName, offMapDir } from '../utils/placeNote.js';
 import maps from '../data/maps.json';
 import { MAP_SRC, MAP_SIZE, journeyStations, offMapMark, offMapPin } from '../utils/mapProject.js';
 import { mark } from '../lib/trail.js';
@@ -238,6 +238,8 @@ export default function JourneyMap({
   }
 
   const active = step >= 0 ? pts[step] : null;
+  // במפה המודרנית מקום "מחוץ למפה" מוצג במקומו האמיתי, וההערה הזו כבר אינה נכונה
+  const noteOf = (name) => (mode === 'modern' && offMapDir(name) ? null : stationNoteText(name));
   // ההתקדמות נמדדת באורך המסלול ולא במספר התחנות; אחרת הקו חוצה את היעד
   const progressOffset = step < 0 ? total : total - pts[step].cum;
 
@@ -372,8 +374,8 @@ export default function JourneyMap({
               style={{ left: `${xPct}%`, top: `${yPct}%`, transform: `translate(${tx}, ${ty})` }}>
               <div className="map-popup-head" style={{ background: color }}>
                 <span className="map-popup-num">{active.order}</span>{active.name}
-                {stationNoteText(active.name) && (
-                  <span className="station-note">{stationNoteText(active.name)}</span>
+                {noteOf(active.name) && (
+                  <span className="station-note">{noteOf(active.name)}</span>
                 )}
               </div>
               <div className="map-popup-label">{active.label}</div>
@@ -393,8 +395,8 @@ export default function JourneyMap({
           >
             <span className="map-legend-num" style={{ background: color }}>{p.order}</span>
             <span className="ml-name"><b>{p.name}</b>
-              {stationNoteText(p.name) && (
-                <span className="station-note">{stationNoteText(p.name)}</span>
+              {noteOf(p.name) && (
+                <span className="station-note">{noteOf(p.name)}</span>
               )}
             </span>
             <span className="ml-label"> - {p.label}</span>

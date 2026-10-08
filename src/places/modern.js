@@ -120,7 +120,7 @@ function addRelief(map) {
 /** בסיס משותף למפה המודרנית של מפת הארץ ושל מפת המסע (journeyModern.js):
     הסגנון, העברית, סינון הגבולות וה"פלסטין", התבליט, שורת הקרדיטים וזיהוי
     כישלון. כל מה שמעבר לזה - סמנים, קווים ומצלמה - שייך למי שקורא לה. */
-export function baseMap(el, { bounds, padding = 30, onError }) {
+export function baseMap(el, { bounds, padding = 30, onError, maxBounds = [[31.5, 27.5], [38.5, 35.5]] }) {
   if (!rtlRequested) {
     rtlRequested = true;
     // lazy=true: התוסף נטען רק כשבאמת צריך לצייר טקסט מימין לשמאל
@@ -131,7 +131,7 @@ export function baseMap(el, { bounds, padding = 30, onError }) {
     style: STYLE_URL,
     bounds,
     fitBoundsOptions: { padding },
-    maxBounds: [[31.5, 27.5], [38.5, 35.5]],   // ארץ ישראל וסביבתה, לא כל העולם
+    maxBounds,   // ברירת המחדל: ארץ ישראל וסביבתה, לא כל העולם
     attributionControl: { compact: true },
     dragRotate: false,
     pitchWithRotate: false,

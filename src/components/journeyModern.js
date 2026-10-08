@@ -1,4 +1,4 @@
-/* המפה המודרנית של מפת המסע (אוקטובר 2026, שלב ראשון - מאחורי ?jmodern=1).
+/* המפה המודרנית של מפת המסע (אוקטובר 2026, מאחורי ?jmodern=1 עד ההשקה).
 
    אותו מסע של JourneyMap.jsx, על OpenStreetMap במקום על הציור: תחנות ממוספרות,
    קו המסלול, והמצלמה עפה מתחנה לתחנה. הבסיס (סגנון, עברית, סינון הגבולות,
@@ -7,10 +7,11 @@
    - נטען ב-import דינמי רק בלחיצה על המתג, כמו במפת הארץ: MapLibre כבד, ורוב
      המבקרים לא ילחצו.
    - JourneyMap נשאר מקור האמת לתחנה הפעילה; כאן רק מציירים ומדווחים על לחיצה.
-   - מקומות "מחוץ למפה" (מצרים, בבל...) עוד אינם מוצגים: הקואורדינטות שלהם
-     במסעות הן נקודות שוליים על הציור ולא המקום האמיתי. בשלב הבא הם יקבלו
-     מיקום אמיתי. עד אז הקו מדלג עליהם, ו-JourneyMap מציג את הכרטיס שלהם
-     בראש המפה ולא ליד נקודה. */
+   - מקומות "מחוץ למפה" (מצרים, בבל, חרן...) מוצגים כאן במקומם האמיתי (שלב 2):
+     journeyStations נותן להם lat/lon מ-offMapReal, ולא את נקודת השוליים של
+     הציור. לכן גם המסגרת רחבה מזו של מפת הארץ - מאור כשדים ושושן במזרח
+     ועד נוף שבמצרים. כאן נראה הדבר שהציור לא יכול להראות: המרחקים האמיתיים.
+     */
 import * as maplibregl from 'maplibre-gl';
 import { baseMap, supported } from '../places/modern.js';
 import './JourneyModern.css';
@@ -31,9 +32,11 @@ const line = (pts) => ({ ...empty, geometry: { type: 'LineString', coordinates: 
  */
 export function createJourneyModern(el, { onPick, onError, onPos }) {
   let stations = [], color = ROUTE_GOLD, step = -1, markers = [];
-  const shown = () => stations.filter((p) => !p.off && p.lat != null);
+  const shown = () => stations.filter((p) => p.lat != null);
 
-  const map = baseMap(el, { bounds: [[34.2, 29.6], [36, 33.3]], padding: 20, onError });
+  // מסגרת רחבה: המסעות מגיעים עד שושן במזרח, חרן בצפון ונוף שבמצרים במערב
+  const map = baseMap(el, { bounds: [[34.2, 29.6], [36, 33.3]], padding: 20, onError,
+    maxBounds: [[24, 22], [54, 41]] });
 
   // המסלול: קו מקווקו לכל האורך, וקו מלא בצבע הדמות עד התחנה הפעילה - כמו בציור
   function addRoute() {
@@ -56,7 +59,7 @@ export function createJourneyModern(el, { onPick, onError, onPos }) {
     const pts = shown();
     map.getSource('si-route').setData(line(pts));
     // ההתקדמות: התחנות המוצגות עד התחנה הפעילה (כולל)
-    const upto = step < 0 ? [] : stations.slice(0, step + 1).filter((p) => !p.off && p.lat != null);
+    const upto = step < 0 ? [] : stations.slice(0, step + 1).filter((p) => p.lat != null);
     map.getSource('si-progress').setData(line(upto.length > 1 ? upto : []));
     map.setPaintProperty('si-progress', 'line-color', color);
     map.setPaintProperty('si-route', 'line-opacity', step < 0 ? 0.85 : 0.45);
@@ -72,7 +75,7 @@ export function createJourneyModern(el, { onPick, onError, onPos }) {
   function report() {
     const p = stations[step];
     if (!onPos) return;
-    if (!p || p.off || p.lat == null) return onPos(null);
+    if (!p || p.lat == null) return onPos(null);
     const pt = map.project([p.lon, p.lat]);
     onPos({ x: pt.x, y: pt.y });
   }
@@ -93,7 +96,7 @@ export function createJourneyModern(el, { onPick, onError, onPos }) {
       markers.forEach(({ m }) => m.remove());
       markers = [];
       stations.forEach((p, i) => {
-        if (p.off || p.lat == null) return;
+        if (p.lat == null) return;
         const b = document.createElement('button');
         b.className = 'jmm';
         b.style.setProperty('--c', color);
@@ -110,7 +113,7 @@ export function createJourneyModern(el, { onPick, onError, onPos }) {
       step = i;
       paintRoute(); paintMarkers();
       const p = stations[step];
-      if (step < 0 || !p || p.off || p.lat == null) fitAll(true);
+      if (step < 0 || !p || p.lat == null) fitAll(true);
       else map.flyTo({ center: [p.lon, p.lat], zoom: STATION_ZOOM, speed: 1.3 });
       report();
     },

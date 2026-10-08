@@ -6,7 +6,7 @@
    שלבים: אפיני בסיסי שהותאם בריבועים-פחותים, ומעליו תיקון שאריות IDW
    שמאפס את השגיאה ב-11 עוגני הערים שזוהו בתמונה. */
 
-import { offMapDir, offMapLat } from './placeNote.js';
+import { offMapDir, offMapLat, offMapReal } from './placeNote.js';
 
 /* ?v= משתנה בכל עריכה של התמונה, אחרת דפדפן שכבר טען אותה ממשיך להציג
    את הישנה. v=2 (אוקטובר 2026): הכיתוב "מצרים" שצויר על חצי האי סיני
@@ -156,8 +156,11 @@ export function journeyStations(mapEntry) {
     const ll = p.x != null ? oldPixelToLatLon(p.x, p.y) : { lon: p.lon, lat: p.lat };
     const off = offMapDir(p.name);
     const q = toEdge(project(ll.lon, ll.lat), off, offMapLat(p.name));
-    // lat/lon נשמרים למפה המודרנית של המסע, שמציירת על קואורדינטות ולא על הציור
-    return { ...p, x: q.x, y: q.y, lat: ll.lat, lon: ll.lon, ...(off ? { off } : {}) };
+    /* lat/lon למפה המודרנית של המסע, שמציירת על קואורדינטות ולא על הציור. מקום
+       מחוץ למסגרת מקבל את מיקומו האמיתי (offMapReal) - הקואורדינטה שבמסע היא
+       נקודת שוליים על הציור */
+    const real = off ? offMapReal(p.name) : null;
+    return { ...p, x: q.x, y: q.y, lat: (real || ll).lat, lon: (real || ll).lon, ...(off ? { off } : {}) };
   });
   let total = 0;
   pts.forEach((p, i) => {
