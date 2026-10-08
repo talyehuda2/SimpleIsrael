@@ -1225,6 +1225,13 @@ a.ms-opt:hover { background: var(--panel); color: var(--navy); }
   border-bottom: 1px dotted var(--gold); transition: color .12s, border-color .12s;
 }
 .source-link:hover { color: var(--navy); border-bottom-color: var(--navy); }
+/* "מצאתי טעות" - קישור שקט מתחת למקור. --muted על רקע הכרטיס עומד ב-AA (5.9:1) */
+.dc-report {
+  display: inline-block; margin: 6px 0 0; padding: 4px 0; background: none; border: 0; cursor: pointer;
+  font: inherit; font-size: 12.5px; font-weight: 600; color: var(--muted);
+}
+.dc-report:hover { color: var(--navy); text-decoration: underline; }
+.dc-report:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; border-radius: 4px; }
 
 /* ----- תחתית ----- */
 .app footer {

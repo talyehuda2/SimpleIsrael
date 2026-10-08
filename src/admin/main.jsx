@@ -251,6 +251,12 @@ function Admin() {
                   )}
                 </div>
               )}
+              {/* "מצאתי טעות" מכרטיס: התווית נושאת את הפריט ("🔍 טעות: אחאב | israel:achav") */}
+              {/^🔍/.test(r.target_label || '') && r.target_label.includes(' | ') && (
+                <a className="ad-target" href={siteUrl(r.target_label.split(' | ').pop())} target="_blank" rel="noreferrer">
+                  {r.target_label.split(' | ')[0]} ↗
+                </a>
+              )}
               <p className="ad-body">{r.body}</p>
               <div className="ad-tools">
                 {/* מענה במייל ולא בתוך האתר: פנייה פרטית אינה שרשור, והאדם

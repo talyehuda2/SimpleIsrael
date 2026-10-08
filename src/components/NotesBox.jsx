@@ -25,7 +25,11 @@ async function postNote(row) {
   }
 }
 
-export default function NotesBox({ open, onClose }) {
+/* about = { key, name } כשהתיבה נפתחה מ"מצאתי טעות" בכרטיס פריט. אז הכותרת שונה,
+   והפנייה נושאת את הפריט - גם בתווית (שמסך הניהול הופך לקישור) וגם בשורה הראשונה
+   של הגוף, כי זה מה שההתראה בטלגרם מציגה. target_key נשאר admin:notes: זה מה
+   ששומר על הפנייה פרטית. */
+export default function NotesBox({ open, onClose, about = null }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -54,11 +58,12 @@ export default function NotesBox({ open, onClose }) {
     /* המייל והטלפון נשלחים רק אם מולאו. השדה נוסף לטבלה בנפרד, ושליחת
        contact: null בכל הערה הייתה מפילה כל פנייה עד שהעמודה קיימת. */
     const contact = [email.trim(), phone.trim()].filter(Boolean).join(' · ');
+    const head = about ? `🔍 טעות בכרטיס "${about.name}":\n` : '';
     const ok = await postNote({
       target_key: 'admin:notes',
-      target_label: '📋 הערה כללית למנהל',
+      target_label: about ? `🔍 טעות: ${about.name} | ${about.key}` : '📋 הערה כללית למנהל',
       author: name.trim().slice(0, 40) || null,
-      body: text.slice(0, MAX),
+      body: (head + text).slice(0, MAX + head.length),
       hp: hp.current ? hp.current.value : '',
       ...(contact ? { contact } : {}),
     });
@@ -82,8 +87,17 @@ export default function NotesBox({ open, onClose }) {
           </div>
         ) : (
           <>
-            <h3 className="notes-title">✍️ הערה למנהל האתר</h3>
-            <p className="notes-sub">הערות, הארות, תיקונים או כל דבר אחר - יגיעו ישירות למנהל ולא יוצגו באתר.</p>
+            {about ? (
+              <>
+                <h3 className="notes-title">🔍 מצאתי טעות</h3>
+                <p className="notes-sub">בכרטיס <b>{about.name}</b>. מה לא נכון? אם אפשר - גם מאיזה פסוק או מקור. הפנייה מגיעה ישירות למנהל ולא מוצגת באתר.</p>
+              </>
+            ) : (
+              <>
+                <h3 className="notes-title">✍️ הערה למנהל האתר</h3>
+                <p className="notes-sub">הערות, הארות, תיקונים או כל דבר אחר - יגיעו ישירות למנהל ולא יוצגו באתר.</p>
+              </>
+            )}
             <form onSubmit={submit}>
               {/* פניות הגיעו כאנונימיות עם שאלה, ולא הייתה דרך לענות עליהן */}
               <p className="notes-need">כדי לקבל תשובה או עדכון - השאירו לפחות פרט חזרה אחד: מייל או טלפון.</p>
@@ -108,7 +122,7 @@ export default function NotesBox({ open, onClose }) {
               <p className="notes-hint">פרטי הקשר לא יוצגו באתר ולא יישלחו לאף אחד - הם רק כדי שאוכל לחזור אליכם.</p>
               <input ref={hp} className="comment-hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" />
               <textarea
-                className="notes-body" placeholder="כתבו כאן…" rows={5} aria-label="תוכן הפנייה"
+                className="notes-body" placeholder={about ? 'למשל: כתוב 40 שנה, ובפסוק 41…' : 'כתבו כאן…'} rows={5} aria-label="תוכן הפנייה"
                 value={body} maxLength={MAX} onChange={(e) => setBody(e.target.value)}
               />
               <div className="notes-actions">
