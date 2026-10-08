@@ -21,7 +21,7 @@ import {
 } from './pool.js';
 import { confetti } from './confetti.js';
 import './game.css';
-import { useAccount, accountsEnabled, AccountButton, AccountDialog, SaveInvite, SavedLine, Leaderboard } from './Account.jsx';
+import { useAccount, accountsEnabled, AccountButton, AccountDialog, SaveInvite, SavedLine, Leaderboard, guestRank } from './Account.jsx';
 
 // עד ההשקה ההרשמה כולה מוסתרת - ראו OPEN ב-Account.jsx
 const ACCOUNTS = accountsEnabled();
@@ -300,6 +300,7 @@ function Game() {
   const [view, setView] = useState(null);         // החלון הפתוח: signin / nick / profile
   const [saveState, setSaveState] = useState(null); // null / 'saving' / 'saved' / הודעת שגיאה
   const [boardV, setBoardV] = useState(0);        // מרענן את הטבלה אחרי שינוי
+  const [month, setMonth] = useState(null);       // הטבלה החודשית, למקום של אורח בהזמנה
   const open = (v, via) => { if (v === 'signin') mark('game_auth', { step: 'open', via }); setView(v); };
   const changed = () => { acc.refresh(); setBoardV((n) => n + 1); };
   const byKeys = (keys) => keys.map((k) => hand.find((h) => itemKey(h) === k)).filter(Boolean);
@@ -502,6 +503,10 @@ function Game() {
               {!daily && <button type="button" className="gm-btn" onClick={next}>סבב נוסף</button>}
             </div>
             <p className="gm-msg" role="status">{shareMsg}</p>
+            {/* ההזמנה להירשם מיד אחרי השיתוף, לפני התגיות - שם היא נראית */}
+            {ACCOUNTS && !acc.user && acc.known && (
+              <SaveInvite score={score} daily={daily} rank={daily ? guestRank(month, score) : null} onOpen={open} />
+            )}
             {/* שלוש שורות קטנות (רצף, "נשמר", "אתגר חדש מחר") הפכו לשורת תגיות אחת */}
             {daily && (
               <ul className="gm-chips">
@@ -516,9 +521,7 @@ function Game() {
                 <li><span aria-hidden="true">⏱</span> הבא בעוד <Countdown /></li>
               </ul>
             )}
-            {ACCOUNTS && daily && (acc.user
-              ? <SavedLine state={saveState} />
-              : acc.known && <SaveInvite score={score} onOpen={open} />)}
+            {ACCOUNTS && daily && acc.user && <SavedLine state={saveState} />}
             {daily && <button type="button" className="gm-more" onClick={next}>סבב נוסף במשחק החופשי ←</button>}
             {/* מי שפתר את האתגר כבר אמר שהוא רוצה לחזור מחר - הרגע הנכון להציע את הערוץ.
                 רק באתגר היומי: בחופשי זה היה חוזר בכל סבב */}
@@ -533,7 +536,7 @@ function Game() {
           </>
         )}
         {/* אחרי "כמה קיבלתי" השאלה הבאה היא "איפה אני", ולא רשימת התשובות */}
-        {ACCOUNTS && checked && <Leaderboard acc={acc} version={boardV} onOpen={open} />}
+        {ACCOUNTS && checked && <Leaderboard acc={acc} version={boardV} onOpen={open} onMonth={setMonth} ghost={daily ? score : null} />}
 
         {!checked && (
         <ol className="gm-slots" aria-label="הציר שלכם, מהמוקדם למאוחר">
@@ -621,7 +624,7 @@ function Game() {
         )}
           </>
         )}
-        {ACCOUNTS && !checked && <Leaderboard acc={acc} version={boardV} onOpen={open} />}
+        {ACCOUNTS && !checked && <Leaderboard acc={acc} version={boardV} onOpen={open} onMonth={setMonth} />}
         {/* מי שהגיע למשחק מקישור בוואטסאפ לא ראה את האתר מעולם. בסוף העמוד - שלוש
             הדלתות אליו, באותן מילים ואייקונים של מתג המבטים בשאר המסכים. שורה אחת
             של קישורים קטנים: שלושה קלפים גדולים תפסו מסך שלם בטלפון */}

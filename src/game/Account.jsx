@@ -5,7 +5,7 @@
 
    הסגנון ב-account.css, בבעלות הרכיבים האלה ולא ב-game.css. */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { mark } from '../lib/trail.js';
+import { mark, markOnce } from '../lib/trail.js';
 import { AUTH_KEY, fetchBoard } from './board.js';
 import './account.css';
 import { CHANNEL_URL } from '../components/channel.js';
@@ -320,15 +320,45 @@ function Profile({ acc, onView, onClose, onChanged }) {
 
 /* ---------------------------------------------------------------------- */
 
-/** ההזמנה במסך התוצאה, לאורח - הרגע שבו יש לו בדיוק מה לשמור */
-export function SaveInvite({ score, onOpen }) {
-  // גם יום של 0 נספר לרצף - ולכן ההזמנה לא נעלמת בציון נמוך, רק משנה ניסוח
-  const what = score > 1 ? <><b>{score} נקודות</b> מחכות לכם.</> : score === 1 ? <><b>נקודה אחת</b> מחכה לכם.</> : 'גם יום קשה נספר לרצף.';
+/* המקום שאורח היה תופס בטבלה החודשית עם הנקודות של היום, או null. אותו סדר של
+   game_board: נקודות, ובשוויון - מי ששיחק פחות ימים קודם (ואורח שיירשם עכשיו
+   ישחק יום אחד). הטבלה מחזירה רק 20 ראשונים, ולכן מעבר להם אין מספר */
+export function guestRank(month, score) {
+  if (!month || !(score > 0)) return null;
+  const top = month.top || [];
+  const ahead = top.filter((r) => r.points > score).length;
+  if (ahead >= top.length && top.length >= 20) return null;
+  return ahead + 1;
+}
+
+/** ההזמנה במסך התוצאה, לאורח - הרגע שבו יש לו בדיוק מה לשמור.
+    בעל האתר שם לב שכמעט אף אחד לא נרשם (אוקטובר 2026): ההזמנה הקודמת הייתה
+    שורה מקווקוות מתחת לתגיות, בלי המילה "טבלה" בכותרת. עכשיו היא יושבת מיד אחרי
+    השיתוף, אומרת באיזה מקום הייתם עכשיו, ומופיעה גם במשחק החופשי (שם - הסבר
+    שרק האתגר היומי נספר). */
+export function SaveInvite({ score, rank, daily = true, onOpen }) {
+  const month = hebrewMonth();
+  useEffect(() => { markOnce('game_invite', { mode: daily ? 'daily' : 'free' }); }, [daily]);
+  let what;
+  if (!daily) {
+    what = <>כל אתגר יומי שווה עד <b>5 נקודות</b>. נרשמים פעם אחת, והנקודות נצברות לטבלה החודשית.</>;
+  } else if (rank) {
+    what = <>עם {score === 1 ? 'הנקודה' : `${score} הנקודות`} של היום הייתם עכשיו <b>במקום {rank}</b>{month ? ` בחודש ${month}` : ' החודש'}. נרשמים - והתוצאה נשמרת.</>;
+  } else if (score > 0) {
+    // גם יום של 0 נספר לרצף - ולכן ההזמנה לא נעלמת בציון נמוך, רק משנה ניסוח
+    what = <>{score === 1 ? <b>נקודה אחת</b> : <b>{score} נקודות</b>} מחכות לכם. נרשמים - והתוצאה של היום נשמרת.</>;
+  } else {
+    what = 'גם יום קשה נספר לרצף. נרשמים - ומחר כבר צוברים נקודות.';
+  }
   return (
     <div className="ac-invite">
-      <p>{what} נרשמים, והתוצאה נשמרת - יחד עם רצף ימים ומקום בטבלה.</p>
-      <p className="ac-prize-inv"><span aria-hidden="true">🏆</span> המנצחים של כל חודש מתפרסמים בערוץ</p>
-      <button type="button" className="gm-btn" onClick={() => onOpen('signin', 'result')}>שמירת הנקודות</button>
+      <h3 className="ac-invite-h"><span aria-hidden="true">🏆</span> רוצים להיכנס לטבלת המובילים?</h3>
+      <p>{what}</p>
+      <p className="ac-prize-inv"><span aria-hidden="true">📢</span> המנצחים של כל חודש מתפרסמים בערוץ הוואטסאפ</p>
+      <button type="button" className="ac-invite-btn" onClick={() => onOpen('signin', daily ? 'result' : 'free')}>
+        {daily && score > 0 ? 'להירשם ולשמור את הנקודות' : 'להירשם לטבלה'}
+      </button>
+      <p className="ac-small">חינם ובלי סיסמה - עם Google או קוד במייל. בטבלה מופיע רק כינוי.</p>
     </div>
   );
 }
@@ -350,7 +380,7 @@ function hebrewMonth() {
   } catch { return ''; }
 }
 
-export function Leaderboard({ acc, version, onOpen }) {
+export function Leaderboard({ acc, version, onOpen, ghost = null, onMonth }) {
   const month = hebrewMonth();
   // חודשית ולא שבועית, בהחלטת בעל האתר: שבוע קצר מדי להתקדם בו. לפי החודש העברי
   const [range, setRange] = useState('month');
@@ -363,7 +393,7 @@ export function Leaderboard({ acc, version, onOpen }) {
       try {
         const token = acc.user && acc.mod.current ? await acc.mod.current.accessToken() : null;
         const d = await fetchBoard(range, token);
-        if (live) { setData(d); setFailed(false); }
+        if (live) { setData(d); setFailed(false); if (range === 'month') onMonth?.(d); }
       } catch { if (live) setFailed(true); }
     })();
     return () => { live = false; };
@@ -374,8 +404,25 @@ export function Leaderboard({ acc, version, onOpen }) {
 
   // אם השרת לא זמין, הטבלה פשוט לא מופיעה - המשחק עצמו לא תלוי בה
   if (failed && !data) return null;
-  const rows = all ? data?.top || [] : (data?.top || []).slice(0, 5);
+  const top = data?.top || [];
+  /* אורח שפתר את היומי רואה את עצמו בטבלה, במקום שהיה תופס - שורה מקווקוות
+     עם "אתם?", שהלחיצה עליה היא ההרשמה. רק בטבלה החודשית: מאז ומעולם אחרת */
+  const gRank = range === 'month' && !acc.user && acc.known ? guestRank(data, ghost) : null;
+  const shown = all ? top : top.slice(0, 5);
+  // מי שמתחת לאורח יורד מקום אחד בתצוגה - זו הטבלה "אילו נרשמתם"
+  const below = (r) => ({ ...r, rank: r.rank + 1 });
+  const rows = gRank && gRank <= shown.length ? [...shown.slice(0, gRank - 1), { ghost: true }, ...shown.slice(gRank - 1).map(below)] : shown;
+  const ghostOut = gRank && gRank > shown.length;
   const meOut = data?.me && !rows.some((r) => r.me);
+  const ghostRow = (rank, extra = '') => (
+    <li key="ghost" className={`ghost${extra}`}>
+      <span className="ac-rank">{rank}</span>
+      <span className="ac-nick">אתם?</span>
+      <button type="button" className="ac-ghost-btn" onClick={() => onOpen('signin', 'ghost')}>
+        <b>{ghost}</b> נק׳ · להירשם
+      </button>
+    </li>
+  );
 
   return (
     <section className="ac-board" aria-labelledby="ac-board-h">
@@ -394,17 +441,18 @@ export function Leaderboard({ acc, version, onOpen }) {
       </p>
       {!data ? (
         <p className="ac-small">טוען…</p>
-      ) : data.top.length === 0 ? (
+      ) : data.top.length === 0 && !gRank ? (
         <p className="ac-small">{range === 'month' ? 'החודש עוד לא נרשמו נקודות. הראשון בטבלה יכול להיות אתם.' : 'עוד אין שחקנים רשומים.'}</p>
       ) : (
         <ol className="ac-rows">
-          {rows.map((r) => (
+          {rows.map((r) => r.ghost ? ghostRow(gRank) : (
             <li key={`${r.rank}-${r.nickname}`} className={r.me ? 'me' : ''}>
               <span className="ac-rank">{r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : r.rank}</span>
               <span className="ac-nick">{r.nickname}</span>
               <span className="ac-pts"><b>{r.points}</b> נק׳</span>
             </li>
           ))}
+          {ghostOut && ghostRow(gRank, ' gap')}
           {meOut && (
             <li className="me gap">
               <span className="ac-rank">{data.me.rank}</span>
@@ -420,7 +468,7 @@ export function Leaderboard({ acc, version, onOpen }) {
         </button>
       )}
       {range === 'month' && <p className="ac-small">הטבלה מתאפסת בכל ראש חודש עברי. רק האתגר היומי נספר.</p>}
-      {acc.known && !acc.user && (
+      {acc.known && !acc.user && !gRank && (
         <button type="button" className="gm-all" onClick={() => onOpen('signin', 'board')}>להצטרף לטבלה</button>
       )}
     </section>

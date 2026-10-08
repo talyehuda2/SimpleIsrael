@@ -73,8 +73,19 @@
 .gm-btn.ac-danger{background:var(--bad,#a3342a);border-color:var(--bad,#a3342a);color:#fff}
 
 /* ----- במסך התוצאה ----- */
-.ac-invite{margin:14px 0 0;padding:12px 14px;border:1.5px dashed var(--gold,#b28a2b);border-radius:14px;background:#fff8e6}
+/* ההזמנה להירשם: מסגרת זהב מלאה וכותרת, לא שורה מקווקוות - בגרסה הקודמת לא נרשמו */
+.ac-invite{margin:14px 0 0;padding:14px 16px;border:2px solid var(--gold,#b28a2b);border-radius:16px;background:#fff8e6;text-align:center}
+.ac-invite-h{margin:0 0 6px;font-family:'Frank Ruhl Libre',serif;font-size:19px;color:var(--navy,#163a57)}
 .ac-invite p{margin:0 0 10px;font-size:14.5px;line-height:1.5}
+.ac-invite p.ac-small{margin:8px 0 0}
+/* כהה על זהב בהיר, 9:1 - לא נייבי כמו "שיתוף", כדי ששני הכפתורים לא יתחרו */
+.ac-invite-btn{font:inherit;font-size:16px;font-weight:800;padding:12px 22px;border-radius:14px;cursor:pointer;
+  border:1.5px solid var(--gold,#b28a2b);background:#e9c46a;color:#33281a;width:100%;max-width:340px}
+.ac-invite-btn:hover{background:#f0d083}
+.ac-invite-btn:focus-visible,.ac-ghost-btn:focus-visible{outline:3px solid var(--navy,#163a57);outline-offset:2px}
+.ac-rows li.ghost{background:#fff8e6;box-shadow:inset 0 0 0 1.5px var(--gold,#b28a2b)}
+.ac-ghost-btn{flex:none;font:inherit;font-size:13px;font-weight:700;padding:5px 10px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--gold,#b28a2b);background:#e9c46a;color:#33281a}
 .ac-saved{margin:12px 0 0;font-size:14px;color:var(--ok,#3f6628);font-weight:700}
 .ac-saved b{color:var(--navy,#163a57)}
 .ac-saved.bad{color:var(--bad,#a3342a)}
@@ -103,7 +114,7 @@
 .ac-prize{margin:-2px 0 10px;padding:7px 10px;border-radius:10px;font-size:13.5px;font-weight:600;line-height:1.5;
   color:var(--ink,#33281a);background:rgb(37 163 90 / .08);border:1px solid rgb(37 163 90 / .35)}
 .ac-prize a{color:#17663a;font-weight:800;text-decoration:underline;text-underline-offset:2px}
-.ac-prize-inv{margin:6px 0 0;font-size:14px;font-weight:700;color:#17663a}
+.ac-prize-inv{margin:0 0 10px;font-size:14px;font-weight:700;color:#17663a}
 
 @media (prefers-reduced-motion:reduce){ .ac-dlg[open]{animation:none} }
 @media (max-width:380px){ .ac-stats{grid-template-columns:repeat(2,1fr)} }
