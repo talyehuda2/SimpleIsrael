@@ -50,6 +50,9 @@ function layout(list, py, origin = SPLIT) {
 function Box({ b, realm, onJump }) {
   const { k, h } = b;
   const tier = h < 26 ? 'xs' : h < 52 ? 'sm' : 'lg';
+  /* בתיבה קטנה רק המספר: ההסבר בסוגריים ("8 שנים (הראשונות במקביל ליהושפט אביו)")
+     נחתך בה בטלפון יחד עם השם. הנוסח המלא ב-title ובכרטיס */
+  const reign = tier === 'lg' ? k.reignText : k.reignText.replace(/\s*\(.*$/, '');
   return (
     <button
       className={`kb ${realm} j-${k.judgment} t-${tier}${b.short ? ' short' : ''}`}
@@ -58,11 +61,11 @@ function Box({ b, realm, onJump }) {
       title={`${k.name} · ${k.reignText} · ${JUDGMENT[k.judgment]} · קפיצה לכרטיס`}
     >
       {tier === 'xs' ? (
-        <span className="kb-line">{k.name} · {k.reignText}</span>
+        <span className="kb-line">{k.name} · {reign}</span>
       ) : (
         <>
           <span className="kb-name">{k.name}</span>
-          <span className="kb-reign">{k.reignText}</span>
+          <span className="kb-reign">{reign}</span>
           {tier === 'lg' && <span className="kb-years" dir="ltr">{k.start}–{k.end}</span>}
         </>
       )}
