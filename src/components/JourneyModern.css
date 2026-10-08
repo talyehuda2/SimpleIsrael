@@ -10,3 +10,11 @@
 .jmm-n{pointer-events:none}
 .jmm.tiny{width:11px;height:11px;border-width:1.5px;transform:none;opacity:.9}
 .jmm.tiny .jmm-n{display:none}
+/* טבעת הספירה (paintTimer): מחוץ לסמן, בצבע הדמות על טבעת לבנה - כמו בציור */
+.jmm-ring{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;
+  pointer-events:none;overflow:visible}
+.jmm-ring-t{fill:none;stroke:rgb(255 255 255 / .75);stroke-width:3.5}
+.jmm-ring-a{fill:none;stroke:var(--c,#9c2b50);stroke-width:3.5;stroke-linecap:round;
+  animation:jmmRing linear forwards}
+@keyframes jmmRing{from{stroke-dashoffset:0}to{stroke-dashoffset:var(--ring-c,106.8)}}
+@media (prefers-reduced-motion: reduce){.jmm-ring-a{animation:none;stroke-dashoffset:0}}

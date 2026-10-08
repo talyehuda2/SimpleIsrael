@@ -142,6 +142,8 @@ export default function JourneyMap({
   // אליה, ונשארת חיה עד שהרכיב יורד - מעבר חוזר אינו מוריד אותה שוב.
   useEffect(() => { modernRef.current?.setJourney(ptsRef.current, color); }, [item]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { modernRef.current?.setStep(step); }, [step]);
+  // טבעת הספירה גם במפה המודרנית: אחרי setStep, כדי שתיבנה על התחנה החדשה
+  useEffect(() => { modernRef.current?.setTimer({ on: timerOn, playing, ms: PLAY_MS }); }, [timerOn, playing, step]);
   useEffect(() => () => { modernRef.current?.destroy(); modernRef.current = null; }, []);
 
   async function switchMode(m) {
@@ -162,7 +164,10 @@ export default function JourneyMap({
       }
       setMode('modern');
       // המכל היה מוסתר עד עכשיו, והמפה מודדת את עצמה מחדש כשהוא נגלה
-      requestAnimationFrame(() => { modernRef.current?.resize(); modernRef.current?.setStep(step); });
+      requestAnimationFrame(() => {
+        modernRef.current?.resize(); modernRef.current?.setStep(step);
+        modernRef.current?.setTimer({ on: timerOn, playing, ms: PLAY_MS });
+      });
     } else {
       setMode('ancient');
     }
@@ -359,8 +364,9 @@ export default function JourneyMap({
           const modern = mode === 'modern';
           const box = wrapRef.current?.getBoundingClientRect();
           const unpinned = modern && (!modernPos || !box || !box.width);
-          const xPct = modern ? (unpinned ? 50 : (modernPos.x / box.width) * 100) : ((active.x - vb.x) / vb.w) * 100;
-          const yPct = modern ? (unpinned ? 0 : (modernPos.y / box.height) * 100) : ((active.y - vb.y) / vb.h) * 100;
+          /* בזמן הטיסה התחנה עוד מחוץ למסגרת, והכרטיס ברח מהמפה - ולכן נחסם לתחומה */
+          const xPct = modern ? (unpinned ? 50 : clampN((modernPos.x / box.width) * 100, 0, 100)) : ((active.x - vb.x) / vb.w) * 100;
+          const yPct = modern ? (unpinned ? 0 : clampN((modernPos.y / box.height) * 100, 0, 100)) : ((active.y - vb.y) / vb.h) * 100;
           const tx = xPct < 30 ? '-6%' : xPct > 70 ? '-94%' : '-50%';
           const ty = yPct < 35 ? '18px' : 'calc(-100% - 18px)';
           return (
