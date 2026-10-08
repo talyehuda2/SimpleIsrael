@@ -14,3 +14,8 @@
 .map-wrap.is-modern .map-svg{visibility:hidden}
 /* תחנה שאין לה מיקום על המפה המודרנית, או שיצאה מהמסגרת: הכרטיס בראש המפה */
 .map-popup.unpinned{left:50% !important;top:8px !important;transform:translateX(-50%) !important}
+/* מראה מקום בכרטיס התחנה. הכרטיס כולו pointer-events:none כדי לא לחסום את המפה -
+   רק הקישור לוכד לחיצה */
+.map-popup-ref{display:block;pointer-events:auto;margin:-4px 10px 9px;font-size:12px;font-weight:700;
+  color:var(--gold-ink,#7a5b16);text-decoration:none}
+.map-popup-ref:is(a):hover{text-decoration:underline}

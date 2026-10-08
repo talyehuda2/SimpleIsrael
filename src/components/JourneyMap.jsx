@@ -3,6 +3,7 @@ import { stationNoteText, offMapName, offMapDir } from '../utils/placeNote.js';
 import maps from '../data/maps.json';
 import { MAP_SRC, MAP_SIZE, journeyStations, offMapMark, offMapPin } from '../utils/mapProject.js';
 import { mark } from '../lib/trail.js';
+import { refHref } from '../utils/sefaria.js';
 import './JourneyMap.css';
 
 /* מפת המסע - רכיב אחד לשני המסכים.
@@ -380,6 +381,12 @@ export default function JourneyMap({
               </div>
               <div className="map-popup-label">{active.label}</div>
               <p className="map-popup-desc">{active.desc}</p>
+              {/* מראה המקום (אוקטובר 2026): מי שקורא "יורם יצא למואב" יכול לבדוק בעצמו
+                  בפסוק. ה-ref נאכף לכל תחנה בבנייה, ולכן כמעט תמיד יש קישור */}
+              {active.ref && (refHref(active.ref)
+                ? <a className="map-popup-ref" href={refHref(active.ref)} target="_blank" rel="noopener noreferrer"
+                    onClick={() => mark('ref_open', { key: `${item.kind}:${item.id}`, from: 'journey' })}>📖 {active.ref}</a>
+                : <span className="map-popup-ref">📖 {active.ref}</span>)}
             </div>
           );
         })()}

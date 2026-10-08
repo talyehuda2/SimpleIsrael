@@ -88,3 +88,16 @@ export function sourceSegments(source) {
     return { text, href };
   });
 }
+
+/* מראה מקום של תחנה במסע ("שופטים ו, יא-לב", "בראשית כז-כח") -> קישור לספריא
+   עד רמת הפסוק. הפורמט נאכף בבנייה (scripts/check-data.mjs, parseRef), ולכן כאן
+   אין צורך בסלחנות של sourceSegments. "מסורת: ..." או ספר לא מוכר -> null. */
+export function refHref(ref) {
+  const m = String(ref || '').match(/^(.+?) ([א-ת]+)(?:-([א-ת]+))?(?:, ([א-ת]+)(?:-([א-ת]+))?)?$/);
+  if (!m || !BOOKS[m[1]]) return null;
+  const [, book, c1, c2, v1, v2] = m;
+  let r = `${BOOKS[book]}.${gematria(c1)}`;
+  if (v1) r += `.${gematria(v1)}${v2 ? `-${gematria(v2)}` : ''}`;
+  else if (c2) r += `-${gematria(c2)}`;
+  return `https://www.sefaria.org.il/${r}?lang=he`;
+}

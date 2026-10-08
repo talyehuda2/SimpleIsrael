@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { hebrewYearLetters, toSecular, formatRange } from '../src/utils/dates.js';
-import { sourceSegments } from '../src/utils/sefaria.js';
+import { sourceSegments, refHref } from '../src/utils/sefaria.js';
 import { buildPlaceIndex, relatedByPlace } from '../src/utils/related.js';
 import { journeyStations } from '../src/utils/mapProject.js';
 import { writeCard, writeGameCard, GAME_RESULT } from './og.mjs';
@@ -267,6 +267,7 @@ footer a{color:var(--gold-ink)}
 .mlist a:hover b{color:var(--gold-ink)}
 .mlist .dim{margin-inline-start:8px}
 .mlist p{margin:4px 0 0;font-size:15px;line-height:1.75;color:var(--muted)}
+.mlist .mref,.mlist .mref a{font-size:13px;font-weight:700;color:var(--gold-ink)}
 /* שער הכניסה - הדבר הראשון בדף. הכותרת, ומיד אחריה הבחירה באיזה מבט
    להיכנס לאתר עצמו. הטקסט המלא ממשיך מתחתיו. */
 .gate{margin:14px 0 8px;background:linear-gradient(180deg,#fdf8ec,#f4e9d1);
@@ -920,6 +921,7 @@ ${eras.length ? `<div class="row"><b>תקופות:</b> ${eras.map((e) => `<a hre
       <span class="dim">${esc(KINDS[v.kind] ? KINDS[v.kind].label : '')} · שנת ${v.year}</span>
       ${v.label ? `<p><b>${esc(v.label)}</b></p>` : ''}
       ${v.desc ? `<p>${esc(clean(v.desc))}</p>` : ''}
+      ${v.ref ? `<p class="mref">📖 ${refHref(v.ref) ? `<a href="${refHref(v.ref)}" rel="noopener">${esc(v.ref)}</a>` : esc(v.ref)}</p>` : ''}
     </li>`).join('\n    ')}
   </ol>
 </section>
