@@ -191,7 +191,15 @@ export function createJourneyModern(el, { onPick, onError, onPos }) {
         b.setAttribute('aria-label', `${p.order}. ${p.name}`);
         b.innerHTML = `<span class="jmm-n">${esc(p.order)}</span>`;
         b.addEventListener('click', (e) => { e.stopPropagation(); onPick(i); });
-        const m = new maplibregl.Marker({ element: b, anchor: 'center' }).setLngLat([p.lon, p.lat]).addTo(map);
+        /* MapLibre ממקם את הסמן ב-transform על האלמנט שמקבל, בכל פריים של תזוזה.
+           לכפתור עצמו יש transition ו-scale (הפעילה, ריחוף) - ואם הוא האלמנט
+           הממוקם, כל צעד של המצלמה "מונפש" באיחור של 150ms, והמספרים החליקו על
+           המפה בכל זום (עד מאות פיקסלים בטיסה לתחנה). לכן עטיפה: MapLibre מזיז
+           את העטיפה, והעיצוב נשאר על הכפתור שבתוכה. */
+        const host = document.createElement('div');
+        host.className = 'jmm-host';
+        host.appendChild(b);
+        const m = new maplibregl.Marker({ element: host, anchor: 'center' }).setLngLat([p.lon, p.lat]).addTo(map);
         markers.push({ m, b, i });
       });
       measure(); prog = 0; cancelAnimationFrame(progAF); clearTimeout(progTO);
