@@ -1,0 +1,10 @@
+/* סמני התחנות במפה המודרנית של המסע (journeyModern.js). נטען רק עם המפה עצמה.
+   אותה שפה של הסמנים במפה המצוירת: עיגול בצבע הדמות עם מספר, טבעת זהב לתחנה
+   הפעילה, ותחנות עתידיות בהירות. קטנים מבציור - כאן מתחתם ערים ושמות של היום. */
+.jmm{width:24px;height:24px;padding:0;border:2px solid #fff;border-radius:50%;
+  background:var(--c,#9c2b50);color:#fff;font:700 12px/1 system-ui,sans-serif;cursor:pointer;
+  display:grid;place-items:center;box-shadow:0 1px 4px rgb(0 0 0 / .4);transition:transform .15s}
+.jmm:hover{transform:scale(1.15)}
+.jmm.active{border:3px solid var(--gold,#c9a227);transform:scale(1.25);z-index:2}
+.jmm.future{background:#fbf5e7;color:var(--c,#9c2b50);border-color:var(--c,#9c2b50);opacity:.75}
+.jmm-n{pointer-events:none}

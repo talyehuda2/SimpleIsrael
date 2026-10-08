@@ -117,33 +117,20 @@ function addRelief(map) {
   if (map.getLayer('landcover_sand')) map.setLayoutProperty('landcover_sand', 'visibility', 'none');
 }
 
-/**
- * @param {HTMLElement} el      המכל של המפה
- * @param {object[]} places      places.json
- * @param {(id:string)=>void} onSelect
- * @param {(err:Error)=>void} onError
- */
-export function createModern(el, { places, onSelect, onError, initialBounds }) {
+/** בסיס משותף למפה המודרנית של מפת הארץ ושל מפת המסע (journeyModern.js):
+    הסגנון, העברית, סינון הגבולות וה"פלסטין", התבליט, שורת הקרדיטים וזיהוי
+    כישלון. כל מה שמעבר לזה - סמנים, קווים ומצלמה - שייך למי שקורא לה. */
+export function baseMap(el, { bounds, padding = 30, onError }) {
   if (!rtlRequested) {
     rtlRequested = true;
     // lazy=true: התוסף נטען רק כשבאמת צריך לצייר טקסט מימין לשמאל
     maplibregl.setRTLTextPlugin('/vendor/maplibre/rtl-text.js', true).catch(() => {});
   }
-  const shown = places.filter((p) => p.lat != null && !p.approx);
-  /* מבט הבסיס הוא האחוזונים 10-90 של הביקורים, כמו במפה העתיקה: התחנות בסיני
-     ובעבר הירדן המזרחי מותחות את התיבה, וארץ ישראל - שבה רוב הביקורים -
-     יצאה זעירה באמצע המסך. */
-  const q = (a, f) => { const t = [...a].sort((m, n) => m - n); return t[Math.floor((t.length - 1) * f)]; };
-  const lats = [], lons = [];
-  for (const p of shown) for (let i = 0; i < p.visits.length; i++) { lats.push(p.lat); lons.push(p.lon); }
-  const bounds = new maplibregl.LngLatBounds([q(lons, .1), q(lats, .1)], [q(lons, .9), q(lats, .9)]);
-
   const map = new maplibregl.Map({
     container: el,
     style: STYLE_URL,
-    // מבט פתיחה: האזור שהיה על המסך במפה העתיקה, אם נמסר; אחרת מבט הבסיס
-    bounds: initialBounds || bounds,
-    fitBoundsOptions: { padding: initialBounds ? 0 : 30 },
+    bounds,
+    fitBoundsOptions: { padding },
     maxBounds: [[31.5, 27.5], [38.5, 35.5]],   // ארץ ישראל וסביבתה, לא כל העולם
     attributionControl: { compact: true },
     dragRotate: false,
@@ -177,6 +164,27 @@ export function createModern(el, { places, onSelect, onError, initialBounds }) {
     failed = true;
     onError?.(e.error || new Error('style'));
   });
+  return map;
+}
+
+/**
+ * @param {HTMLElement} el      המכל של המפה
+ * @param {object[]} places      places.json
+ * @param {(id:string)=>void} onSelect
+ * @param {(err:Error)=>void} onError
+ */
+export function createModern(el, { places, onSelect, onError, initialBounds }) {
+  const shown = places.filter((p) => p.lat != null && !p.approx);
+  /* מבט הבסיס הוא האחוזונים 10-90 של הביקורים, כמו במפה העתיקה: התחנות בסיני
+     ובעבר הירדן המזרחי מותחות את התיבה, וארץ ישראל - שבה רוב הביקורים -
+     יצאה זעירה באמצע המסך. */
+  const q = (a, f) => { const t = [...a].sort((m, n) => m - n); return t[Math.floor((t.length - 1) * f)]; };
+  const lats = [], lons = [];
+  for (const p of shown) for (let i = 0; i < p.visits.length; i++) { lats.push(p.lat); lons.push(p.lon); }
+  const bounds = new maplibregl.LngLatBounds([q(lons, .1), q(lats, .1)], [q(lons, .9), q(lats, .9)]);
+
+  // מבט פתיחה: האזור שהיה על המסך במפה העתיקה, אם נמסר; אחרת מבט הבסיס
+  const map = baseMap(el, { bounds: initialBounds || bounds, padding: initialBounds ? 0 : 30, onError });
 
   // ---- סמני המקומות ----
   // קטנים מהעתיקה: כאן מתחתם מפה אמיתית, ועיגולים בגודל של שם עיר כיסו אותה

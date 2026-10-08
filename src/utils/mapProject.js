@@ -156,7 +156,8 @@ export function journeyStations(mapEntry) {
     const ll = p.x != null ? oldPixelToLatLon(p.x, p.y) : { lon: p.lon, lat: p.lat };
     const off = offMapDir(p.name);
     const q = toEdge(project(ll.lon, ll.lat), off, offMapLat(p.name));
-    return { ...p, x: q.x, y: q.y, ...(off ? { off } : {}) };
+    // lat/lon נשמרים למפה המודרנית של המסע, שמציירת על קואורדינטות ולא על הציור
+    return { ...p, x: q.x, y: q.y, lat: ll.lat, lon: ll.lon, ...(off ? { off } : {}) };
   });
   let total = 0;
   pts.forEach((p, i) => {

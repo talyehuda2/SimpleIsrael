@@ -35,6 +35,7 @@
      channel_click {from}   קישור לערוץ הוואטסאפ נלחץ: menu / about / game / board
                             (mark, לא once; components/channel.js)
      map_mode    {m}        מפת הארץ   - מעבר בין המפה העתיקה למודרנית (mark, לא once)
+     journey_mode {m}       מפת המסע (שני המסכים) - אותו מעבר במפת המסע (mark, לא once)
      geo_locate  {r}        מפת הארץ   - "איפה אני" הופעל, ומה יצא: ok / outside /
                                         denied / error (mark, לא once). בכוונה בלי
                                         קואורדינטה: המיקום אינו יוצא מהמכשיר
