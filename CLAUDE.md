@@ -190,6 +190,8 @@ axe-core הוא הכלי שהשער מריץ, ו**הוא לא מודד שני ד
   בלבד `Math.random` מקבל זרע קבוע, ולכן אותה יד חוזרת אחרי רענון - כך הסדר הנכון נלמד מסבב ראשון.
   `pick: {topics, periods}` - מסך הבחירה של המשחק החופשי עם בחירה מסומנת ("משחק מותאם אישית").
   דוגמאות: `scripts/status/game-launch.json`, `scripts/status/game-quiz.json`. ל-`cta` יש `url`, ולכל שקף `footUrl`, לכתובת אחרת מדף הבית.
+- **תמונה לפוסט בערוץ** (`post` בראש קובץ התוכן, לצד `slides`): `eyebrow`, `title` ו-`blocks` כמו ב-`verses`, והפלט
+  `status-out/<שם>/post.jpg` **לרוחב**, 1200x630 - בערוץ תמונה לאורך נחתכת בפיד. דוגמה: `scripts/status/eliyahu-rain.json`.
 - **שקף `art`**: איור מוכן (למשל מצ'אט GPT) על כל השקף, עם כותרת בפינה ותוויות שם במיקום
   באחוזים. הקובץ נשמר כ-JPEG ב-`build-assets/status/`. דוגמה: `scripts/status/sukkot-summary.json`.
   ⚠️ fmt קורא אות-מירכאות-אות כגרשיים (ו"הושענא" -> ו״הושענא), וזה שובר את הצימוד של שאר

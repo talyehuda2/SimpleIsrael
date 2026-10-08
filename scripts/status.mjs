@@ -35,7 +35,12 @@
      art    - image, eyebrow?, title[], labels?[]   איור מוכן על כל השקף (למשל מצ'אט GPT), עם כותרת
               בפינה ותוויות שם. image: נתיב יחסי לשורש הריפו. title: שורות הכותרת. labels:
               [{t, x, y}] - x/y באחוזים מרוחב/גובה האיור, נקודת העיגון היא מרכז התווית.
-              box: {x, y, w} מיקום הכותרת בפיקסלים של 1080x1920 (ברירת מחדל: פינה שמאלית עליונה). */
+              box: {x, y, w} מיקום הכותרת בפיקסלים של 1080x1920 (ברירת מחדל: פינה שמאלית עליונה).
+
+   תמונה לפוסט בערוץ (שדה post בראש הקובץ, לצד slides): eyebrow, title, blocks[] - אותם בלוקים
+   של verses, ו-\n בתוך p שובר שורה. הפלט status-out/<שם>/post.jpg, לרוחב (1200x630, כמו תמונות
+   השיתוף של האתר): בערוץ תמונה לאורך נחתכת בפיד, ולרוחב מוצגת במלואה. האיש עם המקל משמאל,
+   הטקסט מימין. */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, createReadStream, mkdtempSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename, extname } from 'node:path';
@@ -180,6 +185,32 @@ h1.xl{font-size:118px;line-height:1.04}
 <img class="art" src="file://${BG}">
 <div class="content">${body(s, shot)}</div>
 ${s.type === 'cta' ? '' : `<div class="url">${esc(s.footUrl || 'simpleisrael.co.il')}</div>`}
+</body></html>`;
+
+/* ---------- תמונה לפוסט בערוץ ---------- */
+const postBlock = (b) => b.p ? `<p>${fmt(b.p).replace(/\n/g, '<br>')}</p>` : block(b);
+const postPage = (s) => `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><style>
+@font-face{font-family:F;font-weight:500;src:url(file://${FD}/500Medium/FrankRuhlLibre_500Medium.ttf)}
+@font-face{font-family:F;font-weight:700;src:url(file://${FD}/700Bold/FrankRuhlLibre_700Bold.ttf)}
+@font-face{font-family:F;font-weight:900;src:url(file://${FD}/900Black/FrankRuhlLibre_900Black.ttf)}
+*{box-sizing:border-box;margin:0}
+html,body{width:1200px;height:630px;overflow:hidden;font-family:F,serif;color:#33281a}
+body{position:relative;background:#ead7ab url(file://${BG}) center/cover no-repeat}
+/* מימין לאיש עם המקל, שמגיע עד x=330 */
+.content{position:absolute;right:70px;top:52px;width:760px}
+.eyebrow{font-weight:700;font-size:30px;color:#6b4a0f;padding-bottom:12px;margin-bottom:18px;border-bottom:2px solid rgb(168 132 44 / .45)}
+h1{font-weight:900;font-size:76px;line-height:1.05;color:#163a57;margin-bottom:22px}
+blockquote{background:rgb(251 245 231 / .75);border-inline-start:7px solid #b28a2b;
+  border-start-end-radius:18px;border-end-end-radius:18px;padding:18px 26px 14px;margin-bottom:22px}
+.vt{display:block;font-weight:700;font-size:33px;line-height:1.4}
+cite{display:block;font-style:normal;font-weight:700;font-size:22px;color:#7a5b16;margin-top:8px}
+p{font-weight:700;font-size:29px;line-height:1.4;color:#163a57;margin-bottom:14px}
+q{quotes:none;color:#7a5410}
+.url{position:absolute;left:88px;bottom:44px;font-weight:700;font-size:28px;color:#163a57;direction:ltr;
+  background:rgb(251 245 231 / .8);padding:4px 14px;border-radius:10px}
+</style></head><body>
+<div class="content">${s.eyebrow ? `<div class="eyebrow">${esc(s.eyebrow)}</div>` : ''}<h1>${ttl(s.title)}</h1>${(s.blocks || []).map(postBlock).join('')}</div>
+<div class="url">${esc(s.footUrl || 'simpleisrael.co.il')}</div>
 </body></html>`;
 
 /* ---------- צילומי מסך מהאתר ---------- */
@@ -344,8 +375,20 @@ for (const [i, s] of spec.slides.entries()) {
   await pg.screenshot({ path: join(OUT, name), type: 'jpeg', quality: 90 });
   console.log(`✓ ${name}  ${s.type}  ${s.title || ''}`);
 }
+if (spec.post) {
+  const pp = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 2 });
+  const html = join(TMP, 'post.html');
+  writeFileSync(html, postPage(spec.post));
+  await pp.goto(`file://${html}`, { waitUntil: 'load' });
+  await pp.evaluate(() => document.fonts.ready);
+  // מעל 590 התוכן נוגע בשולי התמונה
+  const bottom = await pp.evaluate(() => Math.round(document.querySelector('.content').getBoundingClientRect().bottom));
+  if (bottom > 590) { bad++; console.log(`⚠ post.jpg: התוכן נגמר ב-${bottom}px מתוך 630 - לקצר`); }
+  await pp.screenshot({ path: join(OUT, 'post.jpg'), type: 'jpeg', quality: 88 });
+  console.log(`✓ post.jpg  פוסט לערוץ  ${spec.post.title}`);
+}
 await browser.close();
 srv?.close();
-console.log(`\n${spec.slides.length} תמונות ב-${OUT}`);
+console.log(`\n${spec.slides.length} תמונות${spec.post ? ' ותמונה לערוץ' : ''} ב-${OUT}`);
 console.log(`לכיתוב, בשורה מתחת לקישור לאתר:\n📢 הערוץ: ${CHANNEL_URL}`);
 process.exit(bad ? 1 : 0);
