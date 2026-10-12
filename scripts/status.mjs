@@ -15,6 +15,7 @@
    סוגי שקפים (שדה type):
      intro  - eyebrow, title, p, steps[], hint   פתיחה: מה הסדרה ואיך עוקבים
      text   - title, paras[], question        טקסט שנגמר בשאלה
+     board  - eyebrow, title, rows[{name, points, rank?}], note?   טבלת מובילים (מנצחי החודש)
      verses - eyebrow, title, blocks[]        {v, ref} פסוק | {p, strong?, soft?} | {cite}
      site   - eyebrow, title, path, openMap?, stop?, crop?   צילום מסך מהאתר (מ-dist)
               crop: {from, to?, h?, pad?} - חיתוך לפי אלמנטים בעמוד, מראש from
@@ -85,9 +86,18 @@ const block = (b) => b.v
   : b.cite ? `<cite class="solo">${esc(b.cite)}</cite>`
   : `<p class="${[b.strong && 'strong', b.soft && 'soft'].filter(Boolean).join(' ')}">${fmt(b.p)}</p>`;
 
+/* טבלת מובילים: שלושת הראשונים עם מדליה, השאר עם מספר. rows: [{name, points, rank?}] -
+   rank נגזר מהסדר אם חסר; בשוויון כותבים אותו rank לשניהם */
+const MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
+const boardRows = (rows) => `<ol class="board">${rows.map((r, i) => {
+  const rank = r.rank ?? i + 1;
+  return `<li class="${rank <= 3 ? 'top' : ''}"><span class="rk">${MEDAL[rank] || rank}</span><span class="nm">${esc(r.name)}</span><span class="pt">${r.points}<small>נק׳</small></span></li>`;
+}).join('')}</ol>`;
+
 function body(s, shot) {
   const head = s.eyebrow ? `<div class="eyebrow">${esc(s.eyebrow)}</div>` : '<div class="rule"></div>';
   if (s.type === 'text') return `${head}<h1>${ttl(s.title)}</h1>${s.paras.map((p) => `<p>${fmt(p)}</p>`).join('')}${s.question ? `<div class="qn">${esc(s.question)}</div>` : ''}`;
+  if (s.type === 'board') return `${head}<h1>${ttl(s.title)}</h1>${boardRows(s.rows)}${s.note ? `<p class="soft">${fmt(s.note)}</p>` : ''}`;
   if (s.type === 'verses') return `${head}<h1>${ttl(s.title)}</h1><main>${s.blocks.map(block).join('')}</main>`;
   if (s.type === 'site') return `${head}<h1 class="sm">${esc(s.title)}</h1><img class="shot${s.crop ? ' crop' : ''}" src="file://${shot}">`;
   if (s.type === 'intro') return `${head}<h1 class="xl">${esc(s.title)}</h1><p>${fmt(s.p)}</p>`
@@ -175,6 +185,14 @@ h1.xl{font-size:118px;line-height:1.04}
   background:rgb(251 245 231 / .7);border-radius:22px;padding:22px 28px}
 .steps li::before{content:counter(st);flex:none;width:70px;height:70px;border-radius:50%;background:#163a57;color:#e7c873;
   display:flex;align-items:center;justify-content:center;font-weight:900;font-size:40px}
+/* טבלת מובילים - שורות כמו ב-.steps, והמקומות הראשונים מודגשים */
+.board{list-style:none;padding:0;margin:6px 0 34px;display:flex;flex-direction:column;gap:18px}
+.board li{display:flex;align-items:center;gap:26px;background:rgb(251 245 231 / .72);border-radius:24px;padding:22px 30px}
+.board li.top{background:rgb(251 245 231 / .92);border:3px solid rgb(168 132 44 / .55)}
+.board .rk{flex:none;width:76px;text-align:center;font-weight:900;font-size:56px;color:#163a57}
+.board .nm{flex:1;min-width:0;font-weight:900;font-size:54px;color:#163a57;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board .pt{flex:none;font-weight:900;font-size:52px;color:#7a5410}
+.board .pt small{font-size:32px;font-weight:700;margin-inline-start:8px}
 .hint{margin-top:40px;font-weight:700;font-size:38px;color:#7a5b16}
 .urlbox{margin-top:40px;background:#163a57;color:#fff;border-radius:28px;padding:40px;text-align:center;direction:ltr;font-weight:700;font-size:64px}
 .chan{margin-top:26px;border:4px solid #25a35a;background:rgb(251 245 231 / .85);border-radius:28px;padding:26px 34px;text-align:center}
@@ -191,7 +209,7 @@ ${s.type === 'cta' ? '' : `<div class="url">${esc(s.footUrl || 'simpleisrael.co.
 </body></html>`;
 
 /* ---------- תמונה לפוסט בערוץ ---------- */
-const postBlock = (b) => b.p ? `<p>${fmt(b.p).replace(/\n/g, '<br>')}</p>` : block(b);
+const postBlock = (b) => b.rows ? boardRows(b.rows) : b.p ? `<p>${fmt(b.p).replace(/\n/g, '<br>')}</p>` : block(b);
 /* shots: עד שני צילומים מהאתר (אותם שדות של שקף site, ועוד label) - נכנסים בצד שמאל במקום
    האיש עם המקל, והטקסט מצטמצם לימין */
 const postShots = (s, files) => `<div class="shots">${files.map((f, i) =>
@@ -215,6 +233,13 @@ p{font-weight:700;font-size:29px;line-height:1.4;color:#163a57;margin-bottom:14p
 q{quotes:none;color:#7a5410}
 .url{position:absolute;left:88px;bottom:44px;font-weight:700;font-size:28px;color:#163a57;direction:ltr;
   background:rgb(251 245 231 / .8);padding:4px 14px;border-radius:10px}
+.board{list-style:none;padding:0;margin:4px 0 18px;display:flex;flex-direction:column;gap:10px}
+.board li{display:flex;align-items:center;gap:16px;background:rgb(251 245 231 / .75);border-radius:14px;padding:9px 18px}
+.board li.top{background:rgb(251 245 231 / .92);border:2px solid rgb(168 132 44 / .55)}
+.board .rk{flex:none;width:44px;text-align:center;font-weight:900;font-size:32px;color:#163a57}
+.board .nm{flex:1;min-width:0;font-weight:900;font-size:32px;color:#163a57;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board .pt{flex:none;font-weight:900;font-size:30px;color:#7a5410}
+.board .pt small{font-size:20px;font-weight:700;margin-inline-start:6px}
 body.has-shots .content{width:500px;right:56px}
 body.has-shots h1{font-size:60px}
 body.has-shots .url{left:auto;right:56px;bottom:34px}
