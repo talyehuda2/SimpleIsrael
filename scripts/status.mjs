@@ -233,8 +233,10 @@ p{font-weight:700;font-size:29px;line-height:1.4;color:#163a57;margin-bottom:14p
 q{quotes:none;color:#7a5410}
 .url{position:absolute;left:88px;bottom:44px;font-weight:700;font-size:28px;color:#163a57;direction:ltr;
   background:rgb(251 245 231 / .8);padding:4px 14px;border-radius:10px}
-.board{list-style:none;padding:0;margin:4px 0 18px;display:flex;flex-direction:column;gap:10px}
-.board li{display:flex;align-items:center;gap:16px;background:rgb(251 245 231 / .75);border-radius:14px;padding:9px 18px}
+/* בתמונה לרוחב יש מקום לחמש שורות רק אם הכותרת קטנה והשורות צפופות */
+.content:has(.board) h1{font-size:58px;margin-bottom:14px}
+.board{list-style:none;padding:0;margin:4px 0 14px;display:flex;flex-direction:column;gap:8px}
+.board li{display:flex;align-items:center;gap:16px;background:rgb(251 245 231 / .75);border-radius:14px;padding:4px 18px}
 .board li.top{background:rgb(251 245 231 / .92);border:2px solid rgb(168 132 44 / .55)}
 .board .rk{flex:none;width:44px;text-align:center;font-weight:900;font-size:32px;color:#163a57}
 .board .nm{flex:1;min-width:0;font-weight:900;font-size:32px;color:#163a57;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
