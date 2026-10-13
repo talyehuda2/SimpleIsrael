@@ -152,15 +152,18 @@ function chips(list) {
 
 /* ההתאמה לעמוד: התוכן מוגדל או מוקטן (zoom) עד שהוא ממלא את A4 בדיוק. דמות עם
    תיאור קצר השאירה רבע עמוד ריק, וחזקיהו (הרבה בני תקופה) גלש לעמוד שני. חיפוש
-   בינארי על המקדם, בין 0.7 ל-1.3. רץ בדף עצמו אחרי טעינת הגופנים, ולכן זהה
+   בינארי על המקדם, בין 0.7 ל-1.3 (בגרסת שני העמודים עד 1.45 - יש בה יותר מקום). רץ בדף עצמו אחרי טעינת הגופנים, ולכן זהה
    בהדפסה מהאתר וב-PDF המקומי. אחר כך, במסך בלבד, הדף כולו מוקטן לרוחב החלון
    (--fit) - בטלפון עמוד A4 רחב מהמסך. */
 const FIT_JS = `(function(){
-var mm=96/25.4,pageH=297*mm,pg=document.querySelector('.page'),c=document.querySelector('.content'),f=document.querySelector('.foot'),r=document.documentElement;
-function fits(k){r.style.setProperty('--z',k);var top=pg.getBoundingClientRect().top;return c.getBoundingClientRect().bottom-top+f.offsetHeight+8+9*mm<=pageH-10;}
+var mm=96/25.4,pageH=297*mm,r=document.documentElement;
+function fitPage(pg){var c=pg.querySelector('.content'),f=pg.querySelector('.foot');
+function fits(k){pg.style.setProperty('--z',k);var top=pg.getBoundingClientRect().top;return c.getBoundingClientRect().bottom-top+f.offsetHeight+8+9*mm<=pageH-10;}
+var lo=0.7,hi=+(pg.dataset.max||1.3);for(var i=0;i<12;i++){var m=(lo+hi)/2;if(fits(m))lo=m;else hi=m;}fits(lo);return lo;}
 function screenFit(){var w=Math.min(1,(document.documentElement.clientWidth-16)/(210*mm));r.style.setProperty('--fit',w);}
-function run(){r.style.setProperty('--fit',1);var lo=0.7,hi=1.3;for(var i=0;i<12;i++){var m=(lo+hi)/2;if(fits(m))lo=m;else hi=m;}fits(lo);r.dataset.fit=lo.toFixed(3);screenFit();}
-(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){var im=document.querySelector('.map img');if(im&&!im.complete){im.addEventListener('load',run);im.addEventListener('error',run);}else run();});
+// כל עמוד מותאם בנפרד (בגרסת שני העמודים לכל אחד מקדם משלו); data-fit = הקטן שבהם
+function run(){r.style.setProperty('--fit',1);var z=[].map.call(document.querySelectorAll('.page'),fitPage);r.dataset.fit=Math.min.apply(null,z).toFixed(3);screenFit();}
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){return Promise.all([].map.call(document.images,function(im){return im.complete?0:new Promise(function(ok){im.addEventListener('load',ok);im.addEventListener('error',ok);});}));}).then(run);
 addEventListener('resize',screenFit);
 var b=document.getElementById('print');if(b)b.addEventListener('click',function(){window.print();});
 })();`;
@@ -169,8 +172,10 @@ var b=document.getElementById('print');if(b)b.addEventListener('click',function(
    fontSrc(file) - כתובת לקובץ גופן (באתר '/fonts/..'; מקומית inlineFont)
    mapSrc        - כתובת לתמונת המפה, או null כשאין מסע
    fontSet       - 'modern' (ברירת המחדל) | 'classic' | 'book'
-   web           - עמוד באתר: סרגל עם כפתור הורדה וחזרה לכרטיס, noindex */
-export function sheetHtml(item, { fontSrc, mapSrc = null, fontSet = 'modern', web = false } = {}) {
+   web           - עמוד באתר: סרגל עם כפתור הורדה וחזרה לכרטיס, noindex
+   pages         - 1 (ברירת המחדל) או 2: בעמוד הראשון הדמות ובני תקופתה, בשני
+                   המסע - מפה גדולה ורשימת תחנות מלאה. דמות בלי מסע - עמוד אחד. */
+export function sheetHtml(item, { fontSrc, mapSrc = null, fontSet = 'modern', web = false, pages = 1 } = {}) {
   const key = itemKey(item);
   const color = KIND_COLOR[item.kind] || '#9c2b50';
   const era = periodOfItem(item, periods);
@@ -178,7 +183,10 @@ export function sheetHtml(item, { fontSrc, mapSrc = null, fontSet = 'modern', we
   /* "דמויות מתקופתו": לא רק מי שחי בדיוק באותן שנים - לדוד אין כאלה בנתונים
      (שאול מסיים כשהוא מתחיל, ושלמה מתחיל כשהוא מת). אותו חישוב של "אולי יעניין
      אותך גם" באתר: אותה תקופה, הקרובים בזמן ראשונים, ואז לפי סדר השנים */
-  const people = relatedByEra(item, ALL_ITEMS.filter((x) => PERSONS.has(x.kind)), periods, new Set(), 12)
+  const two = pages === 2 && !!mapSrc && sheetStations(item).length >= 2;
+  // בשני עמודים יש מקום ליותר: עד 20 בני תקופה ו-12 אירועים, במקום 16 ו-6
+  const nPeople = two ? 20 : 16, nEvents = two ? 12 : 6;
+  const people = relatedByEra(item, ALL_ITEMS.filter((x) => PERSONS.has(x.kind)), periods, new Set(), nPeople)
     .sort((a, b) => a.start - b.start);
   const books = others.filter((x) => x.kind === 'book' && x.end - x.start < 400);
   const prophets = others.filter((x) => x.kind === 'prophet').sort((a, b) => a.start - b.start);
@@ -189,16 +197,62 @@ export function sheetHtml(item, { fontSrc, mapSrc = null, fontSet = 'modern', we
   const live = `${SITE}/?sel=${key}&src=sheet`;
   const research = researchRange(item.id);
   const fs = FONT_SETS[fontSet];
-  const hasRes = [item, ...people.slice(0, 16), ...prophets, ...events.slice(0, 6)].some((x) => RES[x.id]);
+  const hasRes = [item, ...people.slice(0, nPeople), ...prophets, ...events.slice(0, nEvents)].some((x) => RES[x.id]);
+  const stationsOl = () => `<ol>${pts.map((p) => `<li><b>${esc(p.name)}</b>${p.label ? ` - ${esc(p.label)}` : ''}${p.ref || stationNoteText(p.name) ? `<small>${esc(p.ref || '')}${stationNoteText(p.name) ? `${p.ref ? ' · ' : ''}<span class="nt">${esc(stationNoteText(p.name).replace(/^[ ·(]+|\)$/g, ''))}</span>` : ''}</small>` : ''}</li>`).join('')}</ol>`;
+  const mapTitle = () => `מפת המסע${maps[item.id].title ? ` · ${esc(maps[item.id].title)}` : ''}`;
 
   const mapBlock = pts.length >= 2 && mapSrc ? `
   <section class="map">
-    <h2>מפת המסע${maps[item.id].title ? ` · ${esc(maps[item.id].title)}` : ''}</h2>
+    <h2>${mapTitle()}</h2>
     <div class="map-row">
       <img src="${mapSrc}" alt="מפת המסע של ${esc(item.name)}, התחנות ממוספרות לפי הרשימה" width="760" height="760">
-      <ol>${pts.map((p) => `<li><b>${esc(p.name)}</b>${p.label ? ` - ${esc(p.label)}` : ''}${p.ref || stationNoteText(p.name) ? `<small>${esc(p.ref || '')}${stationNoteText(p.name) ? `${p.ref ? ' · ' : ''}<span class="nt">${esc(stationNoteText(p.name).replace(/^[ ·(]+|\)$/g, ''))}</span>` : ''}</small>` : ''}</li>`).join('')}</ol>
+      ${stationsOl()}
     </div>
   </section>` : '';
+
+  const foot = (n) => `<div class="foot">
+  <div class="txt">${two ? `<div class="pn">עמוד ${n} מתוך 2</div>` : ''}
+    <div>© כל הזכויות שמורות ל<b>${SITE_NAME}</b></div>
+    <div>השנים לבריאה לפי סדר עולם${hasRes ? '; <span class="rsn">בכחול - לפי המחקר</span>' : ''}</div>
+    <div dir="ltr" style="text-align:end">${esc(gate.replace('https://', ''))}</div>
+  </div>
+  <div class="qr"><span>סרקו<br>לכרטיס<br>באתר</span>${qrSvg(live)}</div>
+</div>`;
+  const head = `<div class="top"><div class="brand">${SITE_NAME}</div><div class="kind">${esc(KIND_LABELS[item.kind] || '')}</div></div>
+<h1>${esc(item.name)}</h1>
+${research
+    /* כמו בכרטיס: כשיש שנה מחקרית, שתי השורות מקבלות תווית - שתי שיטות, לא טעות */
+    ? `<div class="years">${esc(formatRangeAM(item.start, item.end))} לבריאה</div>
+<div class="yr2"><span class="k">לפי סדר עולם: </span>${esc(formatRangeSecular(item.start, item.end))}</div>
+<div class="yr2 res"><span class="k">לפי המחקר: </span>${esc(research)}</div>`
+    : `<div class="years">${esc(formatRangeAM(item.start, item.end))} לבריאה <span>· ${esc(formatRangeSecular(item.start, item.end))}</span></div>`}
+<div class="facts">
+  ${era ? `<div>תקופה: <b>${esc(era.name)}</b> (${esc(formatRangeAM(era.start, era.end).replace(/ \(.*\)$/, ''))})</div>` : ''}
+  ${dur ? `<div>${item.reignText ? 'מלך' : 'משך'}: <b>${esc(dur)}</b></div>` : ''}
+  ${item.kings ? `<div>בימי: <b>${esc(item.kings)}</b></div>` : ''}
+</div>
+${item.verse ? `<div class="verse">"${esc(item.verse)}"${item.verseRef ? `<small>${esc(item.verseRef)}</small>` : ''}</div>` : ''}
+<p class="desc">${esc(item.description || '')}</p>`;
+  const cols = `<div class="cols">
+  <section><h2>דמויות מתקופתו</h2><div class="chips">${chips(people.slice(0, nPeople)) || '<span class="note">-</span>'}</div></section>
+  <section>${prophets.length ? `<h2>נביאים בימיו</h2><div class="chips">${chips(prophets)}</div>` : ''}
+  ${events.length ? `<h2>אירועים בימיו</h2><ul class="events">${events.slice(0, nEvents).map((e) => `<li><b>${esc(e.name)}</b> <span class="note">${esc(formatRangeAM(e.start, e.end).replace(/ \(.*\)$/, ''))}</span>${researchShort(e.id) ? ` <span class="rs">· לפי המחקר ${esc(researchShort(e.id))}</span>` : ''}</li>`).join('')}</ul>` : ''}
+  </section>
+</div>
+${item.source || books.length ? `<div class="src">${item.source ? `מקור: ${esc(item.source)}` : ''}${books.length ? `${item.source ? ' · ' : ''}ספרי התנ"ך של התקופה: ${books.map((b) => esc(b.name)).join(', ')}` : ''}</div>` : ''}`;
+  /* שני עמודים: בראשון הדמות ותחנות חייה (טקסט), בשני המפה הגדולה ובני התקופה.
+     חלוקה לפי נושא (דמות / מסע) השאירה את העמוד הראשון של דוד ריק בשליש - יש
+     לו רק שלושה בני תקופה. כך כל עמוד מקבל גם טקסט וגם תוכן מהנתונים. */
+  const pageHtml = two
+    ? `<div class="page" data-max="1.45"><main class="content">${head}
+<section class="route"><h2>תחנות בחייו <span class="hint">· המספרים כמו במפה שבעמוד 2</span></h2>${stationsOl()}</section>
+</main>${foot(1)}</div>
+<div class="page p2" data-max="1.45"><main class="content">
+<div class="top"><div class="brand">${SITE_NAME}</div><div class="kind">${esc(item.name)}</div></div>
+<section class="map2"><h2>${mapTitle()}</h2>
+<img src="${mapSrc}" alt="מפת המסע של ${esc(item.name)}, התחנות ממוספרות לפי הרשימה בעמוד 1" width="1100" height="1100"></section>
+${cols}</main>${foot(2)}</div>`
+    : `<div class="page"><main class="content">${head}${mapBlock}${cols}</main>${foot(1)}</div>`;
 
   return `<!doctype html>
 <html lang="he" dir="rtl"><head><meta charset="utf-8">
@@ -272,47 +326,23 @@ h2{font-family:var(--fh);font-weight:900;font-size:13pt;color:#163a57;margin:10p
 .foot .rsn{color:#245c93;font-weight:700}
 .qr{display:flex;align-items:center;gap:6px;color:#163a57;font-weight:700;font-size:7.5pt;line-height:1.3;text-align:end}
 .qr svg{width:20mm;height:20mm;display:block}
+.pn{font-weight:700;color:#163a57}
+.stage .page + .page{margin-top:16px}
+@media print{.stage .page + .page{margin-top:0}}
+/* העמוד השני בגרסת שני העמודים: המסע. המפה רחבה ממרכז, והתחנות בעמודות מתחתיה */
+.map2 img{width:140mm;height:140mm;margin:4px auto 6px;display:block;border-radius:6px;border:1px solid #d9c79c}
+.route ol{margin:0;padding-inline-start:20px;font-size:10pt;line-height:1.35;columns:2;column-gap:18px}
+.route li{margin-bottom:5px;break-inside:avoid}
+.route li small{display:block;color:#6b5a3e;font-size:8.5pt}
+.route li .nt{color:#9c2b50}
+.hint{font-family:var(--fb);font-size:8.5pt;font-weight:500;color:#6b5a3e}
 </style></head><body>
 ${web ? `<div class="bar">
   <button type="button" id="print">⬇️ הורדה / הדפסה</button>
   <a href="/?sel=${key}&amp;src=sheet-page">← ל${esc(item.name)} באתר</a>
   <small>בחלון ההדפסה אפשר לבחור "שמירה כ-PDF"</small>
 </div>` : ''}
-<div class="stage"><div class="page">
-<main class="content">
-<div class="top"><div class="brand">${SITE_NAME}</div><div class="kind">${esc(KIND_LABELS[item.kind] || '')}</div></div>
-<h1>${esc(item.name)}</h1>
-${research
-    /* כמו בכרטיס: כשיש שנה מחקרית, שתי השורות מקבלות תווית - שתי שיטות, לא טעות */
-    ? `<div class="years">${esc(formatRangeAM(item.start, item.end))} לבריאה</div>
-<div class="yr2"><span class="k">לפי סדר עולם: </span>${esc(formatRangeSecular(item.start, item.end))}</div>
-<div class="yr2 res"><span class="k">לפי המחקר: </span>${esc(research)}</div>`
-    : `<div class="years">${esc(formatRangeAM(item.start, item.end))} לבריאה <span>· ${esc(formatRangeSecular(item.start, item.end))}</span></div>`}
-<div class="facts">
-  ${era ? `<div>תקופה: <b>${esc(era.name)}</b> (${esc(formatRangeAM(era.start, era.end).replace(/ \(.*\)$/, ''))})</div>` : ''}
-  ${dur ? `<div>${item.reignText ? 'מלך' : 'משך'}: <b>${esc(dur)}</b></div>` : ''}
-  ${item.kings ? `<div>בימי: <b>${esc(item.kings)}</b></div>` : ''}
-</div>
-${item.verse ? `<div class="verse">"${esc(item.verse)}"${item.verseRef ? `<small>${esc(item.verseRef)}</small>` : ''}</div>` : ''}
-<p class="desc">${esc(item.description || '')}</p>
-${mapBlock}
-<div class="cols">
-  <section><h2>דמויות מתקופתו</h2><div class="chips">${chips(people.slice(0, 16)) || '<span class="note">-</span>'}</div></section>
-  <section>${prophets.length ? `<h2>נביאים בימיו</h2><div class="chips">${chips(prophets)}</div>` : ''}
-  ${events.length ? `<h2>אירועים בימיו</h2><ul class="events">${events.slice(0, 6).map((e) => `<li><b>${esc(e.name)}</b> <span class="note">${esc(formatRangeAM(e.start, e.end).replace(/ \(.*\)$/, ''))}</span>${researchShort(e.id) ? ` <span class="rs">· לפי המחקר ${esc(researchShort(e.id))}</span>` : ''}</li>`).join('')}</ul>` : ''}
-  </section>
-</div>
-${item.source || books.length ? `<div class="src">${item.source ? `מקור: ${esc(item.source)}` : ''}${books.length ? `${item.source ? ' · ' : ''}ספרי התנ"ך של התקופה: ${books.map((b) => esc(b.name)).join(', ')}` : ''}</div>` : ''}
-</main>
-<div class="foot">
-  <div class="txt">
-    <div>© כל הזכויות שמורות ל<b>${SITE_NAME}</b></div>
-    <div>השנים לבריאה לפי סדר עולם${hasRes ? '; <span class="rsn">בכחול - לפי המחקר</span>' : ''}</div>
-    <div dir="ltr" style="text-align:end">${esc(gate.replace('https://', ''))}</div>
-  </div>
-  <div class="qr"><span>סרקו<br>לכרטיס<br>באתר</span>${qrSvg(live)}</div>
-</div>
-</div></div>
+<div class="stage">${pageHtml}
 <script>${FIT_JS}</script>
 </body></html>`;
 }

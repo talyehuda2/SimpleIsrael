@@ -4,6 +4,7 @@
    שימוש:  node scripts/sheet.mjs united:david [leader:moshe ...]
    הפלט:   sheets-out/<kind>-<id>.pdf (+ .html לבדיקה), sheets-out ב-.gitignore.
    SHEET_FONT=classic|book - ערכות הגופנים שלא נבחרו, להשוואה (הפלט עם סיומת).
+   SHEET_PAGES=2 - גרסת שני עמודים: הדמות, ואז המסע במפה גדולה (הפלט עם סיומת -2p).
 
    ה-PDF מודפס בדפדפן ולא נבנה בספריית PDF: עברית מימין לשמאל, ניקוד וסימני
    פיסוק יוצאים נכון רק במנוע של דפדפן. בסביבה בלי Chrome:
@@ -18,6 +19,7 @@ import { sheetHtml, mapJpeg, sheetStations, inlineFont, FONT_SETS } from './shee
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'sheets-out');
 const FONT_SET = process.env.SHEET_FONT || 'modern';
+const PAGES = Number(process.env.SHEET_PAGES) === 2 ? 2 : 1;
 if (!FONT_SETS[FONT_SET]) { console.error(`SHEET_FONT: ${Object.keys(FONT_SETS).join(' | ')}`); process.exit(1); }
 
 async function launch() {
@@ -37,9 +39,11 @@ const browser = await launch();
 for (const key of keys) {
   const item = resolveKey(key);
   if (!item) { console.error(`אין פריט ${key}`); continue; }
-  const mapSrc = sheetStations(item).length >= 2 ? `data:image/jpeg;base64,${mapJpeg(item).toString('base64')}` : null;
-  const html = sheetHtml(item, { fontSrc: inlineFont, mapSrc, fontSet: FONT_SET });
-  const base = join(OUT, `${item.kind}-${item.id}${process.env.SHEET_FONT ? `-${FONT_SET}` : ''}`);
+  // בשני עמודים המפה ברוחב 150 מ"מ, ולכן ברזולוציה גבוהה יותר
+  const mapSrc = sheetStations(item).length >= 2
+    ? `data:image/jpeg;base64,${mapJpeg(item, PAGES === 2 ? 1100 : 760).toString('base64')}` : null;
+  const html = sheetHtml(item, { fontSrc: inlineFont, mapSrc, fontSet: FONT_SET, pages: PAGES });
+  const base = join(OUT, `${item.kind}-${item.id}${process.env.SHEET_FONT ? `-${FONT_SET}` : ''}${PAGES === 2 ? '-2p' : ''}`);
   writeFileSync(`${base}.html`, html);
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: 'load' });
