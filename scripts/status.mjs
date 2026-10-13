@@ -246,6 +246,9 @@ body.has-shots .content{width:500px;right:56px}
 body.has-shots h1{font-size:60px}
 body.has-shots .url{left:auto;right:56px;bottom:34px}
 .shots{position:absolute;left:40px;top:40px;bottom:40px;width:580px;display:flex;gap:18px}
+/* צילום יחיד - עמודה צרה, אחרת הוא נמתח לכל הרוחב ומשתלט על התמונה */
+.shots:has(figure:only-child){width:380px}
+body:has(.shots figure:only-child) .content{width:680px}
 .shots figure{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}
 .shots figcaption{font-weight:900;font-size:28px;color:#163a57;margin-bottom:10px;direction:rtl}
 .shots img{width:100%;max-height:520px;object-fit:cover;object-position:top;border-radius:18px;border:4px solid #fbf5e7;
