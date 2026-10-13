@@ -125,6 +125,9 @@ function sheetHtml(item) {
 @page{size:A4;margin:0}
 *{box-sizing:border-box}
 html,body{margin:0}
+/* .content מוגדל ב-zoom עד שהוא ממלא את העמוד (ראו fill למטה); הרוחב מחולק
+   באותו מקדם, כדי שאחרי ההגדלה הוא יחזור בדיוק לרוחב העמוד */
+.content{width:calc(184mm / var(--z,1));zoom:var(--z,1)}
 body{font-family:Heebo,sans-serif;color:#2b2416;background:#fbf5e7;font-size:10.4pt;line-height:1.5;
   width:210mm;min-height:297mm;padding:11mm 13mm 9mm;display:flex;flex-direction:column;
   -webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -161,6 +164,7 @@ h2{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:13pt;color:#16
 .foot b{color:#163a57}
 .note{font-size:7.5pt;color:#8a7650}
 </style></head><body>
+<main class="content">
 <div class="top"><div class="brand">${SITE_NAME}</div><div class="kind">${esc(KIND_LABELS[item.kind] || '')}</div></div>
 <h1>${esc(item.name)}</h1>
 <div class="years">${esc(formatRangeAM(item.start, item.end))} לבריאה <span>· ${esc(formatRangeSecular(item.start, item.end))}</span></div>
@@ -179,6 +183,7 @@ ${mapBlock}
   </section>
 </div>
 ${item.source || books.length ? `<div class="src">${item.source ? `מקור: ${esc(item.source)}` : ''}${books.length ? `${item.source ? ' · ' : ''}ספרי התנ"ך של התקופה: ${books.map((b) => esc(b.name)).join(', ')}` : ''}</div>` : ''}
+</main>
 <div class="foot">
   <div>© כל הזכויות שמורות ל<b>${SITE_NAME}</b> · השנים לבריאה לפי סדר עולם</div>
   <div dir="ltr">${esc(url.replace('https://', ''))}</div>
@@ -210,11 +215,27 @@ for (const key of keys) {
   await page.setContent(html, { waitUntil: 'load' });
   await page.evaluate(() => document.fonts.ready);
   // דף אחד: אם התוכן ארוך מ-A4, מקטינים מעט את הכל במקום לשבור לשני דפים
-  const h = await page.evaluate(() => document.body.scrollHeight);
+  /* הדף ממלא עמוד A4 שלם: התוכן מוגדל (zoom) עד שהוא מגיע לתחתית, בלי לגלוש
+     לעמוד שני. דמות עם תיאור קצר הייתה משאירה רבע עמוד ריק. חיפוש בינארי
+     על המקדם, עד פי 1.3 */
   const pageH = 297 * 96 / 25.4;
-  const scale = h > pageH ? Math.max(0.75, pageH / h) : 1;
+  const z = await page.evaluate((pageH) => {
+    // הגוף הוא תמיד לפחות עמוד שלם (min-height), ולכן מודדים את התוכן עצמו:
+    // תחתית התוכן + הכותרת התחתונה + השוליים, עם מרווח ביטחון להדפסה
+    const mm = 96 / 25.4, foot = document.querySelector('.foot'), content = document.querySelector('.content');
+    const fits = (k) => {
+      document.documentElement.style.setProperty('--z', k);
+      return content.getBoundingClientRect().bottom + foot.offsetHeight + 8 + 9 * mm <= pageH - 10;
+    };
+    if (!fits(1)) { fits(1); return 1; }
+    let lo = 1, hi = 1.3;
+    for (let i = 0; i < 12; i++) { const mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
+    fits(lo); return lo;
+  }, pageH);
+  const h = await page.evaluate(() => document.body.scrollHeight);
+  const scale = h > pageH + 1 ? Math.max(0.75, pageH / h) : 1;
   await page.pdf({ path: `${base}.pdf`, format: 'A4', printBackground: true, scale, preferCSSPageSize: true });
   await page.close();
-  console.log(`${base}.pdf${scale < 0.995 ? ` (הוקטן ל-${Math.round(scale * 100)}%)` : ''}`);
+  console.log(`${base}.pdf  (A4, ${scale < 0.995 ? `הוקטן ל-${Math.round(scale * 100)}%` : `הוגדל פי ${z.toFixed(2)}`})`);
 }
 await browser.close();
