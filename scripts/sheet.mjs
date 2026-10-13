@@ -63,14 +63,15 @@ function researchShort(id) {
   return researchRange(id);
 }
 
-/* שלוש ערכות גופנים לבחירה (SHEET_FONT=classic|book|modern). קובצי ה-woff2
+/* שלוש ערכות גופנים (SHEET_FONT=classic|book|modern, ברירת המחדל modern). קובצי ה-woff2
    הנוספים (Google Fonts, רישיון OFL) ב-build-assets/fonts. */
 const FONT_SETS = {
   classic: { label: 'פרנק-רוהל + חיבו', head: 'Frank Ruhl Libre', body: 'Heebo', bodyGeneric: 'sans-serif' },
   book: { label: 'דוד ליברה + נוטו סריף', head: 'David Libre', body: 'Noto Serif Hebrew', bodyGeneric: 'serif' },
   modern: { label: 'רוביק + אסיסטנט', head: 'Rubik', body: 'Assistant', bodyGeneric: 'sans-serif' },
 };
-const FONT_SET = process.env.SHEET_FONT || 'classic';
+// בעל האתר בחר במודרנית (אוקטובר 2026); השתיים האחרות נשארות לבדיקה
+const FONT_SET = process.env.SHEET_FONT || 'modern';
 if (!FONT_SETS[FONT_SET]) { console.error(`SHEET_FONT: ${Object.keys(FONT_SETS).join(' | ')}`); process.exit(1); }
 const af = (f) => `data:font/woff2;base64,${readFileSync(join(ROOT, 'build-assets', 'fonts', f)).toString('base64')}`;
 const FACES = {
