@@ -182,6 +182,12 @@ body {
   background: var(--ad-navy); color: #fff; border: 0; border-radius: 10px;
 }
 .ad-reply-foot button:disabled { opacity: .45; }
+/* "ביטול" בעריכה: משני, ליד "שמירה" ולא דוחק אותו */
+.ad-reply-foot button.ad-cancel {
+  margin-inline-start: auto; background: #fff; color: var(--ad-ink);
+  border: 1px solid var(--ad-line); font-weight: 400;
+}
+.ad-reply-foot button.ad-cancel + button { margin-inline-start: 0; }
 
 /* תזכורת תפוגת הטוקן. מוצגת רק בשבוע האחרון, ולכן היא נועדה להיראות
    כהערה ולא כאזהרה - אין כאן תקלה, רק דבר שכדאי לדעת מראש. */
