@@ -41,7 +41,7 @@ const quantile = (arr, t) => {
 // שתי תחנות קרובות (כמו בבל ושושן - רחוקות מהארץ ומאזור ללא פירוט
 // באיור) נראות ככתם על קלף ריק, בלי שום רמז לאיפה זה ביחס לישראל.
 const MIN_SPAN = 640;
-function windowFor(pts, ar) {
+export function windowFor(pts, ar) {
   const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
   const bx = quantile(xs, 0.12), by = quantile(ys, 0.12);
   let w = (quantile(xs, 0.88) - bx) * 1.44 + 140;
