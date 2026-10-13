@@ -21,6 +21,7 @@ import jpeg from 'jpeg-js';
 import { ALL_ITEMS, resolveKey, itemKey } from '../src/data/items.js';
 import maps from '../src/data/maps.json' with { type: 'json' };
 import periods from '../src/data/periods.json' with { type: 'json' };
+import academic from '../src/data/academic.json' with { type: 'json' };
 import { journeyStations, MAP_SIZE, offMapPin } from '../src/utils/mapProject.js';
 import { stationNoteText } from '../src/utils/placeNote.js';
 import { periodOfItem, relatedByEra } from '../src/utils/related.js';
@@ -42,6 +43,49 @@ const KIND_COLOR = {
   israel: '#4f7a33', prophet: '#b3781a', book: '#157a70', event: '#b0392c', world: '#5a6470', empire: '#5a6470',
 };
 const PERSONS = new Set(['leader', 'judge', 'united', 'judah', 'israel', 'world']);
+/* "לפי המחקר" - אותו חישוב של researchRange ב-src/utils/research.js (שם ייבוא
+   JSON בלי with, שלא נטען ב-Node). כמו בכרטיס: לצד סדר עולם ולא במקומו. */
+const RES = {};
+for (const [section, map] of Object.entries(academic)) {
+  if (section === '_note') continue;
+  for (const [id, v] of Object.entries(map)) RES[id] = Array.isArray(v) ? v : [v, v];
+}
+const resFmt = (y) => (y > 0 ? `${y} לפנה"ס` : `${-y} לספירה`);
+function researchRange(id) {
+  const r = RES[id]; if (!r) return null;
+  return r[0] === r[1] ? resFmt(r[0]) : `${resFmt(r[0])} עד ${resFmt(r[1])}`;
+}
+// מקוצר, לתגיות ולרשימת האירועים: "1010-970 לפנה"ס"
+function researchShort(id) {
+  const r = RES[id]; if (!r) return null;
+  if (r[0] === r[1]) return resFmt(r[0]);
+  if (r[0] > 0 && r[1] > 0) return `${r[0]}-${r[1]} לפנה"ס`;
+  return researchRange(id);
+}
+
+/* שלוש ערכות גופנים לבחירה (SHEET_FONT=classic|book|modern). קובצי ה-woff2
+   הנוספים (Google Fonts, רישיון OFL) ב-build-assets/fonts. */
+const FONT_SETS = {
+  classic: { label: 'פרנק-רוהל + חיבו', head: 'Frank Ruhl Libre', body: 'Heebo', bodyGeneric: 'sans-serif' },
+  book: { label: 'דוד ליברה + נוטו סריף', head: 'David Libre', body: 'Noto Serif Hebrew', bodyGeneric: 'serif' },
+  modern: { label: 'רוביק + אסיסטנט', head: 'Rubik', body: 'Assistant', bodyGeneric: 'sans-serif' },
+};
+const FONT_SET = process.env.SHEET_FONT || 'classic';
+if (!FONT_SETS[FONT_SET]) { console.error(`SHEET_FONT: ${Object.keys(FONT_SETS).join(' | ')}`); process.exit(1); }
+const af = (f) => `data:font/woff2;base64,${readFileSync(join(ROOT, 'build-assets', 'fonts', f)).toString('base64')}`;
+const FACES = {
+  'Frank Ruhl Libre': () => `@font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;src:url(${font('frankruhllibre-hebrew.woff2')}) format('woff2')}`,
+  Heebo: () => `@font-face{font-family:'Heebo';font-weight:300 700;src:url(${font('heebo-hebrew.woff2')}) format('woff2')}
+@font-face{font-family:'Heebo';font-weight:300 700;src:url(${font('heebo-latin.woff2')}) format('woff2');unicode-range:U+0000-00FF}`,
+  'David Libre': () => [400, 700].map((w) => `@font-face{font-family:'David Libre';font-weight:${w};src:url(${af(`davidlibre-hebrew-${w}.woff2`)}) format('woff2')}
+@font-face{font-family:'David Libre';font-weight:${w};src:url(${af(`davidlibre-latin-${w}.woff2`)}) format('woff2');unicode-range:U+0000-00FF}`).join('\n'),
+  'Noto Serif Hebrew': () => `@font-face{font-family:'Noto Serif Hebrew';font-weight:400 900;src:url(${af('notoserifhebrew-hebrew-400-900.woff2')}) format('woff2')}
+@font-face{font-family:'Noto Serif Hebrew';font-weight:400 900;src:url(${af('notoserifhebrew-latin-400-900.woff2')}) format('woff2');unicode-range:U+0000-00FF}`,
+  Rubik: () => `@font-face{font-family:'Rubik';font-weight:400 800;src:url(${af('rubik-hebrew-400-800.woff2')}) format('woff2')}
+@font-face{font-family:'Rubik';font-weight:400 800;src:url(${af('rubik-latin-400-800.woff2')}) format('woff2');unicode-range:U+0000-00FF}`,
+  Assistant: () => `@font-face{font-family:'Assistant';font-weight:300 800;src:url(${af('assistant-hebrew-300-800.woff2')}) format('woff2')}
+@font-face{font-family:'Assistant';font-weight:300 800;src:url(${af('assistant-latin-300-800.woff2')}) format('woff2');unicode-range:U+0000-00FF}`,
+};
 const esc = (s = '') => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 // אותה חפיפה של "חי במקביל" בכרטיס (App.jsx): פריט של שנה אחת נכלל אם נפל בטווח
@@ -86,7 +130,8 @@ const font = (f) => `data:font/woff2;base64,${readFileSync(join(ROOT, 'public', 
 
 function chips(list) {
   return list.map((x) => `<span class="chip"><i style="background:${KIND_COLOR[x.kind] || '#777'}"></i>${esc(x.name)}`
-    + `<small>${esc(formatRangeAM(x.start, x.end).replace(/ \(.*\)$/, ''))}</small></span>`).join('');
+    + `<small>${esc(formatRangeAM(x.start, x.end).replace(/ \(.*\)$/, ''))}`
+    + `${researchShort(x.id) ? ` · <em>${esc(researchShort(x.id))}</em>` : ''}</small></span>`).join('');
 }
 
 function sheetHtml(item) {
@@ -105,6 +150,9 @@ function sheetHtml(item) {
   const pts = maps[item.id] ? journeyStations(maps[item.id]) : [];
   const dur = item.reignText || item.lifeText || item.tenureText || '';
   const url = `${SITE}/p/${item.kind}/${item.id}`;
+  const research = researchRange(item.id);
+  const fs = FONT_SETS[FONT_SET];
+  const hasRes = [item, ...people.slice(0, 16), ...prophets, ...events.slice(0, 6)].some((x) => RES[x.id]);
 
   const mapBlock = pts.length >= 2 ? `
   <section class="map">
@@ -119,31 +167,36 @@ function sheetHtml(item) {
 <html lang="he" dir="rtl"><head><meta charset="utf-8">
 <title>${esc(item.name)} - ${SITE_NAME}</title>
 <style>
-@font-face{font-family:'Frank Ruhl Libre';font-weight:500 900;src:url(${font('frankruhllibre-hebrew.woff2')}) format('woff2')}
-@font-face{font-family:'Heebo';font-weight:300 700;src:url(${font('heebo-hebrew.woff2')}) format('woff2')}
-@font-face{font-family:'Heebo';font-weight:300 700;src:url(${font('heebo-latin.woff2')}) format('woff2');unicode-range:U+0000-00FF}
+${FACES[fs.head]()}
+${FACES[fs.body]()}
+:root{--fh:'${fs.head}',serif;--fb:'${fs.body}',${fs.bodyGeneric}}
 @page{size:A4;margin:0}
 *{box-sizing:border-box}
 html,body{margin:0}
 /* .content מוגדל ב-zoom עד שהוא ממלא את העמוד (ראו fill למטה); הרוחב מחולק
    באותו מקדם, כדי שאחרי ההגדלה הוא יחזור בדיוק לרוחב העמוד */
 .content{width:calc(184mm / var(--z,1));zoom:var(--z,1)}
-body{font-family:Heebo,sans-serif;color:#2b2416;background:#fbf5e7;font-size:10.4pt;line-height:1.5;
+body{font-family:var(--fb);color:#2b2416;background:#fbf5e7;font-size:10.4pt;line-height:1.5;
   width:210mm;min-height:297mm;padding:11mm 13mm 9mm;display:flex;flex-direction:column;
   -webkit-print-color-adjust:exact;print-color-adjust:exact}
 .top{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #b28a2b;padding-bottom:5px}
-.brand{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:12.5pt;color:#163a57}
+.brand{font-family:var(--fh);font-weight:900;font-size:12.5pt;color:#163a57}
 .kind{font-size:9pt;font-weight:700;color:#fff;background:${color};padding:2px 10px;border-radius:999px}
-h1{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:30pt;line-height:1.1;margin:10px 0 2px;color:#163a57}
+h1{font-family:var(--fh);font-weight:900;font-size:30pt;line-height:1.1;margin:10px 0 2px;color:#163a57}
 .years{font-weight:700;color:#5b4a2a;font-size:10.5pt}
 .years span{color:#8a7650;font-weight:500}
+.yr2{font-size:9.5pt;color:#5b4a2a}
+.yr2 .k{color:#8a7650;font-weight:500}
+.yr2.res{color:#245c93;font-weight:700}
+.chip em{font-style:normal;color:#245c93}
+.events .rs{color:#245c93;font-size:8pt}
 .facts{display:flex;flex-wrap:wrap;gap:4px 18px;margin:6px 0 8px;font-size:9.5pt;color:#4a3d25}
 .facts b{color:#163a57}
 .verse{border-inline-start:4px solid #b28a2b;background:#f3e8cc;padding:6px 12px;margin:6px 0 10px;
-  border-start-end-radius:8px;border-end-end-radius:8px;font-family:'Frank Ruhl Libre',serif;font-size:12.5pt;font-weight:700;color:#3d2f12}
-.verse small{display:block;font-family:Heebo,sans-serif;font-size:8.5pt;font-weight:500;color:#7a5b16}
+  border-start-end-radius:8px;border-end-end-radius:8px;font-family:var(--fh);font-size:12.5pt;font-weight:700;color:#3d2f12}
+.verse small{display:block;font-family:var(--fb);font-size:8.5pt;font-weight:500;color:#7a5b16}
 .desc{text-align:justify;margin:0 0 10px}
-h2{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:13pt;color:#163a57;margin:10px 0 5px;
+h2{font-family:var(--fh);font-weight:900;font-size:13pt;color:#163a57;margin:10px 0 5px;
   border-bottom:1px solid #e2d3b0;padding-bottom:2px}
 .map-row{display:grid;grid-template-columns:104mm 1fr;gap:10px;align-items:start}
 .map img{width:104mm;height:104mm;border-radius:6px;border:1px solid #d9c79c;display:block}
@@ -162,12 +215,18 @@ h2{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:13pt;color:#16
 .foot{margin-top:auto;padding-top:6px;border-top:1px solid #d9c79c;display:flex;justify-content:space-between;
   font-size:8pt;color:#6b5a3e}
 .foot b{color:#163a57}
+.foot .rsn{color:#245c93;font-weight:700}
 .note{font-size:7.5pt;color:#8a7650}
 </style></head><body>
 <main class="content">
 <div class="top"><div class="brand">${SITE_NAME}</div><div class="kind">${esc(KIND_LABELS[item.kind] || '')}</div></div>
 <h1>${esc(item.name)}</h1>
-<div class="years">${esc(formatRangeAM(item.start, item.end))} לבריאה <span>· ${esc(formatRangeSecular(item.start, item.end))}</span></div>
+${research
+    /* כמו בכרטיס: כשיש שנה מחקרית, שתי השורות מקבלות תווית - שתי שיטות, לא טעות */
+    ? `<div class="years">${esc(formatRangeAM(item.start, item.end))} לבריאה</div>
+<div class="yr2"><span class="k">לפי סדר עולם: </span>${esc(formatRangeSecular(item.start, item.end))}</div>
+<div class="yr2 res"><span class="k">לפי המחקר: </span>${esc(research)}</div>`
+    : `<div class="years">${esc(formatRangeAM(item.start, item.end))} לבריאה <span>· ${esc(formatRangeSecular(item.start, item.end))}</span></div>`}
 <div class="facts">
   ${era ? `<div>תקופה: <b>${esc(era.name)}</b> (${esc(formatRangeAM(era.start, era.end).replace(/ \(.*\)$/, ''))})</div>` : ''}
   ${dur ? `<div>${item.reignText ? 'מלך' : 'משך'}: <b>${esc(dur)}</b></div>` : ''}
@@ -179,13 +238,13 @@ ${mapBlock}
 <div class="cols">
   <section><h2>דמויות מתקופתו</h2><div class="chips">${chips(people.slice(0, 16)) || '<span class="note">-</span>'}</div></section>
   <section>${prophets.length ? `<h2>נביאים בימיו</h2><div class="chips">${chips(prophets)}</div>` : ''}
-  ${events.length ? `<h2>אירועים בימיו</h2><ul class="events">${events.slice(0, 6).map((e) => `<li><b>${esc(e.name)}</b> <span class="note">${esc(formatRangeAM(e.start, e.end).replace(/ \(.*\)$/, ''))}</span></li>`).join('')}</ul>` : ''}
+  ${events.length ? `<h2>אירועים בימיו</h2><ul class="events">${events.slice(0, 6).map((e) => `<li><b>${esc(e.name)}</b> <span class="note">${esc(formatRangeAM(e.start, e.end).replace(/ \(.*\)$/, ''))}</span>${researchShort(e.id) ? ` <span class="rs">· לפי המחקר ${esc(researchShort(e.id))}</span>` : ''}</li>`).join('')}</ul>` : ''}
   </section>
 </div>
 ${item.source || books.length ? `<div class="src">${item.source ? `מקור: ${esc(item.source)}` : ''}${books.length ? `${item.source ? ' · ' : ''}ספרי התנ"ך של התקופה: ${books.map((b) => esc(b.name)).join(', ')}` : ''}</div>` : ''}
 </main>
 <div class="foot">
-  <div>© כל הזכויות שמורות ל<b>${SITE_NAME}</b> · השנים לבריאה לפי סדר עולם</div>
+  <div>© כל הזכויות שמורות ל<b>${SITE_NAME}</b> · השנים לבריאה לפי סדר עולם${hasRes ? '; <span class="rsn">בכחול - לפי המחקר</span>' : ''}</div>
   <div dir="ltr">${esc(url.replace('https://', ''))}</div>
 </div>
 </body></html>`;
@@ -209,15 +268,14 @@ for (const key of keys) {
   const item = resolveKey(key);
   if (!item) { console.error(`אין פריט ${key}`); continue; }
   const html = sheetHtml(item);
-  const base = join(OUT, `${item.kind}-${item.id}`);
+  const base = join(OUT, `${item.kind}-${item.id}${process.env.SHEET_FONT ? `-${FONT_SET}` : ''}`);
   writeFileSync(`${base}.html`, html);
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: 'load' });
   await page.evaluate(() => document.fonts.ready);
-  // דף אחד: אם התוכן ארוך מ-A4, מקטינים מעט את הכל במקום לשבור לשני דפים
   /* הדף ממלא עמוד A4 שלם: התוכן מוגדל (zoom) עד שהוא מגיע לתחתית, בלי לגלוש
      לעמוד שני. דמות עם תיאור קצר הייתה משאירה רבע עמוד ריק. חיפוש בינארי
-     על המקדם, עד פי 1.3 */
+     על המקדם, בין 0.7 ל-1.3 */
   const pageH = 297 * 96 / 25.4;
   const z = await page.evaluate((pageH) => {
     // הגוף הוא תמיד לפחות עמוד שלם (min-height), ולכן מודדים את התוכן עצמו:
@@ -227,15 +285,13 @@ for (const key of keys) {
       document.documentElement.style.setProperty('--z', k);
       return content.getBoundingClientRect().bottom + foot.offsetHeight + 8 + 9 * mm <= pageH - 10;
     };
-    if (!fits(1)) { fits(1); return 1; }
-    let lo = 1, hi = 1.3;
+    // דף ארוך (חזקיהו: הרבה בני תקופה) מוקטן באותה דרך, עד 0.7
+    let lo = 0.7, hi = 1.3;
     for (let i = 0; i < 12; i++) { const mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
     fits(lo); return lo;
   }, pageH);
-  const h = await page.evaluate(() => document.body.scrollHeight);
-  const scale = h > pageH + 1 ? Math.max(0.75, pageH / h) : 1;
-  await page.pdf({ path: `${base}.pdf`, format: 'A4', printBackground: true, scale, preferCSSPageSize: true });
+  await page.pdf({ path: `${base}.pdf`, format: 'A4', printBackground: true, preferCSSPageSize: true });
   await page.close();
-  console.log(`${base}.pdf  (A4, ${scale < 0.995 ? `הוקטן ל-${Math.round(scale * 100)}%` : `הוגדל פי ${z.toFixed(2)}`})`);
+  console.log(`${base}.pdf  (A4, ${z < 1 ? `הוקטן ל-${Math.round(z * 100)}%` : `הוגדל פי ${z.toFixed(2)}`})`);
 }
 await browser.close();
