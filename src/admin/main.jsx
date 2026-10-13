@@ -123,6 +123,42 @@ function ReplyForm({ row, token, onSent }) {
   );
 }
 
+/* עריכת תגובה שנכתבה כמנהל (supabase/admin_edit_comment.sql). השרת מוודא את הטוקן
+   ושהתגובה מסומנת by_admin - תגובה של גולש לא נערכת, גם אם השם שלה "מנהל האתר".
+   עריכה לא שולחת מייל: ההתראות רצות על הוספה בלבד. */
+const MINE = 'מנהל האתר';
+function EditForm({ row, token, onDone, onCancel }) {
+  const [text, setText] = useState(row.body || '');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  const save = async (e) => {
+    e.preventDefault();
+    const body = text.trim();
+    if (!body) return;
+    setBusy(true); setErr('');
+    const { error } = await supabase.rpc('admin_edit_comment', { p_token: token, p_id: row.id, p_body: body });
+    setBusy(false);
+    if (error) {
+      setErr(error.code === 'PGRST202' ? 'צריך להריץ את supabase/admin_edit_comment.sql ב-Supabase'
+        : /כמנהל/.test(error.message || '') ? 'אפשר לערוך רק תגובה שנכתבה כמנהל' : 'השמירה נכשלה');
+      return;
+    }
+    onDone(body);
+  };
+
+  return (
+    <form className="ad-reply" onSubmit={save}>
+      <textarea rows={5} maxLength={1000} value={text} onChange={(e) => setText(e.target.value)} autoFocus />
+      <div className="ad-reply-foot">
+        {err && <span className="ad-err">{err}</span>}
+        <button type="button" className="ad-cancel" onClick={onCancel} disabled={busy}>ביטול</button>
+        <button type="submit" disabled={busy || !text.trim() || text.trim() === row.body}>{busy ? 'שומר…' : 'שמירה'}</button>
+      </div>
+    </form>
+  );
+}
+
 /* ---------- המסך ---------- */
 function Admin() {
   const [token, setToken] = useState(getAdminToken());
@@ -132,6 +168,7 @@ function Admin() {
   const [tab, setTab] = useState('notes');
   const [showHandled, setShowHandled] = useState(false);
   const [openReply, setOpenReply] = useState(null);
+  const [editing, setEditing] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [notice, setNotice] = useState('');
 
@@ -176,6 +213,18 @@ function Admin() {
     if (error) { window.alert('המחיקה נכשלה'); return; }
     setRows((l) => l.filter((r) => r.id !== id && r.parent_id !== id));
   };
+
+  const edited = (id, body) => {
+    setEditing(null);
+    setRows((l) => l.map((r) => (r.id === id ? { ...r, body } : r)));
+  };
+  // גוף התגובה, או טופס עריכה במקומו
+  const bodyOf = (r) => (editing === r.id
+    ? <EditForm row={r} token={token} onDone={(b) => edited(r.id, b)} onCancel={() => setEditing(null)} />
+    : <p className="ad-body">{r.body}</p>);
+  const editBtn = (r, small) => r.author === MINE && editing !== r.id && (
+    <button className={`ad-btn${small ? ' small' : ''}`} onClick={() => setEditing(r.id)}>✏️ עריכה</button>
+  );
 
   const setHandled = async (id, handled) => {
     setBusyId(id);
@@ -285,21 +334,25 @@ function Admin() {
               <a className="ad-target" href={siteUrl(r.target_key)} target="_blank" rel="noreferrer">
                 {r.target_label || r.target_key} ↗
               </a>
-              <p className="ad-body">{r.body}</p>
+              {bodyOf(r)}
               {repliesOf(r.id).map((c) => (
                 <div key={c.id} className="ad-sub">
                   <div className="ad-head">
                     <b>{c.author || 'אנונימי'}</b>
                     <time>{fmt(c.created_at)}</time>
                   </div>
-                  <p className="ad-body">{c.body}</p>
-                  <button className="ad-btn danger small" disabled={busyId === c.id} onClick={() => remove(c.id)}>🗑</button>
+                  {bodyOf(c)}
+                  <div className="ad-tools">
+                    {editBtn(c, true)}
+                    <button className="ad-btn danger small" disabled={busyId === c.id} onClick={() => remove(c.id)}>🗑</button>
+                  </div>
                 </div>
               ))}
               <div className="ad-tools">
                 <button className="ad-btn primary" onClick={() => setOpenReply(openReply === r.id ? null : r.id)}>
                   {openReply === r.id ? 'ביטול' : '↩︎ תשובה'}
                 </button>
+                {editBtn(r)}
                 <button className="ad-btn danger" disabled={busyId === r.id} onClick={() => remove(r.id)}>🗑</button>
               </div>
               {openReply === r.id && <ReplyForm row={r} token={token} onSent={() => { setOpenReply(null); load(); }} />}
