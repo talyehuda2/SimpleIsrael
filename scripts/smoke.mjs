@@ -108,6 +108,10 @@ const PAGES = [
      כך ש-axe עובר על הרשימה ועל השדות - ניגודיות, תוויות, גודל מטרות לחיצה. */
   { url: '/?sel=leader:avraham&c=2', name: 'תגובות', check: '.comment.fresh', fixtureComments: true,
     click: '.comments > .comment-form .comment-body', expect: '.comment-mail' },
+  /* "דף להורדה": העמוד נבנה ב-prerender (sheet-html.mjs) - הגופנים, המפה וה-QR
+     נטענים תחת ה-CSP, וההתאמה לעמוד רצה עד הסוף (data-fit). והכפתור בכרטיס. */
+  { url: '/p/united/david/sheet', name: 'דף להורדה', check: 'html[data-fit] .qr svg' },
+  { url: '/?sel=united:david', name: 'כפתור דף', check: '.dc-sheet[href="/p/united/david/sheet"]' },
   { url: '/privacy', name: 'פרטיות', check: 'body' },
   // שלושת העמודים המשפטיים נבדקים בנפרד: הם נוצרים ב-prerender ואינם
   // ב-sitemap, ולכן שום בדיקה אחרת לא הייתה מגלה ש-rewrite חסר ב-vercel.json
