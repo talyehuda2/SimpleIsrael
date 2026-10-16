@@ -641,5 +641,5 @@ function Game() {
 }
 
 startTrail();
-initPushPrompt({ timer: false });
+initPushPrompt();
 createRoot(document.getElementById('root')).render(<Game />);

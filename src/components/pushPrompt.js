@@ -5,8 +5,9 @@
    מסתיר את הבקשה של אתר שרבים חוסמים, מכולם. לכן קודם באנר, ורק "כן" פותח את
    חלון הדפדפן.
 
-   מתי: אחרי שהגולש עשה משהו (פתח כרטיס, מקום, מפה, שיחק - האירוע si:engaged
-   מ-lib/trail.js), או אחרי 30 שניות. פעם אחת לטעינה. "לא עכשיו" שקט לשלושה
+   מתי: רק אחרי שהגולש פתח בעצמו כרטיס - דמות, מקום, מפת מסע, או סיים סבב במשחק
+   (האירוע si:engaged מ-lib/trail.js) - ולא בכניסה לאתר (בקשת בעל האתר). כרטיס
+   שנפתח לבד בטעינה, מקישור עם ?sel=, לא נחשב. פעם אחת לטעינה. "לא עכשיו" שקט לשלושה
    שבועות. לא מוצג למי שכבר נרשם או חסם, ולא בבדיקות אוטומטיות (webdriver) -
    שער האיכות לוחץ על כפתורים, ובאנר צף היה מסתיר אותם.
 
@@ -95,9 +96,8 @@ export async function openPushPanel() {
   return render('ask');
 }
 
-/** נקרא פעם אחת בכל מסך. מחליט אם ומתי להציע. timer:false - רק אחרי פעולה
-    (במשחק: באנר באמצע סבב היה מכסה את הקלפים, ולכן רק אחרי שהסבב נגמר) */
-export function initPushPrompt({ timer = true } = {}) {
+/** נקרא פעם אחת בכל מסך. מחליט אם ומתי להציע */
+export function initPushPrompt() {
   if (typeof window === 'undefined' || navigator.webdriver) return;
   const quiet = Number(ls.get(NO_KEY) || 0);
   if (quiet && Date.now() - quiet < QUIET_DAYS * 864e5) return;
@@ -120,10 +120,15 @@ export function initPushPrompt({ timer = true } = {}) {
     mark('push_prompt', { r: kind === 'ios' ? 'ios' : 'shown' });
     render(kind);
   };
-  // רגע אחרי הפעולה ולא מיד: מי שפתח כרטיס צריך לראות אותו לפני שמבקשים ממנו משהו
-  const soon = () => setTimeout(show, 5000);
-  window.addEventListener('si:engaged', soon, { once: true });
-  if (timer) setTimeout(show, 30000);
+  /* רגע אחרי הפעולה ולא מיד: מי שפתח כרטיס צריך לראות אותו לפני שמבקשים ממנו
+     משהו. אירוע בשלוש השניות הראשונות הוא כרטיס שנפתח לבד מהקישור - לא נחשב */
+  const t0 = Date.now();
+  const soon = () => {
+    if (Date.now() - t0 < 3000) return;
+    window.removeEventListener('si:engaged', soon);
+    setTimeout(show, 5000);
+  };
+  window.addEventListener('si:engaged', soon);
 }
 
 export const pushMenuVisible = () => canPush() || iosNeedsInstall();

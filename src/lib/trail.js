@@ -113,7 +113,7 @@ export function startTrail() {
    נבלעת בשקט: מדידה שמפילה את האתר גרועה מאין מדידה בכלל. */
 /* "הגולש עשה משהו" - הבאנר של ההתראה היומית (components/pushPrompt.js) מחכה
    לזה כדי לא לקפוץ על מי שרק נחת. אירוע ולא ייבוא, כדי שהמדידה לא תכיר את הבאנר */
-const ENGAGE = new Set(['item_open', 'place_open', 'map_open', 'game_done', 'tours_open', 'tree_open', 'kings_open']);
+const ENGAGE = new Set(['item_open', 'place_open', 'map_open', 'game_done']);
 
 function send(name, props) {
   if (ENGAGE.has(name)) { try { window.dispatchEvent(new Event('si:engaged')); } catch { /* מתעלמים */ } }
