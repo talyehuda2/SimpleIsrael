@@ -50,6 +50,9 @@
                             streak = כמה ימים ברצף פתר את האתגר היומי
      game_share  {mode,score,via}  שיתוף תוצאה שהושלם: native (חלון השיתוף
                             של הטלפון) או copy (העתקה). ביטול לא נספר
+     push_prompt {r}        באנר ההתראה היומית: shown / ios (הוצג), yes / no / ios-ok (מה לחצו)
+     push_sub    {r}        תוצאת ההרשמה: ok / denied / dismissed / error
+     push_off               ביטול ההתראות מהתפריט
      game_auth   {step,via?} חשבון שחקן - open (חלון ההתחברות נפתח, via = מאיפה),
                             code_sent, login (via = email / google), nickname, delete
                             (mark, לא once). בלי מייל ובלי מזהה משתמש - si_trail
@@ -108,7 +111,12 @@ export function startTrail() {
 
 /* keepalive כדי שאירוע שנורה רגע לפני מעבר עמוד עדיין יגיע. כל שגיאה
    נבלעת בשקט: מדידה שמפילה את האתר גרועה מאין מדידה בכלל. */
+/* "הגולש עשה משהו" - הבאנר של ההתראה היומית (components/pushPrompt.js) מחכה
+   לזה כדי לא לקפוץ על מי שרק נחת. אירוע ולא ייבוא, כדי שהמדידה לא תכיר את הבאנר */
+const ENGAGE = new Set(['item_open', 'place_open', 'map_open', 'game_done', 'tours_open', 'tree_open', 'kings_open']);
+
 function send(name, props) {
+  if (ENGAGE.has(name)) { try { window.dispatchEvent(new Event('si:engaged')); } catch { /* מתעלמים */ } }
   if (DEV) { console.debug('[si-trail]', name, props || ''); return; }
   try {
     fetch(`${SUPABASE_URL}/rest/v1/si_trail`, {

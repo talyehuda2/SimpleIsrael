@@ -14,6 +14,7 @@
 import './siteMenu.css';
 import { mark } from '../lib/trail.js';
 import { CHANNEL_URL, CHANNEL_TAG } from './channel.js';
+import { openPushPanel, pushMenuVisible } from './pushPrompt.js';
 
 /* action: מזהה פעולה שהמסך יכול לבצע במקום (פתיחת חלונית). מסך שאין לו
    את הפעולה מקבל קישור - href - שפותח אותה בציר הזמן. */
@@ -24,6 +25,8 @@ const ITEMS = [
   { id: 'game', icon: '🎯', title: 'סדר את הציר', desc: 'משחק: מה קרה קודם? אתגר יומי ומשחק חופשי', href: '/game', badge: 'חדש' },
   // ext: יוצא מהאתר - נפתח בלשונית חדשה, ונספר גם כ-channel_click (data-ch)
   { id: 'channel', icon: '📢', title: 'הערוץ בוואטסאפ', desc: CHANNEL_TAG, href: CHANNEL_URL, ext: 'menu' },
+  // פעולה של התפריט עצמו, זהה בכל מסך: הרשמה, מצב, או ביטול. רק בדפדפן שתומך
+  { id: 'push', icon: '🔔', title: 'התראה יומית', desc: 'דמות או אירוע מהתנ״ך כל ערב, ישר לטלפון', run: openPushPanel, when: pushMenuVisible },
 ];
 
 let seq = 0;
@@ -53,8 +56,9 @@ export function mountSiteMenu(host, { actions = {} } = {}) {
   const list = document.createElement('ul');
   list.className = 'sm-list';
   for (const it of ITEMS) {
+    if (it.when && !it.when()) continue;
     const li = document.createElement('li');
-    const act = actions[it.id];
+    const act = actions[it.id] || it.run;
     const el = document.createElement(act ? 'button' : 'a');
     el.className = 'sm-item';
     if (act) el.type = 'button'; else el.href = it.href;

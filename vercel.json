@@ -1,4 +1,7 @@
 {
+  "crons": [
+    { "path": "/api/push-daily", "schedule": "0 17 * * *" }
+  ],
   "trailingSlash": false,
   "rewrites": [
     {

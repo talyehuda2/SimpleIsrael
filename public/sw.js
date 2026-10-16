@@ -56,3 +56,32 @@ self.addEventListener('fetch', (event) => {
     );
   }
 });
+
+/* ---------- התראות (api/push-daily.js, api/push.js) ----------
+   השרת שולח { title, body, url, image, tag }. tag קבוע להתראה היומית: אם
+   ההתראה של אתמול עוד מחכה במגירה, החדשה מחליפה אותה ולא נערמת עליה. */
+self.addEventListener('push', (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch { d = { body: event.data && event.data.text() }; }
+  event.waitUntil(self.registration.showNotification(d.title || 'ציר הזמן של עם ישראל', {
+    body: d.body || '',
+    icon: '/icons/icon-192.png',
+    image: d.image,
+    tag: d.tag || 'si',
+    lang: 'he',
+    dir: 'rtl',
+    data: { url: d.url || '/?src=push' },
+  }));
+});
+
+// לחיצה: חלון פתוח של האתר עובר לכרטיס; אם אין - נפתח חלון חדש
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || '/', self.location.origin).href;
+  event.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const win = wins.find((w) => new URL(w.url).origin === self.location.origin);
+    if (win) { await win.focus(); return win.navigate(url).catch(() => self.clients.openWindow(url)); }
+    return self.clients.openWindow(url);
+  })());
+});

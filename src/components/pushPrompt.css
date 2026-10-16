@@ -1,0 +1,36 @@
+/* הבאנר של ההתראה היומית (pushPrompt.js). בבעלות הרכיב - הוא מגיע לארבעה
+   מסכים עם ארבעה גיליונות שונים, ולכן הצבעים כאן קבועים ולא משתני מסך.
+   צף מעל התוכן ולא דוחף אותו: בטלפון מעל הסרגל התחתון של ציר הזמן. */
+.pp {
+  position: fixed; z-index: 900;
+  inset-inline: 12px; bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  max-width: 400px; margin-inline: auto;
+  direction: rtl; text-align: start;
+  background: #fbf5e7; color: #33281a;
+  border: 1px solid #dcc9a3; border-top: 4px solid #b28a2b; border-radius: 14px;
+  box-shadow: 0 12px 34px rgb(40 26 4 / .28);
+  padding: 14px 16px 14px;
+  font-family: inherit;
+  animation: pp-in .28s ease-out;
+}
+.pp[hidden] { display: none; }
+@media (min-width: 681px) { .pp { bottom: 24px; inset-inline-start: auto; inset-inline-end: 24px; margin: 0; width: 380px; } }
+@keyframes pp-in { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .pp { animation: none; } }
+
+.pp-h { display: block; font-size: 16.5px; color: #163a57; padding-inline-end: 28px; }
+.pp-p { margin: 6px 0 0; font-size: 14.5px; line-height: 1.55; }
+.pp-b { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.pp-b button {
+  min-height: 44px; padding: 0 16px; border-radius: 10px; font: inherit; font-size: 15px; cursor: pointer;
+  background: #fff; color: #33281a; border: 1px solid #dcc9a3;
+}
+.pp-b button.main { background: #163a57; color: #fff; border-color: #163a57; font-weight: 700; }
+.pp-b button:focus-visible, .pp-x:focus-visible { outline: 3px solid #b28a2b; outline-offset: 2px; }
+/* ✕ בשמאל במכוון, כמו בכרטיס הפריט: הימין שייך לכותרת */
+.pp-x {
+  position: absolute; top: 8px; left: 8px;
+  width: 32px; height: 32px; border-radius: 50%; border: 0; cursor: pointer;
+  background: transparent; color: #6d5c42; font-size: 15px;
+}
+.pp-x:hover { background: rgb(0 0 0 / .06); }

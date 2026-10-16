@@ -50,6 +50,8 @@ const SRC_LABEL = {
   'reply-mail': 'מייל "ענו לך"',
   mail: 'מייל התראה אליך',
   game: 'מהמשחק',
+  push: 'התראה יומית',
+  'push-welcome': 'התראת "נרשמתם"',
 };
 const OTHER_SITES = 'אתרים אחרים';
 function sourceOf(src, ref) {
@@ -278,6 +280,7 @@ export default function Traffic({ token, onBadToken }) {
   const [sources, setSources] = useState([]);
   const [engagement, setEngagement] = useState({});
   const [channel, setChannel] = useState([]);
+  const [push, setPush] = useState(undefined);
 
   const load = useCallback(async () => {
     setStatus('loading'); setErr('');
@@ -287,6 +290,9 @@ export default function Traffic({ token, onBadToken }) {
       .then(({ data, error }) => setEngagement(error ? null : (data || {})));
     supabase.rpc('admin_channel', { p_token: token, p_from: from, p_to: to })
       .then(({ data, error }) => setChannel(error ? null : (data || [])));
+    // מנויים להתראה היומית - מצב נוכחי, לא תלוי בטווח התאריכים (supabase/push.sql)
+    supabase.rpc('admin_push_stats', { p_token: token })
+      .then(({ data, error }) => setPush(error ? null : data));
     const { data, error } = await supabase.rpc('admin_traffic', { p_token: token, p_from: from, p_to: to });
     if (error) {
       const msg = error.message || '';
@@ -381,6 +387,23 @@ export default function Traffic({ token, onBadToken }) {
             <p className="ad-note">
               לחיצות על הקישור לערוץ, לפי המקום באתר. לחיצה אינה הצטרפות - את מספר העוקבים רואים
               בוואטסאפ. "הגיעו מהערוץ" - ביקורים מקישור עם <code dir="ltr">src=channel</code>.
+            </p>
+          </section>
+
+          <section className="ad-card">
+            <h3>התראה יומית</h3>
+            {push === null
+              ? <p className="ad-note">כדי לראות את הנתון צריך להריץ את <code dir="ltr">supabase/push.sql</code> ב-Supabase.</p>
+              : push && (
+                <p className="ad-lead">
+                  <b>{push.subs.toLocaleString('he-IL')}</b> מנויים · {push.today.toLocaleString('he-IL')} קיבלו את ההתראה של היום
+                  · {push.week.toLocaleString('he-IL')} נרשמו השבוע
+                  {sources && <> · <b>{(sources || []).filter((r) => r.src === 'push').reduce((n, r) => n + r.visits, 0).toLocaleString('he-IL')}</b> ביקורים מהתראה בטווח</>}
+                </p>
+              )}
+            <p className="ad-note">
+              מנוי = דפדפן שאישר התראות; מי שביטל או חסם יוצא מהספירה בשליחה הבאה. ההתראה יוצאת כל ערב
+              בסביבות 19:00-20:00 (Cron של Vercel), והקישור בה נושא <code dir="ltr">src=push</code>.
             </p>
           </section>
 
