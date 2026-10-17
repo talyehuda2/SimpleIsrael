@@ -75,6 +75,26 @@ export async function subscribe() {
   }
 }
 
+/* התדירות (supabase/push_freq.sql). null - אין מנוי, או שהקובץ עוד לא רץ:
+   אז הבחירה לא מוצגת, וכולם מקבלים כל יום */
+export async function getFreq() {
+  const sub = await currentSub().catch(() => null);
+  if (!sub) return null;
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/push_get_freq`, {
+    method: 'POST',
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_endpoint: sub.endpoint }),
+  }).catch(() => null);
+  if (!r?.ok) return null;
+  return (await r.json().catch(() => null)) || null;
+}
+
+export async function setFreq(freq) {
+  const sub = await currentSub().catch(() => null);
+  if (!sub) return false;
+  return rpc('push_set_freq', { p_endpoint: sub.endpoint, p_freq: freq }).then(() => true, () => false);
+}
+
 export async function unsubscribe() {
   const sub = await currentSub().catch(() => null);
   if (!sub) return;

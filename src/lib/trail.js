@@ -53,6 +53,7 @@
      push_prompt {r}        באנר ההתראה היומית: shown / ios (הוצג), yes / no / ios-ok (מה לחצו)
      push_sub    {r}        תוצאת ההרשמה: ok / denied / dismissed / error
      push_off               ביטול ההתראות מהתפריט
+     push_freq   {f}        תדירות שנבחרה: daily / alt / twice / weekly
      game_auth   {step,via?} חשבון שחקן - open (חלון ההתחברות נפתח, via = מאיפה),
                             code_sent, login (via = email / google), nickname, delete
                             (mark, לא once). בלי מייל ובלי מזהה משתמש - si_trail

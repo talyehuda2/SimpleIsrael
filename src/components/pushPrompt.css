@@ -34,3 +34,14 @@
   background: transparent; color: #6d5c42; font-size: 15px;
 }
 .pp-x:hover { background: rgb(0 0 0 / .06); }
+
+/* בחירת התדירות: ארבעה כפתורים, הנבחר מלא */
+.pp-f { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+.pp-f[hidden], .pp-n[hidden] { display: none; }
+.pp-f button {
+  min-height: 40px; padding: 0 8px; border-radius: 10px; font: inherit; font-size: 14px; cursor: pointer;
+  background: #fff; color: #33281a; border: 1px solid #dcc9a3;
+}
+.pp-f button[aria-pressed="true"] { background: #163a57; color: #fff; border-color: #163a57; font-weight: 700; }
+.pp-f button:focus-visible { outline: 3px solid #b28a2b; outline-offset: 2px; }
+.pp-n { margin: 8px 0 0; font-size: 12.5px; color: #6d5c42; }

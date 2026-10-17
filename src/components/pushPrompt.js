@@ -17,11 +17,14 @@
    הסגנון בבעלות הרכיב (pushPrompt.css), כמו siteMenu: הוא מגיע לארבעה מסכים. */
 import './pushPrompt.css';
 import { mark } from '../lib/trail.js';
-import { canPush, iosNeedsInstall, isSubscribed, subscribe, unsubscribe } from '../lib/push.js';
+import { canPush, iosNeedsInstall, isSubscribed, subscribe, unsubscribe, getFreq, setFreq } from '../lib/push.js';
+import { sendAllowed, FREQS } from '../lib/holy.js';
 
 const NO_KEY = 'si_push_no';
 const QUIET_DAYS = 21;
-const TITLE = '🔔 דמות מהתנ״ך כל ערב';
+const TITLE = '🔔 דמות מהתנ״ך, ישר לטלפון';
+// מתחת לבחירת התדירות: למה אין בשבת, ומתי בכל זאת יוצא בסוף השבוע (src/lib/holy.js)
+const HOLY_NOTE = 'בלי שבת וחג: בשישי עד 15:00, ובמוצאי שבת מ-21:00.';
 
 const ls = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
@@ -39,29 +42,51 @@ function render(state) {
     document.body.appendChild(box);
   }
   const V = {
-    ask: [TITLE, 'התראה אחת ביום לטלפון: דמות או אירוע מתולדות ישראל. בלי הרשמה ובלי מייל, ואפשר לבטל בכל רגע.',
+    ask: [TITLE, 'דמות או אירוע מתולדות ישראל - כל יום, או בתדירות שתבחרו. בלי הרשמה ובלי מייל, ואפשר לבטל בכל רגע.',
       [['yes', 'כן, אשמח', 1], ['no', 'לא עכשיו']]],
     ios: [TITLE, 'באייפון ההתראות עובדות מהאייקון של האתר: לחצו על כפתור השיתוף ⬆️, בחרו "הוספה למסך הבית", ופתחו את האתר משם.',
       [['no', 'הבנתי', 1]]],
     busy: [TITLE, 'מאשרים בדפדפן…', []],
-    ok: ['✓ נרשמתם', 'התראת ניסיון בדרך אליכם, ומחר בערב - הדמות הראשונה.', [['close', 'סגירה']]],
+    ok: ['✓ נרשמתם', sendAllowed() ? 'התראת ניסיון בדרך אליכם. כמה פעמים תרצו לקבל?'
+      : 'בשבת ובחג לא יוצאות התראות - הראשונה תגיע אחריהם. כמה פעמים תרצו לקבל?', [['close', 'סגירה']]],
     denied: ['ההתראות חסומות', 'הדפדפן חוסם התראות מהאתר. כדי לאפשר: לחצו על המנעול 🔒 ליד הכתובת ← הרשאות ← התראות.', [['close', 'סגירה']]],
     dismissed: [TITLE, 'החלון נסגר בלי אישור. אפשר לנסות שוב בכל זמן מהתפריט "עוד באתר".', [['close', 'סגירה']]],
     error: ['משהו השתבש', 'ההרשמה לא הצליחה. אפשר לנסות שוב מהתפריט "עוד באתר".', [['close', 'סגירה']]],
-    on: ['🔔 ההתראה היומית פעילה', 'כל ערב תגיע מכאן דמות או אירוע מתולדות ישראל.', [['off', 'ביטול ההתראות'], ['close', 'סגירה', 1]]],
+    on: ['🔔 ההתראה היומית פעילה', 'דמות או אירוע מתולדות ישראל, בתדירות שבחרתם:', [['off', 'ביטול ההתראות'], ['close', 'סגירה', 1]]],
     off: ['ההתראות בוטלו', 'לא יגיעו יותר התראות מהאתר למכשיר הזה.', [['close', 'סגירה']]],
     none: ['אין התראות בדפדפן הזה', 'הדפדפן הזה לא תומך בהתראות מאתרים. נסו מ-Chrome או מהאפליקציה במסך הבית.', [['close', 'סגירה']]],
   }[state];
   const [h, p, btns] = V;
+  const freq = state === 'ok' || state === 'on';
   box.innerHTML = `<button type="button" class="pp-x" data-a="${state === 'ask' || state === 'ios' ? 'no' : 'close'}" aria-label="סגירה">✕</button>`
     + `<b class="pp-h">${h}</b><p class="pp-p">${p}</p>`
+    + (freq ? `<div class="pp-f" role="group" aria-label="תדירות" hidden>${FREQS.map(([f, t]) => `<button type="button" data-f="${f}" aria-pressed="false">${t}</button>`).join('')}</div>`
+      + `<p class="pp-n" hidden>${HOLY_NOTE}</p>` : '')
     + (btns.length ? `<div class="pp-b">${btns.map(([a, t, main]) => `<button type="button" data-a="${a}"${main ? ' class="main"' : ''}>${t}</button>`).join('')}</div>` : '');
   box.hidden = false;
   box.onclick = (e) => {
-    const a = e.target.closest('button')?.dataset.a;
-    if (a) act(a, state);
+    const b = e.target.closest('button');
+    if (b?.dataset.f) return pick(b.dataset.f);
+    if (b?.dataset.a) act(b.dataset.a, state);
   };
-  if (state === 'ok') setTimeout(() => { if (box && !box.hidden) close(); }, 9000);
+  if (freq) showFreq();
+}
+
+/* התדירות: נטענת מהמסד ומוצגת רק אם הגיעה. בלי push_freq.sql - לא מוצגת, וכולם כל יום */
+function paint(f) {
+  box.querySelectorAll('.pp-f button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.f === f)));
+}
+async function showFreq() {
+  const f = await getFreq();
+  if (!f || !box) return;
+  paint(f);
+  box.querySelector('.pp-f').hidden = false;
+  box.querySelector('.pp-n').hidden = false;
+}
+async function pick(f) {
+  paint(f);
+  if (await setFreq(f)) mark('push_freq', { f });
+  else paint(await getFreq());
 }
 
 function close() { if (box) box.hidden = true; }

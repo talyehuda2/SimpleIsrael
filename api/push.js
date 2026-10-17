@@ -9,6 +9,7 @@
 
    ההרשמה עצמה (שמירת המנוי) נעשית מהדפדפן ישירות ב-RPC push_subscribe. */
 import { vapid, rpc, send, secret } from './_lib/push.js';
+import { sendAllowed } from '../src/lib/holy.js';
 
 export default async function handler(req, res) {
   if (!secret()) {
@@ -24,12 +25,14 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const endpoint = req.body?.endpoint;
       if (typeof endpoint !== 'string' || endpoint.length > 1000) return res.status(400).json({ error: 'בקשה לא תקינה' });
+      // גם התראת "נרשמתם" לא יוצאת בשבת ובחג (src/lib/holy.js)
+      if (!sendAllowed()) return res.status(200).json({ sent: false, holy: true });
       await vapid();
       const rows = await rpc('push_welcome', { p_secret: secret(), p_endpoint: endpoint });
       if (!rows?.length) return res.status(200).json({ sent: false });
       const r = await send(rows[0], {
         title: '🔔 נרשמתם להתראה היומית',
-        body: 'כל ערב תגיע מכאן דמות או אירוע מתולדות ישראל. אפשר לבטל בכל רגע מהתפריט "עוד באתר".',
+        body: 'מעכשיו תגיע מכאן דמות או אירוע מתולדות ישראל - לא בשבת ובחג. תדירות וביטול: בתפריט "עוד באתר".',
         url: '/?src=push-welcome',
         tag: 'si-welcome',
       });
