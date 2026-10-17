@@ -32,9 +32,12 @@
      tree_open / tours_open / guide_open   - שימוש בפיצ'רים
      kings_open            שני המסכים - "שתי הממלכות" נפתח
      menu_pick   {id}       תפריט "עוד באתר" - איזה פריט נבחר (mark, לא once)
+     report_open {key}      "מצאתי טעות" בכרטיס פריט נפתח (mark, לא once)
+     ref_open    {key,from} מראה מקום של תחנה נלחץ (קישור לספריא): journey / places (mark, לא once)
      channel_click {from}   קישור לערוץ הוואטסאפ נלחץ: menu / about / game / board
                             (mark, לא once; components/channel.js)
      map_mode    {m}        מפת הארץ   - מעבר בין המפה העתיקה למודרנית (mark, לא once)
+     journey_mode {m}       מפת המסע (שני המסכים) - אותו מעבר במפת המסע (mark, לא once)
      geo_locate  {r}        מפת הארץ   - "איפה אני" הופעל, ומה יצא: ok / outside /
                                         denied / error (mark, לא once). בכוונה בלי
                                         קואורדינטה: המיקום אינו יוצא מהמכשיר
@@ -47,6 +50,10 @@
                             streak = כמה ימים ברצף פתר את האתגר היומי
      game_share  {mode,score,via}  שיתוף תוצאה שהושלם: native (חלון השיתוף
                             של הטלפון) או copy (העתקה). ביטול לא נספר
+     push_prompt {r}        באנר ההתראה היומית: shown / ios (הוצג), yes / no / ios-ok (מה לחצו)
+     push_sub    {r}        תוצאת ההרשמה: ok / denied / dismissed / error
+     push_off               ביטול ההתראות מהתפריט
+     push_freq   {f}        תדירות שנבחרה: daily / alt / twice / weekly
      game_auth   {step,via?} חשבון שחקן - open (חלון ההתחברות נפתח, via = מאיפה),
                             code_sent, login (via = email / google), nickname, delete
                             (mark, לא once). בלי מייל ובלי מזהה משתמש - si_trail
@@ -105,7 +112,12 @@ export function startTrail() {
 
 /* keepalive כדי שאירוע שנורה רגע לפני מעבר עמוד עדיין יגיע. כל שגיאה
    נבלעת בשקט: מדידה שמפילה את האתר גרועה מאין מדידה בכלל. */
+/* "הגולש עשה משהו" - הבאנר של ההתראה היומית (components/pushPrompt.js) מחכה
+   לזה כדי לא לקפוץ על מי שרק נחת. אירוע ולא ייבוא, כדי שהמדידה לא תכיר את הבאנר */
+const ENGAGE = new Set(['item_open', 'place_open', 'map_open', 'game_done']);
+
 function send(name, props) {
+  if (ENGAGE.has(name)) { try { window.dispatchEvent(new Event('si:engaged')); } catch { /* מתעלמים */ } }
   if (DEV) { console.debug('[si-trail]', name, props || ''); return; }
   try {
     fetch(`${SUPABASE_URL}/rest/v1/si_trail`, {

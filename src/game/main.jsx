@@ -21,6 +21,7 @@ import {
 } from './pool.js';
 import { confetti } from './confetti.js';
 import './game.css';
+import { initPushPrompt } from '../components/pushPrompt.js';
 import { useAccount, accountsEnabled, AccountButton, AccountDialog, SaveInvite, SavedLine, Leaderboard } from './Account.jsx';
 
 // עד ההשקה ההרשמה כולה מוסתרת - ראו OPEN ב-Account.jsx
@@ -640,4 +641,5 @@ function Game() {
 }
 
 startTrail();
+initPushPrompt();
 createRoot(document.getElementById('root')).render(<Game />);

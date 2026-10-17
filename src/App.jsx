@@ -173,6 +173,7 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [notesAbout, setNotesAbout] = useState(null);   // "מצאתי טעות" מכרטיס
   const [askOpen, setAskOpen] = useState(false);
   /* סוכן השאלות בשלב בדיקה - הכפתור מופיע רק למי שיש לו טוקן ניהול.
      זו הסתרה בממשק בלבד; האכיפה האמיתית היא ב-/api/ask שמאמת את הטוקן. */
@@ -1180,6 +1181,7 @@ export default function App() {
             commentCount={selected ? (commentCounts[itemKey(selected)] || 0) : 0}
             openComments={INITIAL.comments || (INITIAL.c != null && itemKey(selected) === INITIAL.sel)}
             focusComment={INITIAL.c != null && itemKey(selected) === INITIAL.sel ? INITIAL.c : null}
+            onReport={(about) => { mark('report_open', { key: about.key }); setNotesAbout(about); setNotesOpen(true); }}
           />
           {!isMobile && maps[selected.id] && (
             <JourneyMap
@@ -1254,7 +1256,7 @@ export default function App() {
         mode={introMode} onStartJourney={() => jumpToId('avraham', { contemp: false })} onCloseCard={() => setSelected(null)}
         atlasHref={atlasHref} onChooseView={chooseView}
       />
-      <NotesBox open={notesOpen} onClose={() => setNotesOpen(false)} />
+      <NotesBox open={notesOpen} about={notesAbout} onClose={() => { setNotesOpen(false); setNotesAbout(null); }} />
       <AskBox
         open={askOpen}
         onClose={() => setAskOpen(false)}

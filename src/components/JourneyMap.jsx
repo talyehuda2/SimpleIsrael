@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { stationNoteText, offMapName } from '../utils/placeNote.js';
+import { stationNoteText, offMapName, offMapDir } from '../utils/placeNote.js';
 import maps from '../data/maps.json';
 import { MAP_SRC, MAP_SIZE, journeyStations, offMapMark, offMapPin } from '../utils/mapProject.js';
+import { mark } from '../lib/trail.js';
+import { refHref } from '../utils/sefaria.js';
+import './JourneyMap.css';
 
 /* מפת המסע - רכיב אחד לשני המסכים.
    variant='timeline': חלונית לצד הכרטיס (או שכבה מלאה במובייל).
@@ -34,6 +37,10 @@ const RING_R = 24;
 const RING_C = 2 * Math.PI * RING_R;
 
 const clampN = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+
+/* המפה המודרנית של המסע (journeyModern.js) הושקה לכולם ב-10.2026, אחרי תקופה
+   מאחורי ?jmodern=1. ניקוי הדגל ששמר הדפדפן של מי שבדק אותה. */
+try { localStorage.removeItem('si_jmodern'); } catch { /* אחסון חסום - אין מה לנקות */ }
 
 /* חלון תצוגה ביחס-הגובה-רוחב של המכל, ממורכז סביב נקודה וחסום לגבולות
    התמונה. היחס חשוב: התמונה ריבועית, ואם ה-viewBox ריבועי בזמן שהמכל
@@ -85,6 +92,12 @@ export default function JourneyMap({
   const wrapRef = useRef(null);
   const [ar, setAr] = useState(1);
   const rafRef = useRef(0);
+  // המפה המודרנית: מצב, המכל, המודול (נטען בעצלות) והמופע שלו
+  const [mode, setMode] = useState('ancient');
+  const [busy, setBusy] = useState(false);
+  const [modernPos, setModernPos] = useState(null);   // מיקום התחנה הפעילה בפיקסלים
+  const modernElRef = useRef(null);
+  const modernRef = useRef(null);
   const onStepRef = useRef(onStep);
   onStepRef.current = onStep;
   const initialStepRef = useRef(initialStep);
@@ -125,6 +138,42 @@ export default function JourneyMap({
   }, [item]);
 
   useEffect(() => { if (onStepRef.current) onStepRef.current(step); }, [step]);
+
+  // המפה המודרנית עוקבת אחרי המסע והתחנה. היא נבנית בפעם הראשונה שעוברים
+  // אליה, ונשארת חיה עד שהרכיב יורד - מעבר חוזר אינו מוריד אותה שוב.
+  useEffect(() => { modernRef.current?.setJourney(ptsRef.current, color); }, [item]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { modernRef.current?.setStep(step); }, [step]);
+  // טבעת הספירה גם במפה המודרנית: אחרי setStep, כדי שתיבנה על התחנה החדשה
+  useEffect(() => { modernRef.current?.setTimer({ on: timerOn, playing, ms: PLAY_MS }); }, [timerOn, playing, step]);
+  useEffect(() => () => { modernRef.current?.destroy(); modernRef.current = null; }, []);
+
+  async function switchMode(m) {
+    if (m === mode || busy) return;
+    if (m === 'modern') {
+      setBusy(true);
+      let mod;
+      try { mod = await import('./journeyModern.js'); } catch { mod = null; }
+      setBusy(false);
+      if (!mod || !mod.supported()) return;
+      if (!modernRef.current && modernElRef.current) {
+        modernRef.current = mod.createJourneyModern(modernElRef.current, {
+          onPick: (i) => { setPlaying(false); setTimerOn(false); setStep(i); },
+          onPos: setModernPos,
+          onError: () => { setMode('ancient'); },
+        });
+        modernRef.current.setJourney(ptsRef.current, color);
+      }
+      setMode('modern');
+      // המכל היה מוסתר עד עכשיו, והמפה מודדת את עצמה מחדש כשהוא נגלה
+      requestAnimationFrame(() => {
+        modernRef.current?.resize(); modernRef.current?.setStep(step);
+        modernRef.current?.setTimer({ on: timerOn, playing, ms: PLAY_MS });
+      });
+    } else {
+      setMode('ancient');
+    }
+    mark('journey_mode', { m });
+  }
 
   useEffect(() => {
     if (!onClose) return undefined;
@@ -187,6 +236,8 @@ export default function JourneyMap({
   }
 
   const active = step >= 0 ? pts[step] : null;
+  // במפה המודרנית מקום "מחוץ למפה" מוצג במקומו האמיתי, וההערה הזו כבר אינה נכונה
+  const noteOf = (name) => (mode === 'modern' && offMapDir(name) ? null : stationNoteText(name));
   // ההתקדמות נמדדת באורך המסלול ולא במספר התחנות; אחרת הקו חוצה את היעד
   const progressOffset = step < 0 ? total : total - pts[step].cum;
 
@@ -235,7 +286,18 @@ export default function JourneyMap({
         <span className="jc-progress">{step < 0 ? 'סקירה כללית' : `תחנה ${step + 1} מתוך ${pts.length}`}</span>
       </div>
 
-      <div className="map-wrap" ref={wrapRef}>
+      {/* המתג בשורה משלו מעל המפה ולא צף עליה: בטלפון הוא כיסה את כרטיס התחנה */}
+      <div className="jm-mode-row">
+        <div className="jm-mode" role="group" aria-label="סוג המפה">
+          <button type="button" className={mode === 'ancient' ? 'on' : ''} aria-pressed={mode === 'ancient'}
+            onClick={() => switchMode('ancient')}>🏺 עתיקה</button>
+          <button type="button" className={`${mode === 'modern' ? 'on' : ''}${busy ? ' busy' : ''}`}
+            aria-pressed={mode === 'modern'} onClick={() => switchMode('modern')}>🗺️ מודרנית</button>
+        </div>
+      </div>
+
+      <div className={`map-wrap${mode === 'modern' ? ' is-modern' : ''}`} ref={wrapRef}>
+        <div className="jm-modern" ref={modernElRef} hidden={mode !== 'modern'} />
         <svg
           viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`} className="map-svg"
           preserveAspectRatio="xMidYMid slice"
@@ -298,20 +360,33 @@ export default function JourneyMap({
         </svg>
 
         {active && (() => {
-          const xPct = ((active.x - vb.x) / vb.w) * 100;
-          const yPct = ((active.y - vb.y) / vb.h) * 100;
+          /* במפה המודרנית המיקום מגיע מהמפה עצמה (פיקסלים, מתעדכן בכל תזוזה).
+             תחנה שאין לה מיקום שם - הכרטיס בראש המפה (unpinned) */
+          const modern = mode === 'modern';
+          const box = wrapRef.current?.getBoundingClientRect();
+          const unpinned = modern && (!modernPos || !box || !box.width);
+          /* בזמן הטיסה התחנה עוד מחוץ למסגרת, והכרטיס ברח מהמפה - ולכן נחסם לתחומה */
+          const xPct = modern ? (unpinned ? 50 : clampN((modernPos.x / box.width) * 100, 0, 100)) : ((active.x - vb.x) / vb.w) * 100;
+          const yPct = modern ? (unpinned ? 0 : clampN((modernPos.y / box.height) * 100, 0, 100)) : ((active.y - vb.y) / vb.h) * 100;
           const tx = xPct < 30 ? '-6%' : xPct > 70 ? '-94%' : '-50%';
           const ty = yPct < 35 ? '18px' : 'calc(-100% - 18px)';
           return (
-            <div className="map-popup" style={{ left: `${xPct}%`, top: `${yPct}%`, transform: `translate(${tx}, ${ty})` }}>
+            <div className={`map-popup${unpinned ? ' unpinned' : ''}`}
+              style={{ left: `${xPct}%`, top: `${yPct}%`, transform: `translate(${tx}, ${ty})` }}>
               <div className="map-popup-head" style={{ background: color }}>
                 <span className="map-popup-num">{active.order}</span>{active.name}
-                {stationNoteText(active.name) && (
-                  <span className="station-note">{stationNoteText(active.name)}</span>
+                {noteOf(active.name) && (
+                  <span className="station-note">{noteOf(active.name)}</span>
                 )}
               </div>
               <div className="map-popup-label">{active.label}</div>
               <p className="map-popup-desc">{active.desc}</p>
+              {/* מראה המקום (אוקטובר 2026): מי שקורא "יורם יצא למואב" יכול לבדוק בעצמו
+                  בפסוק. ה-ref נאכף לכל תחנה בבנייה, ולכן כמעט תמיד יש קישור */}
+              {active.ref && (refHref(active.ref)
+                ? <a className="map-popup-ref" href={refHref(active.ref)} target="_blank" rel="noopener noreferrer"
+                    onClick={() => mark('ref_open', { key: `${item.kind}:${item.id}`, from: 'journey' })}>📖 {active.ref}</a>
+                : <span className="map-popup-ref">📖 {active.ref}</span>)}
             </div>
           );
         })()}
@@ -327,8 +402,8 @@ export default function JourneyMap({
           >
             <span className="map-legend-num" style={{ background: color }}>{p.order}</span>
             <span className="ml-name"><b>{p.name}</b>
-              {stationNoteText(p.name) && (
-                <span className="station-note">{stationNoteText(p.name)}</span>
+              {noteOf(p.name) && (
+                <span className="station-note">{noteOf(p.name)}</span>
               )}
             </span>
             <span className="ml-label"> - {p.label}</span>

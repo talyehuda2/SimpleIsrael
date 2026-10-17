@@ -101,7 +101,7 @@ for (const [itemId, m] of Object.entries(maps)) {
     if (st.name.trim() !== name) p.aka.add(st.name.trim());
     p.visits.push({
       id: item.id, kind: item.kind, name: item.name,
-      year: item.start, label: st.label || '', desc: st.desc || '',
+      year: item.start, label: st.label || '', desc: st.desc || '', ref: st.ref || '',
     });
   }
 }

@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { hebrewYearLetters, toSecular, formatRange } from '../src/utils/dates.js';
-import { sourceSegments } from '../src/utils/sefaria.js';
+import { sourceSegments, refHref } from '../src/utils/sefaria.js';
 import { buildPlaceIndex, relatedByPlace } from '../src/utils/related.js';
 import { journeyStations } from '../src/utils/mapProject.js';
 import { writeCard, writeGameCard, GAME_RESULT } from './og.mjs';
@@ -267,6 +267,7 @@ footer a{color:var(--gold-ink)}
 .mlist a:hover b{color:var(--gold-ink)}
 .mlist .dim{margin-inline-start:8px}
 .mlist p{margin:4px 0 0;font-size:15px;line-height:1.75;color:var(--muted)}
+.mlist .mref,.mlist .mref a{font-size:13px;font-weight:700;color:var(--gold-ink)}
 /* שער הכניסה - הדבר הראשון בדף. הכותרת, ומיד אחריה הבחירה באיזה מבט
    להיכנס לאתר עצמו. הטקסט המלא ממשיך מתחתיו. */
 .gate{margin:14px 0 8px;background:linear-gradient(180deg,#fdf8ec,#f4e9d1);
@@ -920,6 +921,7 @@ ${eras.length ? `<div class="row"><b>תקופות:</b> ${eras.map((e) => `<a hre
       <span class="dim">${esc(KINDS[v.kind] ? KINDS[v.kind].label : '')} · שנת ${v.year}</span>
       ${v.label ? `<p><b>${esc(v.label)}</b></p>` : ''}
       ${v.desc ? `<p>${esc(clean(v.desc))}</p>` : ''}
+      ${v.ref ? `<p class="mref">📖 ${refHref(v.ref) ? `<a href="${refHref(v.ref)}" rel="noopener">${esc(v.ref)}</a>` : esc(v.ref)}</p>` : ''}
     </li>`).join('\n    ')}
   </ol>
 </section>
@@ -1184,7 +1186,7 @@ writeFileSync(join(DIST, 'privacy.html'), shell({
 <li><b>התוצאות שלכם באתגר היומי</b> - הציון של כל יום והסדר שבו הנחתם את הפריטים. מהן מחושבים הנקודות, הרצף והמקום בטבלה.</li>
 </ul>
 <p><b>התחברות עם Google:</b> אם בחרתם בה, Google מוסרת את כתובת המייל שלכם, ובנוסף את השם ואת תמונת הפרופיל. ספק ההתחברות (Supabase) שומר אותם עם החשבון, אך האתר אינו מציג אותם ואינו משתמש בהם - בטבלה מופיע רק הכינוי. Google יודעת שהתחברתם לאתר הזה, כמו בכל התחברות דרכה.</p>
-<p>כפתור "המשך עם Google" מגיע מ-Google עצמה, ולכן <b>רק כשפותחים את חלון ההתחברות במשחק</b> הדפדפן טוען אותו מהשרתים של Google - כמו בכל אתר שמציע כניסה עם Google. בשאר האתר, ולמי שלא פתח את החלון, שום דבר לא נטען מ-Google.</p>
+
 <p><b>מחיקה:</b> באזור האישי במשחק יש כפתור "מחיקת החשבון". הוא מוחק מיד ולצמיתות את החשבון, את הכינוי ואת כל התוצאות, בלי צורך לפנות אליי.</p>
 
 <h2>כמה זמן נשמר המידע</h2>
@@ -1210,7 +1212,7 @@ writeFileSync(join(DIST, 'privacy.html'), shell({
 <li><b>Vercel</b> - אירוח האתר ומדידת צפיות בעמודים.</li>
 <li><b>Resend</b> - שליחת המייל שמודיע לכם שהתקבלה תשובה לתגובה שלכם, ושליחת קוד הכניסה למשחק.</li>
 <li><b>Google</b> - רק אם בחרתם להתחבר למשחק עם חשבון Google.</li>
-<li><b>OpenFreeMap</b> ו-<b>Amazon Web Services</b> - רק אם בחרתם במפה המודרנית במפת הארץ: הראשון מגיש את המפה (על בסיס OpenStreetMap), והשני את נתוני הגבהים שמהם נבנה התבליט.</li>
+<li><b>OpenFreeMap</b> ו-<b>Amazon Web Services</b> - רק אם בחרתם במפה המודרנית, במפת הארץ או במפת המסע של דמות: הראשון מגיש את המפה (על בסיס OpenStreetMap), והשני את נתוני הגבהים שמהם נבנה התבליט.</li>
 </ul>
 <p>שרתי השירותים האלה עשויים להימצא מחוץ לישראל, כמקובל בשירותי ענן.</p>
 <p>האתר מיועד לקהל בישראל ואינו מכוון לגולשים באיחוד האירופי.</p>
@@ -1223,8 +1225,12 @@ writeFileSync(join(DIST, 'privacy.html'), shell({
 <p>במפת הארץ יש כפתור <b>"📍 איפה אני"</b>, שמראה אילו מקומות היסטוריים קרובים אליכם. רק לחיצה עליו מבקשת את המיקום, והדפדפן שואל אתכם לפני שהוא נמסר.</p>
 <p><b>המיקום אינו יוצא מהמכשיר שלכם.</b> המרחקים מחושבים בדפדפן עצמו, והמיקום אינו נשלח לשרת, אינו נשמר ואינו נרשם בסטטיסטיקה. הדבר היחיד שנרשם הוא שהכפתור הופעל ואם זה הצליח - בלי שום קואורדינטה.</p>
 
+<h2>התראה יומית</h2>
+<p>אפשר לקבל התראה לטלפון או למחשב - כל יום, או בתדירות שתבחרו (התדירות נשמרת עם המנוי), ולא בשבת ובחג: דמות או אירוע מתולדות ישראל. <b>ההתראות נשלחות רק אם אישרתם אותן</b> - קודם בבאנר באתר, ואז בחלון האישור של הדפדפן.</p>
+<p>כשמאשרים, הדפדפן יוצר "מנוי" - כתובת של שירות ההתראות של הדפדפן (של Google, Apple, Mozilla או Microsoft, לפי הדפדפן) ומפתח להצפנת ההודעה - והוא נשמר אצלנו כדי שנוכל לשלוח. <b>אין בו שם, מייל או מיקום</b>, והוא אינו מקושר לחשבון במשחק או לתגובות. תוכן ההתראה מוצפן, ושירות ההתראות רק מעביר אותה. ביטול - מהתפריט "עוד באתר" ← "התראה יומית", או בהגדרות הדפדפן; מנוי שבוטל נמחק אצלנו.</p>
+
 <h2>המפה המודרנית</h2>
-<p>במפת הארץ אפשר לעבור מהמפה העתיקה (ציור שמוגש מהאתר עצמו) למפה מודרנית עם ערים, כבישים ותבליט. <b>המפה המודרנית נטענת רק אם בחרתם בה</b>, ומשני שירותים חיצוניים: OpenFreeMap (המפה, על בסיס OpenStreetMap) ו-Amazon Web Services (נתוני הגבהים).</p>
+<p>במפת הארץ ובמפות המסע של הדמויות אפשר לעבור מהמפה העתיקה (ציור שמוגש מהאתר עצמו) למפה מודרנית עם ערים, כבישים ותבליט. <b>המפה המודרנית נטענת רק אם בחרתם בה</b>, ומשני שירותים חיצוניים: OpenFreeMap (המפה, על בסיס OpenStreetMap) ו-Amazon Web Services (נתוני הגבהים).</p>
 <p>כמו בכל טעינת מפה באינטרנט, השירותים האלה רואים את כתובת ה-IP שלכם ואיזה אזור במפה נטען. הם אינם מקבלים את המיקום של "איפה אני": במפה המודרנית הכפתור מציג את הסיכה ואת הרשימה, אבל אינו מזיז את המפה אל המקום שבו אתם נמצאים.</p>
 
 <h2>מה לא קורה כאן</h2>

@@ -36,7 +36,7 @@ export default function DetailCard({
   onClose, onOpenMap, contemporariesOn, onToggleContemporaries,
   prevItem, nextItem, onNav, axisStart, axisEnd, contemporaries = [],
   commentCount = 0, collections = [], onOpenCollection,
-  switchHref, switchLabel, openComments = false, focusComment = null,
+  switchHref, switchLabel, openComments = false, focusComment = null, onReport,
 }) {
   const [shareMsg, setShareMsg] = useState('');
   /* הסבר הכרונולוגיה - סגור כברירת מחדל. לא title, כי רמז שמופיע
@@ -236,6 +236,15 @@ export default function DetailCard({
             </span>
           ))}
         </div>
+      )}
+
+      {/* "מצאתי טעות": פנייה פרטית למנהל עם שם הפריט. גולש מצא את המסע למואב של
+          יורם אחרי מותו (אוקטובר 2026) - וכדי לדווח היה צריך לכתוב תגובה בלי לציין
+          על מה. שקט בכוונה: קישור קטן ולא כפתור, הוא לא הפעולה העיקרית בכרטיס */}
+      {onReport && (
+        <button type="button" className="dc-report" onClick={() => onReport({ key: `${item.kind}:${item.id}`, name: item.name })}>
+          🔍 מצאתי טעות בכרטיס
+        </button>
       )}
 
       {/* 11. בני-הזמן */}

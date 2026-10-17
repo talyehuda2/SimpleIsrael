@@ -6,11 +6,12 @@ import NotesBox from '../components/NotesBox.jsx';
 
 let root = null;
 
-function draw(open) {
+function draw(open, about = null) {
   const host = document.querySelector('#notesHost');
   if (!host) return;
   if (!root) root = createRoot(host);
-  root.render(<NotesBox open={open} onClose={() => draw(false)} />);
+  root.render(<NotesBox open={open} about={about} onClose={() => draw(false)} />);
 }
 
-export const openNotes = () => draw(true);
+// about = { key, name } - "מצאתי טעות" מכרטיס פריט (במסע הדורות)
+export const openNotes = (about = null) => draw(true, about);

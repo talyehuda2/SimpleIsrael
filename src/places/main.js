@@ -10,9 +10,12 @@ import { shareLink } from '../lib/share.js';
 import { startTrail, markOnce, mark } from '../lib/trail.js';
 import { nearest, locateOnMap, pxPerKm, fmtKm, getPosition, MAX_KM } from './nearby.js';
 import { mountSiteMenu } from '../components/siteMenu.js';
+import { initPushPrompt } from '../components/pushPrompt.js';
 import { channelCardHtml } from '../components/channel.js';
+import { refHref } from '../utils/sefaria.js';
 
 startTrail();
+initPushPrompt();
 /* תפריט "עוד באתר" המשותף. במסך הזה אין חלוניות משלו, ולכן כל פריט הוא
    קישור שפותח אותו בציר הזמן (או במשחק). */
 mountSiteMenu(document.getElementById('menuHost'));
@@ -446,10 +449,16 @@ function renderDetail(p) {
         </div>
         ${v.label ? `<p class="dvlabel">${esc(v.label)}</p>` : ''}
         ${v.desc ? `<p class="dvdesc">${esc(v.desc)}</p>` : ''}
+        ${v.ref ? (refHref(v.ref)
+          ? `<a class="dvref" href="${refHref(v.ref)}" target="_blank" rel="noopener noreferrer" data-ref="${esc(v.kind)}:${esc(v.id)}">📖 ${esc(v.ref)}</a>`
+          : `<span class="dvref">📖 ${esc(v.ref)}</span>`) : ''}
         <a class="dvgo" href="/atlas?sel=${esc(v.kind)}:${esc(v.id)}">למסע של ${esc(v.name)} ←</a>
       </li>`).join('')}</ul>
     ${filtered.length ? '' : '<p class="pempty">אין ביקורים במקום הזה בתקופה שנבחרה.</p>'}`;
   $('#dBack').addEventListener('click', () => select(null));
+  for (const a of document.querySelectorAll('.dvref[data-ref]')) {
+    a.addEventListener('click', () => mark('ref_open', { key: a.dataset.ref, from: 'places' }));
+  }
   $('#dFilter')?.addEventListener('click', () => { showAll = !showAll; renderDetail(p); });
 }
 

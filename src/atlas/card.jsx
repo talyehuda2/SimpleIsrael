@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import '../styles.css';   // אותו גיליון של ציר הזמן - כך הכרטיס נראה זהה
 import DetailCard from '../components/DetailCard.jsx';
+import { mark } from '../lib/trail.js';
 import { ALL_ITEMS, itemKey, overlaps, collectionsOf } from '../data/items.js';
 import { fetchCommentCounts } from '../lib/commentCounts.js';
 
@@ -57,6 +58,10 @@ export function renderCard(o) {
       onOpenCollection={o.onOpenCollection}
       commentCount={counts[o.key] || 0}
       switchHref={`/?sel=${o.key}`} switchLabel="ציר הזמן"
+      onReport={(about) => {
+        mark('report_open', { key: about.key });
+        import('../lib/notes.jsx').then((m) => m.openNotes(about));
+      }}
       openComments={o.openComments}
     />
   );

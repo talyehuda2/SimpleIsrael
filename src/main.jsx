@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { startTrail } from './lib/trail.js';
+import { initPushPrompt } from './components/pushPrompt.js';
 import App from './App.jsx';
 import './styles.css';
 
 startTrail();
+initPushPrompt();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

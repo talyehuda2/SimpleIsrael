@@ -5,8 +5,10 @@ import TOURS from '../data/tours.json';
 import { shareLink } from '../lib/share.js';
 import { startTrail, markOnce } from '../lib/trail.js';
 import { mountSiteMenu } from '../components/siteMenu.js';
+import { initPushPrompt } from '../components/pushPrompt.js';
 import { channelCardHtml } from '../components/channel.js';
 startTrail();
+initPushPrompt();
 
 const $ = (s) => document.querySelector(s);
 // אותו סדר כמו רצועות ציר הזמן עצמו
