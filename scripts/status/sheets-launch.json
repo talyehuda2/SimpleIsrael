@@ -26,12 +26,13 @@
         }
       },
       {
-        "label": "ובעמוד השני",
+        "label": "או שני עמודים",
         "path": "/p/leader/avraham/sheet/2",
         "vh": 1800,
+        "whole": true,
         "crop": {
-          "from": ".page.p2",
-          "to": ".page.p2",
+          "from": ".page",
+          "to": ".page",
           "pad": 0
         }
       }
@@ -62,8 +63,8 @@
     },
     {
       "type": "site",
-      "eyebrow": "עמוד אחד",
-      "title": "אברהם אבינו, על דף A4",
+      "eyebrow": "אפשרות א׳ · עמוד אחד",
+      "title": "כל הדמות על דף A4 אחד",
       "path": "/p/leader/avraham/sheet",
       "vh": 900,
       "crop": {
@@ -74,8 +75,20 @@
     },
     {
       "type": "site",
-      "eyebrow": "או שני עמודים",
-      "title": "ובעמוד השני - מפת המסע בגדול",
+      "eyebrow": "אפשרות ב׳ · שני עמודים",
+      "title": "עמוד 1: הדמות ותחנות חייה",
+      "path": "/p/leader/avraham/sheet/2",
+      "vh": 1800,
+      "crop": {
+        "from": ".page:not(.p2)",
+        "to": ".page:not(.p2)",
+        "pad": 0
+      }
+    },
+    {
+      "type": "site",
+      "eyebrow": "אפשרות ב׳ · שני עמודים",
+      "title": "עמוד 2: מפת המסע בגדול",
       "path": "/p/leader/avraham/sheet/2",
       "vh": 1800,
       "crop": {

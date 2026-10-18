@@ -47,7 +47,8 @@
    תמונה לפוסט בערוץ (שדה post בראש הקובץ, לצד slides): eyebrow, title, blocks[] - אותם בלוקים
    של verses, ו-\n בתוך p שובר שורה. הפלט status-out/<שם>/post.jpg, לרוחב (1200x630, כמו תמונות
    השיתוף של האתר): בערוץ תמונה לאורך נחתכת בפיד, ולרוחב מוצגת במלואה. האיש עם המקל משמאל,
-   הטקסט מימין. shots: [{...שדות של site, label}] - עד שני צילומים מהאתר בצד שמאל, למשל לפני/אחרי. */
+   הטקסט מימין. shots: [{...שדות של site, label, whole?}] - עד שני צילומים מהאתר בצד שמאל, למשל לפני/אחרי.
+   whole: הצילום מוצג כולו, מוקטן ולא חתוך (ברירת המחדל חותכת מלמטה צילום שגבוה מהמסגרת). */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, createReadStream, mkdtempSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename, extname } from 'node:path';
@@ -236,7 +237,7 @@ const postBlock = (b) => b.rows ? boardRows(b.rows) : b.p ? `<p>${fmt(b.p).repla
 /* shots: עד שני צילומים מהאתר (אותם שדות של שקף site, ועוד label) - נכנסים בצד שמאל במקום
    האיש עם המקל, והטקסט מצטמצם לימין */
 const postShots = (s, files) => `<div class="shots">${files.map((f, i) =>
-  `<figure><figcaption>${esc(s.shots[i].label || '')}</figcaption><img src="file://${f}"></figure>`).join('')}</div>`;
+  `<figure><figcaption>${esc(s.shots[i].label || '')}</figcaption><img${s.shots[i].whole ? ' class="whole"' : ''} src="file://${f}"></figure>`).join('')}</div>`;
 const postPage = (s, files = []) => `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><style>
 @font-face{font-family:F;font-weight:500;src:url(file://${FD}/500Medium/FrankRuhlLibre_500Medium.ttf)}
 @font-face{font-family:F;font-weight:700;src:url(file://${FD}/700Bold/FrankRuhlLibre_700Bold.ttf)}
@@ -271,6 +272,8 @@ body.has-shots .url{left:auto;right:56px;bottom:34px}
 .shots{position:absolute;left:40px;top:40px;bottom:40px;width:580px;display:flex;gap:18px}
 /* צילום יחיד - עמודה צרה, אחרת הוא נמתח לכל הרוחב ומשתלט על התמונה */
 .shots:has(figure:only-child){width:380px}
+/* whole: הצילום כולו, מוקטן לגובה המסגרת ולא חתוך - למשל שני עמודים זה מעל זה */
+.shots img.whole{width:auto;max-width:100%}
 body:has(.shots figure:only-child) .content{width:680px}
 .shots figure{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}
 .shots figcaption{font-weight:900;font-size:28px;color:#163a57;margin-bottom:10px;direction:rtl}
