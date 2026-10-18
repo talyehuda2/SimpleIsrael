@@ -48,7 +48,8 @@
    של verses, ו-\n בתוך p שובר שורה. הפלט status-out/<שם>/post.jpg, לרוחב (1200x630, כמו תמונות
    השיתוף של האתר): בערוץ תמונה לאורך נחתכת בפיד, ולרוחב מוצגת במלואה. האיש עם המקל משמאל,
    הטקסט מימין. shots: [{...שדות של site, label, whole?}] - עד שני צילומים מהאתר בצד שמאל, למשל לפני/אחרי.
-   whole: הצילום מוצג כולו, מוקטן ולא חתוך (ברירת המחדל חותכת מלמטה צילום שגבוה מהמסגרת). */
+   whole: הצילום מוצג כולו, מוקטן ולא חתוך (ברירת המחדל חותכת מלמטה צילום שגבוה מהמסגרת).
+   stack: [סלקטורים] (גם בשקף site) - צילום לכל אלמנט, והדפים מונחים זה על זה בהזחה למטה ושמאלה. */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, createReadStream, mkdtempSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename, extname } from 'node:path';
@@ -98,11 +99,16 @@ const boardRows = (rows) => `<ol class="board">${rows.map((r, i) => {
   return `<li class="${rank <= 3 ? 'top' : ''}"><span class="rk">${MEDAL[rank] || rank}</span><span class="nm">${esc(r.name)}</span><span class="pt">${r.points}<small>נק׳</small></span></li>`;
 }).join('')}</ol>`;
 
+/* ערימה: הראשון מאחור, וכל אחד אחריו מונח עליו בהזחה למטה ושמאלה - כמו דפים על שולחן */
+const stackHtml = (files) => `<div class="stack">${files.map((f, k) =>
+  `<img class="shot" style="--k:${k}" src="file://${f}">`).join('')}</div>`;
+
 function body(s, shot) {
   const head = s.eyebrow ? `<div class="eyebrow">${esc(s.eyebrow)}</div>` : '<div class="rule"></div>';
   if (s.type === 'text') return `${head}<h1>${ttl(s.title)}</h1>${s.paras.map((p) => `<p>${fmt(p)}</p>`).join('')}${s.question ? `<div class="qn">${esc(s.question)}</div>` : ''}`;
   if (s.type === 'board') return `${head}<h1>${ttl(s.title)}</h1>${boardRows(s.rows)}${s.note ? `<p class="soft">${fmt(s.note)}</p>` : ''}`;
   if (s.type === 'verses') return `${head}<h1>${ttl(s.title)}</h1><main>${s.blocks.map(block).join('')}</main>`;
+  if (s.type === 'site' && Array.isArray(shot)) return `${head}<h1 class="sm">${esc(s.title)}</h1>${stackHtml(shot)}`;
   if (s.type === 'site') return `${head}<h1 class="sm">${esc(s.title)}</h1><img class="shot${s.crop ? ' crop' : ''}" src="file://${shot}">`;
   if (s.type === 'intro') return `${head}<h1 class="xl">${esc(s.title)}</h1><p>${fmt(s.p)}</p>`
     + `<ol class="steps">${s.steps.map((t) => `<li>${fmt(t)}</li>`).join('')}</ol>`
@@ -188,6 +194,11 @@ cite.solo{margin-top:-18px}
   box-shadow:0 26px 60px rgb(60 40 0 / .38)}
 /* חיתוך: רק החלק החשוב, מוגדל עד כל רוחב התמונה - בערך גודל הקריאה האמיתי באתר */
 .shot.crop{max-width:912px;max-height:1090px}
+/* --dx/--dy: ההזחה של כל דף מהקודם. הערימה מיושרת לימין (תחילת השורה ב-RTL), והדפים זזים שמאלה */
+.stack{--w:560px;--dx:220px;--dy:170px;align-self:flex-start;position:relative;
+  width:calc(var(--w) + var(--dx));padding-bottom:var(--dy)}
+.stack .shot{display:block;width:var(--w);max-width:none;max-height:none;border-radius:24px}
+.stack .shot + .shot{position:absolute;top:calc(var(--dy) * var(--k));right:calc(var(--dx) * var(--k))}
 h1.xl{font-size:118px;line-height:1.04}
 /* השלבים הם רצף אמיתי - סדר ההעלאה - ולכן ממוספרים */
 .steps{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:22px;counter-reset:st}
@@ -237,7 +248,9 @@ const postBlock = (b) => b.rows ? boardRows(b.rows) : b.p ? `<p>${fmt(b.p).repla
 /* shots: עד שני צילומים מהאתר (אותם שדות של שקף site, ועוד label) - נכנסים בצד שמאל במקום
    האיש עם המקל, והטקסט מצטמצם לימין */
 const postShots = (s, files) => `<div class="shots">${files.map((f, i) =>
-  `<figure><figcaption>${esc(s.shots[i].label || '')}</figcaption><img${s.shots[i].whole ? ' class="whole"' : ''} src="file://${f}"></figure>`).join('')}</div>`;
+  `<figure${Array.isArray(f) ? ' class="pstack"' : ''}><figcaption>${esc(s.shots[i].label || '')}</figcaption>${Array.isArray(f)
+    ? `<div class="pst">${f.map((x, k) => `<img style="--k:${k}" src="file://${x}">`).join('')}</div>`
+    : `<img${s.shots[i].whole ? ' class="whole"' : ''} src="file://${f}">`}</figure>`).join('')}</div>`;
 const postPage = (s, files = []) => `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><style>
 @font-face{font-family:F;font-weight:500;src:url(file://${FD}/500Medium/FrankRuhlLibre_500Medium.ttf)}
 @font-face{font-family:F;font-weight:700;src:url(file://${FD}/700Bold/FrankRuhlLibre_700Bold.ttf)}
@@ -272,6 +285,12 @@ body.has-shots .url{left:auto;right:56px;bottom:34px}
 .shots{position:absolute;left:40px;top:40px;bottom:40px;width:580px;display:flex;gap:18px}
 /* צילום יחיד - עמודה צרה, אחרת הוא נמתח לכל הרוחב ומשתלט על התמונה */
 .shots:has(figure:only-child){width:380px}
+/* ערימה בתמונה לערוץ - כמו בשקף, בקטן. הדמות המצוירת נשארת בין הדפים לטקסט */
+.shots figure.pstack{flex:1.45}
+.pst{--w:220px;--dx:96px;--dy:84px;position:relative;width:calc(var(--w) + var(--dx));padding-bottom:var(--dy)}
+/* .shots .pst ולא .pst לבד - אחרת .shots img (רוחב 100%) גובר */
+.shots .pst img{display:block;width:var(--w);max-height:none;border-radius:14px;border:3px solid #fbf5e7;box-shadow:0 12px 30px rgb(60 40 0 / .35)}
+.shots .pst img + img{position:absolute;top:calc(var(--dy) * var(--k));right:calc(var(--dx) * var(--k))}
 /* whole: הצילום כולו, מוקטן לגובה המסגרת ולא חתוך - למשל שני עמודים זה מעל זה */
 .shots img.whole{width:auto;max-width:100%}
 body:has(.shots figure:only-child) .content{width:680px}
@@ -412,6 +431,18 @@ async function siteShot(browser, base, s, i) {
     if (!clip) throw new Error(`crop: לא נמצא ${from} ב-${s.path}`);
     if (clip.cut) console.log(`⚠ שקף ${i + 1}: החיתוך נמשך מתחת למסך ונקטע - להגדיל vh`);
     delete clip.cut;
+  }
+  /* stack: [סלקטורים] - צילום נפרד לכל אלמנט (למשל שני עמודי הדף), שמונחים אחר כך זה על זה
+     בהזחה. locator.screenshot גולל אל האלמנט בעצמו */
+  if (s.stack) {
+    const files = [];
+    for (const [k, sel] of s.stack.entries()) {
+      const f = join(TMP, `shot-${i}-${k}.png`);
+      await pg.locator(sel).first().screenshot({ path: f });
+      files.push(f);
+    }
+    await ctx.close();
+    return files;
   }
   await pg.screenshot({ path: file, clip });
   await ctx.close();

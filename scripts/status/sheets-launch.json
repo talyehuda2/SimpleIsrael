@@ -29,12 +29,10 @@
         "label": "או שני עמודים",
         "path": "/p/leader/avraham/sheet/2",
         "vh": 1800,
-        "whole": true,
-        "crop": {
-          "from": ".page",
-          "to": ".page",
-          "pad": 0
-        }
+        "stack": [
+          ".page:not(.p2)",
+          ".page.p2"
+        ]
       }
     ]
   },
@@ -76,26 +74,13 @@
     {
       "type": "site",
       "eyebrow": "אפשרות ב׳ · שני עמודים",
-      "title": "עמוד 1: הדמות ותחנות חייה",
+      "title": "הדמות, ומפת המסע בגדול",
       "path": "/p/leader/avraham/sheet/2",
       "vh": 1800,
-      "crop": {
-        "from": ".page:not(.p2)",
-        "to": ".page:not(.p2)",
-        "pad": 0
-      }
-    },
-    {
-      "type": "site",
-      "eyebrow": "אפשרות ב׳ · שני עמודים",
-      "title": "עמוד 2: מפת המסע בגדול",
-      "path": "/p/leader/avraham/sheet/2",
-      "vh": 1800,
-      "crop": {
-        "from": ".page.p2",
-        "to": ".page.p2",
-        "pad": 0
-      }
+      "stack": [
+        ".page:not(.p2)",
+        ".page.p2"
+      ]
     },
     {
       "type": "cta",
