@@ -48,7 +48,7 @@
    של verses, ו-\n בתוך p שובר שורה. הפלט status-out/<שם>/post.jpg, לרוחב (1200x630, כמו תמונות
    השיתוף של האתר): בערוץ תמונה לאורך נחתכת בפיד, ולרוחב מוצגת במלואה. האיש עם המקל משמאל,
    הטקסט מימין. shots: [{...שדות של site, label}] - עד שני צילומים מהאתר בצד שמאל, למשל לפני/אחרי. */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, createReadStream, mkdtempSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, createReadStream, mkdtempSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename, extname } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -290,7 +290,9 @@ function serveDist() {
     let p = decodeURIComponent(q.url.split('?')[0]);
     if (['/atlas', '/places', '/game'].includes(p)) p += '.html';
     if (p.endsWith('/')) p += 'index.html';
-    const f = join(DIST, p);
+    let f = join(DIST, p);
+    // עמוד שהוא תיקייה (/p/leader/avraham/sheet -> sheet/index.html), כמו ב-Vercel
+    if (existsSync(f) && statSync(f).isDirectory()) f = join(f, 'index.html');
     if (!f.startsWith(DIST) || !existsSync(f)) { r.writeHead(404); r.end(); return; }
     r.writeHead(200, { 'content-type': MIME[extname(f)] || 'application/octet-stream' });
     createReadStream(f).pipe(r);
