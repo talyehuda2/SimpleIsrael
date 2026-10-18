@@ -10,10 +10,12 @@ import { shareLink } from '../lib/share.js';
 import { startTrail, markOnce, mark } from '../lib/trail.js';
 import { nearest, locateOnMap, pxPerKm, fmtKm, getPosition, MAX_KM } from './nearby.js';
 import { mountSiteMenu } from '../components/siteMenu.js';
+import { initPushPrompt } from '../components/pushPrompt.js';
 import { channelCardHtml } from '../components/channel.js';
 import { refHref } from '../utils/sefaria.js';
 
 startTrail();
+initPushPrompt();
 /* תפריט "עוד באתר" המשותף. במסך הזה אין חלוניות משלו, ולכן כל פריט הוא
    קישור שפותח אותו בציר הזמן (או במשחק). */
 mountSiteMenu(document.getElementById('menuHost'));
