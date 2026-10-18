@@ -28,7 +28,7 @@ const FAMILIAR = new Set([
   'sancheriv-w', 'nevuchadnetzar', 'koresh-w', 'achashverosh', 'alexander-w', 'antiochus', 'titus',
 ]);
 const ALL_IN = new Set(['leader', 'united', 'event']);
-const familiar = (it) => ALL_IN.has(it.kind) || FAMILIAR.has(it.id);
+export const familiar = (it) => ALL_IN.has(it.kind) || FAMILIAR.has(it.id);
 
 const CANDIDATES = ALL_ITEMS.filter((it) => KINDS.has(it.kind));
 export const POOL = CANDIDATES.filter(familiar);
