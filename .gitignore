@@ -16,3 +16,6 @@ og-preview/
 
 # תמונות סטטוס שנוצרות ב-scripts/status.mjs
 status-out/
+
+# דפי דמות להורדה (PDF) שנוצרים ב-scripts/sheet.mjs
+sheets-out/
