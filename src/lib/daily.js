@@ -1,27 +1,52 @@
 /* "דמות היום" - פריט אחד ליום, זהה לכולם, להתראה היומית (api/push-daily.js).
 
-   הסדר: כל הדמויות והאירועים מעורבבים פעם אחת בזרע קבוע, ויום N מקבל את
-   הפריט ה-N בסבב. כך אין חזרה עד שהסבב (כ-120 ימים) נגמר, ושני ימים רצופים
-   לא נופלים במקרה על אותה תקופה. ספרים, אימפריות ושליטים זרים לא נכנסים:
-   "דמות היום" היא מישהו מתולדות ישראל, או אירוע.
+   הסדר: הדמויות והאירועים מסודרים פעם אחת בזרע קבוע, ויום N מקבל את הפריט
+   ה-N בסבב, בלי חזרה עד שהסבב (כ-120 ימים) נגמר. ספרים, אימפריות ושליטים זרים
+   לא נכנסים: "דמות היום" היא מישהו מתולדות ישראל, או אירוע.
+
+   שני כללים בסידור (אוקטובר 2026): מוכר ופחות מוכר לסירוגין, ולא שני פריטים
+   רצופים מאותה תקופה. ערבוב אקראי לבדו פתח את הסבב ביהויכין, יואש, אמון
+   ויהואחז - ובשבועות הראשונים נקבע אם מי שנרשם נשאר. "מוכר" הוא אותו מאגר של
+   האתגר היומי במשחק (familiar ב-pool.js): כל האבות, המלכים המאוחדים והאירועים,
+   ושופטים, מלכים ונביאים ידועים.
 
    מוסיפים פריט לנתונים = הסבב משתנה מאותו יום. זה בסדר - אין התחייבות
    לסדר מסוים, רק לכך שכולם מקבלים אותו פריט באותו יום. */
-import { ALL_ITEMS } from '../data/items.js';
-import { rng, israelDay } from '../game/pool.js';
+import { ALL_ITEMS, SORTED_PERIODS } from '../data/items.js';
+import { rng, israelDay, familiar, inPeriod } from '../game/pool.js';
 
 const KINDS = ['leader', 'judge', 'united', 'judah', 'israel', 'prophet', 'event'];
 const START = Date.UTC(2026, 9, 18);   // יום 0 של הסבב
 
+const eraOf = (it) => SORTED_PERIODS.findIndex((p) => inPeriod(it, p));
+
+function shuffle(list, r) {
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = Math.floor(r() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
 let order = null;
 function cycle() {
   if (order) return order;
-  order = ALL_ITEMS.filter((x) => KINDS.includes(x.kind) && x.description)
+  const all = ALL_ITEMS.filter((x) => KINDS.includes(x.kind) && x.description)
     .sort((a, b) => `${a.kind}:${a.id}`.localeCompare(`${b.kind}:${b.id}`));
   const r = rng(0x5ea1);
-  for (let i = order.length - 1; i > 0; i--) {
-    const j = Math.floor(r() * (i + 1));
-    [order[i], order[j]] = [order[j], order[i]];
+  const known = shuffle(all.filter(familiar), r);
+  const rest = shuffle(all.filter((x) => !familiar(x)), r);
+  /* לסירוגין, ביחס הגדלים: בכל צעד הרשימה שהתקדמה פחות (מוכרים בתיקו). מוכרים
+     יש יותר, ולכן מדי כמה ימים שניים ברצף - ולא כולם נערמים בסוף הסבב. ומכל
+     רשימה - הראשון שאינו מהתקופה של הקודם */
+  const n = { known: known.length, rest: rest.length };
+  order = [];
+  while (known.length || rest.length) {
+    const k = 1 - known.length / n.known, u = 1 - rest.length / n.rest;
+    const from = !rest.length || (known.length && k <= u) ? known : rest;
+    const prev = order.length ? eraOf(order[order.length - 1]) : null;
+    const i = Math.max(0, from.findIndex((x) => eraOf(x) !== prev));
+    order.push(from.splice(i, 1)[0]);
   }
   return order;
 }
