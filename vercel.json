@@ -5,6 +5,13 @@
     { "path": "/api/push-daily?slot=motzash", "schedule": "0 19 * * 6" }
   ],
   "trailingSlash": false,
+  "functions": {
+    "api/sheet-pdf.js": {
+      "memory": 1536,
+      "maxDuration": 30,
+      "includeFiles": "node_modules/@sparticuz/chromium/bin/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/atlas",

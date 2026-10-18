@@ -166,6 +166,7 @@ function run(){r.style.setProperty('--fit',1);var z=[].map.call(document.querySe
 (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){return Promise.all([].map.call(document.images,function(im){return im.complete?0:new Promise(function(ok){im.addEventListener('load',ok);im.addEventListener('error',ok);});}));}).then(run);
 addEventListener('resize',screenFit);
 var b=document.getElementById('print');if(b)b.addEventListener('click',function(){window.print();});
+var d=document.getElementById('dl'),n=document.getElementById('dlnote');if(d&&n)d.addEventListener('click',function(){n.textContent='מכין את הקובץ… ההורדה תתחיל מעצמה';setTimeout(function(){n.textContent='ההורדה מכינה קובץ PDF - לוקח כמה שניות';},12000);});
 })();`;
 
 /* opts:
@@ -275,7 +276,8 @@ body{font-family:var(--fb);color:#2b2416;background:#e9e2d2;-webkit-print-color-
 .bar{position:sticky;top:0;z-index:2;display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;
   padding:10px 12px;background:#163a57;color:#fff;font-size:15px}
 .bar a,.bar button{font:inherit;font-weight:700;border-radius:999px;padding:8px 18px;text-decoration:none;cursor:pointer;border:0}
-.bar button{background:#f2c14e;color:#2b2416}
+.bar a.dl{background:#f2c14e;color:#2b2416;border:0}
+.bar button{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.55)}
 .bar a{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.55)}
 .bar button:focus-visible,.bar a:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .bar small{flex-basis:100%;text-align:center;opacity:.85;font-size:12.5px}
@@ -348,9 +350,10 @@ ${web ? `<div class="bar">
   ${layouts && layouts.two ? `<nav class="seg" aria-label="פריסת הדף">
     <a href="${layouts.one}"${two ? '' : ' aria-current="page"'}>עמוד אחד</a><a href="${layouts.two}"${two ? ' aria-current="page"' : ''}>שני עמודים</a>
   </nav>` : ''}
-  <button type="button" id="print">⬇️ הורדה / הדפסה</button>
+  <a class="dl" id="dl" href="/api/sheet-pdf?k=${key}${two ? '&amp;p=2' : ''}" download>⬇️ הורדת PDF</a>
+  <button type="button" id="print">🖨️ הדפסה</button>
   <a href="/?sel=${key}&amp;src=sheet-page">← ל${esc(item.name)} באתר</a>
-  <small>בחלון ההדפסה אפשר לבחור "שמירה כ-PDF"</small>
+  <small id="dlnote">ההורדה מכינה קובץ PDF - לוקח כמה שניות</small>
 </div>` : ''}
 <div class="stage">${pageHtml}
 <script>${FIT_JS}</script>
