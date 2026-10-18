@@ -2,6 +2,8 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { formatRange, formatRangeAM, formatRangeSecular } from '../utils/dates.js';
 import { shareLink, itemPageUrl } from '../lib/share.js';
 import { researchRange } from '../utils/research.js';
+import { hasSheet, sheetPath } from '../utils/sheet.js';
+import { mark } from '../lib/trail.js';
 import { sourceSegments } from '../utils/sefaria.js';
 import { periodOf } from '../data/items.js';
 import maps from '../data/maps.json';
@@ -236,6 +238,17 @@ export default function DetailCard({
             </span>
           ))}
         </div>
+      )}
+
+      {/* "דף להורדה": עמוד A4 על הדמות (scripts/sheet-html.mjs), עם קוד QR שחוזר
+          לכרטיס. בלשונית חדשה, כי בעמוד יש כפתור הדפסה/שמירה ו"חזרה לאתר". */}
+      {hasSheet(item) && (
+        <a
+          className="dc-sheet" href={sheetPath(item)} target="_blank" rel="noopener"
+          onClick={() => mark('sheet_open', { key: `${item.kind}:${item.id}` })}
+        >
+          <span aria-hidden="true">📄</span> דף על {item.name} להורדה ולהדפסה
+        </a>
       )}
 
       {/* "מצאתי טעות": פנייה פרטית למנהל עם שם הפריט. גולש מצא את המסע למואב של

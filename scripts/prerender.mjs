@@ -9,6 +9,9 @@ import { buildPlaceIndex, relatedByPlace } from '../src/utils/related.js';
 import { journeyStations } from '../src/utils/mapProject.js';
 import { writeCard, writeGameCard, GAME_RESULT } from './og.mjs';
 import { writeHero, writePlaceHero } from './hero.mjs';
+import { sheetHtml, mapJpeg, sheetStations } from './sheet-html.mjs';
+import { hasSheet, sheetPath } from '../src/utils/sheet.js';
+import { resolveKey } from '../src/data/items.js';
 
 /* הפתיח המצויר: לכל פריט עם מסע גיאוגרפי מתועד (64 פריטים - אבות,
    שופטים, מלכים, נביאים) רצועת מפה עם תחנות המסע; לכל פריט בלעדיו
@@ -986,7 +989,7 @@ ${article}
 }
 
 // ---- כתיבה ----
-let count = 0;
+let count = 0, sheets = 0;
 for (const it of items) {
   const dir = join(DIST, 'p', it.kind, it.id);
   mkdirSync(dir, { recursive: true });
@@ -1002,6 +1005,30 @@ for (const it of items) {
       writeHero(DIST, join('hero', it.kind, `${it.id}.jpg`), pts, HERO_SIZE);
       writeHero(DIST, join('hero', it.kind, `${it.id}-split.jpg`), pts, HERO_SPLIT);
     }
+  }
+  /* "דף להורדה" (sheet-html.mjs): עמוד A4 לכל דמות, עם כפתור הדפסה ושמירה כ-PDF.
+     נבנה כאן ולא מראש, כדי שתיקון תוכן יגיע גם אליו. noindex, ולא ב-sitemap -
+     הוא עותק של עמוד השער. */
+  if (hasSheet(it)) {
+    const full = resolveKey(`${it.kind}:${it.id}`);
+    const sdir = join(DIST, sheetPath(it));
+    mkdirSync(sdir, { recursive: true });
+    let mapSrc = null;
+    if (sheetStations(full).length >= 2) {
+      // תמונה אחת לשתי הגרסאות: ברזולוציה של המפה הגדולה (140 מ"מ בשני עמודים)
+      writeFileSync(join(sdir, 'map.jpg'), mapJpeg(full, 1100));
+      mapSrc = `${sheetPath(it)}/map.jpg`;
+    }
+    /* שתי גרסאות ומתג ביניהן (בחירת בעל האתר): עמוד אחד ב-.../sheet, שני עמודים
+       ב-.../sheet/2. גרסת שני העמודים רק לדמות עם מסע - בלעדיו העמוד השני ריק */
+    const layouts = { one: sheetPath(it), two: mapSrc ? `${sheetPath(it)}/2` : null };
+    const opts = { fontSrc: (f) => `/fonts/${f}`, mapSrc, web: true, layouts };
+    writeFileSync(join(sdir, 'index.html'), sheetHtml(full, opts));
+    if (layouts.two) {
+      mkdirSync(join(sdir, '2'), { recursive: true });
+      writeFileSync(join(sdir, '2', 'index.html'), sheetHtml(full, { ...opts, pages: 2 }));
+    }
+    sheets++;
   }
   count++;
 }
@@ -1439,4 +1466,4 @@ ${body}
 }
 writeFileSync(placesPath, placesHtml);
 
-console.log(`prerender: ${count} item pages + ${sortedPeriods.length} period pages + index + sitemap (${urls.length} urls) + robots`);
+console.log(`prerender: ${count} item pages + ${sheets} sheets + ${sortedPeriods.length} period pages + index + sitemap (${urls.length} urls) + robots`);
