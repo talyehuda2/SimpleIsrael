@@ -173,9 +173,10 @@ var b=document.getElementById('print');if(b)b.addEventListener('click',function(
    mapSrc        - כתובת לתמונת המפה, או null כשאין מסע
    fontSet       - 'modern' (ברירת המחדל) | 'classic' | 'book'
    web           - עמוד באתר: סרגל עם כפתור הורדה וחזרה לכרטיס, noindex
+   layouts       - באתר: {one, two} - כתובות שתי הגרסאות למתג בסרגל; בלי two אין מתג
    pages         - 1 (ברירת המחדל) או 2: בעמוד הראשון הדמות ובני תקופתה, בשני
                    המסע - מפה גדולה ורשימת תחנות מלאה. דמות בלי מסע - עמוד אחד. */
-export function sheetHtml(item, { fontSrc, mapSrc = null, fontSet = 'modern', web = false, pages = 1 } = {}) {
+export function sheetHtml(item, { fontSrc, mapSrc = null, fontSet = 'modern', web = false, pages = 1, layouts = null } = {}) {
   const key = itemKey(item);
   const color = KIND_COLOR[item.kind] || '#9c2b50';
   const era = periodOfItem(item, periods);
@@ -233,7 +234,8 @@ ${research
 </div>
 ${item.verse ? `<div class="verse">"${esc(item.verse)}"${item.verseRef ? `<small>${esc(item.verseRef)}</small>` : ''}</div>` : ''}
 <p class="desc">${esc(item.description || '')}</p>`;
-  const cols = `<div class="cols">
+  // בלי נביאים ואירועים (אלה) - בני התקופה על כל הרוחב, ולא בחצי עמוד עם חצי ריק
+  const cols = `<div class="cols${prophets.length || events.length ? '' : ' solo'}">
   <section><h2>דמויות מתקופתו</h2><div class="chips">${chips(people.slice(0, nPeople)) || '<span class="note">-</span>'}</div></section>
   <section>${prophets.length ? `<h2>נביאים בימיו</h2><div class="chips">${chips(prophets)}</div>` : ''}
   ${events.length ? `<h2>אירועים בימיו</h2><ul class="events">${events.slice(0, nEvents).map((e) => `<li><b>${esc(e.name)}</b> <span class="note">${esc(formatRangeAM(e.start, e.end).replace(/ \(.*\)$/, ''))}</span>${researchShort(e.id) ? ` <span class="rs">· לפי המחקר ${esc(researchShort(e.id))}</span>` : ''}</li>`).join('')}</ul>` : ''}
@@ -277,6 +279,10 @@ body{font-family:var(--fb);color:#2b2416;background:#e9e2d2;-webkit-print-color-
 .bar a{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.55)}
 .bar button:focus-visible,.bar a:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .bar small{flex-basis:100%;text-align:center;opacity:.85;font-size:12.5px}
+/* מתג "עמוד אחד | שני עמודים" - שני עמודים נפרדים באתר, כל אחד מותאם לעצמו */
+.bar .seg{display:flex;border:1.5px solid rgba(255,255,255,.55);border-radius:999px;padding:2px;gap:2px}
+.bar .seg a{border:0;padding:6px 14px;font-weight:600}
+.bar .seg a[aria-current]{background:#fff;color:#163a57;font-weight:700}
 .stage{padding:16px 0 24px}
 /* העמוד עצמו: A4 בדיוק. במסך מוקטן לרוחב החלון (--fit), בהדפסה בגודל מלא */
 .page{width:210mm;height:297mm;overflow:hidden;margin:0 auto;padding:11mm 13mm 9mm;display:flex;flex-direction:column;
@@ -311,6 +317,7 @@ h2{font-family:var(--fh);font-weight:900;font-size:13pt;color:#163a57;margin:10p
 .map li small{display:block;color:#6b5a3e;font-size:8pt}
 .map li .nt{color:#9c2b50}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}
+.cols.solo{grid-template-columns:1fr}
 .chips{display:flex;flex-wrap:wrap;gap:4px}
 .chip{display:inline-flex;align-items:center;gap:5px;background:#fff8e8;border:1px solid #e2d3b0;border-radius:999px;
   padding:1px 9px;font-size:9pt;font-weight:700;white-space:nowrap}
@@ -338,6 +345,9 @@ h2{font-family:var(--fh);font-weight:900;font-size:13pt;color:#163a57;margin:10p
 .hint{font-family:var(--fb);font-size:8.5pt;font-weight:500;color:#6b5a3e}
 </style></head><body>
 ${web ? `<div class="bar">
+  ${layouts && layouts.two ? `<nav class="seg" aria-label="פריסת הדף">
+    <a href="${layouts.one}"${two ? '' : ' aria-current="page"'}>עמוד אחד</a><a href="${layouts.two}"${two ? ' aria-current="page"' : ''}>שני עמודים</a>
+  </nav>` : ''}
   <button type="button" id="print">⬇️ הורדה / הדפסה</button>
   <a href="/?sel=${key}&amp;src=sheet-page">← ל${esc(item.name)} באתר</a>
   <small>בחלון ההדפסה אפשר לבחור "שמירה כ-PDF"</small>

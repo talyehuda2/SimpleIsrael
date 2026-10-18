@@ -1015,10 +1015,19 @@ for (const it of items) {
     mkdirSync(sdir, { recursive: true });
     let mapSrc = null;
     if (sheetStations(full).length >= 2) {
-      writeFileSync(join(sdir, 'map.jpg'), mapJpeg(full));
+      // תמונה אחת לשתי הגרסאות: ברזולוציה של המפה הגדולה (140 מ"מ בשני עמודים)
+      writeFileSync(join(sdir, 'map.jpg'), mapJpeg(full, 1100));
       mapSrc = `${sheetPath(it)}/map.jpg`;
     }
-    writeFileSync(join(sdir, 'index.html'), sheetHtml(full, { fontSrc: (f) => `/fonts/${f}`, mapSrc, web: true }));
+    /* שתי גרסאות ומתג ביניהן (בחירת בעל האתר): עמוד אחד ב-.../sheet, שני עמודים
+       ב-.../sheet/2. גרסת שני העמודים רק לדמות עם מסע - בלעדיו העמוד השני ריק */
+    const layouts = { one: sheetPath(it), two: mapSrc ? `${sheetPath(it)}/2` : null };
+    const opts = { fontSrc: (f) => `/fonts/${f}`, mapSrc, web: true, layouts };
+    writeFileSync(join(sdir, 'index.html'), sheetHtml(full, opts));
+    if (layouts.two) {
+      mkdirSync(join(sdir, '2'), { recursive: true });
+      writeFileSync(join(sdir, '2', 'index.html'), sheetHtml(full, { ...opts, pages: 2 }));
+    }
     sheets++;
   }
   count++;

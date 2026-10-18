@@ -111,6 +111,8 @@ const PAGES = [
   /* "דף להורדה": העמוד נבנה ב-prerender (sheet-html.mjs) - הגופנים, המפה וה-QR
      נטענים תחת ה-CSP, וההתאמה לעמוד רצה עד הסוף (data-fit). והכפתור בכרטיס. */
   { url: '/p/united/david/sheet', name: 'דף להורדה', check: 'html[data-fit] .qr svg' },
+  { url: '/p/united/david/sheet/2', name: 'דף - שני עמודים', check: 'html[data-fit] .page.p2 .map2 img',
+    click: '.seg a:first-child', expect: '.seg a[aria-current]:first-child' },
   { url: '/?sel=united:david', name: 'כפתור דף', check: '.dc-sheet[href="/p/united/david/sheet"]' },
   { url: '/privacy', name: 'פרטיות', check: 'body' },
   // שלושת העמודים המשפטיים נבדקים בנפרד: הם נוצרים ב-prerender ואינם
