@@ -22,11 +22,11 @@ const ITEMS = [
   { id: 'tours', icon: '🧭', title: 'מסעות ואוספים', desc: 'סיור מודרך דמות אחר דמות, ואוספים לפי נושא', href: '/?tours=1' },
   { id: 'tree', icon: '👑', title: 'בית דוד', desc: 'אילן היוחסין של מלכי בית דוד', href: '/?tree=1' },
   { id: 'kings', icon: '🏰', title: 'שתי הממלכות', desc: 'מלכי יהודה מול מלכי ישראל, לפי אורך המלוכה', href: '/?kings=1' },
-  { id: 'game', icon: '🎯', title: 'סדר את הציר', desc: 'משחק: מה קרה קודם? אתגר יומי ומשחק חופשי', href: '/game', badge: 'חדש' },
+  { id: 'game', icon: '🎯', title: 'סדר את הציר', desc: 'משחק: מה קרה קודם? אתגר יומי ומשחק חופשי', href: '/game' },
   // ext: יוצא מהאתר - נפתח בלשונית חדשה, ונספר גם כ-channel_click (data-ch)
   { id: 'channel', icon: '📢', title: 'הערוץ בוואטסאפ', desc: CHANNEL_TAG, href: CHANNEL_URL, ext: 'menu' },
   // פעולה של התפריט עצמו, זהה בכל מסך: הרשמה, מצב, או ביטול. רק בדפדפן שתומך
-  { id: 'push', icon: '🔔', title: 'התראה יומית', desc: 'דמות או אירוע מהתנ״ך, ישר לטלפון - ובתדירות שתבחרו', run: openPushPanel, when: pushMenuVisible },
+  { id: 'push', icon: '🔔', title: 'התראה יומית', desc: 'דמות או אירוע מהתנ״ך, ישר לטלפון - ובתדירות שתבחרו', run: openPushPanel, when: pushMenuVisible, badge: 'חדש' },
 ];
 
 let seq = 0;
