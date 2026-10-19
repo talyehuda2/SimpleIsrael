@@ -5,15 +5,15 @@
 
    רק למי שהתדירות שלו "בתור" היום (כל יום / יום כן יום לא / פעמיים / פעם בשבוע).
 
-   מה נשלח: הפריט של היום מ-src/lib/daily.js - זהה לכולם - עם משפט או שניים
-   מהתיאור, תמונת השיתוף שלו, וקישור לכרטיס בציר הזמן עם src=push (כך במסך
+   מה נשלח: הפריט של היום מ-src/lib/daily.js - זהה לכולם; בשישי מפרשת השבוע,
+   ובחג מהחג, ואז שורת "למה" מעל - עם משפט או שניים מהתיאור, תמונת השיתוף שלו, וקישור לכרטיס בציר הזמן עם src=push (כך במסך
    הניהול רואים כמה נכנסו מההתראה).
 
    אין כאן בדיקת הרשאה, ובכוונה: push_claim מסמנת כל מנוי לפני השליחה, ולכן
    הפעלה נוספת באותו יום - של ה-Cron או של מישהו שמצא את הכתובת - לא שולחת
    כלום. מנוי ששירות ההתראות אמר שבוטל (404/410) נמחק. */
 import { vapid, rpc, send, secret, SITE } from './_lib/push.js';
-import { dailyItem, teaser, dailyLabel } from '../src/lib/daily.js';
+import { dailyPick, teaser } from '../src/lib/daily.js';
 import { israelDay } from '../src/game/pool.js';
 import { sendAllowed, freqsDue } from '../src/lib/holy.js';
 
@@ -35,10 +35,10 @@ export default async function handler(req, res) {
   if (!sendAllowed()) return res.status(200).json({ skipped: 'שבת או חג' });
   const day = israelDay();
   const due = freqsDue(day);
-  const it = dailyItem(day);
+  const { it, title, why } = dailyPick(day);
   const payload = {
-    title: `${dailyLabel(it)}: ${it.name}`,
-    body: teaser(it.description),
+    title,
+    body: why ? `${why}\n${teaser(it.description, 100)}` : teaser(it.description),
     url: `/?sel=${it.kind}:${it.id}&src=push`,
     image: `${SITE}/og/${it.kind}/${it.id}.jpg`,
     tag: 'si-daily',
