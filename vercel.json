@@ -1,8 +1,8 @@
 {
   "crons": [
-    { "path": "/api/push-daily?slot=week", "schedule": "0 17 * * 0-4" },
-    { "path": "/api/push-daily?slot=friday", "schedule": "0 10 * * 5" },
-    { "path": "/api/push-daily?slot=motzash", "schedule": "0 19 * * 6" }
+    { "path": "/api/push-daily?slot=evening", "schedule": "0 18 * * 0-4,6" },
+    { "path": "/api/push-daily?slot=evening", "schedule": "0 19 * * 0-4,6" },
+    { "path": "/api/push-daily?slot=friday", "schedule": "0 10 * * 5" }
   ],
   "trailingSlash": false,
   "functions": {

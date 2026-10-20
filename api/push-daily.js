@@ -1,7 +1,11 @@
 /* ההתראה היומית: "דמות היום" לכל המנויים. מופעל מ-Cron של Vercel (vercel.json):
-   ראשון-חמישי בערב, שישי בצהריים (עד 15:00) ומוצאי שבת אחרי 21:00 - שלושה מועדים,
-   כי לעולם לא שולחים בשבת ובחג (src/lib/holy.js, בהחלטת בעל האתר). הבדיקה כאן,
-   בכל הפעלה, ולא רק בשעות ה-Cron: הפעלה באיחור או ידנית לא תשלח בשבת.
+   בכל ערב חוץ משישי ב-21:00 שעון ישראל (בהחלטת בעל האתר, אוקטובר 2026 - קודם 19:00/20:00),
+   ובשישי בצהריים (עד 15:00) - כי לעולם לא שולחים בשבת ובחג (src/lib/holy.js). הבדיקה
+   כאן, בכל הפעלה, ולא רק בשעות ה-Cron: הפעלה באיחור או ידנית לא תשלח בשבת.
+
+   21:00 בדיוק כל השנה: ה-Cron של Vercel הוא UTC ואינו יודע על שעון קיץ, ולכן slot=evening
+   מופעל פעמיים, ב-18 וב-19 UTC, ושולח רק בהפעלה שבה השעה בישראל היא 21 (בקיץ הראשונה,
+   בחורף השנייה). push_claim מבטיחה ממילא שאף אחד לא יקבל פעמיים.
 
    רק למי שהתדירות שלו "בתור" היום (כל יום / יום כן יום לא / פעמיים / פעם בשבוע).
 
@@ -15,7 +19,7 @@
 import { vapid, rpc, send, secret, SITE } from './_lib/push.js';
 import { dailyPick, teaser } from '../src/lib/daily.js';
 import { israelDay } from '../src/game/pool.js';
-import { sendAllowed, freqsDue } from '../src/lib/holy.js';
+import { sendAllowed, freqsDue, israelNow } from '../src/lib/holy.js';
 
 const BATCH = 500;
 
@@ -33,6 +37,9 @@ async function claim(day, due) {
 export default async function handler(req, res) {
   if (!secret()) return res.status(503).json({ error: 'חסר NOTIFY_SECRET' });
   if (!sendAllowed()) return res.status(200).json({ skipped: 'שבת או חג' });
+  if (req.query?.slot === 'evening' && israelNow().hour !== 21) {
+    return res.status(200).json({ skipped: 'לא 21:00 בישראל - ההפעלה השנייה תשלח' });
+  }
   const day = israelDay();
   const due = freqsDue(day);
   const { it, title, why } = dailyPick(day);
