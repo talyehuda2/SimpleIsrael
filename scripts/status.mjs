@@ -139,13 +139,15 @@ const artPage = (s) => {
 *{box-sizing:border-box;margin:0}
 html,body{width:1080px;height:1920px;overflow:hidden;font-family:F,serif}
 .bg{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover}
-.tbox{position:absolute;left:${box.x}px;top:${box.y}px;width:${box.w}px;text-align:right}
+.tbox{position:absolute;left:${box.x}px;top:${box.y}px;width:${box.w}px;text-align:${box.align || 'right'}}
 /* כתוב בדיו על האיור עצמו, ולא תווית שמודבקת עליו: חום-ספיה של התחריט,
    והילה בצבע הקלף סביב האותיות כדי שיקראו גם מעל פרטים */
-.ey{font-weight:700;font-size:36px;color:#6b4c12;margin-bottom:6px;
+.ey{font-weight:700;font-size:${s.eySize || 36}px;color:#6b4c12;margin-bottom:6px;
   text-shadow:0 0 6px #f7ecd0,0 0 14px #f7ecd0,0 0 22px #f7ecd0}
-.tt{font-weight:900;font-size:104px;line-height:1;color:#3f2a0e;
+.tt{font-weight:900;font-size:${s.size || 104}px;line-height:1;color:#3f2a0e;
   text-shadow:0 0 8px #f7ecd0,0 0 18px #f7ecd0,0 0 32px #f7ecd0,0 0 48px rgb(247 236 208 / .8)}
+.sb{font-weight:700;font-size:58px;line-height:1.35;color:#3f2a0e;margin-top:18px;
+  text-shadow:0 0 6px #f7ecd0,0 0 14px #f7ecd0,0 0 24px #f7ecd0}
 .lb{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-weight:900;font-size:44px;color:#3f2a0e;
   text-shadow:0 0 5px #f7ecd0,0 0 10px #f7ecd0,0 0 18px #f7ecd0,0 0 26px rgb(247 236 208 / .85)}
 /* חתימה בתחתית, באותה דיו - כתובת האתר ולא לוגו, כדי שמי שרואה יידע לאן להיכנס */
@@ -153,7 +155,7 @@ html,body{width:1080px;height:1920px;overflow:hidden;font-family:F,serif}
   text-shadow:0 0 8px #f7ecd0,0 0 18px #f7ecd0,0 0 30px #f7ecd0,0 0 44px rgb(247 236 208 / .85)}
 </style></head><body>
 <img class="bg" src="file://${img}">
-<div class="tbox">${s.eyebrow ? `<div class="ey">${esc(s.eyebrow)}</div>` : ''}${(s.title || []).map((l) => `<div class="tt">${esc(l)}</div>`).join('')}</div>
+<div class="tbox">${s.eyebrow ? `<div class="ey">${esc(s.eyebrow)}</div>` : ''}${(s.title || []).map((l) => `<div class="tt">${esc(l)}</div>`).join('')}${(s.sub || []).map((l) => `<div class="sb">${esc(l)}</div>`).join('')}</div>
 ${labels}
 ${s.foot ? `<div class="ft">${esc(s.foot)}</div>` : ''}
 </body></html>`;

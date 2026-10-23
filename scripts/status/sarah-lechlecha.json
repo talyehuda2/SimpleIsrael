@@ -31,6 +31,27 @@
   },
   "slides": [
     {
+      "type": "art",
+      "image": "build-assets/og-base.jpg",
+      "eyebrow": "ציר הזמן של עם ישראל",
+      "title": [
+        "שרה"
+      ],
+      "size": 440,
+      "sub": [
+        "אם האומה",
+        "השבת, בפרשת לך לך"
+      ],
+      "box": {
+        "x": 60,
+        "y": 470,
+        "w": 960,
+        "align": "center"
+      },
+      "foot": "simpleisrael.co.il",
+      "eySize": 46
+    },
+    {
       "type": "verses",
       "eyebrow": "ציר הזמן של עם ישראל · פרשת לך לך",
       "title": "שרי שהפכה לשרה",
