@@ -104,10 +104,17 @@ for (let i = 1; i < clips.length; i++) {
 const total = t + clips[clips.length - 1].dur;
 graph += `${last}fade=in:st=0:d=0.6,fade=out:st=${(total - 0.8).toFixed(2)}:d=0.8,format=yuv420p[v]`;
 const final = join(OUT, `${name}.mp4`);
-/* פס קול שקט: וואטסאפ ומכשירים מסוימים מתנהגים טוב יותר עם ערוץ שמע, גם ריק */
-execFileSync('ffmpeg', ['-y', '-v', 'error', ...clips.flatMap((c) => ['-i', c.out]),
-  '-f', 'lavfi', '-t', String(total), '-i', 'anullsrc=r=44100:cl=stereo',
+/* פס קול: music: true בקובץ התוכן - מוזיקה רכה שמסונתזת לאורך הסרטון בדיוק
+   (scripts/status-music.py, בלי שיר של אף אחד). בלי - ערוץ שמע שקט, כי וואטסאפ
+   ומכשירים מסוימים מתנהגים טוב יותר עם ערוץ שמע, גם ריק. */
+let audio = ['-f', 'lavfi', '-t', String(total), '-i', 'anullsrc=r=44100:cl=stereo'];
+if (spec.music) {
+  const wav = join(OUT, 'music.wav');
+  execFileSync('python3', [join(ROOT, 'scripts', 'status-music.py'), total.toFixed(2), wav], { stdio: 'inherit' });
+  audio = ['-i', wav];
+}
+execFileSync('ffmpeg', ['-y', '-v', 'error', ...clips.flatMap((c) => ['-i', c.out]), ...audio,
   '-filter_complex', graph, '-map', '[v]', '-map', `${clips.length}:a`, '-shortest',
   '-c:v', 'libx264', '-crf', '20', '-preset', 'medium', '-profile:v', 'high', '-pix_fmt', 'yuv420p',
-  '-c:a', 'aac', '-b:a', '96k', '-movflags', '+faststart', final]);
+  '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', final]);
 console.log(`✓ ${final}  ${total.toFixed(1)} שניות, ${clips.length} סצנות`);

@@ -1,6 +1,7 @@
 {
   "note": "סרטון סטטוס לשרה אמנו, פרשת לך לך תשפ״ז. האיורים מצ׳אט GPT (בלי פנים - איננו יודעים איך שרה נראתה), הטקסט נכתב כאן ולא בתוך האיור, כדי שהעברית תצא נקייה. הפסוקים נבדקו מול build-assets/tanakh.json.gz.",
   "dir": "build-assets/status/sarah-video",
+  "music": true,
   "scenes": [
     {
       "img": "01-intro.jpg",
