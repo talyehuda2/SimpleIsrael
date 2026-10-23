@@ -145,6 +145,8 @@ const FONTS = {
   heebo: { css: face('T', '300 700', PF, 'heebo-hebrew.woff2', 'heebo-latin.woff2')
     + face('B', '300 700', PF, 'heebo-hebrew.woff2', 'heebo-latin.woff2'), tw: 700, bw: 500 },
 };
+/* font בראש קובץ התוכן - אותו גופן לכל השקפים והפוסט, במקום פרנק-רוהל (כולם יושבים על F) */
+const baseFont = () => spec.font ? `${fontCss(spec.font)}\nhtml,body{font-family:B,sans-serif}` : '';
 const fontCss = (name) => {
   const f = FONTS[name];
   if (!f) throw new Error(`גופן לא מוכר: ${name}`);
@@ -264,7 +266,7 @@ h1.xl{font-size:118px;line-height:1.04}
 .pt small{display:block;font-size:30px;font-weight:500;color:#6d5c42;margin-top:8px}
 p.after{font-size:44px}
 .url{position:absolute;right:84px;bottom:230px;font-weight:700;font-size:36px;color:#163a57;direction:ltr}
-</style></head><body>
+${baseFont()}</style></head><body>
 <div class="wash"></div>
 <img class="art" src="file://${BG}">
 <div class="content">${body(s, shot)}</div>
@@ -330,7 +332,7 @@ body:has(.shots figure:only-child) .content{width:680px}
    השמיים הריקים שלו - באיור לאורך החלק המעניין נופל אחרת מאחורי הטקסט */
 .vig{position:absolute;background:url(file://${BG}) no-repeat;
   -webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 55%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 55%,transparent 100%)}
-</style></head><body${files.length ? ' class="has-shots"' : ''}>
+${baseFont()}</style></head><body${files.length ? ' class="has-shots"' : ''}>
 ${s.vignette ? `<div class="vig" style="left:${s.vignette.x}px;top:${s.vignette.y}px;width:${s.vignette.w}px;height:${s.vignette.h}px;background-size:${s.vignette.size}px auto;background-position:${s.vignette.pos}"></div>` : ''}
 ${files.length ? postShots(s, files) : ''}
 <div class="content">${s.eyebrow ? `<div class="eyebrow">${esc(s.eyebrow)}</div>` : ''}<h1>${ttl(s.title)}</h1>${(s.blocks || []).map(postBlock).join('')}</div>
