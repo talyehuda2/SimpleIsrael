@@ -26,7 +26,7 @@ const ITEMS = [
   // ext: יוצא מהאתר - נפתח בלשונית חדשה, ונספר גם כ-channel_click (data-ch)
   { id: 'channel', icon: '📢', title: 'הערוץ בוואטסאפ', desc: CHANNEL_TAG, href: CHANNEL_URL, ext: 'menu' },
   // פעולה של התפריט עצמו, זהה בכל מסך: הרשמה, מצב, או ביטול. רק בדפדפן שתומך
-  { id: 'push', icon: '🔔', title: 'התראה יומית', desc: 'דמות או אירוע מהתנ״ך, ישר לטלפון - ובתדירות שתבחרו', run: openPushPanel, when: pushMenuVisible },
+  { id: 'push', icon: '🔔', title: 'התראה יומית', desc: 'דמות מהתנ״ך ותזכורת לאתגר, ישר לטלפון - במה ובתדירות שתבחרו', run: openPushPanel, when: pushMenuVisible },
 ];
 
 let seq = 0;

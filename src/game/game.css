@@ -130,6 +130,15 @@ html,body{overflow-x:clip}
 .gm-more{display:block;margin:14px auto 0;font:inherit;font-size:14px;font-weight:700;color:var(--gold-ink);
   background:none;border:0;padding:4px 6px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .gm-more:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+/* תזכורת לאתגר (Reminder ב-main.jsx): כפתור משני ברוחב מלא, מתחת לתגיות */
+.gm-remind{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;max-width:340px;margin:12px auto 0;
+  padding:10px 14px;font:inherit;font-size:15px;font-weight:700;color:var(--navy);cursor:pointer;
+  background:#fff;border:1px solid var(--line);border-radius:12px}
+.gm-remind small{font-size:12.5px;font-weight:400;color:var(--muted,#6d5c42)}
+.gm-remind:focus-visible,.gm-remind.on button:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+p.gm-remind.on{display:block;text-align:center;cursor:default;background:none;border:0;padding:4px 0;font-size:13.5px;color:var(--ink)}
+.gm-remind.on button{font:inherit;font-weight:700;color:var(--gold-ink);background:none;border:0;padding:0;cursor:pointer;
+  text-decoration:underline;text-underline-offset:3px}
 .gm-msg{margin:8px 0 0;font-size:13px;font-weight:700;color:var(--ok);min-height:1em}
 
 @media (prefers-reduced-motion:reduce){ .gm-card{transition:none} .gm-card:hover:not(:disabled){transform:none} }

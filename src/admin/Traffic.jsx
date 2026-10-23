@@ -52,6 +52,7 @@ const SRC_LABEL = {
   game: 'מהמשחק',
   push: 'התראה יומית',
   'push-welcome': 'התראת "נרשמתם"',
+  'push-game': 'תזכורת למשחק',
 };
 const OTHER_SITES = 'אתרים אחרים';
 function sourceOf(src, ref) {
@@ -398,12 +399,15 @@ export default function Traffic({ token, onBadToken }) {
                 <p className="ad-lead">
                   <b>{push.subs.toLocaleString('he-IL')}</b> מנויים · {push.today.toLocaleString('he-IL')} קיבלו את ההתראה של היום
                   · {push.week.toLocaleString('he-IL')} נרשמו השבוע
+                  {push.game != null && <> · <b>{push.game.toLocaleString('he-IL')}</b> עם תזכורת למשחק</>}
                   {sources && <> · <b>{(sources || []).filter((r) => r.src === 'push').reduce((n, r) => n + r.visits, 0).toLocaleString('he-IL')}</b> ביקורים מהתראה בטווח</>}
                 </p>
               )}
             <p className="ad-note">
               מנוי = דפדפן שאישר התראות; מי שביטל או חסם יוצא מהספירה בשליחה הבאה. ההתראה יוצאת כל ערב
-              בסביבות 19:00-20:00 (Cron של Vercel), והקישור בה נושא <code dir="ltr">src=push</code>.
+              ב-21:00 (בשישי בצהריים), והקישור בה נושא <code dir="ltr">src=push</code>. מי שביקש תזכורת למשחק
+              ועוד לא פתר את האתגר מקבל אותה במקום דמות היום (<code dir="ltr">src=push-game</code>,{' '}
+              <code dir="ltr">supabase/push_game.sql</code>).
             </p>
           </section>
 
