@@ -1,5 +1,6 @@
 {
   "note": "שישי, י״ב בחשוון תשפ״ז - ערב שבת פרשת לך לך (23.10.2026). הפסוקים נבדקו מול build-assets/tanakh.json.gz. רש״י בראשית י״ב, ה׳ (הנפש אשר עשו); י״ז, ט״ו (שרי/שרה); כ״א, י״ב (טפל לשרה בנביאות). שבע נביאות - מגילה י״ד ע״א. קישור בכיתוב: simpleisrael.co.il/?sel=leader:sarah&src=status | בערוץ: &src=channel",
+  "bg": "build-assets/status/sarah-tent.jpg",
   "post": {
     "eyebrow": "פרשת לך לך · שרה אמנו",
     "title": "שרי שהפכה לשרה",
@@ -27,7 +28,16 @@
           "to": ".map-legend"
         }
       }
-    ]
+    ],
+    "bgPos": "center 15%",
+    "vignette": {
+      "x": 430,
+      "y": 430,
+      "w": 480,
+      "h": 200,
+      "size": 918,
+      "pos": "-456px -1160px"
+    }
   },
   "slides": [
     {
@@ -50,7 +60,8 @@
       },
       "foot": "simpleisrael.co.il",
       "eySize": 46,
-      "font": "sheet"
+      "font": "heebo",
+      "glow": false
     },
     {
       "type": "verses",

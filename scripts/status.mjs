@@ -59,7 +59,6 @@ import { chromium } from 'playwright-core';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FD = join(ROOT, 'node_modules', '@expo-google-fonts', 'frank-ruhl-libre');
-const BG = join(ROOT, 'build-assets', 'og-base.jpg');
 const DIST = join(ROOT, 'dist');
 const CHANNEL_NAME = 'ציר הזמן של עם ישראל';
 // הקישור הולך לכיתוב ולא לתמונה - בתמונה אי אפשר ללחוץ עליו
@@ -69,6 +68,9 @@ const CHANNEL_URL = 'https://whatsapp.com/channel/0029Vb95vDvKAwElqCPM8T2L';
 const specPath = process.argv[2];
 if (!specPath) { console.error('שימוש: node scripts/status.mjs scripts/status/<שם>.json'); process.exit(1); }
 const spec = JSON.parse(readFileSync(specPath, 'utf8'));
+/* הרקע של כל השקפים והפוסט: האיש עם המקל, אלא אם קובץ התוכן נותן bg משלו (איור לסדרה, למשל
+   האוהל של שרה). post.bgPos קובע איזה חלק מאיור לאורך נכנס לפוסט הרחב. */
+const BG = join(ROOT, spec.bg || 'build-assets/og-base.jpg');
 const OUT = join(ROOT, 'status-out', basename(specPath, '.json'));
 mkdirSync(OUT, { recursive: true });
 const TMP = mkdtempSync(join(tmpdir(), 'status-'));
@@ -283,7 +285,7 @@ const postPage = (s, files = []) => `<!doctype html><html lang="he" dir="rtl"><h
 @font-face{font-family:F;font-weight:900;src:url(file://${FD}/900Black/FrankRuhlLibre_900Black.ttf)}
 *{box-sizing:border-box;margin:0}
 html,body{width:1200px;height:630px;overflow:hidden;font-family:F,serif;color:#33281a}
-body{position:relative;background:#ead7ab url(file://${BG}) center/cover no-repeat}
+body{position:relative;background:#ead7ab url(file://${BG}) ${s.bgPos || 'center'}/cover no-repeat}
 /* מימין לאיש עם המקל, שמגיע עד x=330 */
 .content{position:absolute;right:70px;top:52px;width:760px}
 .eyebrow{font-weight:700;font-size:30px;color:#6b4a0f;padding-bottom:12px;margin-bottom:18px;border-bottom:2px solid rgb(168 132 44 / .45)}
@@ -324,7 +326,12 @@ body:has(.shots figure:only-child) .content{width:680px}
 .shots figcaption{font-weight:900;font-size:28px;color:#163a57;margin-bottom:10px;direction:rtl}
 .shots img{width:100%;max-height:520px;object-fit:cover;object-position:top;border-radius:18px;border:4px solid #fbf5e7;
   box-shadow:0 14px 34px rgb(60 40 0 / .35)}
+/* vignette: קטע מאיור הרקע (למשל האוהל של שרה) בפינה פנויה, כשהפוסט עצמו מראה רק את
+   השמיים הריקים שלו - באיור לאורך החלק המעניין נופל אחרת מאחורי הטקסט */
+.vig{position:absolute;background:url(file://${BG}) no-repeat;
+  -webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 55%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 55%,transparent 100%)}
 </style></head><body${files.length ? ' class="has-shots"' : ''}>
+${s.vignette ? `<div class="vig" style="left:${s.vignette.x}px;top:${s.vignette.y}px;width:${s.vignette.w}px;height:${s.vignette.h}px;background-size:${s.vignette.size}px auto;background-position:${s.vignette.pos}"></div>` : ''}
 ${files.length ? postShots(s, files) : ''}
 <div class="content">${s.eyebrow ? `<div class="eyebrow">${esc(s.eyebrow)}</div>` : ''}<h1>${ttl(s.title)}</h1>${(s.blocks || []).map(postBlock).join('')}</div>
 <div class="url">${esc(s.footUrl || 'simpleisrael.co.il')}</div>
