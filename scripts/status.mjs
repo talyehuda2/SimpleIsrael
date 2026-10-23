@@ -127,6 +127,18 @@ function body(s, shot) {
   throw new Error(`סוג שקף לא מוכר: ${s.type}`);
 }
 
+/* font: 'sheet' - הגופנים של דף הדמות להורדה (רוביק בכותרת, אסיסטנט בטקסט),
+   בחירת בעל האתר, במקום פרנק-רוהל של שאר השקפים */
+const PF = join(ROOT, 'public', 'fonts');
+const sheetFonts = `
+@font-face{font-family:R;font-weight:400 800;src:url(file://${PF}/rubik-hebrew-400-800.woff2)}
+@font-face{font-family:R;font-weight:400 800;src:url(file://${PF}/rubik-latin-400-800.woff2);unicode-range:U+0000-00FF}
+@font-face{font-family:A;font-weight:300 800;src:url(file://${PF}/assistant-hebrew-300-800.woff2)}
+@font-face{font-family:A;font-weight:300 800;src:url(file://${PF}/assistant-latin-300-800.woff2);unicode-range:U+0000-00FF}
+.tt{font-family:R,sans-serif;font-weight:800}
+.ft{font-family:R,sans-serif;font-weight:700}
+.ey,.sb,.lb{font-family:A,sans-serif;font-weight:700}`;
+
 /* שקף איור: התמונה ממלאת את כל השקף (ולא האיש עם המקל), והכותרת יושבת
    בחלק הריק שלה על שטיפת קלף רכה, כדי שתיקרא גם מעל פרטים באיור */
 const artPage = (s) => {
@@ -153,7 +165,7 @@ html,body{width:1080px;height:1920px;overflow:hidden;font-family:F,serif}
 /* חתימה בתחתית, באותה דיו - כתובת האתר ולא לוגו, כדי שמי שרואה יידע לאן להיכנס */
 .ft{position:absolute;left:0;right:0;bottom:46px;text-align:center;direction:ltr;font-weight:900;font-size:58px;color:#3f2a0e;
   text-shadow:0 0 8px #f7ecd0,0 0 18px #f7ecd0,0 0 30px #f7ecd0,0 0 44px rgb(247 236 208 / .85)}
-</style></head><body>
+${s.font === 'sheet' ? sheetFonts : ''}</style></head><body>
 <img class="bg" src="file://${img}">
 <div class="tbox">${s.eyebrow ? `<div class="ey">${esc(s.eyebrow)}</div>` : ''}${(s.title || []).map((l) => `<div class="tt">${esc(l)}</div>`).join('')}${(s.sub || []).map((l) => `<div class="sb">${esc(l)}</div>`).join('')}</div>
 ${labels}
