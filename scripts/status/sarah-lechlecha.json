@@ -32,7 +32,7 @@
   "slides": [
     {
       "type": "art",
-      "image": "build-assets/og-base.jpg",
+      "image": "build-assets/status/sarah-tent.jpg",
       "eyebrow": "ציר הזמן של עם ישראל",
       "title": [
         "שרה"
@@ -44,7 +44,7 @@
       ],
       "box": {
         "x": 60,
-        "y": 470,
+        "y": 330,
         "w": 960,
         "align": "center"
       },
