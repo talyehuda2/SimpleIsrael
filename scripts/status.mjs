@@ -127,17 +127,29 @@ function body(s, shot) {
   throw new Error(`סוג שקף לא מוכר: ${s.type}`);
 }
 
-/* font: 'sheet' - הגופנים של דף הדמות להורדה (רוביק בכותרת, אסיסטנט בטקסט),
-   בחירת בעל האתר, במקום פרנק-רוהל של שאר השקפים */
+/* font - גופן לשקף art במקום פרנק-רוהל של שאר השקפים: 'sheet' הוא הערכה של דף הדמות
+   להורדה (רוביק ואסיסטנט, בחירת בעל האתר), והשאר להשוואה. T לכותרת, B לטקסט. */
 const PF = join(ROOT, 'public', 'fonts');
-const sheetFonts = `
-@font-face{font-family:R;font-weight:400 800;src:url(file://${PF}/rubik-hebrew-400-800.woff2)}
-@font-face{font-family:R;font-weight:400 800;src:url(file://${PF}/rubik-latin-400-800.woff2);unicode-range:U+0000-00FF}
-@font-face{font-family:A;font-weight:300 800;src:url(file://${PF}/assistant-hebrew-300-800.woff2)}
-@font-face{font-family:A;font-weight:300 800;src:url(file://${PF}/assistant-latin-300-800.woff2);unicode-range:U+0000-00FF}
-.tt{font-family:R,sans-serif;font-weight:800}
-.ft{font-family:R,sans-serif;font-weight:700}
-.ey,.sb,.lb{font-family:A,sans-serif;font-weight:700}`;
+const BF = join(ROOT, 'build-assets', 'fonts');
+const face = (fam, w, dir, he, la) => `@font-face{font-family:${fam};font-weight:${w};src:url(file://${dir}/${he})}
+@font-face{font-family:${fam};font-weight:${w};src:url(file://${dir}/${la});unicode-range:U+0000-00FF}`;
+const FONTS = {
+  sheet: { css: face('T', '400 800', PF, 'rubik-hebrew-400-800.woff2', 'rubik-latin-400-800.woff2')
+    + face('B', '300 800', PF, 'assistant-hebrew-300-800.woff2', 'assistant-latin-300-800.woff2'), tw: 800, bw: 700 },
+  noto: { css: face('T', '400 900', BF, 'notoserifhebrew-hebrew-400-900.woff2', 'notoserifhebrew-latin-400-900.woff2')
+    + face('B', '400 900', BF, 'notoserifhebrew-hebrew-400-900.woff2', 'notoserifhebrew-latin-400-900.woff2'), tw: 800, bw: 600 },
+  david: { css: face('T', 700, BF, 'davidlibre-hebrew-700.woff2', 'davidlibre-latin-700.woff2')
+    + face('B', 700, BF, 'davidlibre-hebrew-700.woff2', 'davidlibre-latin-700.woff2'), tw: 700, bw: 700 },
+  heebo: { css: face('T', '300 700', PF, 'heebo-hebrew.woff2', 'heebo-latin.woff2')
+    + face('B', '300 700', PF, 'heebo-hebrew.woff2', 'heebo-latin.woff2'), tw: 700, bw: 500 },
+};
+const fontCss = (name) => {
+  const f = FONTS[name];
+  if (!f) throw new Error(`גופן לא מוכר: ${name}`);
+  return `${f.css}
+.tt,.ft{font-family:T,serif;font-weight:${f.tw}}
+.ey,.sb,.lb{font-family:B,serif;font-weight:${f.bw}}`;
+};
 
 /* שקף איור: התמונה ממלאת את כל השקף (ולא האיש עם המקל), והכותרת יושבת
    בחלק הריק שלה על שטיפת קלף רכה, כדי שתיקרא גם מעל פרטים באיור */
@@ -165,7 +177,7 @@ html,body{width:1080px;height:1920px;overflow:hidden;font-family:F,serif}
 /* חתימה בתחתית, באותה דיו - כתובת האתר ולא לוגו, כדי שמי שרואה יידע לאן להיכנס */
 .ft{position:absolute;left:0;right:0;bottom:46px;text-align:center;direction:ltr;font-weight:900;font-size:58px;color:#3f2a0e;
   text-shadow:0 0 8px #f7ecd0,0 0 18px #f7ecd0,0 0 30px #f7ecd0,0 0 44px rgb(247 236 208 / .85)}
-${s.font === 'sheet' ? sheetFonts : ''}</style></head><body>
+${s.font ? fontCss(s.font) : ''}${s.glow === false ? '.ey,.tt,.sb,.lb,.ft{text-shadow:none}' : ''}</style></head><body>
 <img class="bg" src="file://${img}">
 <div class="tbox">${s.eyebrow ? `<div class="ey">${esc(s.eyebrow)}</div>` : ''}${(s.title || []).map((l) => `<div class="tt">${esc(l)}</div>`).join('')}${(s.sub || []).map((l) => `<div class="sb">${esc(l)}</div>`).join('')}</div>
 ${labels}
