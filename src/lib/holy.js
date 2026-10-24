@@ -47,6 +47,23 @@ export function sendAllowed(now = new Date()) {
   return true;
 }
 
+/* השעות שאפשר לבחור (supabase/push_time.sql, בעל האתר, אוקטובר 2026). לכל אחת שתי
+   הפעלות Cron ב-vercel.json - ה-Cron הוא UTC בלי שעון קיץ - והשרת שולח רק בזו שבה
+   השעה בישראל מתאימה. ברירת המחדל 21:00, כמו לפני שהייתה בחירה */
+export const SLOTS = [8, 13, 17, 21];
+export const DEFAULT_SLOT = 21;
+
+/** עד איזו שעה לשלוח בהפעלה הזו (מי שבחר בה או קודם ועוד לא קיבל). null - אין שליחה.
+    בערב שבת/חג ההפעלה של 13:00 היא האחרונה לפני הכניסה, ולכן שולחת לכולם (24); בשבת
+    ובחג עצמם הכל נדחה למוצאי, ושם 21 ממילא כולל את כולם */
+export function slotUpTo(now = new Date()) {
+  if (!sendAllowed(now)) return null;
+  const { day, hour } = israelNow(now);
+  if (!SLOTS.includes(hour)) return null;
+  const last = SLOTS.filter((h) => h < 15).pop();
+  return isHoly(addDay(day, 1)) && hour === last ? 24 : hour;
+}
+
 /* התדירות שהגולש בחר, ואילו מהן "בתור" היום. כל יום - כל יום שבו יוצאת התראה;
    יום כן יום לא - לפי זוגיות מספר היום; פעמיים בשבוע - שלישי ושישי; פעם בשבוע -
    שישי בצהריים, לקראת שבת. */

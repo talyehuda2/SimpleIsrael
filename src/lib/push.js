@@ -84,7 +84,7 @@ const post = (name, body) => fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
   body: JSON.stringify(body),
 }).catch(() => null);
 
-/* ההעדפות: { freq, game }. null - אין מנוי, או שהקבצים עוד לא רצו. בלי push_game.sql
+/* ההעדפות: { freq, game, hour }. hour רק אחרי push_time.sql. null - אין מנוי, או שהקבצים עוד לא רצו. בלי push_game.sql
    יש רק freq (push_freq.sql), ו-game הוא null - ואז שורת התזכורת לא מוצגת. בלי שניהם
    גם הבחירה לא מוצגת, וכולם מקבלים כל יום */
 export async function getPrefs() {
@@ -104,7 +104,9 @@ export async function getPrefs() {
 export async function setPrefs(prefs) {
   const sub = await currentSub().catch(() => null);
   if (!sub) return false;
-  let ok = await rpc('push_set_prefs', { p_endpoint: sub.endpoint, p_freq: prefs.freq ?? null, p_game: prefs.game ?? null })
+  const body = { p_endpoint: sub.endpoint, p_freq: prefs.freq ?? null, p_game: prefs.game ?? null };
+  if (prefs.hour != null) body.p_hour = prefs.hour;   // רק כשיש - בלי push_time.sql אין פרמטר כזה
+  let ok = await rpc('push_set_prefs', body)
     .then(() => true, () => false);
   // עד ש-push_game.sql רץ - התדירות דרך הפונקציה הקודמת
   if (!ok && prefs.freq && prefs.game == null) {

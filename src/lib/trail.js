@@ -55,6 +55,7 @@
      push_sub    {r}        תוצאת ההרשמה: ok / denied / dismissed / error
      push_off               ביטול ההתראות מהתפריט
      push_freq   {f}        תדירות שנבחרה: daily / alt / twice / weekly / none
+     push_hour   {h}        שעת ההתראה שנבחרה: 8 / 13 / 17 / 21 (SLOTS ב-holy.js)
      push_game   {on, via}  תזכורת לאתגר הופעלה/בוטלה - via: offer (הצעה במשחק) / prefs (בחלונית)
      push_game_open {st}    לחיצה על "תזכירו לי" במסך התוצאה (st: offer / on)
                             ל-push_prompt ול-push_sub נוסף game=1 כשההצעה היא מהמשחק, ו-r=add / add-shown

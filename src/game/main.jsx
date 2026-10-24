@@ -670,7 +670,7 @@ function Reminder({ day }) {
     : (
       <button type="button" className="gm-remind" onClick={open}>
         <span aria-hidden="true">🔔</span> תזכירו לי לשחק מחר
-        <small>התראה ב-21:00, רק אם עוד לא שיחקתם</small>
+        <small>התראה יומית, רק אם עוד לא שיחקתם</small>
       </button>
     );
 }

@@ -14,7 +14,7 @@
    אייפון בספארי רגיל: אין שם התראות כלל, רק מהאייקון במסך הבית - ולכן הבאנר
    מסביר איך מוסיפים, במקום לבקש רשות.
 
-   במשחק (אוקטובר 2026) ההצעה היא תזכורת לאתגר היומי ב-21:00 ({ game: true }): מי שלא
+   במשחק (אוקטובר 2026) ההצעה היא תזכורת לאתגר היומי ({ game: true }): מי שלא
    נרשם - נרשם לתזכורת בלבד; מי שכבר מקבל דמות יומית - מתבקש להוסיף אותה. ההעדפות
    (דמות יומית ותזכורת) נבחרות באותה חלונית, וכאן גם בתפריט "עוד באתר".
 
@@ -24,7 +24,7 @@ import { mark } from '../lib/trail.js';
 import {
   canPush, iosNeedsInstall, isSubscribed, subscribe, unsubscribe, getPrefs, setPrefs, markPlayed, gameReady,
 } from '../lib/push.js';
-import { sendAllowed, FREQS } from '../lib/holy.js';
+import { sendAllowed, FREQS, SLOTS } from '../lib/holy.js';
 
 const NO_KEY = 'si_push_no';
 const GAME_NO_KEY = 'si_push_game_no';
@@ -32,7 +32,7 @@ const QUIET_DAYS = 21;
 const TITLE = '🔔 דמות מהתנ״ך, ישר לטלפון';
 const GAME_TITLE = '🎯 תזכורת לאתגר היומי';
 // מתחת לבחירה: למה אין בשבת, ומתי בכל זאת יוצא בסוף השבוע (src/lib/holy.js)
-const HOLY_NOTE = 'הכל ב-21:00, בלי שבת וחג: בשישי בצהריים, ובמוצאי שבת מ-21:00.';
+const HOLY_NOTE = 'בלי שבת וחג: בשישי ובערב חג עד 13:00, ובמוצאי שבת וחג ב-21:00.';
 const PREFS_EVENT = 'si:push-prefs';
 
 const ls = {
@@ -55,18 +55,18 @@ function render(state) {
   const g = !!ctx.game;
   const V = {
     ask: g
-      ? [GAME_TITLE, 'כל ערב ב-21:00 נזכיר לכם את האתגר - רק אם עוד לא פתרתם אותו. בלי הרשמה ובלי מייל, ואפשר לבטל בכל רגע.',
+      ? [GAME_TITLE, 'כל יום נזכיר לכם את האתגר - רק אם עוד לא פתרתם אותו, ב-21:00 או בשעה שתבחרו. בלי הרשמה ובלי מייל, ואפשר לבטל בכל רגע.',
         [['yes', 'כן, תזכירו לי', 1], ['no', 'לא עכשיו']]]
       : [TITLE, 'דמות או אירוע מתולדות ישראל - כל יום, או בתדירות שתבחרו. בלי הרשמה ובלי מייל, ואפשר לבטל בכל רגע.',
         [['yes', 'כן, אשמח', 1], ['no', 'לא עכשיו']]],
-    add: [GAME_TITLE, 'אתם כבר מקבלים מאיתנו התראות. להוסיף תזכורת לאתגר ב-21:00, רק בימים שעוד לא פתרתם אותו?',
+    add: [GAME_TITLE, 'אתם כבר מקבלים מאיתנו התראות. להוסיף תזכורת לאתגר, רק בימים שעוד לא פתרתם אותו?',
       [['add', 'כן, תוסיפו', 1], ['no', 'לא עכשיו']]],
     ios: [g ? GAME_TITLE : TITLE, `באייפון ההתראות עובדות מהאייקון של האתר: לחצו על כפתור השיתוף ⬆️, בחרו "הוספה למסך הבית", ופתחו את האתר משם${g ? ' - ואז את המשחק' : ''}.`,
       [['no', 'הבנתי', 1]]],
     busy: [g ? GAME_TITLE : TITLE, 'מאשרים בדפדפן…', []],
-    ok: ['✓ נרשמתם', `${g ? 'נזכיר לכם ב-21:00 בכל יום שעוד לא שיחקתם. ' : ''}${sendAllowed() ? 'התראת ניסיון בדרך אליכם.' : 'בשבת ובחג לא יוצאות התראות - הראשונה תגיע אחריהם.'}${g ? '' : ' כמה פעמים תרצו לקבל?'}`,
+    ok: ['✓ נרשמתם', `${g ? 'נזכיר לכם בכל יום שעוד לא שיחקתם. ' : ''}${sendAllowed() ? 'התראת ניסיון בדרך אליכם.' : 'בשבת ובחג לא יוצאות התראות - הראשונה תגיע אחריהם.'}${g ? ' באיזו שעה?' : ' כמה פעמים, ובאיזו שעה?'}`,
       [['close', 'סגירה']]],
-    added: ['✓ התזכורת הופעלה', 'נזכיר לכם את האתגר ב-21:00, בימים שעוד לא פתרתם אותו. מה עוד תרצו לקבל?', [['close', 'סגירה', 1]]],
+    added: ['✓ התזכורת הופעלה', 'נזכיר לכם את האתגר בימים שעוד לא פתרתם אותו. מה עוד תרצו לקבל, ובאיזו שעה?', [['close', 'סגירה', 1]]],
     denied: ['ההתראות חסומות', 'הדפדפן חוסם התראות מהאתר. כדי לאפשר: לחצו על המנעול 🔒 ליד הכתובת ← הרשאות ← התראות.', [['close', 'סגירה']]],
     dismissed: [g ? GAME_TITLE : TITLE, 'החלון נסגר בלי אישור. אפשר לנסות שוב בכל זמן מהתפריט "עוד באתר".', [['close', 'סגירה']]],
     error: ['משהו השתבש', 'ההרשמה לא הצליחה. אפשר לנסות שוב מהתפריט "עוד באתר".', [['close', 'סגירה']]],
@@ -84,6 +84,8 @@ function render(state) {
       + `<span class="pp-l">📜 דמות או אירוע מהתנ״ך</span><div class="pp-f" role="group" aria-label="תדירות">`
       + `${FREQS.map(([f, t]) => `<button type="button" data-f="${f}" aria-pressed="false">${t}</button>`).join('')}`
       + `<button type="button" data-f="none" class="pp-none" aria-pressed="false" hidden>בלי</button></div>`
+      + `<div class="pp-t" hidden><span class="pp-l">⏰ באיזו שעה</span><div class="pp-f four" role="group" aria-label="שעה">`
+      + `${SLOTS.map((h) => `<button type="button" data-h="${h}" aria-pressed="false">${h}:00</button>`).join('')}</div></div>`
       + `<p class="pp-n">${HOLY_NOTE}</p></div>` : '')
     + (btns.length ? `<div class="pp-b">${btns.map(([a, t, main]) => `<button type="button" data-a="${a}"${main ? ' class="main"' : ''}>${t}</button>`).join('')}</div>` : '');
   box.hidden = false;
@@ -91,17 +93,20 @@ function render(state) {
     const b = e.target.closest('button');
     if (b?.dataset.f) return pick({ freq: b.dataset.f });
     if (b?.dataset.g) return pick({ game: b.dataset.g === '1' });
+    if (b?.dataset.h) return pick({ hour: Number(b.dataset.h) });
     if (b?.dataset.a) act(b.dataset.a, state);
   };
   if (prefs) showPrefs();
 }
 
 /* ההעדפות נטענות מהמסד ומוצגות רק אם הגיעו. בלי push_freq.sql - לא מוצגות וכולם כל
-   יום; בלי push_game.sql - רק התדירות, בלי שורת התזכורת ובלי "בלי" */
+   יום; בלי push_game.sql - רק התדירות, בלי שורת התזכורת ובלי "בלי"; בלי push_time.sql -
+   בלי שורת השעה */
 let cur = null;
 function paint() {
   box.querySelectorAll('.pp-f button[data-f]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.f === cur.freq)));
   box.querySelectorAll('.pp-f button[data-g]').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.g === '1') === !!cur.game)));
+  box.querySelectorAll('.pp-f button[data-h]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.h) === cur.hour)));
 }
 async function showPrefs() {
   cur = await getPrefs();
@@ -109,6 +114,7 @@ async function showPrefs() {
   const withGame = cur.game !== null && cur.game !== undefined;
   box.querySelector('.pp-g').hidden = !withGame;
   box.querySelector('.pp-none').hidden = !withGame;
+  box.querySelector('.pp-t').hidden = cur.hour == null;   // רק אחרי push_time.sql
   paint();
   box.querySelector('.pp-prefs').hidden = false;
 }
@@ -120,6 +126,7 @@ async function pick(change) {
   if (await setPrefs(change)) {
     if (change.freq) mark('push_freq', { f: change.freq });
     if (change.game !== undefined) mark('push_game', { on: change.game ? 1 : 0, via: 'prefs' });
+    if (change.hour !== undefined) mark('push_hour', { h: change.hour });
     window.dispatchEvent(new Event(PREFS_EVENT));
   } else { cur = prev; paint(); }
 }
