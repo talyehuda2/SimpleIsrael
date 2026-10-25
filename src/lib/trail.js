@@ -54,7 +54,12 @@
      push_prompt {r}        באנר ההתראה היומית: shown / ios (הוצג), yes / no / ios-ok (מה לחצו)
      push_sub    {r}        תוצאת ההרשמה: ok / denied / dismissed / error
      push_off               ביטול ההתראות מהתפריט
-     push_freq   {f}        תדירות שנבחרה: daily / alt / twice / weekly
+     push_freq   {f}        תדירות שנבחרה: daily / alt / twice / weekly / none
+     push_hour   {h}        שעת ההתראה שנבחרה: 8 / 13 / 17 / 21 (SLOTS ב-holy.js)
+     push_game   {on, via}  תזכורת לאתגר הופעלה/בוטלה - via: offer (הצעה במשחק) / prefs (בחלונית)
+     push_game_open {st}    לחיצה על "תזכירו לי" במסך התוצאה (st: offer / on)
+                            ל-push_prompt ול-push_sub נוסף game=1 כשההצעה היא מהמשחק, ו-r=add / add-shown
+                            למי שכבר מנוי ומתבקש להוסיף את התזכורת
      game_auth   {step,via?} חשבון שחקן - open (חלון ההתחברות נפתח, via = מאיפה),
                             code_sent, login (via = email / google), nickname, delete
                             (mark, לא once). בלי מייל ובלי מזהה משתמש - si_trail

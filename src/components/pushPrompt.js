@@ -14,24 +14,35 @@
    אייפון בספארי רגיל: אין שם התראות כלל, רק מהאייקון במסך הבית - ולכן הבאנר
    מסביר איך מוסיפים, במקום לבקש רשות.
 
+   במשחק (אוקטובר 2026) ההצעה היא תזכורת לאתגר היומי ({ game: true }): מי שלא
+   נרשם - נרשם לתזכורת בלבד; מי שכבר מקבל דמות יומית - מתבקש להוסיף אותה. ההעדפות
+   (דמות יומית ותזכורת) נבחרות באותה חלונית, וכאן גם בתפריט "עוד באתר".
+
    הסגנון בבעלות הרכיב (pushPrompt.css), כמו siteMenu: הוא מגיע לארבעה מסכים. */
 import './pushPrompt.css';
 import { mark } from '../lib/trail.js';
-import { canPush, iosNeedsInstall, isSubscribed, subscribe, unsubscribe, getFreq, setFreq } from '../lib/push.js';
-import { sendAllowed, FREQS } from '../lib/holy.js';
+import {
+  canPush, iosNeedsInstall, isSubscribed, subscribe, unsubscribe, getPrefs, setPrefs, markPlayed, gameReady,
+} from '../lib/push.js';
+import { sendAllowed, FREQS, SLOTS } from '../lib/holy.js';
 
 const NO_KEY = 'si_push_no';
+const GAME_NO_KEY = 'si_push_game_no';
 const QUIET_DAYS = 21;
 const TITLE = '🔔 דמות מהתנ״ך, ישר לטלפון';
-// מתחת לבחירת התדירות: למה אין בשבת, ומתי בכל זאת יוצא בסוף השבוע (src/lib/holy.js)
-const HOLY_NOTE = 'בלי שבת וחג: בשישי עד 15:00, ובמוצאי שבת מ-21:00.';
+const GAME_TITLE = '🎯 תזכורת לאתגר היומי';
+// מתחת לבחירה: למה אין בשבת, ומתי בכל זאת יוצא בסוף השבוע (src/lib/holy.js)
+const HOLY_NOTE = 'בלי שבת וחג: בשישי ובערב חג עד 13:00, ובמוצאי שבת וחג ב-21:00.';
+const PREFS_EVENT = 'si:push-prefs';
 
 const ls = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch { /* מתעלמים */ } },
 };
+const quiet = (k) => { const t = Number(ls.get(k) || 0); return t && Date.now() - t < QUIET_DAYS * 864e5; };
 
 let box = null;
+let ctx = {};
 function render(state) {
   if (!box) {
     box = document.createElement('div');
@@ -41,52 +52,83 @@ function render(state) {
     box.setAttribute('aria-label', 'התראה יומית');
     document.body.appendChild(box);
   }
+  const g = !!ctx.game;
   const V = {
-    ask: [TITLE, 'דמות או אירוע מתולדות ישראל - כל יום, או בתדירות שתבחרו. בלי הרשמה ובלי מייל, ואפשר לבטל בכל רגע.',
-      [['yes', 'כן, אשמח', 1], ['no', 'לא עכשיו']]],
-    ios: [TITLE, 'באייפון ההתראות עובדות מהאייקון של האתר: לחצו על כפתור השיתוף ⬆️, בחרו "הוספה למסך הבית", ופתחו את האתר משם.',
+    ask: g
+      ? [GAME_TITLE, 'כל יום נזכיר לכם את האתגר - רק אם עוד לא פתרתם אותו, ב-21:00 או בשעה שתבחרו. בלי הרשמה ובלי מייל, ואפשר לבטל בכל רגע.',
+        [['yes', 'כן, תזכירו לי', 1], ['no', 'לא עכשיו']]]
+      : [TITLE, 'דמות או אירוע מתולדות ישראל - כל יום, או בתדירות שתבחרו. בלי הרשמה ובלי מייל, ואפשר לבטל בכל רגע.',
+        [['yes', 'כן, אשמח', 1], ['no', 'לא עכשיו']]],
+    add: [GAME_TITLE, 'אתם כבר מקבלים מאיתנו התראות. להוסיף תזכורת לאתגר, רק בימים שעוד לא פתרתם אותו?',
+      [['add', 'כן, תוסיפו', 1], ['no', 'לא עכשיו']]],
+    ios: [g ? GAME_TITLE : TITLE, `באייפון ההתראות עובדות מהאייקון של האתר: לחצו על כפתור השיתוף ⬆️, בחרו "הוספה למסך הבית", ופתחו את האתר משם${g ? ' - ואז את המשחק' : ''}.`,
       [['no', 'הבנתי', 1]]],
-    busy: [TITLE, 'מאשרים בדפדפן…', []],
-    ok: ['✓ נרשמתם', sendAllowed() ? 'התראת ניסיון בדרך אליכם. כמה פעמים תרצו לקבל?'
-      : 'בשבת ובחג לא יוצאות התראות - הראשונה תגיע אחריהם. כמה פעמים תרצו לקבל?', [['close', 'סגירה']]],
+    busy: [g ? GAME_TITLE : TITLE, 'מאשרים בדפדפן…', []],
+    ok: ['✓ נרשמתם', `${g ? 'נזכיר לכם בכל יום שעוד לא שיחקתם. ' : ''}${sendAllowed() ? 'התראת ניסיון בדרך אליכם.' : 'בשבת ובחג לא יוצאות התראות - הראשונה תגיע אחריהם.'}${g ? ' באיזו שעה?' : ' כמה פעמים, ובאיזו שעה?'}`,
+      [['close', 'סגירה']]],
+    added: ['✓ התזכורת הופעלה', 'נזכיר לכם את האתגר בימים שעוד לא פתרתם אותו. מה עוד תרצו לקבל, ובאיזו שעה?', [['close', 'סגירה', 1]]],
     denied: ['ההתראות חסומות', 'הדפדפן חוסם התראות מהאתר. כדי לאפשר: לחצו על המנעול 🔒 ליד הכתובת ← הרשאות ← התראות.', [['close', 'סגירה']]],
-    dismissed: [TITLE, 'החלון נסגר בלי אישור. אפשר לנסות שוב בכל זמן מהתפריט "עוד באתר".', [['close', 'סגירה']]],
+    dismissed: [g ? GAME_TITLE : TITLE, 'החלון נסגר בלי אישור. אפשר לנסות שוב בכל זמן מהתפריט "עוד באתר".', [['close', 'סגירה']]],
     error: ['משהו השתבש', 'ההרשמה לא הצליחה. אפשר לנסות שוב מהתפריט "עוד באתר".', [['close', 'סגירה']]],
-    on: ['🔔 ההתראה היומית פעילה', 'דמות או אירוע מתולדות ישראל, בתדירות שבחרתם:', [['off', 'ביטול ההתראות'], ['close', 'סגירה', 1]]],
+    on: ['🔔 ההתראות פעילות', 'מה תרצו לקבל?', [['off', 'ביטול ההתראות'], ['close', 'סגירה', 1]]],
     off: ['ההתראות בוטלו', 'לא יגיעו יותר התראות מהאתר למכשיר הזה.', [['close', 'סגירה']]],
     none: ['אין התראות בדפדפן הזה', 'הדפדפן הזה לא תומך בהתראות מאתרים. נסו מ-Chrome או מהאפליקציה במסך הבית.', [['close', 'סגירה']]],
   }[state];
   const [h, p, btns] = V;
-  const freq = state === 'ok' || state === 'on';
-  box.innerHTML = `<button type="button" class="pp-x" data-a="${state === 'ask' || state === 'ios' ? 'no' : 'close'}" aria-label="סגירה">✕</button>`
+  const prefs = state === 'ok' || state === 'on' || state === 'added';
+  box.innerHTML = `<button type="button" class="pp-x" data-a="${['ask', 'ios', 'add'].includes(state) ? 'no' : 'close'}" aria-label="סגירה">✕</button>`
     + `<b class="pp-h">${h}</b><p class="pp-p">${p}</p>`
-    + (freq ? `<div class="pp-f" role="group" aria-label="תדירות" hidden>${FREQS.map(([f, t]) => `<button type="button" data-f="${f}" aria-pressed="false">${t}</button>`).join('')}</div>`
-      + `<p class="pp-n" hidden>${HOLY_NOTE}</p>` : '')
+    + (prefs ? `<div class="pp-prefs" hidden>`
+      + `<div class="pp-g" hidden><span class="pp-l">🎯 תזכורת לאתגר היומי</span><div class="pp-f two" role="group" aria-label="תזכורת לאתגר">`
+      + `<button type="button" data-g="1" aria-pressed="false">כן</button><button type="button" data-g="0" aria-pressed="false">לא</button></div></div>`
+      + `<span class="pp-l">📜 דמות או אירוע מהתנ״ך</span><div class="pp-f" role="group" aria-label="תדירות">`
+      + `${FREQS.map(([f, t]) => `<button type="button" data-f="${f}" aria-pressed="false">${t}</button>`).join('')}`
+      + `<button type="button" data-f="none" class="pp-none" aria-pressed="false" hidden>בלי</button></div>`
+      + `<div class="pp-t" hidden><span class="pp-l">⏰ באיזו שעה</span><div class="pp-f four" role="group" aria-label="שעה">`
+      + `${SLOTS.map((h) => `<button type="button" data-h="${h}" aria-pressed="false">${h}:00</button>`).join('')}</div></div>`
+      + `<p class="pp-n">${HOLY_NOTE}</p></div>` : '')
     + (btns.length ? `<div class="pp-b">${btns.map(([a, t, main]) => `<button type="button" data-a="${a}"${main ? ' class="main"' : ''}>${t}</button>`).join('')}</div>` : '');
   box.hidden = false;
   box.onclick = (e) => {
     const b = e.target.closest('button');
-    if (b?.dataset.f) return pick(b.dataset.f);
+    if (b?.dataset.f) return pick({ freq: b.dataset.f });
+    if (b?.dataset.g) return pick({ game: b.dataset.g === '1' });
+    if (b?.dataset.h) return pick({ hour: Number(b.dataset.h) });
     if (b?.dataset.a) act(b.dataset.a, state);
   };
-  if (freq) showFreq();
+  if (prefs) showPrefs();
 }
 
-/* התדירות: נטענת מהמסד ומוצגת רק אם הגיעה. בלי push_freq.sql - לא מוצגת, וכולם כל יום */
-function paint(f) {
-  box.querySelectorAll('.pp-f button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.f === f)));
+/* ההעדפות נטענות מהמסד ומוצגות רק אם הגיעו. בלי push_freq.sql - לא מוצגות וכולם כל
+   יום; בלי push_game.sql - רק התדירות, בלי שורת התזכורת ובלי "בלי"; בלי push_time.sql -
+   בלי שורת השעה */
+let cur = null;
+function paint() {
+  box.querySelectorAll('.pp-f button[data-f]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.f === cur.freq)));
+  box.querySelectorAll('.pp-f button[data-g]').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.g === '1') === !!cur.game)));
+  box.querySelectorAll('.pp-f button[data-h]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.h) === cur.hour)));
 }
-async function showFreq() {
-  const f = await getFreq();
-  if (!f || !box) return;
-  paint(f);
-  box.querySelector('.pp-f').hidden = false;
-  box.querySelector('.pp-n').hidden = false;
+async function showPrefs() {
+  cur = await getPrefs();
+  if (!cur || !box) return;
+  const withGame = cur.game !== null && cur.game !== undefined;
+  box.querySelector('.pp-g').hidden = !withGame;
+  box.querySelector('.pp-none').hidden = !withGame;
+  box.querySelector('.pp-t').hidden = cur.hour == null;   // רק אחרי push_time.sql
+  paint();
+  box.querySelector('.pp-prefs').hidden = false;
 }
-async function pick(f) {
-  paint(f);
-  if (await setFreq(f)) mark('push_freq', { f });
-  else paint(await getFreq());
+async function pick(change) {
+  if (!cur) return;
+  const prev = cur;
+  cur = { ...cur, ...change };
+  paint();
+  if (await setPrefs(change)) {
+    if (change.freq) mark('push_freq', { f: change.freq });
+    if (change.game !== undefined) mark('push_game', { on: change.game ? 1 : 0, via: 'prefs' });
+    if (change.hour !== undefined) mark('push_hour', { h: change.hour });
+    window.dispatchEvent(new Event(PREFS_EVENT));
+  } else { cur = prev; paint(); }
 }
 
 function close() { if (box) box.hidden = true; }
@@ -94,40 +136,59 @@ function close() { if (box) box.hidden = true; }
 async function act(a, state) {
   if (a === 'close') return close();
   if (a === 'no') {
-    ls.set(NO_KEY, String(Date.now()));
-    mark('push_prompt', { r: state === 'ios' ? 'ios-ok' : 'no' });
+    ls.set(ctx.game ? GAME_NO_KEY : NO_KEY, String(Date.now()));
+    mark('push_prompt', { r: state === 'ios' ? 'ios-ok' : 'no', game: ctx.game ? 1 : 0 });
     return close();
   }
   if (a === 'yes') {
-    mark('push_prompt', { r: 'yes' });
+    mark('push_prompt', { r: 'yes', game: ctx.game ? 1 : 0 });
     render('busy');
-    const r = await subscribe();
-    mark('push_sub', { r });
+    const r = await subscribe({ game: !!ctx.game });
+    mark('push_sub', { r, game: ctx.game ? 1 : 0 });
+    if (r === 'ok' && ctx.game) gameOn();
     return render(r);
+  }
+  if (a === 'add') {
+    mark('push_prompt', { r: 'add', game: 1 });
+    if (!(await setPrefs({ game: true }))) return render('error');
+    gameOn();
+    return render('added');
   }
   if (a === 'off') {
     await unsubscribe();
     mark('push_off');
+    window.dispatchEvent(new Event(PREFS_EVENT));
     return render('off');
   }
 }
 
-/** מהתפריט "עוד באתר": תמיד נפתח, ומראה את המצב הנוכחי */
-export async function openPushPanel() {
+// מי שהפעיל תזכורת מתוך מסך התוצאה כבר פתר היום - שלא יקבל תזכורת הערב
+function gameOn() {
+  mark('push_game', { on: 1, via: 'offer' });
+  if (ctx.played) markPlayed(ctx.played);
+  window.dispatchEvent(new Event(PREFS_EVENT));
+}
+
+/** מהתפריט "עוד באתר" (בלי ארגומנטים) או מהמשחק ({ game: true, played: יום }).
+    תמיד נפתח, ומראה את המצב הנוכחי */
+export async function openPushPanel(opts) {
+  ctx = opts && opts.game ? opts : {};
   if (iosNeedsInstall()) return render('ios');
   if (!canPush()) return render('none');
-  if (await isSubscribed()) return render('on');
+  if (await isSubscribed()) {
+    if (ctx.game && (await getPrefs())?.game === false) return act('add', 'add');
+    return render('on');
+  }
   if (Notification.permission === 'denied') return render('denied');
   return render('ask');
 }
 
-/** נקרא פעם אחת בכל מסך. מחליט אם ומתי להציע */
-export function initPushPrompt() {
+/** נקרא פעם אחת בכל מסך. מחליט אם ומתי להציע. במשחק: { game: true } */
+export function initPushPrompt(opts = {}) {
   if (typeof window === 'undefined' || navigator.webdriver) return;
-  const quiet = Number(ls.get(NO_KEY) || 0);
-  if (quiet && Date.now() - quiet < QUIET_DAYS * 864e5) return;
-  const kind = canPush() ? (Notification.permission === 'default' ? 'ask' : null) : (iosNeedsInstall() ? 'ios' : null);
-  if (!kind) return;
+  const game = !!opts.game;
+  if (quiet(game ? GAME_NO_KEY : NO_KEY)) return;
+  if (!canPush() && !iosNeedsInstall()) return;
 
   let done = false;
   const show = async () => {
@@ -136,13 +197,19 @@ export function initPushPrompt() {
     if (document.querySelector('dialog[open]')) { setTimeout(show, 4000); return; }
     done = true;
     window.removeEventListener('si:engaged', soon);
-    /* השרת מוכן? (המפתח הציבורי מתקבל; הדפדפן שומר אותו שעה.) בלי זה, לפני
-       שהטבלאות נוצרו או בתקלה, גולש היה מאשר התראות ומקבל שגיאה */
-    if (kind === 'ask') {
+    let kind = null;
+    if (iosNeedsInstall()) kind = 'ios';
+    else if (Notification.permission === 'default') kind = 'ask';
+    else if (game && await isSubscribed() && (await getPrefs())?.game === false) kind = 'add';
+    if (!kind) return;
+    /* השרת מוכן? בלי זה, לפני שהטבלאות נוצרו או בתקלה, גולש היה מאשר התראות ומקבל
+       שגיאה. במשחק - גם push_game.sql, אחרת "תזכורת" הייתה נרשמת כדמות יומית */
+    if (kind !== 'ios') {
       const ready = await fetch('/api/push').then((r) => r.ok).catch(() => false);
-      if (!ready) return;
+      if (!ready || (game && !(await gameReady()))) return;
     }
-    mark('push_prompt', { r: kind === 'ios' ? 'ios' : 'shown' });
+    ctx = game ? { game: true, played: opts.played?.() } : {};
+    mark('push_prompt', { r: kind === 'ios' ? 'ios' : kind === 'add' ? 'add-shown' : 'shown', game: game ? 1 : 0 });
     render(kind);
   };
   /* רגע אחרי הפעולה ולא מיד: מי שפתח כרטיס צריך לראות אותו לפני שמבקשים ממנו
@@ -157,3 +224,4 @@ export function initPushPrompt() {
 }
 
 export const pushMenuVisible = () => canPush() || iosNeedsInstall();
+export { PREFS_EVENT };

@@ -52,8 +52,9 @@ export async function isSubscribed() {
   return !!(await currentSub().catch(() => null));
 }
 
-/** מבקש רשות ונרשם. מחזיר 'ok' | 'denied' | 'dismissed' (סגרו את החלון) | 'error' */
-export async function subscribe() {
+/** מבקש רשות ונרשם. game - נרשם מהמשחק: תזכורת לאתגר, בלי דמות יומית (אפשר להוסיף
+    אחר כך בתפריט). מחזיר 'ok' | 'denied' | 'dismissed' (סגרו את החלון) | 'error' */
+export async function subscribe({ game = false } = {}) {
   let perm;
   try { perm = await Notification.requestPermission(); } catch { return 'error'; }
   if (perm === 'denied') return 'denied';
@@ -61,13 +62,15 @@ export async function subscribe() {
   try {
     const reg = await registration();
     const { key } = await (await fetch('/api/push')).json();
-    const sub = await reg.pushManager.getSubscription()
-      || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: bytes(key) });
+    const had = await reg.pushManager.getSubscription();
+    const sub = had || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: bytes(key) });
     const j = sub.toJSON();
     await rpc('push_subscribe', { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth });
+    // מנוי קיים שומר על הדמות היומית שבחר; חדש מהמשחק - רק תזכורת
+    if (game) await setPrefs(had ? { game: true } : { freq: 'none', game: true });
     // התראת "נרשמתם" - הוכחה מיידית שהשרשרת עובדת. כישלון בה אינו כישלון בהרשמה
     fetch('/api/push', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: j.endpoint }),
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: j.endpoint, game }),
     }).catch(() => {});
     return 'ok';
   } catch {
@@ -75,29 +78,61 @@ export async function subscribe() {
   }
 }
 
-/* התדירות (supabase/push_freq.sql). null - אין מנוי, או שהקובץ עוד לא רץ:
-   אז הבחירה לא מוצגת, וכולם מקבלים כל יום */
-export async function getFreq() {
+const post = (name, body) => fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+  method: 'POST',
+  headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+  body: JSON.stringify(body),
+}).catch(() => null);
+
+/* ההעדפות: { freq, game, hour }. hour רק אחרי push_time.sql. null - אין מנוי, או שהקבצים עוד לא רצו. בלי push_game.sql
+   יש רק freq (push_freq.sql), ו-game הוא null - ואז שורת התזכורת לא מוצגת. בלי שניהם
+   גם הבחירה לא מוצגת, וכולם מקבלים כל יום */
+export async function getPrefs() {
   const sub = await currentSub().catch(() => null);
   if (!sub) return null;
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/push_get_freq`, {
-    method: 'POST',
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ p_endpoint: sub.endpoint }),
-  }).catch(() => null);
-  if (!r?.ok) return null;
-  return (await r.json().catch(() => null)) || null;
+  let r = await post('push_get_prefs', { p_endpoint: sub.endpoint });
+  if (r?.ok) {
+    const j = await r.json().catch(() => null);
+    if (j) setGameFlag(j.game);
+    return j;
+  }
+  r = await post('push_get_freq', { p_endpoint: sub.endpoint });
+  const freq = r?.ok ? await r.json().catch(() => null) : null;
+  return freq ? { freq, game: null } : null;
 }
 
-export async function setFreq(freq) {
+export async function setPrefs(prefs) {
   const sub = await currentSub().catch(() => null);
   if (!sub) return false;
-  return rpc('push_set_freq', { p_endpoint: sub.endpoint, p_freq: freq }).then(() => true, () => false);
+  const body = { p_endpoint: sub.endpoint, p_freq: prefs.freq ?? null, p_game: prefs.game ?? null };
+  if (prefs.hour != null) body.p_hour = prefs.hour;   // רק כשיש - בלי push_time.sql אין פרמטר כזה
+  let ok = await rpc('push_set_prefs', body)
+    .then(() => true, () => false);
+  // עד ש-push_game.sql רץ - התדירות דרך הפונקציה הקודמת
+  if (!ok && prefs.freq && prefs.game == null) {
+    ok = await rpc('push_set_freq', { p_endpoint: sub.endpoint, p_freq: prefs.freq }).then(() => true, () => false);
+  }
+  if (ok && prefs.game != null) setGameFlag(prefs.game);
+  return ok;
 }
+
+/* "שיחקתי היום" - כדי שמי שכבר פתר לא יקבל תזכורת. הדגל במכשיר רק חוסך קריאה למי
+   שלא ביקש תזכורת (כמעט כולם); המסד ממילא מתעלם ממי שאין לו game */
+const FLAG = 'si_push_game';
+function setGameFlag(on) { try { if (on) localStorage.setItem(FLAG, '1'); else localStorage.removeItem(FLAG); } catch { /* מתעלמים */ } }
+export async function markPlayed(day) {
+  try { if (localStorage.getItem(FLAG) !== '1') return; } catch { return; }
+  const sub = await currentSub().catch(() => null);
+  if (sub) post('push_game_played', { p_endpoint: sub.endpoint, p_day: day });
+}
+
+// push_game.sql רץ? פונקציה קיימת מחזירה 200 גם בלי מנוי; חסרה - 404
+export const gameReady = () => post('push_get_prefs', { p_endpoint: '' }).then((r) => !!r?.ok);
 
 export async function unsubscribe() {
   const sub = await currentSub().catch(() => null);
   if (!sub) return;
   await rpc('push_unsubscribe', { p_endpoint: sub.endpoint }).catch(() => {});
   await sub.unsubscribe().catch(() => {});
+  setGameFlag(false);
 }

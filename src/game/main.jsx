@@ -21,7 +21,8 @@ import {
 } from './pool.js';
 import { confetti } from './confetti.js';
 import './game.css';
-import { initPushPrompt } from '../components/pushPrompt.js';
+import { initPushPrompt, openPushPanel, pushMenuVisible, PREFS_EVENT } from '../components/pushPrompt.js';
+import { getPrefs, gameReady, markPlayed } from '../lib/push.js';
 import { useAccount, accountsEnabled, AccountButton, AccountDialog, SaveInvite, SavedLine, Leaderboard } from './Account.jsx';
 
 // עד ההשקה ההרשמה כולה מוסתרת - ראו OPEN ב-Account.jsx
@@ -396,6 +397,7 @@ function Game() {
       markOnce('game_done', { mode: 'daily', score: s, n: num, streak: st.count, ...facts });
       const keys = placed.map(itemKey);
       saveDaily(day, keys);
+      markPlayed(day);   // מי שביקש תזכורת ופתר - לא יקבל אותה הערב
       if (acc.user) {
         submit(keys).then((res) => {
           if (res && res.placed.join() !== keys.join()) setPlaced(byKeys(res.placed));
@@ -517,6 +519,7 @@ function Game() {
                 <li><span aria-hidden="true">⏱</span> הבא בעוד <Countdown /></li>
               </ul>
             )}
+            {daily && <Reminder day={day} />}
             {ACCOUNTS && daily && (acc.user
               ? <SavedLine state={saveState} />
               : acc.known && <SaveInvite score={score} onOpen={open} />)}
@@ -640,6 +643,40 @@ function Game() {
   );
 }
 
+/* תזכורת לאתגר (supabase/push_game.sql), במסך התוצאה של האתגר היומי - מי שפתר
+   כבר אמר שהוא רוצה לחזור מחר. רק כשהשרת מוכן ובדפדפן שיכול לקבל התראות (או
+   באייפון, שם החלונית מסבירה איך מוסיפים למסך הבית). מי שכבר ביקש - שורה קטנה */
+function Reminder({ day }) {
+  const [st, setSt] = useState(null);   // null - לא מוצג; offer; on
+  useEffect(() => {
+    if (!pushMenuVisible()) return undefined;
+    let live = true;
+    const check = async () => {
+      if (!(await gameReady())) return;
+      const p = await getPrefs().catch(() => null);
+      if (!live) return;
+      setSt(p?.game ? 'on' : 'offer');
+      // התוצאה מוצגת = האתגר נפתר. גם במכשיר שבו הדגל המקומי נמחק (markPlayed בודק אותו)
+      if (p?.game) markPlayed(day);
+    };
+    check();
+    window.addEventListener(PREFS_EVENT, check);
+    return () => { live = false; window.removeEventListener(PREFS_EVENT, check); };
+  }, []);
+  if (!st) return null;
+  const open = () => { mark('push_game_open', { st }); openPushPanel({ game: true, played: day }); };
+  return st === 'on'
+    ? <p className="gm-remind on"><span aria-hidden="true">🔔</span> תזכורת יומית לאתגר פעילה · <button type="button" onClick={open}>שינוי</button></p>
+    : (
+      <button type="button" className="gm-remind" onClick={open}>
+        <span aria-hidden="true">🔔</span> תזכירו לי לשחק מחר
+        <small>התראה יומית, רק אם עוד לא שיחקתם</small>
+      </button>
+    );
+}
+
 startTrail();
-initPushPrompt();
+/* במשחק ההצעה היא תזכורת לאתגר, אחרי סבב שהסתיים. played - היום, אם האתגר שלו
+   כבר נפתר: מי שמפעיל תזכורת אחרי שפתר לא יקבל אותה הערב */
+initPushPrompt({ game: true, played: () => (loadDaily(israelDay()) ? israelDay() : null) });
 createRoot(document.getElementById('root')).render(<Game />);

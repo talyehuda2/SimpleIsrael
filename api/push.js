@@ -2,7 +2,8 @@
 
    GET  /api/push            -> { key } המפתח הציבורי, שהדפדפן צריך כדי להירשם.
                                בפעם הראשונה אי פעם - נוצר זוג מפתחות (api/_lib/push.js).
-   POST /api/push {endpoint} -> התראת "נרשמת" למנוי שנוצר זה עתה. כך הגולש רואה
+   POST /api/push {endpoint, game?} -> התראת "נרשמת" למנוי שנוצר זה עתה (game - מי
+                               שנרשם מהמשחק לתזכורת, ולכן הנוסח שלו). כך הגולש רואה
                                מיד שזה עובד, ואנחנו יודעים שכל השרשרת תקינה
                                (מפתחות, הצפנה, שירות ההתראות). המסד מתיר אותה
                                רק למנוי בן פחות מעשר דקות, ופעם אחת (push_welcome).
@@ -30,9 +31,14 @@ export default async function handler(req, res) {
       await vapid();
       const rows = await rpc('push_welcome', { p_secret: secret(), p_endpoint: endpoint });
       if (!rows?.length) return res.status(200).json({ sent: false });
-      const r = await send(rows[0], {
+      const r = await send(rows[0], req.body?.game ? {
+        title: '🎯 נרשמתם לתזכורת',
+        body: 'כל יום נזכיר לכם את האתגר היומי - רק אם עוד לא פתרתם אותו, ולא בשבת ובחג. שעה, שינוי וביטול: בתפריט "עוד באתר".',
+        url: '/game?src=push-welcome',
+        tag: 'si-welcome',
+      } : {
         title: '🔔 נרשמתם להתראה היומית',
-        body: 'מעכשיו תגיע מכאן דמות או אירוע מתולדות ישראל - לא בשבת ובחג. תדירות וביטול: בתפריט "עוד באתר".',
+        body: 'מעכשיו תגיע מכאן דמות או אירוע מתולדות ישראל - לא בשבת ובחג. שעה, תדירות וביטול: בתפריט "עוד באתר".',
         url: '/?src=push-welcome',
         tag: 'si-welcome',
       });
