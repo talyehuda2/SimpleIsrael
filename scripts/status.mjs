@@ -88,7 +88,19 @@ const fmt = (s) => esc(s)
 // כותרת: \n בטקסט = שבירת שורה מכוונת ("הירשמו.\nצברו נקודות.\nנצחו."), כשהשבירה האוטומטית חותכת באמצע
 const ttl = (t) => esc(t).replace(/\n/g, '<br>');
 
-const block = (b) => b.v
+/* notif: התראת טלפון כפי שהגיעה - אייקון האתר, שם, שעה, כותרת, גוף ותמונת השיתוף של הפריט.
+   כמו מה ש-api/push-daily.js שולח בפועל (title, teaser, og/<kind>/<id>.jpg), כדי שמי שרואה יזהה אותה */
+const notifHtml = (nf) => `<div class="notif"><div class="nh"><img class="ni" src="file://${join(ROOT, 'public', 'icons', 'icon-192.png')}">`
+  + `<span>ציר הזמן של עם ישראל</span><span class="nw">· ${esc(nf.when || 'עכשיו')}</span><span class="nb">🔔</span></div>`
+  + `<div class="nt">${esc(nf.title)}</div><div class="nx">${esc(nf.body)}</div>`
+  + (nf.img ? `<img class="np" src="file://${join(ROOT, nf.img)}">` : '') + '</div>';
+const NOTIF_CSS = `@font-face{font-family:H;font-weight:300 700;src:url(file://${join(ROOT, 'public', 'fonts', 'heebo-hebrew.woff2')})}
+.notif{background:#fff;border-radius:1.1em;box-shadow:0 .5em 1.4em rgb(60 40 0 / .3);padding:.8em .9em .9em;margin:.2em 0 1em;color:#1d1d1f;font-family:H,sans-serif}
+.nh{display:flex;align-items:center;gap:.4em;font-size:.72em;color:#5f6368;margin-bottom:.45em}
+.ni{width:1.6em;height:1.6em;border-radius:50%}.nw{flex:1}.nb{font-size:1.1em}
+.nt{font-weight:700;font-size:1em;margin-bottom:.2em}.nx{font-size:.86em;line-height:1.38;color:#3c4043}
+.np{display:block;width:100%;border-radius:.6em;margin-top:.6em}`;
+const block = (b) => b.notif ? notifHtml(b.notif) : b.v
   ? `<blockquote><span class="vt">״${esc(b.v)}״</span><cite>${esc(b.ref)}</cite></blockquote>`
   : b.cite ? `<cite class="solo">${esc(b.cite)}</cite>`
   : `<p class="${[b.strong && 'strong', b.soft && 'soft'].filter(Boolean).join(' ')}">${fmt(b.p)}</p>`;
@@ -216,6 +228,8 @@ main p{margin:0}
 blockquote{background:rgb(251 245 231 / .7);border-inline-start:10px solid #b28a2b;
   border-start-end-radius:26px;border-end-end-radius:26px;padding:34px 44px 30px}
 .vt{display:block;font-weight:700;font-size:54px;line-height:1.42;text-wrap:balance}
+${NOTIF_CSS}
+.notif{font-size:40px}
 cite{display:block;font-style:normal;font-weight:700;font-size:34px;color:#7a5b16;margin-top:16px}
 cite.solo{margin-top:-18px}
 /* הצילום בצד ימין והאיש עם המקל בצד שמאל (עד x=300), ולכן הצילום רשאי לרדת
@@ -274,7 +288,7 @@ ${s.type === 'cta' ? '' : `<div class="url">${esc(s.footUrl || 'simpleisrael.co.
 </body></html>`;
 
 /* ---------- תמונה לפוסט בערוץ ---------- */
-const postBlock = (b) => b.rows ? boardRows(b.rows) : b.p ? `<p>${fmt(b.p).replace(/\n/g, '<br>')}</p>` : block(b);
+const postBlock = (b) => b.rows ? boardRows(b.rows) : b.notif ? notifHtml(b.notif) : b.p ? `<p>${fmt(b.p).replace(/\n/g, '<br>')}</p>` : block(b);
 /* shots: עד שני צילומים מהאתר (אותם שדות של שקף site, ועוד label) - נכנסים בצד שמאל במקום
    האיש עם המקל, והטקסט מצטמצם לימין */
 const postShots = (s, files) => `<div class="shots">${files.map((f, i) =>
@@ -295,6 +309,10 @@ h1{font-weight:900;font-size:76px;line-height:1.05;color:#163a57;margin-bottom:2
 blockquote{background:rgb(251 245 231 / .75);border-inline-start:7px solid #b28a2b;
   border-start-end-radius:18px;border-end-end-radius:18px;padding:18px 26px 14px;margin-bottom:22px}
 .vt{display:block;font-weight:700;font-size:33px;line-height:1.4}
+${NOTIF_CSS}
+.notif{font-size:21px}
+/* בפוסט הרחב תמונת ההתראה נחתכת לרצועה - בגובה מלא היא גלשה מתחת לתמונה */
+.notif .np{height:145px;object-fit:cover;object-position:center 35%}
 cite{display:block;font-style:normal;font-weight:700;font-size:22px;color:#7a5b16;margin-top:8px}
 p{font-weight:700;font-size:29px;line-height:1.4;color:#163a57;margin-bottom:14px}
 q{quotes:none;color:#7a5410}
