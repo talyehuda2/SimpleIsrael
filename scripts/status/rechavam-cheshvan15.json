@@ -37,7 +37,8 @@
           "p": "את המשפט הזה אמר רחבעם בן שלמה לכל ישראל, ביום שבו באו להמליך אותו.",
           "strong": true
         }
-      ]
+      ],
+      "bg": "build-assets/status/rechavam-answer.jpg"
     },
     {
       "type": "text",
@@ -66,7 +67,8 @@
           "p": "הוא גייס צבא - ושמעיה איש האלוהים עצר אותו: \"לא תעלו ולא תלחמון עם אחיכם\".",
           "strong": true
         }
-      ]
+      ],
+      "bg": "build-assets/status/rechavam-split.jpg"
     },
     {
       "type": "verses",
@@ -80,7 +82,8 @@
         {
           "p": "ירבעם פחד שהעם יעלה לרגל לירושלים ויחזור לבית דוד - ובדה חג משלו בבית אל. בדיוק היום."
         }
-      ]
+      ],
+      "bg": "build-assets/status/rechavam-bethel.jpg"
     },
     {
       "type": "site",

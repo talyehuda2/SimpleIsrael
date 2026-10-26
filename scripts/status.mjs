@@ -71,6 +71,7 @@ const spec = JSON.parse(readFileSync(specPath, 'utf8'));
 /* הרקע של כל השקפים והפוסט: האיש עם המקל, אלא אם קובץ התוכן נותן bg משלו (איור לסדרה, למשל
    האוהל של שרה). post.bgPos קובע איזה חלק מאיור לאורך נכנס לפוסט הרחב. */
 const BG = join(ROOT, spec.bg || 'build-assets/og-base.jpg');
+/* ולשקף בודד: bg בשקף גובר על זה של הסדרה - איור לכל שלב בסיפור */
 const OUT = join(ROOT, 'status-out', basename(specPath, '.json'));
 mkdirSync(OUT, { recursive: true });
 const TMP = mkdtempSync(join(tmpdir(), 'status-'));
@@ -207,7 +208,7 @@ const page = (s, shot) => s.type === 'art' ? artPage(s) : `<!doctype html><html 
 @font-face{font-family:F;font-weight:900;src:url(file://${FD}/900Black/FrankRuhlLibre_900Black.ttf)}
 *{box-sizing:border-box;margin:0}
 html,body{width:1080px;height:1920px;overflow:hidden;font-family:F,serif;color:#33281a}
-body{position:relative;background:#ead7ab url(file://${BG}) right top/auto 1920px no-repeat}
+body{position:relative;background:#ead7ab url(file://${s.bg ? join(ROOT, s.bg) : BG}) right top/auto 1920px no-repeat}
 .wash{position:absolute;inset:0;background:radial-gradient(ellipse 90% 60% at 50% 38%,rgb(251 245 231 / .62),rgb(251 245 231 / 0) 75%)}
 .art{position:absolute;left:0;bottom:0;width:1080px;
   -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 34%);mask-image:linear-gradient(to bottom,transparent 0,#000 34%)}
@@ -280,9 +281,13 @@ h1.xl{font-size:118px;line-height:1.04}
 .pt small{display:block;font-size:30px;font-weight:500;color:#6d5c42;margin-top:8px}
 p.after{font-size:44px}
 .url{position:absolute;right:84px;bottom:230px;font-weight:700;font-size:36px;color:#163a57;direction:ltr}
-${baseFont()}</style></head><body>
+/* שקף עם איור משלו (bg): האיור מלא בפרטים עד חצי המסך, ולכן פסקה שגולשת אליו והכתובת
+   בתחתית יושבות על קלף בהיר - בלי זה הן נבלעו בקהל ובחומות */
+.ill .content p{background:rgb(251 245 231 / .84);padding:14px 26px;border-radius:16px}
+.ill .url{background:rgb(251 245 231 / .88);padding:6px 20px;border-radius:12px}
+${baseFont()}</style></head><body${s.bg ? ' class="ill"' : ''}>
 <div class="wash"></div>
-<img class="art" src="file://${BG}">
+<img class="art" src="file://${s.bg ? join(ROOT, s.bg) : BG}">
 <div class="content">${body(s, shot)}</div>
 ${s.type === 'cta' ? '' : `<div class="url">${esc(s.footUrl || 'simpleisrael.co.il')}</div>`}
 </body></html>`;
