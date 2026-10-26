@@ -9,9 +9,12 @@
     לה סי-במול דו - הסולם של הניגון היהודי והמזרחי), פריטת עוד על הפעמות
     החזקות ותוף מסגרת רך. בעל האתר אמר שהמז'ור "לא מתאים לווייב של התנ"ך".
   calm - אקורדים רכים ונבל ברה מז'ור. הגרסה הראשונה.
+  lyre - נבל דוד: פריטות איטיות במינור, בלי תוף. שקט ומהורהר.
+  royal - מלכותי: מיתרים נמוכים שמתעצמים וטימפני, נגמר באקורד מז'ור. לסיפורי מלכים.
+  chant - מקהלה: "אהה" של קולות גבריים בסולם אהבה רבה, על צליל עומד. תפילתי.
 
 שימוש:
-  python3 scripts/status-music.py <שניות> <פלט.wav> [desert|calm]
+  python3 scripts/status-music.py <שניות> <פלט.wav> [desert|calm|lyre|royal|chant]
 """
 import sys
 import wave
@@ -167,7 +170,99 @@ def desert():
     return lowpass(0.30 * norm(drone) + 0.42 * norm(flute) + 0.22 * norm(lowpass(pluck, 2500)) + 0.14 * norm(lowpass(perc, 1500)), 4500)
 
 
-dry = calm() if style == 'calm' else desert()
+def bandpass(x, lo, hi):
+    """מסנן מעבר-פס רך בתחום התדר - לפורמנטים של "קול" ולמיתרים"""
+    m = 1 << int(np.ceil(np.log2(len(x))))
+    X = np.fft.rfft(x, m)
+    f = np.fft.rfftfreq(m, 1 / SR)
+    c, w = (lo + hi) / 2, (hi - lo) / 2
+    X *= 1 / (1 + ((f - c) / w) ** 4)
+    return np.fft.irfft(X, m)[:len(x)]
+
+
+def saw(f, L, voices=3, spread=0.18):
+    """מסור רך (הרמוניות 1/n) בכמה קולות קרובים - בסיס למיתרים ולמקהלה"""
+    s = np.arange(L) / SR
+    y = np.zeros(L)
+    for v in range(voices):
+        ff = f * (1 + (v - (voices - 1) / 2) * spread / 100)
+        ph = rng.uniform(0, 6.28)
+        for h in range(1, 14):
+            if ff * h > 6000:
+                break
+            y += np.sin(2 * np.pi * ff * h * s + ph * h) / h
+    return y
+
+
+def swell(L, att=1.2, rel=1.2):
+    s = np.arange(L) / SR
+    return np.minimum(1, s / att) * np.clip((L / SR - s) / rel, 0, 1)
+
+
+def lyre():
+    """נבל דוד: פריטות מיתר איטיות במינור (רה), בלי תוף - שקט, כמו ניגון לפני השינה.
+    ארפג'ו עולה ויורד על ארבעה אקורדים, וצליל רה עמוק מתחת."""
+    CH = [[50, 57, 62, 65, 69], [46, 53, 58, 62, 65], [48, 55, 60, 64, 67], [45, 52, 57, 61, 64]]  # Dm Bb C A
+    bar = (dur - 1.5) / 6
+    harp, low = np.zeros(n), np.zeros(n)
+    for k in range(7):
+        notes = CH[k % 4] if k < 6 else [50, 57, 62]
+        st0 = 0.8 + k * bar
+        if st0 > dur - 2:
+            break
+        seq = notes + notes[-2:0:-1]
+        step = bar / len(seq)
+        for j, m in enumerate(seq):
+            place(harp, st0 + j * step, oud(hz(m + 12), int(3 * SR)), 0.6 + 0.2 * (j == 0))
+        place(low, st0, oud(hz(notes[0] - 12), int(4 * SR)), 0.8)
+    drone = np.sin(2 * np.pi * hz(38) * t) * (0.8 + 0.2 * np.sin(2 * np.pi * t / 9))
+    return lowpass(0.55 * norm(harp) + 0.25 * norm(low) + 0.2 * norm(drone), 5000)
+
+
+def royal():
+    """מלכותי ודרמטי: מיתרים נמוכים שמתעצמים במינור, ותוף טימפני רך בתחילת כל אקורד.
+    מתאים לסיפורי מלכים - כתר, ארמון, מלחמה."""
+    CH = [[38, 50, 57, 62, 65], [34, 46, 53, 58, 62], [36, 48, 55, 60, 64], [33, 45, 52, 57, 61]]  # Dm Bb C A
+    bar = dur / 4
+    strings, timp = np.zeros(n), np.zeros(n)
+    for k in range(4):
+        notes = CH[k] if k < 3 else [38, 50, 57, 62, 66]  # סיום על רה מז'ור - פתח של תקווה
+        L = int((bar + 1.5) * SR)
+        for i, m in enumerate(notes):
+            place(strings, k * bar, swell(L, 1.8, 1.4) * saw(hz(m), L), 0.9 if i == 0 else 0.5)
+        tl = int(1.6 * SR)
+        s = np.arange(tl) / SR
+        place(timp, k * bar + 0.05, np.sin(2 * np.pi * np.cumsum(hz(38) * (1 + 0.06 * np.exp(-s * 8))) / SR) * np.exp(-s * 3.2), 1.0)
+    # קרשנדו: כל הקטע מתעצם לאט עד הסוף
+    strings *= 0.55 + 0.45 * np.minimum(1, t / (dur * 0.8))
+    return lowpass(0.78 * norm(lowpass(strings, 1600)) + 0.22 * norm(timp), 4000)
+
+
+def chant():
+    """ניגון מקהלה: "אהה" ארוך של קולות גבריים בסולם אהבה רבה, על צליל עומד.
+    הקול נבנה מפורמנטים (תהודות הפה של התנועה "א") על מסור - בלי הקלטה."""
+    D = 50
+    SC = {'D': 0, 'Eb': 1, 'F#': 4, 'G': 5, 'A': 7, 'Bb': 8}
+    MEL = [('D', 2), ('Eb', 1), ('F#', 2), ('G', 1), ('A', 3), ('G', 1), ('F#', 1), ('Eb', 1), ('D', 4)]
+    beats = sum(b for _, b in MEL)
+    beat = (dur - 3.0) / beats
+    voice = np.zeros(n)
+    pos = 1.0
+    for nm, b in MEL:
+        L = int((b * beat + 0.6) * SR)
+        f = hz(D + SC[nm])
+        s = np.arange(L) / SR
+        vib = saw(f, L, voices=4, spread=0.35) * (1 + 0.004 * np.sin(2 * np.pi * 5 * s))
+        place(voice, pos, swell(L, 0.35, 0.5) * vib, 1.0)
+        place(voice, pos, swell(L, 0.35, 0.5) * saw(f * 1.5, L, voices=3, spread=0.3), 0.35)  # חמישית מעל
+        pos += b * beat
+    ah = 0.6 * bandpass(voice, 600, 900) + 0.45 * bandpass(voice, 1000, 1300) + 0.15 * bandpass(voice, 2400, 2800)
+    drone = saw(hz(38), n, voices=3, spread=0.2) * (0.85 + 0.15 * np.sin(2 * np.pi * t / 8))
+    return lowpass(0.7 * norm(ah) + 0.3 * norm(lowpass(drone, 500)), 4000)
+
+
+STYLES = {'calm': calm, 'desert': desert, 'lyre': lyre, 'royal': royal, 'chant': chant}
+dry = STYLES[style]()
 wet = reverb(dry, 3.2, 2.4)
 left = 0.72 * dry + 0.4 * wet
 right = 0.72 * dry + 0.4 * np.roll(wet, int(0.013 * SR))  # רוחב סטריאו קל
