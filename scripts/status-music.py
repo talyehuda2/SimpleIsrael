@@ -352,7 +352,10 @@ right = 0.72 * dry + 0.4 * np.roll(wet, int(0.013 * SR))  # רוחב סטריא�
 st = np.stack([left, right], 1)
 fade = np.minimum(1, t / 1.5) * np.clip((dur - t) / 2.5, 0, 1)
 st *= fade[:, None]
-st = st / np.abs(st).max() * 0.42  # שקט: מתחת לקול, אם יוסיפו קריינות
+# עוצמה אחידה בין הסגנונות: לפי הממוצע (‎-20dB‎) ולא לפי השיא - נבל פרוט חד בשיאים
+# יצא בנרמול לפי שיא שקט בהרבה מהשאר. השיא נשאר מתחת ל-0.95.
+rms = np.sqrt((st ** 2).mean())
+st = st * min(0.1 / rms, 0.95 / np.abs(st).max())
 with wave.open(out, 'wb') as w:
     w.setnchannels(2)
     w.setsampwidth(2)
