@@ -11,10 +11,14 @@
   calm - אקורדים רכים ונבל ברה מז'ור. הגרסה הראשונה.
   lyre - נבל דוד: פריטות איטיות במינור, בלי תוף. שקט ומהורהר.
   royal - מלכותי: מיתרים נמוכים שמתעצמים וטימפני, נגמר באקורד מז'ור. לסיפורי מלכים.
+  shepherd - חליל רועים בדורי ונבל קל, בלי בס. קליל ואוורירי.
+  kinnor - כינור בריקוד קל עם תוף מרים עדין. השמח מכולם.
+  dawn - חליל ונבל בדואט, פנטטוני, לאט ובהיר.
+  (lyre, royal ו-chant יצאו לבעל האתר כבדים מדי לסטטוס.)
   chant - מקהלה: "אהה" של קולות גבריים בסולם אהבה רבה, על צליל עומד. תפילתי.
 
 שימוש:
-  python3 scripts/status-music.py <שניות> <פלט.wav> [desert|calm|lyre|royal|chant]
+  python3 scripts/status-music.py <שניות> <פלט.wav> [desert|calm|lyre|royal|chant|shepherd|kinnor|dawn]
 """
 import sys
 import wave
@@ -108,6 +112,7 @@ def oud(f, L):
     """עוד: קרפלוס-סטרונג - מיתר פרוט שדועך, צליל חם ומעט "עצי" """
     p = int(SR / f)
     buf = lowpass(rng.standard_normal(p * 4), 3000)[:p]
+    buf -= buf.mean()  # בלי רכיב DC: המסנן של המיתר משמר אותו, והוא נשמע כ"זמזום" נמוך ומכביד
     y = np.zeros(L)
     y[:p] = buf
     for i in range(p, L):
@@ -261,7 +266,85 @@ def chant():
     return lowpass(0.7 * norm(ah) + 0.3 * norm(lowpass(drone, 500)), 4000)
 
 
-STYLES = {'calm': calm, 'desert': desert, 'lyre': lyre, 'royal': royal, 'chant': chant}
+def jingle(L=int(0.25 * SR)):
+    """תוף מרים קטן: ענבלים - רעש בהיר וקצר, בלי ה"דום" הנמוך"""
+    s = np.arange(L) / SR
+    return bandpass(rng.standard_normal(L), 5000, 9000) * np.exp(-s * 22)
+
+
+def tune(mel, beat, start, fn, buf, gain, octave=0, base=62):
+    pos = start
+    for st, b in mel:
+        if st is not None:
+            L = int((b * beat + 0.3) * SR)
+            place(buf, pos, fn(hz(base + st + octave), L), gain)
+        pos += b * beat
+    return pos
+
+
+def shepherd():
+    """חליל רועים: מנגינה פשוטה ואוורירית בדורי (רה), ונבל קל שפורט פעם בתיבה.
+    בלי בס ובלי צליל עומד - קליל, כמו רועה על גבעה."""
+    # מעלות דורי: רה=0 מי=2 פה=3 סול=5 לה=7 סי=9 דו=10
+    MEL = [(7, 1), (9, 1), (10, 1), (9, 1), (7, 2), (5, 1), (3, 1), (5, 2), (7, 2),
+           (3, 1), (5, 1), (7, 1), (5, 1), (3, 1), (2, 1), (0, 4),
+           (7, 1), (9, 1), (10, 2), (12, 2), (10, 1), (9, 1), (7, 4),
+           (5, 1), (3, 1), (2, 1), (3, 1), (0, 4)]
+    beats = sum(b for _, b in MEL)
+    beat = (dur - 2.5) / beats
+    flute, harp = np.zeros(n), np.zeros(n)
+    tune(MEL, beat, 1.0, ney, flute, 0.8, octave=12)
+    k = 0
+    while 1.0 + k * 4 * beat < dur - 2:
+        st = 1.0 + k * 4 * beat
+        for j, m in enumerate([62, 69, 74] if k % 2 == 0 else [60, 67, 72]):
+            place(harp, st + j * beat * 0.5, oud(hz(m), int(2.5 * SR)), 0.5)
+        k += 1
+    return lowpass(0.6 * norm(flute) + 0.4 * norm(harp), 6000)
+
+
+def kinnor():
+    """כינור (נבל קטן) בריקוד קל: מנגינה פרוטה במיקסולידי (סול), ותוף מרים עדין בכל פעמה.
+    הכי שמח מבין הסגנונות - כמו "ומרים הנביאה... בתופים ובמחולות", בשקט."""
+    # מיקסולידי מסול: סול=0 לה=2 סי=4 דו=5 רה=7 מי=9 פה=10
+    MEL = [(0, 1), (4, 1), (7, 1), (4, 1), (5, 1), (4, 1), (2, 2),
+           (2, 1), (5, 1), (9, 1), (7, 1), (5, 1), (4, 1), (0, 2),
+           (7, 1), (9, 1), (10, 1), (9, 1), (7, 1), (5, 1), (4, 2),
+           (2, 1), (4, 1), (5, 1), (2, 1), (0, 4)]
+    beats = sum(b for _, b in MEL)
+    beat = (dur - 2.5) / beats
+    harp, bass, perc = np.zeros(n), np.zeros(n), np.zeros(n)
+    tune(MEL, beat, 1.0, lambda f, L: oud(f, L), harp, 0.8, octave=12, base=55)
+    k = 0
+    while 1.0 + k * beat < dur - 1.8:
+        st = 1.0 + k * beat
+        if k % 4 == 0:
+            place(bass, st, oud(hz(43), int(2 * SR)), 0.6)
+        place(perc, st, jingle(), 0.7 if k % 2 == 0 else 0.4)
+        k += 1
+    return lowpass(0.84 * norm(harp) + 0.08 * norm(bass) + 0.08 * norm(perc), 9000)
+
+
+def dawn():
+    """שחר: חליל ונבל בדואט על סולם פנטטוני (חמישה צלילים, כמו נגינה עממית עתיקה),
+    לאט ובהיר. החליל שר, והנבל עונה לו בתיבה שאחריו."""
+    # פנטטוני מרה: רה=0 מי=2 פה#=4 לה=7 סי=9
+    Q = [(7, 1), (9, 1), (7, 1), (4, 1), (2, 2), (4, 2)]
+    A = [(4, 1), (7, 1), (9, 1), (12, 1), (9, 2), (7, 2)]
+    E = [(4, 1), (2, 1), (0, 2), (None, 4)]
+    beats = 2 * sum(b for _, b in Q + A) + sum(b for _, b in E)
+    beat = (dur - 2.5) / beats
+    flute, harp = np.zeros(n), np.zeros(n)
+    pos = 1.0
+    for rep in range(2):
+        pos = tune(Q, beat, pos, ney, flute, 0.8, octave=12)
+        pos = tune(A, beat, pos, oud, harp, 0.8, octave=12)
+    tune(E, beat, pos, ney, flute, 0.8, octave=12)
+    tune([(0, 1), (7, 1), (12, 4)], beat * 0.5, pos + 2 * beat, oud, harp, 0.5, octave=0)
+    return lowpass(0.55 * norm(flute) + 0.45 * norm(harp), 6500)
+
+
+STYLES = {'calm': calm, 'desert': desert, 'lyre': lyre, 'royal': royal, 'chant': chant, 'shepherd': shepherd, 'kinnor': kinnor, 'dawn': dawn}
 dry = STYLES[style]()
 wet = reverb(dry, 3.2, 2.4)
 left = 0.72 * dry + 0.4 * wet
