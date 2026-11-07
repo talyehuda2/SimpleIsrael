@@ -283,7 +283,7 @@ p.after{font-size:44px}
 .url{position:absolute;right:84px;bottom:230px;font-weight:700;font-size:36px;color:#163a57;direction:ltr}
 /* שקף עם איור משלו (bg): האיור מלא בפרטים עד חצי המסך, ולכן פסקה שגולשת אליו והכתובת
    בתחתית יושבות על קלף בהיר - בלי זה הן נבלעו בקהל ובחומות */
-.ill .content p{background:rgb(251 245 231 / .84);padding:14px 26px;border-radius:16px}
+.ill .content p,.ill .qn{background:rgb(251 245 231 / .84);padding:14px 26px;border-radius:16px}
 .ill .url{background:rgb(251 245 231 / .88);padding:6px 20px;border-radius:12px}
 ${baseFont()}</style></head><body${s.bg ? ' class="ill"' : ''}>
 <div class="wash"></div>
